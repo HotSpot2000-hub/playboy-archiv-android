@@ -4401,93 +4401,56 @@ function getNativeRestorePlugins(){
  if(!cap||!(typeof cap.isNativePlatform==='function'&&cap.isNativePlatform()))return null;
  try{
   const plugins=cap.Plugins||{};
-  if(plugins.FilePicker&&plugins.Filesystem){
-   return {picker:plugins.FilePicker,fs:plugins.Filesystem};
-  }
-  if(typeof cap.registerPlugin==='function'){
-   const picker=cap.registerPlugin('FilePicker');
-   const fs=cap.registerPlugin('Filesystem');
-   if(picker&&fs)return {picker,fs};
-  }
+  const picker=plugins.FilePicker||(typeof cap.registerPlugin==='function'?cap.registerPlugin('FilePicker'):null);
+  const archive=plugins.ArchiveDirectory||(typeof cap.registerPlugin==='function'?cap.registerPlugin('ArchiveDirectory'):null);
+  if(picker&&archive)return {picker,archive,cap};
   if(typeof cap.nativePromise==='function'){
    const native=(plugin,method,options={})=>cap.nativePromise(plugin,method,options);
    return {
     picker:{pickDirectory:()=>native('FilePicker','pickDirectory',{})},
-    fs:{
-     readdir:options=>native('Filesystem','readdir',options),
-     readFile:options=>native('Filesystem','readFile',options)
-    }
+    archive:{resolvePath:options=>native('ArchiveDirectory','resolvePath',options)},
+    cap
    };
   }
  }catch(e){console.error('Native Restore Plugins',e)}
  return null;
 }
-function base64ChunkToBytes(data){
- const bin=atob(String(data||''));
- const out=new Uint8Array(bin.length);
- for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
- return out;
-}
-async function nativeReadFileBlob(fs,uri,type='application/octet-stream'){
- if(fs&&typeof fs.readFileInChunks==='function'){
-  const chunks=[];
-  await new Promise((resolve,reject)=>{
-   let finished=false;
-   const finish=()=>{if(!finished){finished=true;resolve()}};
-   try{
-    const start=fs.readFileInChunks({path:uri,chunkSize:1024*1024},(result,err)=>{
-     if(finished)return;
-     if(err){finished=true;reject(new Error(err.message||String(err)));return}
-     const data=result&&result.data;
-     if(!data){finish();return}
-     try{chunks.push(base64ChunkToBytes(data))}catch(e){finished=true;reject(e)}
-    });
-    Promise.resolve(start).catch(e=>{if(!finished){finished=true;reject(e)}});
-   }catch(e){finished=true;reject(e)}
-  });
-  return new Blob(chunks,{type:type||'application/octet-stream'});
- }
- const result=await fs.readFile({path:uri});
- return new Blob([base64ChunkToBytes(result.data)],{type:type||'application/octet-stream'});
+async function nativeContentUriBlob(cap,uri,type='application/octet-stream'){
+ const url=typeof cap.convertFileSrc==='function'?cap.convertFileSrc(uri):uri;
+ const response=await fetch(url);
+ if(!response.ok)throw new Error(`Datei konnte nicht gelesen werden (${response.status})`);
+ const blob=await response.blob();
+ return type&&blob.type!==type?new Blob([blob],{type}):blob;
 }
 async function createNativeArchiveDirectoryAdapter(){
  const plugins=getNativeRestorePlugins();
- if(!plugins||typeof plugins.picker.pickDirectory!=='function'||typeof plugins.fs.readdir!=='function'||typeof plugins.fs.readFile!=='function')return null;
+ if(!plugins||typeof plugins.picker?.pickDirectory!=='function'||typeof plugins.archive?.resolvePath!=='function')return null;
  const picked=await plugins.picker.pickDirectory();
  const rootPath=picked&&picked.path;
  if(!rootPath)throw Object.assign(new Error('Keine Ordnerauswahl erhalten.'),{name:'AbortError'});
- const listCache=new Map();
- const list=async uri=>{
-  if(listCache.has(uri))return listCache.get(uri);
-  const result=await plugins.fs.readdir({path:uri});
-  const files=Array.isArray(result&&result.files)?result.files:[];
-  listCache.set(uri,files);
-  return files;
- };
+ const resolveCache=new Map();
  const resolve=async parts=>{
-  let uri=rootPath;
-  for(let i=0;i<parts.length;i++){
-   const name=String(parts[i]||'');
-   const entries=await list(uri);
-   const entry=entries.find(x=>x&&x.name===name);
-   if(!entry)throw new Error(`Datei/Ordner nicht gefunden: ${parts.slice(0,i+1).join('/')}`);
-   uri=entry.uri;
-  }
+  const clean=(parts||[]).map(x=>String(x||''));
+  const key=clean.join('/');
+  if(resolveCache.has(key))return resolveCache.get(key);
+  const result=await plugins.archive.resolvePath({rootUri:rootPath,path:clean});
+  const uri=result&&result.uri;
+  if(!uri)throw new Error(`Datei/Ordner nicht gefunden: ${key}`);
+  resolveCache.set(key,uri);
   return uri;
  };
  return {
   __capacitorNativeArchive:true,
   rootPath,
-  fs:plugins.fs,
   async readText(name){
    const uri=await resolve([name]);
-   const result=await plugins.fs.readFile({path:uri,encoding:'utf8'});
-   return String(result&&result.data||'');
+   const blob=await nativeContentUriBlob(plugins.cap,uri,'application/json');
+   return await blob.text();
   },
   async getFile(path,row={}){
    const uri=await resolve(path);
    const type=row.type||'application/octet-stream';
-   const blob=await nativeReadFileBlob(plugins.fs,uri,type);
+   const blob=await nativeContentUriBlob(plugins.cap,uri,type);
    return new File([blob],row.originalName||path[path.length-1]||row.id||'Datei',{type:type||blob.type});
   }
  };
@@ -4548,9 +4511,7 @@ async function restoreCompleteArchiveFolder(){
   if(native){
    if(!plugins){throw new Error(`Native Restore-Plugins nicht verfügbar · sichtbar: ${pluginNames.join(', ')||'keine'}`)}
    if(typeof plugins.picker?.pickDirectory!=='function')throw new Error('FilePicker.pickDirectory fehlt');
-   if(typeof plugins.fs?.readdir!=='function')throw new Error('Filesystem.readdir fehlt');
-   if(typeof plugins.fs?.readFile!=='function')throw new Error('Filesystem.readFile fehlt');
-   diag('Restore-Diagnose · Plugins gefunden · Android-Ordnerauswahl wird geöffnet …');
+   diag('Restore-Diagnose · SAF-Bridge gefunden · Android-Ordnerauswahl wird geöffnet …');
    await new Promise(r=>setTimeout(r,120));
   }
   const nativeAdapter=await createNativeArchiveDirectoryAdapter();
