@@ -43,6 +43,40 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Install Playboy Archiv app icon
+        run: |
+          python3 -m pip install pillow
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
+
+          src = Image.open("assets/app-icon/app-icon.png").convert("RGBA")
+
+          sizes = {
+              "mipmap-mdpi": 48,
+              "mipmap-hdpi": 72,
+              "mipmap-xhdpi": 96,
+              "mipmap-xxhdpi": 144,
+              "mipmap-xxxhdpi": 192,
+          }
+
+          base = Path("android/app/src/main/res")
+
+          for folder, size in sizes.items():
+              out = base / folder
+              out.mkdir(parents=True, exist_ok=True)
+              icon = src.resize((size, size), Image.Resampling.LANCZOS)
+              icon.save(out / "ic_launcher.png")
+              icon.save(out / "ic_launcher_round.png")
+
+          adaptive = base / "mipmap-anydpi-v26"
+          if adaptive.exists():
+              for name in ("ic_launcher.xml", "ic_launcher_round.xml"):
+                  p = adaptive / name
+                  if p.exists():
+                      p.unlink()
+          PY
+
       - name: Make Gradle executable
         run: chmod +x android/gradlew
 
