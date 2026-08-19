@@ -4396,7 +4396,88 @@ async function exportCompleteArchiveFolder(){
  }
 }
 
-async function fileFromDirectoryPath(root,path){
+function getNativeRestorePlugins(){
+ const cap=window.Capacitor;
+ if(!cap||typeof cap.registerPlugin!=='function'||!(typeof cap.isNativePlatform==='function'&&cap.isNativePlatform()))return null;
+ try{
+  return {
+   picker:cap.registerPlugin('FilePicker'),
+   fs:cap.registerPlugin('Filesystem')
+  };
+ }catch(e){console.error('Native Restore Plugins',e);return null}
+}
+function base64ChunkToBytes(data){
+ const bin=atob(String(data||''));
+ const out=new Uint8Array(bin.length);
+ for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);
+ return out;
+}
+async function nativeReadFileBlob(fs,uri,type='application/octet-stream'){
+ if(fs&&typeof fs.readFileInChunks==='function'){
+  const chunks=[];
+  await new Promise((resolve,reject)=>{
+   let finished=false;
+   const finish=()=>{if(!finished){finished=true;resolve()}};
+   try{
+    const start=fs.readFileInChunks({path:uri,chunkSize:1024*1024},(result,err)=>{
+     if(finished)return;
+     if(err){finished=true;reject(new Error(err.message||String(err)));return}
+     const data=result&&result.data;
+     if(!data){finish();return}
+     try{chunks.push(base64ChunkToBytes(data))}catch(e){finished=true;reject(e)}
+    });
+    Promise.resolve(start).catch(e=>{if(!finished){finished=true;reject(e)}});
+   }catch(e){finished=true;reject(e)}
+  });
+  return new Blob(chunks,{type:type||'application/octet-stream'});
+ }
+ const result=await fs.readFile({path:uri});
+ return new Blob([base64ChunkToBytes(result.data)],{type:type||'application/octet-stream'});
+}
+async function createNativeArchiveDirectoryAdapter(){
+ const plugins=getNativeRestorePlugins();
+ if(!plugins||typeof plugins.picker.pickDirectory!=='function'||typeof plugins.fs.readdir!=='function'||typeof plugins.fs.readFile!=='function')return null;
+ const picked=await plugins.picker.pickDirectory();
+ const rootPath=picked&&picked.path;
+ if(!rootPath)throw Object.assign(new Error('Keine Ordnerauswahl erhalten.'),{name:'AbortError'});
+ const listCache=new Map();
+ const list=async uri=>{
+  if(listCache.has(uri))return listCache.get(uri);
+  const result=await plugins.fs.readdir({path:uri});
+  const files=Array.isArray(result&&result.files)?result.files:[];
+  listCache.set(uri,files);
+  return files;
+ };
+ const resolve=async parts=>{
+  let uri=rootPath;
+  for(let i=0;i<parts.length;i++){
+   const name=String(parts[i]||'');
+   const entries=await list(uri);
+   const entry=entries.find(x=>x&&x.name===name);
+   if(!entry)throw new Error(`Datei/Ordner nicht gefunden: ${parts.slice(0,i+1).join('/')}`);
+   uri=entry.uri;
+  }
+  return uri;
+ };
+ return {
+  __capacitorNativeArchive:true,
+  rootPath,
+  fs:plugins.fs,
+  async readText(name){
+   const uri=await resolve([name]);
+   const result=await plugins.fs.readFile({path:uri,encoding:'utf8'});
+   return String(result&&result.data||'');
+  },
+  async getFile(path,row={}){
+   const uri=await resolve(path);
+   const type=row.type||'application/octet-stream';
+   const blob=await nativeReadFileBlob(plugins.fs,uri,type);
+   return new File([blob],row.originalName||path[path.length-1]||row.id||'Datei',{type:type||blob.type});
+  }
+ };
+}
+async function fileFromDirectoryPath(root,path,row=null){
+ if(root&&root.__capacitorNativeArchive)return root.getFile(path,row||{});
  let dir=root;
  for(let i=0;i<path.length-1;i++)dir=await dir.getDirectoryHandle(path[i]);
  const h=await dir.getFileHandle(path[path.length-1]);
@@ -4422,7 +4503,7 @@ async function applyImportedEnvelope(data,rootDir=null){
   const status=document.getElementById('backupStatus');let done=0;
   for(const row of data.mediaFiles){
    try{
-    const file=await fileFromDirectoryPath(rootDir,row.path);
+    const file=await fileFromDirectoryPath(rootDir,row.path,row);
     await putMedia(row.id,file);
     done++;
     if(status&&done%25===0)status.textContent=`Originalmedien wiederhergestellt: ${done} / ${data.mediaFiles.length}`;
@@ -4433,27 +4514,51 @@ async function applyImportedEnvelope(data,rootDir=null){
  showModels();
 }
 async function restoreCompleteArchiveFolder(){
- if(!window.showDirectoryPicker){
-  toast('Ordner-Wiederherstellung wird von diesem Browser nicht unterstützt.');
-  return;
- }
  const status=document.getElementById('backupStatus');
+ const btn=document.getElementById('restoreFullFolderBtn');
+ const originalBtnText=btn?.textContent||'Archiv wiederherstellen';
  try{
-  const root=await window.showDirectoryPicker({mode:'read'});
-  const manifestFile=await (await root.getFileHandle('Playboy_Archiv_Manifest.json')).getFile();
-  const data=JSON.parse(await manifestFile.text());
+  let root=null,data=null;
+  const nativeAdapter=await createNativeArchiveDirectoryAdapter();
+  if(nativeAdapter){
+   root=nativeAdapter;
+   if(status)status.textContent='Backup-Ordner ausgewählt · Manifest wird gelesen …';
+   data=JSON.parse(await root.readText('Playboy_Archiv_Manifest.json'));
+  }else{
+   if(!window.showDirectoryPicker){
+    toast('Ordner-Wiederherstellung wird auf diesem Gerät noch nicht unterstützt.');
+    return;
+   }
+   root=await window.showDirectoryPicker({mode:'read'});
+   const manifestFile=await (await root.getFileHandle('Playboy_Archiv_Manifest.json')).getFile();
+   data=JSON.parse(await manifestFile.text());
+  }
   if(!validateImportEnvelope(data))throw new Error('Ungültiges Manifest');
   if(!confirm(`Archiv wirklich wiederherstellen?\n\nAktuelle Metadaten werden durch den Sicherungsstand vom ${new Date(data.exportedAt||Date.now()).toLocaleString('de-DE')} ersetzt.`))return;
-  if(status)status.textContent='Wiederherstellung läuft …';
-  await applyImportedEnvelope(data,root);
-  if(status)status.textContent=`Wiederherstellung abgeschlossen: ${(data.mediaFiles||[]).length} Mediendateien im Manifest.`;
-  closeSettings();
+  const total=(data.mediaFiles||[]).length;
+  if(status)status.textContent=`Wiederherstellung startet · ${total} Mediendateien im Manifest …`;
+  if(btn){btn.disabled=true;btn.textContent=`Wiederherstellung 0 / ${total}`}
+  const oldStatusSetter=status?Object.getOwnPropertyDescriptor(Object.getPrototypeOf(status),'textContent'):null;
+  let observer=null;
+  if(status&&btn&&typeof MutationObserver!=='undefined'){
+   observer=new MutationObserver(()=>{
+    const m=String(status.textContent||'').match(/Originalmedien wiederhergestellt:\s*(\d+)\s*\/\s*(\d+)/i);
+    if(m)btn.textContent=`Wiederherstellung ${m[1]} / ${m[2]}`;
+   });
+   observer.observe(status,{childList:true,characterData:true,subtree:true});
+  }
+  try{await applyImportedEnvelope(data,root)}finally{if(observer)observer.disconnect()}
+  if(status)status.textContent=`Wiederherstellung abgeschlossen: ${total} Mediendateien im Manifest.`;
+  if(btn)btn.textContent='Wiederherstellung abgeschlossen';
   toast('Archiv vollständig wiederhergestellt.');
+  setTimeout(()=>closeSettings(),1200);
  }catch(e){
   if(e?.name==='AbortError')return;
-  console.error(e);
-  if(status)status.textContent='Wiederherstellung fehlgeschlagen.';
+  console.error('Archiv-Wiederherstellung fehlgeschlagen',e);
+  if(status)status.textContent=`Wiederherstellung fehlgeschlagen · ${backupErrorText(e)}`;
   toast('Archiv konnte nicht wiederhergestellt werden.');
+ }finally{
+  if(btn){btn.disabled=false;setTimeout(()=>{btn.textContent=originalBtnText},1500)}
  }
 }
 async function restoreMetadataFile(file){
