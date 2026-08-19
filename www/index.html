@@ -4533,8 +4533,26 @@ async function restoreCompleteArchiveFolder(){
  const status=document.getElementById('backupStatus');
  const btn=document.getElementById('restoreFullFolderBtn');
  const originalBtnText=btn?.textContent||'Archiv wiederherstellen';
+ const diag=msg=>{if(status)status.textContent=msg;console.log('[Restore-Diagnose]',msg)};
  try{
+  diag('Restore-Klick erkannt · prüfe Android/Capacitor …');
+  if(btn)btn.textContent='Restore wird geprüft …';
+  await new Promise(r=>setTimeout(r,80));
+  const cap=window.Capacitor;
+  const native=!!(cap&&typeof cap.isNativePlatform==='function'&&cap.isNativePlatform());
+  const pluginNames=cap&&cap.Plugins?Object.keys(cap.Plugins):[];
+  diag(`Restore-Diagnose · Capacitor: ${cap?'ja':'nein'} · Native: ${native?'ja':'nein'} · Plugins: ${pluginNames.length?pluginNames.join(', '):'keine sichtbar'}`);
+  await new Promise(r=>setTimeout(r,150));
   let root=null,data=null;
+  const plugins=getNativeRestorePlugins();
+  if(native){
+   if(!plugins){throw new Error(`Native Restore-Plugins nicht verfügbar · sichtbar: ${pluginNames.join(', ')||'keine'}`)}
+   if(typeof plugins.picker?.pickDirectory!=='function')throw new Error('FilePicker.pickDirectory fehlt');
+   if(typeof plugins.fs?.readdir!=='function')throw new Error('Filesystem.readdir fehlt');
+   if(typeof plugins.fs?.readFile!=='function')throw new Error('Filesystem.readFile fehlt');
+   diag('Restore-Diagnose · Plugins gefunden · Android-Ordnerauswahl wird geöffnet …');
+   await new Promise(r=>setTimeout(r,120));
+  }
   const nativeAdapter=await createNativeArchiveDirectoryAdapter();
   if(nativeAdapter){
    root=nativeAdapter;
@@ -4569,10 +4587,14 @@ async function restoreCompleteArchiveFolder(){
   toast('Archiv vollständig wiederhergestellt.');
   setTimeout(()=>closeSettings(),1200);
  }catch(e){
-  if(e?.name==='AbortError')return;
+  if(e?.name==='AbortError'){
+   diag('Restore-Diagnose · Ordnerauswahl abgebrochen.');
+   return;
+  }
   console.error('Archiv-Wiederherstellung fehlgeschlagen',e);
-  if(status)status.textContent=`Wiederherstellung fehlgeschlagen · ${backupErrorText(e)}`;
-  toast('Archiv konnte nicht wiederhergestellt werden.');
+  const detail=backupErrorText(e);
+  if(status)status.textContent=`Restore-Diagnose FEHLER · ${detail}`;
+  toast(`Restore-Fehler: ${detail}`);
  }finally{
   if(btn){btn.disabled=false;setTimeout(()=>{btn.textContent=originalBtnText},1500)}
  }
