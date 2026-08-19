@@ -49,5 +49,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Playboy-Archiv-Beta6-debug
+          name: Playboy-Archiv-Build-${{ github.run_number }}
           path: android/app/build/outputs/apk/debug/Playboy-Archiv-Build-${{ github.run_number }}.apk
