@@ -1,0 +1,6 @@
+{
+  "appId": "de.playboy.archiv",
+  "appName": "Playboy Archiv",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
