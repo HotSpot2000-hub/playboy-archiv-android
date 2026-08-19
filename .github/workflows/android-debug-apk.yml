@@ -34,6 +34,12 @@ jobs:
       - name: Add Android platform
         run: npx cap add android
 
+      - name: Install native archive bridge
+        run: |
+          mkdir -p android/app/src/main/java/de/playboy/archiv
+          cp native/ArchiveDirectoryPlugin.java android/app/src/main/java/de/playboy/archiv/ArchiveDirectoryPlugin.java
+          cp native/MainActivity.java android/app/src/main/java/de/playboy/archiv/MainActivity.java
+
       - name: Sync Capacitor
         run: npx cap sync android
 
