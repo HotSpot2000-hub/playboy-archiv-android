@@ -82,6 +82,27 @@ jobs:
 
       - name: Build debug APK
         run: cd android && ./gradlew assembleDebug
+
+      - name: Sign APK with permanent key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/playboy-archiv-release.jks"
+
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -1)
+
+          "$APKSIGNER" sign \
+            --ks "$RUNNER_TEMP/playboy-archiv-release.jks" \
+            --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass "pass:$KEYSTORE_PASSWORD" \
+            --key-pass "pass:$KEY_PASSWORD" \
+            android/app/build/outputs/apk/debug/app-debug.apk
+
+          "$APKSIGNER" verify --verbose \
+            android/app/build/outputs/apk/debug/app-debug.apk
         
       - name: Rename APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Playboy-Archiv-Build-${{ github.run_number }}.apk
