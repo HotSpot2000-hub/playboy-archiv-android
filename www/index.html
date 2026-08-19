@@ -4398,13 +4398,29 @@ async function exportCompleteArchiveFolder(){
 
 function getNativeRestorePlugins(){
  const cap=window.Capacitor;
- if(!cap||typeof cap.registerPlugin!=='function'||!(typeof cap.isNativePlatform==='function'&&cap.isNativePlatform()))return null;
+ if(!cap||!(typeof cap.isNativePlatform==='function'&&cap.isNativePlatform()))return null;
  try{
-  return {
-   picker:cap.registerPlugin('FilePicker'),
-   fs:cap.registerPlugin('Filesystem')
-  };
- }catch(e){console.error('Native Restore Plugins',e);return null}
+  const plugins=cap.Plugins||{};
+  if(plugins.FilePicker&&plugins.Filesystem){
+   return {picker:plugins.FilePicker,fs:plugins.Filesystem};
+  }
+  if(typeof cap.registerPlugin==='function'){
+   const picker=cap.registerPlugin('FilePicker');
+   const fs=cap.registerPlugin('Filesystem');
+   if(picker&&fs)return {picker,fs};
+  }
+  if(typeof cap.nativePromise==='function'){
+   const native=(plugin,method,options={})=>cap.nativePromise(plugin,method,options);
+   return {
+    picker:{pickDirectory:()=>native('FilePicker','pickDirectory',{})},
+    fs:{
+     readdir:options=>native('Filesystem','readdir',options),
+     readFile:options=>native('Filesystem','readFile',options)
+    }
+   };
+  }
+ }catch(e){console.error('Native Restore Plugins',e)}
+ return null;
 }
 function base64ChunkToBytes(data){
  const bin=atob(String(data||''));
