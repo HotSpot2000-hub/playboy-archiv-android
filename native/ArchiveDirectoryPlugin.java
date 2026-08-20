@@ -77,26 +77,4 @@ public class ArchiveDirectoryPlugin extends Plugin {
         }
         return null;
     }
-    @PluginMethod
-    public void enterImmersive(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
-            if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).enterImmersiveMode();
-                call.resolve();
-            } else {
-                call.reject("MainActivity nicht verfügbar");
-            }
-        });
-    }
-
-    @PluginMethod
-    public void exitImmersive(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
-            if (getActivity() instanceof MainActivity) {
-                ((MainActivity) getActivity()).exitImmersiveMode();
-                call.resolve();
-            } else {
-                call.reject("MainActivity nicht verfügbar");
-            }
-        });
-    }}
+}
