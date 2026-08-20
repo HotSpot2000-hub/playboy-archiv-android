@@ -9003,18 +9003,17 @@ function openSeriesDetail(id){
 }
 document.getElementById('closeSeriesDetail').onclick=closeOverlay;
 
-async function openShootingVideoQuick(id){try{const blob=await getMedia(id);if(!blob)return toast('Video nicht verfügbar.');const v=document.getElementById('videoPlayer'),o=document.getElementById('videoPlayerOverlay'),c=document.getElementById('videoCaption'),item=(state.archive||[]).find(a=>a.id===id);if(v.src&&v.src.startsWith('blob:'))URL.revokeObjectURL(v.src);v.src=URL.createObjectURL(blob);c.textContent=item?.fileName||'Video';o.classList.add('open');v.play().catch(()=>{})}catch(e){console.error(e);toast('Video nicht verfügbar.')}}
-function bindShootingVideoQuick(root=document){
- root.querySelectorAll('[data-shooting-video-quick]').forEach(b=>{
-  if(b.dataset.videoQuickBound==='1')return;
-  b.dataset.videoQuickBound='1';
-  b.addEventListener('click',e=>{
-   e.preventDefault();
-   e.stopPropagation();
-   e.stopImmediatePropagation();
-   openShootingVideoQuick(b.dataset.shootingVideoQuick);
-  },true);
- });
+async function openShootingVideoQuick(id){
+  try{
+    const blob = await getMedia(id);
+    if(!blob) return toast('Video nicht verfügbar.');
+
+    const item = (state.archive || []).find(a => a.id === id);
+    openVideoFromBlob(blob, item?.fileName || 'Video');
+  }catch(e){
+    console.error(e);
+    toast('Video nicht verfügbar.');
+  }
 }
 const shootingCoverChoiceCache=new Map();
 const mediaPortraitCache=new Map();
