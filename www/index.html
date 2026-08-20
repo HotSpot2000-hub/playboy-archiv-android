@@ -9336,11 +9336,25 @@ function openVideoFromBlob(blob,caption=''){
  videoPlayer.play().catch(()=>{});
 }
 function closeVideoPlayer(){
- try{videoPlayer.pause()}catch(_){}
- videoPlayer.removeAttribute('src');videoPlayer.load();
- const url=videoOverlay.dataset.objectUrl;
- if(url){URL.revokeObjectURL(url);delete videoOverlay.dataset.objectUrl}
- videoOverlay.classList.remove('open');
+  try{
+    videoPlayer.pause();
+  }catch(_){}
+
+  const url = videoOverlay.dataset.objectUrl || videoPlayer.src;
+
+  videoOverlay.classList.remove('open');
+
+  try{
+    videoPlayer.removeAttribute('src');
+    videoPlayer.src = '';
+  }catch(_){}
+
+  if(url && url.startsWith('blob:')){
+    try{ URL.revokeObjectURL(url); }catch(_){}
+  }
+
+  delete videoOverlay.dataset.objectUrl;
+  document.getElementById('videoCaption').textContent = '';
 }
 document.getElementById('videoClose').onclick=closeVideoPlayer;
 videoOverlay.onclick=e=>{if(e.target===videoOverlay)closeVideoPlayer()};
