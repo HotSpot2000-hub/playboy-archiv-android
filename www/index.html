@@ -9156,7 +9156,7 @@ document.getElementById('closeShootingDetail').onclick=()=>{
   const ctx=returnShootingContext;returnShootingContext=null;closeOverlay();globalTitleBrowseClass=ctx.titleClass||globalTitleBrowseClass;globalTitleBrowseLevel=ctx.titleLevel||globalTitleBrowseLevel;showGlobalTitlesView();requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));return;
  }
  if(returnShootingContext?.source==='global-shootings'){const ctx=returnShootingContext;returnShootingContext=null;closeOverlay();showGlobalShootingsView();requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));return;}
- if(returnShootingContext?.source==='recent-activity'){const ctx=returnShootingContext;returnShootingContext=null;closeOverlay();showModels();requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));return;}
+ if(returnShootingContext?.source==='recent-activity'){const ctx=returnShootingContext;returnShootingContext=null;closeOverlay();showArchiveTools();requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));return;}
  returnShootingContext=null;closeOverlay();archiveTab='shoot';renderArchive();
 };
 
