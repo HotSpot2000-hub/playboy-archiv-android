@@ -9015,6 +9015,23 @@ async function openShootingVideoQuick(id){
     toast('Video nicht verfügbar.');
   }
 }
+
+function bindShootingVideoQuick(root=document){
+  root.querySelectorAll('[data-shooting-video-quick]').forEach(btn=>{
+    if(btn.dataset.videoQuickBound==='1') return;
+
+    btn.dataset.videoQuickBound='1';
+
+    btn.addEventListener('click',e=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      const id = btn.dataset.shootingVideoQuick;
+      if(id) openShootingVideoQuick(id);
+    });
+  });
+}
+ 
 const shootingCoverChoiceCache=new Map();
 const mediaPortraitCache=new Map();
 
