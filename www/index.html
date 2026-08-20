@@ -7635,7 +7635,7 @@ function openSearchResult(r){
  showProfile();
  render();
  setTimeout(()=>{
-   if(r.type==='shoot')openShootingDetail(r.archiveId,null);
+  if(r.type==='shoot')openShootingDetail(r.archiveId,null,{source:'recent-activity',scrollY:window.scrollY});
    else if(r.type==='series')openSeriesDetail(r.archiveId);
    else if(r.type==='publication')openPublicationDetail(r.archiveId);
  },0);
