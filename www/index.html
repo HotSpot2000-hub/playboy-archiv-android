@@ -9275,6 +9275,8 @@ async function showLightboxGalleryIndex(index){
  }catch(err){console.error(err);toast('Foto konnte nicht geöffnet werden.')}
 }
 function openLightboxFromBlob(blob,caption='',galleryIds=null,currentId=null){
+function openLightboxFromBlob(blob,caption='',galleryIds=null,currentId=null){
+window.Capacitor?.Plugins?.ArchiveDirectory?.enterImmersive?.().catch(()=>{}); 
  if(Array.isArray(galleryIds)&&galleryIds.length&&currentId){
   lightboxGalleryIds=galleryIds.slice();
   const idx=lightboxGalleryIds.indexOf(currentId);
