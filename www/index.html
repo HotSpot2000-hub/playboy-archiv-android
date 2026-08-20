@@ -9515,7 +9515,7 @@ function visibleMainViewId(){
   .find(id=>{const el=document.getElementById(id);return el&&!el.classList.contains('hidden')})||'';
 }
 function closeTransientUiForAndroidBack(){
- if(document.getElementById('videoPlayerOverlay')?.classList.contains('open')){closeVideoPlayer();return true}
+ if(document.getElementById('videoPlayerOverlay')?.classList.contains('open')){setTimeout(closeVideoPlayer,0);return true}
  if(document.getElementById('lightbox')?.classList.contains('open')){closeLightbox();return true}
  if(!document.getElementById('settingsPanel')?.classList.contains('hidden')){closeSettings();return true}
  if(document.getElementById('overlay')?.classList.contains('open')){closeOverlay();return true}
