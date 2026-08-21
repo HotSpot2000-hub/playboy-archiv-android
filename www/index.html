@@ -6727,7 +6727,8 @@ if(!countryId.startsWith('edit')){
   box.classList.remove('hidden');
 
   box.querySelectorAll('.locationSuggestionItem').forEach((btn,i)=>{
-   btn.onclick=()=>{
+   btn.onpointerdown=e=>{
+ e.preventDefault();
     input.value=matches[i];
     box.innerHTML='';
     box.classList.add('hidden');
