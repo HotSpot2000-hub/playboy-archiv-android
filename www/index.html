@@ -9160,6 +9160,16 @@ document.getElementById('closeShootingDetail').onclick=()=>{
   closeOverlay();archiveTab='title';titleBrowseClass=ctx.titleClass||titleBrowseClass;titleBrowseLevel=ctx.titleLevel||titleBrowseLevel;renderArchive();
   requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));return;
  }
+ if(returnShootingContext?.source==='model-series'){
+  const ctx=returnShootingContext;
+  returnShootingContext=null;
+  closeOverlay();
+  archiveTab='series';
+  modelSeriesBrowseId=ctx.seriesId||modelSeriesBrowseId;
+  renderArchive();
+  requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));
+  return;
+ }
  if(returnShootingContext?.source==='global-series'){
   const ctx=returnShootingContext;returnShootingContext=null;closeOverlay();globalSeriesBrowseId=ctx.seriesId||globalSeriesBrowseId;showGlobalSeriesView();requestAnimationFrame(()=>window.scrollTo({top:Number(ctx.scrollY)||0,behavior:'auto'}));return;
  }
