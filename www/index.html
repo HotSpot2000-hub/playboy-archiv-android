@@ -2148,10 +2148,13 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   <input id="editPhotoAndroidFiles" type="file" style="display:none">
   <button type="button" class="btn" id="editPhotoAndroidFilesBtn">Über Android-Dateien auswählen</button>
   <div id="editPhotoAndroidFilesStatus" class="small" style="margin-top:6px"></div>
-  <label>Land</label><input id="editCountry" list="locationCountrySuggestions" placeholder="z. B. Deutschland">
-  <label>Region</label><input id="editRegion" list="locationRegionSuggestions" placeholder="z. B. Niedersachsen">
-  <label>Stadt</label><input id="editCity" list="locationCitySuggestions" placeholder="z. B. Hannover">
-  <label>Größe</label><input id="editHeight" inputmode="text" placeholder="z. B. 1,60 m oder 5 ft 3 in">
+<label>Land</label><input id="editCountry" autocomplete="off" placeholder="z. B. Deutschland">
+<div id="editCountrySuggestions" class="locationSuggestions hidden"></div>
+<label>Region</label><input id="editRegion" autocomplete="off" placeholder="z. B. Niedersachsen">
+<div id="editRegionSuggestions" class="locationSuggestions hidden"></div>
+<label>Stadt</label><input id="editCity" autocomplete="off" placeholder="z. B. Hannover"> 
+<div id="editCitySuggestions" class="locationSuggestions hidden"></div>
+ <label>Größe</label><input id="editHeight" inputmode="text" placeholder="z. B. 1,60 m oder 5 ft 3 in">
   <div class="small" style="margin-top:-6px;margin-bottom:8px">Eingabe wahlweise in m/cm oder ft/in; die Anzeige wird automatisch in Meter umgerechnet.</div>
   <label>Maße</label><input id="editMeasurements" placeholder="z. B. 90–60–90">
   <label>Gewicht</label><input id="editWeight" inputmode="decimal" placeholder="z. B. 54 kg">
