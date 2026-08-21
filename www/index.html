@@ -6660,12 +6660,121 @@ function refreshLocationSuggestions(country='',region=''){
  fillLocationDatalist('locationCitySuggestions',regionModels.map(m=>m.city));
 }
 function bindLocationSuggestionInputs(countryId,regionId,cityId){
- const country=document.getElementById(countryId),region=document.getElementById(regionId),city=document.getElementById(cityId);
+ const country=document.getElementById(countryId);
+ const region=document.getElementById(regionId);
+ const city=document.getElementById(cityId);
  if(!country||!region||!city)return;
- const update=()=>refreshLocationSuggestions(country.value,region.value);
- country.oninput=update;country.onchange=update;region.oninput=update;region.onchange=update;
- update();
+if(!countryId.startsWith('edit')){
+  const update=()=>refreshLocationSuggestions(country.value,region.value);
+  country.oninput=update;
+  country.onchange=update;
+  region.oninput=update;
+  region.onchange=update;
+  update();
+  return;
 }
+ 
+ const countryBox=document.getElementById(countryId+'Suggestions');
+ const regionBox=document.getElementById(regionId+'Suggestions');
+ const cityBox=document.getElementById(cityId+'Suggestions');
+
+ function showSuggestions(input,box,values){
+  if(!box)return;
+  const q=String(input.value||'').trim().toLocaleLowerCase('de-DE');
+
+  if(!q){
+   box.innerHTML='';
+   box.classList.add('hidden');
+   return;
+  }
+
+  const matches=uniqueLocationValues(values)
+   .filter(v=>v.toLocaleLowerCase('de-DE').includes(q))
+   .slice(0,5);
+
+  if(!matches.length){
+   box.innerHTML='';
+   box.classList.add('hidden');
+   return;
+  }
+
+  box.innerHTML=matches.map(v=>
+   `<button type="button" class="locationSuggestionItem">${esc(v)}</button>`
+  ).join('');
+
+  box.classList.remove('hidden');
+
+  box.querySelectorAll('.locationSuggestionItem').forEach((btn,i)=>{
+   btn.onclick=()=>{
+    input.value=matches[i];
+    box.innerHTML='';
+    box.classList.add('hidden');
+    input.dispatchEvent(new Event('change'));
+   };
+  });
+ }
+
+ function updateCountry(){
+  showSuggestions(
+   country,
+   countryBox,
+   (state.models||[]).map(m=>m.country)
+  );
+ }
+
+ function updateRegion(){
+  const c=String(country.value||'').trim().toLocaleLowerCase('de-DE');
+  const models=c
+   ? (state.models||[]).filter(m=>String(m.country||'').trim().toLocaleLowerCase('de-DE')===c)
+   : (state.models||[]);
+
+  showSuggestions(
+   region,
+   regionBox,
+   models.map(m=>m.region)
+  );
+ }
+
+ function updateCity(){
+  const c=String(country.value||'').trim().toLocaleLowerCase('de-DE');
+  const r=String(region.value||'').trim().toLocaleLowerCase('de-DE');
+
+  let models=state.models||[];
+
+  if(c){
+   models=models.filter(m=>String(m.country||'').trim().toLocaleLowerCase('de-DE')===c);
+  }
+
+  if(r){
+   models=models.filter(m=>String(m.region||'').trim().toLocaleLowerCase('de-DE')===r);
+  }
+
+  showSuggestions(
+   city,
+   cityBox,
+   models.map(m=>m.city)
+  );
+ }
+
+ country.oninput=updateCountry;
+ region.oninput=updateRegion;
+ city.oninput=updateCity;
+
+ country.onchange=()=>{
+  if(countryBox)countryBox.classList.add('hidden');
+  updateRegion();
+  updateCity();
+ };
+
+ region.onchange=()=>{
+  if(regionBox)regionBox.classList.add('hidden');
+  updateCity();
+ };
+
+ city.onchange=()=>{
+  if(cityBox)cityBox.classList.add('hidden');
+ };
+                        }
 function canonicalLocationValue(field,value,country='',region=''){
  const raw=String(value||'').trim();if(!raw)return '';
  const c=String(country||'').trim().toLocaleLowerCase('de-DE'),r=String(region||'').trim().toLocaleLowerCase('de-DE');
