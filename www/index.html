@@ -3302,13 +3302,10 @@ function sortShootingsNatural(a,b){const byTitle=String(a?.title||'').localeComp
 function modelTitleWhen(t){
  if(!t)return '';
  if(t.titleLevel==='year')return String(t.titleYear||'');
-function modelTitleWhen(t){
- if(!t)return '';
- if(t.titleLevel==='year')return String(t.titleYear||'');
  if(t.titleLevel==='month')return [t.titlePeriod,t.titleYear].filter(Boolean).join(' ');
  if(t.titleLevel==='week')return monthWeekLabel(t.titlePeriod)||[isoWeekLabel(t.titlePeriod),t.titleYear].filter(Boolean).join(' · ');
  return '';
-}
+  }
 
 function normalizeModelSearch(s){return String(s||'').trim().toLocaleLowerCase('de-DE')}
 function modelQuickOrigin(m){
