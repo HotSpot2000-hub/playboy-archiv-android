@@ -8262,6 +8262,14 @@ function monthWeekLabel(dateStr){
  const week=Math.ceil(d/7);
  return `${week}. Woche ${months[m-1]} ${y}`;
 }
+  function monthWeekPartsLabel(week,month,year){
+ const w=Number(week);
+ const m=Number(month);
+ const y=String(year||'').trim();
+ const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+ if(!w||!m||!y||!months[m-1])return '';
+ return `${w}. Woche ${months[m-1]} ${y}`;
+  }
   let archiveTab='series';
 let modelSeriesBrowseId='';
 let globalSeriesBrowseId='';
