@@ -8161,6 +8161,7 @@ function refreshEditTitlePeriod(){
  }else if(preview){
   preview.textContent='';
  }
+  document.getElementById('archiveEditTitleDay').onchange=refreshEditTitlePeriod;document.getElementById('archiveEditTitleWeekMonth').onchange=refreshEditTitlePeriod;document.getElementById('archiveEditTitleWeekYear').oninput=refreshEditTitlePeriod;
   }function openArchiveEdit(id){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
