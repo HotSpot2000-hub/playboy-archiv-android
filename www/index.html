@@ -8162,7 +8162,8 @@ function refreshEditTitlePeriod(){
   preview.textContent='';
  }
   document.getElementById('archiveEditTitleDay').onchange=refreshEditTitlePeriod;document.getElementById('archiveEditTitleWeekMonth').onchange=refreshEditTitlePeriod;document.getElementById('archiveEditTitleWeekYear').oninput=refreshEditTitlePeriod;
-  }function openArchiveEdit(id){
+  }
+  function openArchiveEdit(id){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
@@ -8175,6 +8176,18 @@ if(shootDatePreview){
   ?`${monthWeekLabel(a.date)} · ${germanDateLabel(a.date)} · ${isoWeekLabel(a.date)}`
   :'';
 }
+document.getElementById('archiveEditDate').oninput=()=>{
+ const id=document.getElementById('archiveEditId').value;
+ const a=(state.archive||[]).find(x=>x.id===id);
+ const v=document.getElementById('archiveEditDate').value.trim();
+ const preview=document.getElementById('archiveEditShootDatePreview');
+ if(!preview)return;
+
+ preview.textContent=a?.type==='shoot'&&/^\d{4}-\d{2}-\d{2}$/.test(v)
+  ?`${monthWeekLabel(v)} · ${germanDateLabel(v)} · ${isoWeekLabel(v)}`
+  :'';
+};
+    
  document.getElementById('archiveEditNote').value=a.note||'';
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',a.type!=='publication');
  document.getElementById('archiveEditTitleFields').classList.toggle('hidden',a.type!=='title');
