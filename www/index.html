@@ -3312,10 +3312,12 @@ function modelTitleWhen(t){
  if(!t)return '';
  if(t.titleLevel==='year')return String(t.titleYear||'');
  if(t.titleLevel==='month')return [t.titlePeriod,t.titleYear].filter(Boolean).join(' ');
- if(t.titleLevel==='week')return monthWeekLabel(t.titlePeriod)||[isoWeekLabel(t.titlePeriod),t.titleYear].filter(Boolean).join(' · ');
+ if(t.titleLevel==='week'){
+  if(t.titlePeriod)return monthWeekLabel(t.titlePeriod)||[isoWeekLabel(t.titlePeriod),t.titleYear].filter(Boolean).join(' · ');
+  return monthWeekPartsLabel(t.titleMonthWeek,t.titleMonthWeekMonth,t.titleYear);
+ }
  return '';
   }
-
 function normalizeModelSearch(s){return String(s||'').trim().toLocaleLowerCase('de-DE')}
 function modelQuickOrigin(m){
  const ev=modelEvidenceValue(m.id,'origin'),raw=ev||m.country||'';
