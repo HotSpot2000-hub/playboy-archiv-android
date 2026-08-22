@@ -3664,7 +3664,15 @@ function titleBelongsToProfileModel(t,modelId){
  return (state.archive||[]).some(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(modelId)&&(sh.links||[]).includes(t.id));
 }
 function shootingPreviewParts(sh){const media=shootingMedia(sh),photos=media.filter(x=>!(x.mimeType||'').startsWith('video/')),videos=media.filter(x=>(x.mimeType||'').startsWith('video/'));return {media,photos,videos,cover:photos[0]||null,video:videos[0]||null}}
-function shootingMediaSummary(sh){const p=shootingPreviewParts(sh);return `<div class="small shootingMediaSummary">${countLabel(p.photos.length,'Foto','Fotos')}${p.video?` <button type="button" class="shootingVideoQuick" data-shooting-video-quick="${esc(p.video.id)}" aria-label="Video abspielen" title="Video abspielen">▶︎</button>`:''}</div>`}
+function shootingMediaSummary(sh){
+ const p=shootingPreviewParts(sh);
+
+ const videoButtons=p.videos.map((video,i)=>
+  ` <button type="button" class="shootingVideoQuick" data-shooting-video-quick="${esc(video.id)}" aria-label="Video ${i+1} abspielen" title="Video ${i+1} abspielen">▶︎</button>`
+ ).join('');
+
+ return `<div class="small shootingMediaSummary">${countLabel(p.photos.length,'Foto','Fotos')}${videoButtons}</div>`;
+  }
 function shootingCoverContent(sh){const p=shootingPreviewParts(sh);return p.cover?'<div class="small">Lade Vorschau …</div>':p.video?'<div class="shootingVideoOnly">▶︎</div>':'<div class="small">Noch kein Medium</div>'}
 function profileArchiveShootingCard(sh,extra=''){
  const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
