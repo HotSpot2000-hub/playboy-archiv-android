@@ -1936,9 +1936,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Publikationen, Titel, Serien, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
-   <input id="managementModelPicker" class="managementModelPicker" list="managementModelOptions" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
-   <datalist id="managementModelOptions"></datalist>
-  </div>
+<input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
+<div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
   <div class="archiveTabs managementNav">
    <button class="active" data-archive-tab="publication">Publikationen</button>
    <button data-archive-tab="title">Titel</button>
