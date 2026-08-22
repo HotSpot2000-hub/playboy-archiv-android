@@ -8145,9 +8145,23 @@ function titleNameFor(cls,level){
  return names[cls]?.[level]||'Titel';
 }
 function fillEditTitleLevels(){const cls=document.getElementById('archiveEditTitleClass').value,sel=document.getElementById('archiveEditTitleLevel'),cur=sel.value;sel.innerHTML=titleLevelsForClass(cls).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');if([...sel.options].some(o=>o.value===cur))sel.value=cur;refreshEditTitlePeriod()}
-function refreshEditTitlePeriod(){fillTitleDateSelectors('archiveEditTitle');const l=document.getElementById('archiveEditTitleLevel').value;document.getElementById('archiveEditTitleWeekWrap').classList.toggle('hidden',l!=='week');document.getElementById('archiveEditTitleMonthWrap').classList.toggle('hidden',l!=='month');document.getElementById('archiveEditTitleYearWrap').classList.toggle('hidden',l==='week');}
-document.getElementById('archiveEditTitleClass').onchange=fillEditTitleLevels;document.getElementById('archiveEditTitleLevel').onchange=refreshEditTitlePeriod;
-function openArchiveEdit(id){
+function refreshEditTitlePeriod(){
+ fillTitleDateSelectors('archiveEditTitle');
+ const l=document.getElementById('archiveEditTitleLevel').value;
+ document.getElementById('archiveEditTitleWeekWrap').classList.toggle('hidden',l!=='week');
+ document.getElementById('archiveEditTitleMonthWrap').classList.toggle('hidden',l!=='month');
+ document.getElementById('archiveEditTitleYearWrap').classList.toggle('hidden',l==='week');
+
+ const preview=document.getElementById('archiveEditTitleWeekPreview');
+ if(preview&&l==='week'){
+  const date=titleWeekDate('archiveEditTitle');
+  preview.textContent=date
+   ?`${monthWeekLabel(date)} · ${germanDateLabel(date)} · ${isoWeekLabel(date)}`
+   :'';
+ }else if(preview){
+  preview.textContent='';
+ }
+  }function openArchiveEdit(id){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
