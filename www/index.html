@@ -8169,6 +8169,12 @@ function refreshEditTitlePeriod(){
  document.getElementById('archiveEditTitle').textContent=a.type==='series'?'Serie bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
+ const shootDatePreview=document.getElementById('archiveEditShootDatePreview');
+if(shootDatePreview){
+ shootDatePreview.textContent=a.type==='shoot'&&/^\d{4}-\d{2}-\d{2}$/.test(a.date||'')
+  ?`${monthWeekLabel(a.date)} · ${germanDateLabel(a.date)} · ${isoWeekLabel(a.date)}`
+  :'';
+}
  document.getElementById('archiveEditNote').value=a.note||'';
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',a.type!=='publication');
  document.getElementById('archiveEditTitleFields').classList.toggle('hidden',a.type!=='title');
