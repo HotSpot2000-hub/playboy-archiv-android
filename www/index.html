@@ -3634,7 +3634,7 @@ function formatWeightDisplay(value){
   const lb=Number(m[1].replace(',','.'));
   if(!Number.isFinite(lb))return raw;
   const kg=lb*0.45359237;
-  const shown=kg.toFixed(1).replace('.',',');
+const shown=Math.round(kg);
   return shown+' kg';
  }
 
