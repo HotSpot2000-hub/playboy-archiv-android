@@ -8899,7 +8899,7 @@ document.getElementById('shootAssignTitleBtn').onclick=()=>{
  };
  const refreshTitles=()=>{
   const visible=titles.filter(t=>t.titleClass===classFilter.value&&t.titleLevel===levelFilter.value).sort(sortTitlesChronological);
-  titleSelect.innerHTML=visible.map(t=>`<option value="${esc(t.id)}">${esc(t.title||'Titel')} · ${esc(modelTitleWhen(t))}</option>`).join('');
+  titleSelect.innerHTML=visible.map(t=>{const exact=/^\d{4}-\d{2}-\d{2}$/.test(t.titlePeriod||'')?germanDateLabel(t.titlePeriod):'';const monthWeek=t.titleLevel==='week'&&exact?monthWeekLabel(t.titlePeriod):'';const iso=t.titleLevel==='week'&&exact?isoWeekLabel(t.titlePeriod):'';const when=[monthWeek,exact,iso].filter(Boolean).join(' · ')||modelTitleWhen(t);return `<option value="${esc(t.id)}">${esc(t.title||'Titel')} · ${esc(when)}</option>`}).join('');
  };
  classFilter.onchange=refreshLevels;levelFilter.onchange=refreshTitles;
  refreshLevels();
