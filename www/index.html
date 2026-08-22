@@ -3624,9 +3624,22 @@ function formatBioHeight(value){
 function formatWeightDisplay(value){
  const raw=String(value||'').trim();
  if(!raw)return '—';
- const m=raw.match(/^(\d+(?:[\.,]\d+)?)\s*(?:kg)?$/i);
- if(!m)return raw;
- return m[1].replace('.',',')+' kg';
+
+ let m=raw.match(/^(\d+(?:[\.,]\d+)?)\s*(kg)?$/i);
+ if(m){
+  return m[1].replace('.',',')+' kg';
+ }
+
+ m=raw.match(/^(\d+(?:[\.,]\d+)?)\s*(lb|lbs|pound|pounds)$/i);
+ if(m){
+  const lb=Number(m[1].replace(',','.'));
+  if(!Number.isFinite(lb))return raw;
+  const kg=lb*0.45359237;
+  const shown=kg.toFixed(1).replace('.',',');
+  return shown+' kg';
+ }
+
+ return raw;
 }
 function formatBirthWithAge(value){
  if(!value)return '—';
