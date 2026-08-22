@@ -8260,21 +8260,84 @@ function managementArchive(type){
  return (state.archive||[]).filter(a=>a.type===type&&(!mid||archiveBelongsToModel(a,mid))&&managementMatchesSearch(a));
 }
 function renderManagementTools(){
- const picker=document.getElementById('managementModelPicker'),dl=document.getElementById('managementModelOptions');
- if(!picker||!dl)return;
+ const picker=document.getElementById('managementModelPicker');
+ const box=document.getElementById('managementModelSuggestions');
+ if(!picker||!box)return;
+
  const models=alphabeticalModels(state.models||[]);
- dl.innerHTML='<option value="Alle Models"></option>'+models.map(m=>`<option value="${esc(m.name||'Ohne Namen')}"></option>`).join('');
- const selected=managementSelectedModelId()?(state.models||[]).find(m=>m.id===managementModelId):null;
+ const selected=managementSelectedModelId()
+  ?(state.models||[]).find(m=>m.id===managementModelId)
+  :null;
+
  const desired=selected?.name||'Alle Models';
+
  if(document.activeElement!==picker)picker.value=desired;
+
+ function hideSuggestions(){
+  box.innerHTML='';
+  box.classList.add('hidden');
+ }
+
+ function showSuggestions(){
+  const q=String(picker.value||'').trim().toLocaleLowerCase('de-DE');
+
+  if(!q){
+   hideSuggestions();
+   return;
+  }
+
+  const matches=models
+   .filter(m=>String(m.name||'').toLocaleLowerCase('de-DE').includes(q))
+   .slice(0,5);
+
+  if(!matches.length){
+   hideSuggestions();
+   return;
+  }
+
+  box.innerHTML=matches.map(m=>
+   `<button type="button" class="locationSuggestionItem">${esc(m.name||'Ohne Namen')}</button>`
+  ).join('');
+
+  box.classList.remove('hidden');
+
+  box.querySelectorAll('.locationSuggestionItem').forEach((btn,i)=>{
+   btn.onpointerdown=e=>{
+    e.preventDefault();
+    const m=matches[i];
+    managementModelId=m.id;
+    state.currentModelId=m.id;
+    picker.value=m.name||'';
+    hideSuggestions();
+    save();
+    renderArchive();
+   };
+  });
+ }
+
+ picker.oninput=()=>{
+  const v=String(picker.value||'').trim();
+
+  if(!v){
+   managementModelId='all';
+   hideSuggestions();
+   renderArchive();
+   return;
+  }
+
+  showSuggestions();
+ };
 
  picker.onchange=()=>{
   const v=String(picker.value||'').trim();
-  if(!v||v.toLocaleLowerCase('de-DE')==='alle models'){managementModelId='all';picker.value='Alle Models'}
-  else{const m=(state.models||[]).find(x=>String(x.name||'').toLocaleLowerCase('de-DE')===v.toLocaleLowerCase('de-DE'));if(m){managementModelId=m.id;state.currentModelId=m.id;save();picker.value=m.name}else{picker.value=desired;toast('Model nicht gefunden.')}}
-  renderArchive();
- };
 
+  if(!v||v.toLocaleLowerCase('de-DE')==='alle models'){
+   managementModelId='all';
+   picker.value='Alle Models';
+   hideSuggestions();
+   renderArchive();
+  }
+ };
 }
 function modelArchive(type){
  return managementArchive(type);
