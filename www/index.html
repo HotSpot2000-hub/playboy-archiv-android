@@ -8161,14 +8161,18 @@ function refreshEditTitlePeriod(){
  document.getElementById('archiveEditTitleYearWrap').classList.toggle('hidden',l==='week');
 
  const preview=document.getElementById('archiveEditTitleWeekPreview');
- if(preview&&l==='week'){
+if(preview&&l==='week'){
   const date=titleWeekDate('archiveEditTitle');
+  const monthWeek=document.getElementById('archiveEditTitleMonthWeek')?.value;
+  const month=document.getElementById('archiveEditTitleWeekMonth')?.value;
+  const year=document.getElementById('archiveEditTitleWeekYear')?.value;
+
   preview.textContent=date
    ?`${monthWeekLabel(date)} · ${germanDateLabel(date)} · ${isoWeekLabel(date)}`
-   :'';
- }else if(preview){
+   :monthWeekPartsLabel(monthWeek,month,year);
+}else if(preview){
   preview.textContent='';
- }
+}
   document.getElementById('archiveEditTitleDay').onchange=refreshEditTitlePeriod;document.getElementById('archiveEditTitleWeekMonth').onchange=refreshEditTitlePeriod;document.getElementById('archiveEditTitleWeekYear').oninput=refreshEditTitlePeriod;
   }
   function openArchiveEdit(id){
