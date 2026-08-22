@@ -8205,7 +8205,21 @@ async function deleteArchiveItem(id){
 }
 
 function isoWeekLabel(dateStr){if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr||''))return dateStr||'';const d=new Date(dateStr+'T12:00:00Z');const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);const y=d.getUTCFullYear();const y0=new Date(Date.UTC(y,0,1));const w=Math.ceil((((d-y0)/86400000)+1)/7);return `KW ${String(w).padStart(2,'0')}`;}
-let archiveTab='series';
+function germanDateLabel(dateStr){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr||''))return dateStr||'';
+ const [y,m,d]=dateStr.split('-').map(Number);
+ const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+ return `${d}. ${months[m-1]} ${y}`;
+}
+
+function monthWeekLabel(dateStr){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr||''))return '';
+ const [y,m,d]=dateStr.split('-').map(Number);
+ const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+ const week=Math.ceil(d/7);
+ return `${week}. Woche ${months[m-1]} ${y}`;
+}
+  let archiveTab='series';
 let modelSeriesBrowseId='';
 let globalSeriesBrowseId='';
 let titleBrowseClass='';let titleBrowseLevel='';
