@@ -8207,8 +8207,8 @@ document.getElementById('archiveEditDate').oninput=()=>{
  if(shootModelsWrap)shootModelsWrap.classList.toggle('hidden',a.type!=='shoot');
  if(shootModelsBox)shootModelsBox.innerHTML=a.type==='shoot'?modelSelector(shootingModelIds(a),true):'';
  document.getElementById('archiveEditOwned').checked=!!a.owned;
- if(a.type==='title'){document.getElementById('archiveEditTitleClass').value=a.titleClass||'coed';fillEditTitleLevels();document.getElementById('archiveEditTitleLevel').value=a.titleLevel||titleLevelsForClass(a.titleClass||'coed')[0]?.[0]||'month';refreshEditTitlePeriod();if(a.titleLevel==='week')setTitleWeekDate('archiveEditTitle',a.titlePeriod||'');document.getElementById('archiveEditTitleMonth').value=a.titleLevel==='month'?(a.titlePeriod||''):'';document.getElementById('archiveEditTitleYear').value=a.titleLevel==='year'?(a.titleYear||''):'';}
- openOverlay('archiveEditPane');
+ if(a.type==='title'){document.getElementById('archiveEditTitleClass').value=a.titleClass||'coed';fillEditTitleLevels();document.getElementById('archiveEditTitleLevel').value=a.titleLevel||titleLevelsForClass(a.titleClass||'coed')[0]?.[0]||'month';refreshEditTitlePeriod();if(a.titleLevel==='week'){setTitleWeekDate('archiveEditTitle',a.titlePeriod||'');if(a.titlePeriod){const parts=a.titlePeriod.split('-').map(Number);document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||String(Math.ceil(parts[2]/7));document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||String(parts[1]);}else{document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||'';document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||'';}}document.getElementById('archiveEditTitleMonth').value=a.titleLevel==='month'?(a.titlePeriod||''):'';document.getElementById('archiveEditTitleYear').value=a.titleLevel==='year'?(a.titleYear||''):'';refreshEditTitlePeriod();} 
+    openOverlay('archiveEditPane');
 }
 document.getElementById('cancelArchiveEditBtn').onclick=closeOverlay;
 document.getElementById('saveArchiveEditBtn').onclick=async()=>{
