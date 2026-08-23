@@ -3301,7 +3301,8 @@ function titleChronoKey(t){
  const y=Number(t?.titleYear)||0,level=t?.titleLevel||'',p=String(t?.titlePeriod||'').trim();
  if(level==='week'){
   if(/^\d{4}-\d{2}-\d{2}$/.test(p))return new Date(p+'T12:00:00').getTime();
-  const wm=p.match(/(?:KW\s*)?(\d{1,2})/i),w=wm?Number(wm[1]):0;return Date.UTC(y,0,1)+(w?((w-1)*7*86400000):0);
+  if(level==='week'&&!p&&t?.titleMonthWeek&&t?.titleMonthWeekMonth){const m=Number(t.titleMonthWeekMonth)||1,w=Number(t.titleMonthWeek)||1;return Date.UTC(y,m-1,1+(w-1)*7);}
+   const wm=p.match(/(?:KW\s*)?(\d{1,2})/i),w=wm?Number(wm[1]):0;return Date.UTC(y,0,1)+(w?((w-1)*7*86400000):0);
  }
  if(level==='month'){const months=['januar','februar','märz','april','mai','juni','juli','august','september','oktober','november','dezember'];const mi=months.indexOf(p.toLocaleLowerCase('de-DE'));return Date.UTC(y,mi>=0?mi:0,1);}
  return Date.UTC(y,0,1);
