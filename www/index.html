@@ -9166,17 +9166,32 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    return;
  }
  if(type==='title'){
-   const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
-   const period=level==='week'?titleWeekDate('title'):level==='month'?document.getElementById('titleMonth').value:'';
-   const year=(level==='week'?document.getElementById('titleWeekYear').value:document.getElementById('titleYear').value).trim();
-   if(!year){toast('Bitte ein Jahr eingeben.');return}
-   if(level==='week'&&!period){toast('Bitte das Datum des Week-Titels eingeben.');return}
-   if(level==='month'&&!period){toast('Bitte einen Monat auswählen.');return}
-   const item={id:'A-'+Date.now(),type:'title',title:titleNameFor(cls,level),titleClass:cls,titleLevel:level,titlePeriod:level==='year'?'':period,titleYear:year,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
-   linkItem(item);
-   titleBrowseClass=cls;
-   titleBrowseLevel=level;
-   finish();return;
+  const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
+  const exactWeekDate=level==='week'?titleWeekDate('title'):'';
+  const period=level==='week'?exactWeekDate:level==='month'?document.getElementById('titleMonth').value:'';
+  const year=(level==='week'?document.getElementById('titleWeekYear').value:document.getElementById('titleYear').value).trim();
+
+  let titleMonthWeek='',titleMonthWeekMonth='';
+  if(level==='week'){
+    if(exactWeekDate){
+      const parts=exactWeekDate.split('-').map(Number);
+      titleMonthWeek=String(Math.ceil(parts[2]/7));
+      titleMonthWeekMonth=String(parts[1]);
+    }else{
+      titleMonthWeek=document.getElementById('titleMonthWeek').value;
+      titleMonthWeekMonth=document.getElementById('titleWeekMonth').value;
+    }
+  }
+
+  if(!year){toast('Bitte ein Jahr eingeben.');return}
+  if(level==='week'&&!period&&!(titleMonthWeek&&titleMonthWeekMonth)){toast('Bitte ein Datum oder eine Woche im Monat eingeben.');return}
+  if(level==='month'&&!period){toast('Bitte einen Monat auswählen.');return}
+
+  const item={id:'A-'+Date.now(),type:'title',title:titleNameFor(cls,level),titleClass:cls,titleLevel:level,titlePeriod:level==='year'?'':period,titleMonthWeek,titleMonthWeekMonth,titleYear:year,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  linkItem(item);
+  titleBrowseClass=cls;
+  titleBrowseLevel=level;
+  finish();return;
  }
  const title=document.getElementById('archiveTitle').value.trim();
  if(!title){toast('Bitte einen Titel eingeben.');return}
