@@ -3439,8 +3439,8 @@ function titleSearchText(t){
  const levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
  const shoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id));
  const modelNames=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].map(id=>state.models.find(m=>m.id===id)?.name||'');
- const period=t.titleLevel==='week'?[t.titlePeriod,isoWeekLabel(t.titlePeriod),t.titleYear].filter(Boolean).join(' '):[t.titlePeriod,t.titleYear].filter(Boolean).join(' ');
- return normalizeTitleSearch([t.title,classNames[t.titleClass],levelNames[t.titleLevel],period,...modelNames].join(' '));
+ const period=t.titleLevel==='week'?(t.titlePeriod?[t.titlePeriod,monthWeekLabel(t.titlePeriod),isoWeekLabel(t.titlePeriod),t.titleYear].filter(Boolean).join(' '):[monthWeekPartsLabel(t.titleMonthWeek,t.titleMonthWeekMonth,t.titleYear),t.titleYear].filter(Boolean).join(' ')):[t.titlePeriod,t.titleYear].filter(Boolean).join(' '); 
+  return normalizeTitleSearch([t.title,classNames[t.titleClass],levelNames[t.titleLevel],period,...modelNames].join(' '));
 }
 function titleSearchQuery(){const panel=document.getElementById('titleOverviewSearchPanel'),input=document.getElementById('titleOverviewSearchInput');return panel&&input&&!panel.classList.contains('hidden')?normalizeTitleSearch(input.value):''}
 function openNewTitle(){archiveTab='title';openArchive();document.getElementById('archiveType').value='title';refreshArchiveForm()}
