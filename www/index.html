@@ -9829,9 +9829,7 @@ function openVideoFromBlob(blob,caption=''){
  videoOverlay.classList.add('open');
  videoPlayer.play().catch(()=>{});
 }
-function toggleVideoFullscreen(){
-  videoOverlay.classList.toggle('appFullscreen');
-}
+
 let videoChromeTimer=null;
 
 function scheduleVideoChromeHide(){
