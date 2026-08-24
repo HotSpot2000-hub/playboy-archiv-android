@@ -53,7 +53,18 @@ public class ArchiveDirectoryPlugin extends Plugin {
         }
     }
 
-    private Uri findChild(Uri parentUri, String wantedName) {
+    @PluginMethod
+public void setVideoImmersive(PluginCall call) {
+    boolean enabled = call.getBoolean("enabled", false);
+
+    if (getActivity() instanceof MainActivity) {
+        ((MainActivity) getActivity()).setVideoImmersive(enabled);
+        call.resolve();
+    } else {
+        call.reject("MainActivity nicht verfügbar");
+    }
+}
+      private Uri findChild(Uri parentUri, String wantedName) {
         String parentDocumentId = DocumentsContract.getDocumentId(parentUri);
         Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(parentUri, parentDocumentId);
 
