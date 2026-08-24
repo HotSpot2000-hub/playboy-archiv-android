@@ -9869,7 +9869,10 @@ function closeVideoPlayer(){
   document.getElementById('videoCaption').textContent = '';
 }
 document.getElementById('videoClose').onclick=closeVideoPlayer;
-document.getElementById('videoFullscreen').onclick=toggleVideoFullscreen;
+document.getElementById('videoFullscreen').onclick=e=>{
+  e.stopPropagation();
+  toggleVideoFullscreen();
+};
 videoOverlay.onclick=e=>{
   if(videoOverlay.classList.contains('appFullscreen')&&videoOverlay.classList.contains('controlsHidden')){
     setVideoChromeVisible(true);
