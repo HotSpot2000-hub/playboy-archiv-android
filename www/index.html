@@ -1277,6 +1277,9 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   .videoPlayerOverlay video{
     max-height:calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 128px) !important;
   }
+  .videoPlayerOverlay.appFullscreen video{
+  max-height:none !important;
+  }
   .lightboxClose,
   .videoClose{
     top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
