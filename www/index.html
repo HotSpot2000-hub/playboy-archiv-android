@@ -9832,9 +9832,22 @@ function openVideoFromBlob(blob,caption=''){
 function toggleVideoFullscreen(){
   videoOverlay.classList.toggle('appFullscreen');
 }
+let videoChromeTimer=null;
+
+function scheduleVideoChromeHide(){
+  clearTimeout(videoChromeTimer);
+  if(!videoOverlay.classList.contains('appFullscreen'))return;
+
+  videoChromeTimer=setTimeout(()=>{
+    setVideoChromeVisible(false);
+  },3000);
+}
 function setVideoChromeVisible(visible){
   videoOverlay.classList.toggle('controlsHidden',!visible);
   videoPlayer.controls=visible;
+
+  clearTimeout(videoChromeTimer);
+  if(visible) scheduleVideoChromeHide();
 }
 
 function toggleVideoFullscreen(){
