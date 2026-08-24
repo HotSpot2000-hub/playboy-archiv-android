@@ -9864,6 +9864,14 @@ function toggleVideoFullscreen(){
   }
 }
 function closeVideoPlayer(){
+clearTimeout(videoChromeTimer);
+  videoOverlay.classList.remove('appFullscreen','controlsHidden');
+  videoPlayer.controls=true;
+
+  const immersive=window.Capacitor?.Plugins?.ArchiveDirectory;
+  if(immersive?.setVideoImmersive){
+    immersive.setVideoImmersive({enabled:false}).catch(()=>{});
+  }
   try{
     videoPlayer.pause();
   }catch(_){}
