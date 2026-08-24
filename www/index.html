@@ -9828,6 +9828,21 @@ function openVideoFromBlob(blob,caption=''){
 function toggleVideoFullscreen(){
   videoOverlay.classList.toggle('appFullscreen');
 }
+function setVideoChromeVisible(visible){
+  videoOverlay.classList.toggle('controlsHidden',!visible);
+  videoPlayer.controls=visible;
+}
+
+function toggleVideoFullscreen(){
+  const entering=!videoOverlay.classList.contains('appFullscreen');
+  videoOverlay.classList.toggle('appFullscreen');
+
+  if(entering){
+    setVideoChromeVisible(false);
+  }else{
+    setVideoChromeVisible(true);
+  }
+}
 function closeVideoPlayer(){
   try{
     videoPlayer.pause();
