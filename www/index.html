@@ -115,6 +115,22 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .videoMeta{font-size:12px;color:var(--muted);margin-top:5px}
 .videoPlayerOverlay{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:220;display:none;align-items:center;justify-content:center;padding:16px}
 .videoPlayerOverlay.open{display:flex}.videoPlayerOverlay video{max-width:96vw;max-height:84vh;background:#000}
+.videoPlayerOverlay.appFullscreen{
+  padding:0;
+}
+
+.videoPlayerOverlay.appFullscreen video{
+  width:100vw;
+  height:100dvh;
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+  background:#000;
+}
+
+.videoPlayerOverlay.appFullscreen .videoCaption{
+  display:none;
+}
 .videoClose{position:absolute;top:14px;right:14px;width:42px;height:42px;border:0;border-radius:50%;font-size:24px}
 .videoFullscreen{position:absolute;top:14px;right:64px;width:42px;height:42px;border:0;border-radius:50%;font-size:22px}
 .videoCaption{position:absolute;left:16px;right:16px;bottom:12px;color:#fff;text-align:center;font-size:13px}
