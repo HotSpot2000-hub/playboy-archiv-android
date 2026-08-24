@@ -9806,6 +9806,9 @@ function openVideoFromBlob(blob,caption=''){
  videoOverlay.classList.add('open');
  videoPlayer.play().catch(()=>{});
 }
+function toggleVideoFullscreen(){
+  videoOverlay.classList.toggle('appFullscreen');
+}
 function closeVideoPlayer(){
   try{
     videoPlayer.pause();
