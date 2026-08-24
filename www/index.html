@@ -9825,8 +9825,13 @@ function openVideoFromBlob(blob,caption=''){
  videoPlayer.src=url;
  document.getElementById('videoCaption').textContent=caption||'';
  videoOverlay.dataset.objectUrl=url;
- videoOverlay.classList.add('open');
- videoPlayer.play().catch(()=>{});
+videoOverlay.classList.add('open');
+
+if(!videoOverlay.classList.contains('appFullscreen')){
+  toggleVideoFullscreen();
+}
+
+videoPlayer.play().catch(()=>{});
 }
 
 let videoChromeTimer=null;
