@@ -9852,6 +9852,11 @@ function toggleVideoFullscreen(){
   const entering=!videoOverlay.classList.contains('appFullscreen');
   videoOverlay.classList.toggle('appFullscreen');
 
+  const immersive=window.Capacitor?.Plugins?.ArchiveDirectory;
+  if(immersive?.setVideoImmersive){
+    immersive.setVideoImmersive({enabled:entering}).catch(()=>{});
+  }
+
   if(entering){
     setVideoChromeVisible(false);
   }else{
