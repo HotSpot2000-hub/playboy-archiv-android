@@ -9870,8 +9870,13 @@ function closeVideoPlayer(){
 }
 document.getElementById('videoClose').onclick=closeVideoPlayer;
 document.getElementById('videoFullscreen').onclick=toggleVideoFullscreen;
-videoOverlay.onclick=e=>{if(e.target===videoOverlay)closeVideoPlayer()};
-
+videoOverlay.onclick=e=>{
+  if(videoOverlay.classList.contains('appFullscreen')&&videoOverlay.classList.contains('controlsHidden')){
+    setVideoChromeVisible(true);
+    return;
+  }
+  if(e.target===videoOverlay)closeVideoPlayer();
+};
 
 function showPeople(){
  hideMainViews();
