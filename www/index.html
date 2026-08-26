@@ -9626,6 +9626,10 @@ function toggleLightboxSlideshow(){
  if(lightboxSlideshowTimer)stopLightboxSlideshow();else startLightboxSlideshow();
 }
 function closeLightbox(){
+  const immersive=window.Capacitor?.Plugins?.ArchiveDirectory;
+if(immersive?.setVideoImmersive){
+  immersive.setVideoImmersive({enabled:false}).catch(()=>{});
+}
  stopLightboxSlideshow();
  if(lightboxControlsTimer){clearTimeout(lightboxControlsTimer);lightboxControlsTimer=null}
  lightbox.classList.remove('open','galleryMode','controlsHidden');
