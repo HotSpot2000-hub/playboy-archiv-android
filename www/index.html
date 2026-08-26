@@ -1288,7 +1288,22 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   .videoClose{
     top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
   }
+.lightboxClose,
+.videoClose{
+  top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
 }
+
+.lightboxClose,
+.lightboxSlideshow,
+.lightboxDownloadAll{
+  z-index:3;
+}
+
+.lightboxSlideshow,
+.lightboxDownloadAll{
+  top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
+}
+  }
 
 /* v265: Verwaltung optisch an Übersicht und Profil angeglichen. */
 [data-collapse-key="career-archive"] .collapseBody{padding-top:6px}
