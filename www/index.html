@@ -9634,6 +9634,10 @@ function closeLightbox(){
  lightboxGalleryIds=[];lightboxGalleryIndex=-1;lightboxTouchX=null;
 }
 async function showLightboxGalleryIndex(index){
+  const immersive=window.Capacitor?.Plugins?.ArchiveDirectory;
+if(immersive?.setVideoImmersive){
+  immersive.setVideoImmersive({enabled:true}).catch(()=>{});
+}
  if(!lightboxGalleryIds.length)return;
  const len=lightboxGalleryIds.length;
  lightboxGalleryIndex=(index+len)%len;
