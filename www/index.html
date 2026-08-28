@@ -3755,6 +3755,15 @@ function setStarRating(el,value){
   btn.textContent=star<=rating?'★':'☆';
  });
 }
+document.addEventListener('click',function(e){
+ const btn=e.target?.closest?.('#editRatingFace [data-star]');
+ if(!btn)return;
+
+ const box=document.getElementById('editRatingFace');
+ const value=Number(btn.dataset.star||0);
+
+ setStarRating(box,value);
+});
   
 function modelRatingSummary(m,heightValue){
  const size=heightRatingStars(heightValue);
