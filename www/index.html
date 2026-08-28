@@ -6626,6 +6626,10 @@ function readArchiveFilterForm(){
   const pmax=parseInt(document.getElementById('archiveFilterPhotosMax').value,10);
   archiveFilter.photosMin=Number.isFinite(pmin)?pmin:null;
   archiveFilter.photosMax=Number.isFinite(pmax)?pmax:null;
+  const rmin=parseInt(document.getElementById('archiveFilterRatingMin').value,10);
+const rmax=parseInt(document.getElementById('archiveFilterRatingMax').value,10);
+archiveFilter.ratingMin=Number.isFinite(rmin)?Math.max(0,Math.min(10,rmin)):null;
+archiveFilter.ratingMax=Number.isFinite(rmax)?Math.max(0,Math.min(10,rmax)):null;
   archiveFilter.video=document.getElementById('archiveFilterVideo').value;
 }
 function rerenderFilteredOverviews(){
