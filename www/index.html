@@ -3446,11 +3446,9 @@ function setupModelOverviewSearch(){
 }
 let modelFavoritesOnly=false;
 function setupModelFavoritesFilter(){
- const btn=document.getElementById('modelFavoriteFilterBtn');if(!btn)return;
- btn.classList.toggle('isActive',modelFavoritesOnly);btn.textContent=modelFavoritesOnly?'❤️':'♡';btn.setAttribute('aria-pressed',modelFavoritesOnly?'true':'false');btn.title=modelFavoritesOnly?'Alle Models anzeigen':'Nur Favoriten anzeigen';
- if(!btn.dataset.bound){btn.dataset.bound='1';btn.onclick=()=>{modelFavoritesOnly=!modelFavoritesOnly;invalidateArchiveFilterCache();setupModelFavoritesFilter();rerenderFilteredOverviews();};}
-}
-
+  modelFavoritesOnly=false;
+  }
+  
 function overviewContentAvailability(){
  const shoots=(state.archive||[]).filter(a=>a.type==='shoot');
  const hasTitles=(state.archive||[]).some(t=>t.type==='title'&&shoots.some(sh=>(sh.links||[]).includes(t.id)||(t.links||[]).includes(sh.id)));
