@@ -7036,10 +7036,9 @@ function openProfileEdit(){
  document.getElementById('editWeight').value=m.weight||'';
  document.getElementById('editBirthdate').value=m.birthdate||'';
  setStarRating(document.getElementById('editRatingFace'),m.ratingFace);
- setStarRating(document.getElementById('editRatingBust'),m.ratingBust);
- document.getElementById('editRatingPussy').value=String(ratingStarsValue(m.ratingPussy));
- document.getElementById('editRatingImpression').value=String(ratingStarsValue(m.ratingImpression));
-  refreshLocationSuggestions(m.country||'',m.region||'');
+ setStarRating(document.getElementById('editRatingBust'),m.ratingBust); 
+ setStarRating(document.getElementById('editRatingPussy'),m.ratingPussy); document.getElementById('editRatingImpression').value=String(ratingStarsValue(m.ratingImpression));
+ refreshLocationSuggestions(m.country||'',m.region||'');
  bindLocationSuggestionInputs('editCountry','editRegion','editCity');
  openOverlay('profileEditPane');
 }
@@ -7128,11 +7127,11 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  m.birthdate=document.getElementById('editBirthdate').value;
  m.ratingFace=ratingStarsValue(document.getElementById('editRatingFace').dataset.rating);
  m.ratingBust=ratingStarsValue(document.getElementById('editRatingBust').dataset.rating); 
- m.ratingPussy=ratingStarsValue(document.getElementById('editRatingPussy').value);
+ m.ratingPussy=ratingStarsValue(document.getElementById('editRatingPussy').dataset.rating);
  m.ratingImpression=ratingStarsValue(document.getElementById('editRatingImpression').value);
-const rating=modelRatingSummary(m,m.height||'');
-m.favorite=rating.stars===10;
-  const f=document.getElementById('editPhoto').files[0];
+ const rating=modelRatingSummary(m,m.height||'');
+ m.favorite=rating.stars===10;
+ const f=document.getElementById('editPhoto').files[0];
  const finish=()=>{
    if(!save()){toast('Profil konnte nicht gespeichert werden.');return}
    closeOverlay();initCollapsibles();render();renderModels();renderPeople();initCollapsibles();bindInteractiveMedia(document);showProfile();toast('Profil gespeichert.');
