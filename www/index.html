@@ -6389,8 +6389,16 @@ function freeSearchModelIds(){
 }
 function modelPassesBasicFilter(m){
   const searchIds=freeSearchModelIds();
-  if(!searchIds.has(m.id))return false;
-  return modelPassesHeightFilter(m);
+if(!searchIds.has(m.id))return false;
+if(!modelPassesHeightFilter(m))return false;
+
+const heightValue=m.height||'';
+  const rating=modelRatingSummary(m,heightValue).stars;
+
+if(archiveFilter.ratingMin!=null&&rating<archiveFilter.ratingMin)return false;
+if(archiveFilter.ratingMax!=null&&rating>archiveFilter.ratingMax)return false;
+
+return true;
 }
 function shootPassesMediaFilter(sh){
   const media=shootingMedia(sh);
