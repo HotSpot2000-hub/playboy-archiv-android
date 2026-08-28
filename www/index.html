@@ -6314,7 +6314,9 @@ function filterArchiveText(a){
 }
 function filterActive(){
   return !!(archiveFilter.text||archiveFilter.heightMin!=null||archiveFilter.heightMax!=null||
-    archiveFilter.photosMin!=null||archiveFilter.photosMax!=null||archiveFilter.video);
+    archiveFilter.photosMin!=null||archiveFilter.photosMax!=null||
+    archiveFilter.ratingMin!=null||archiveFilter.ratingMax!=null||
+    archiveFilter.video);
 }
 function modelPassesHeightFilter(m){
   const h=modelHeightMeters(m);
