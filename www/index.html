@@ -3494,7 +3494,7 @@ function renderGlobalModelOverview(){
  setupModelFavoritesFilter();
  const box=document.getElementById('globalModelOverview');if(!box)return;
  const searchInput=document.getElementById('modelOverviewSearchInput');const nq=searchInput&&!document.getElementById('modelOverviewSearchPanel')?.classList.contains('hidden')?normalizeModelSearch(searchInput.value.trim()):'';
- const models=alphabeticalModels((state.models||[]).filter(m=>(!modelFavoritesOnly||m.favorite)&&(!nq||normalizeModelSearch(m.name).includes(nq))&&overviewFilterAllowsModel(m.id)));
+ const models=alphabeticalModels((state.models||[]).filter(m=>(!nq||normalizeModelSearch(m.name).includes(nq))&&overviewFilterAllowsModel(m.id)));
  box.innerHTML=models.length?models.map(m=>{
   const locationParts=[m.city,m.region,m.country].map(x=>String(x||'').trim()).filter(Boolean);
   const originText=((effectiveFlag(m)||'')+' '+locationParts.join(', ')).trim()||'Herkunft offen';
