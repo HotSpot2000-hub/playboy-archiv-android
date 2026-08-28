@@ -3755,10 +3755,10 @@ function setStarRating(el,value){
  });
 }
 document.addEventListener('click',function(e){
- const btn=e.target?.closest?.('#editRatingFace [data-star]');
- if(!btn)return;
+ const btn=e.target?.closest?.('#editRatingFace [data-star], #editRatingBust [data-star]'); 
+  if(!btn)return;
 
- const box=document.getElementById('editRatingFace');
+ const box=btn.closest('.starRating'); 
  const value=Number(btn.dataset.star||0);
 
  setStarRating(box,value);
