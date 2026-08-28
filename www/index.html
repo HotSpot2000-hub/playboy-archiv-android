@@ -7037,8 +7037,8 @@ function openProfileEdit(){
  document.getElementById('editMeasurements').value=m.measurements||'';
  document.getElementById('editWeight').value=m.weight||'';
  document.getElementById('editBirthdate').value=m.birthdate||'';
- document.getElementById('editRatingFace').value=String(ratingStarsValue(m.ratingFace));
-document.getElementById('editRatingBust').value=String(ratingStarsValue(m.ratingBust));
+ setStarRating(document.getElementById('editRatingFace'),m.ratingFace);
+  document.getElementById('editRatingBust').value=String(ratingStarsValue(m.ratingBust));
 document.getElementById('editRatingPussy').value=String(ratingStarsValue(m.ratingPussy));
 document.getElementById('editRatingImpression').value=String(ratingStarsValue(m.ratingImpression));
   refreshLocationSuggestions(m.country||'',m.region||'');
@@ -7128,10 +7128,10 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  m.measurements=document.getElementById('editMeasurements').value.trim();
  m.weight=document.getElementById('editWeight').value.trim();
  m.birthdate=document.getElementById('editBirthdate').value;
- m.ratingFace=ratingStarsValue(document.getElementById('editRatingFace').value);
-m.ratingBust=ratingStarsValue(document.getElementById('editRatingBust').value);
-m.ratingPussy=ratingStarsValue(document.getElementById('editRatingPussy').value);
-m.ratingImpression=ratingStarsValue(document.getElementById('editRatingImpression').value);
+ m.ratingFace=ratingStarsValue(document.getElementById('editRatingFace').dataset.rating);
+ m.ratingBust=ratingStarsValue(document.getElementById('editRatingBust').value);
+ m.ratingPussy=ratingStarsValue(document.getElementById('editRatingPussy').value);
+ m.ratingImpression=ratingStarsValue(document.getElementById('editRatingImpression').value);
 const rating=modelRatingSummary(m,m.height||'');
 m.favorite=rating.stars===10;
   const f=document.getElementById('editPhoto').files[0];
