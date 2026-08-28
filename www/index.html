@@ -6507,7 +6507,7 @@ function filteredContext(){
   archiveFilterContextCacheKey=key;
   return archiveFilterContextCache;
 }
-function overviewCombinedFilterActive(){return filterActive()||modelFavoritesOnly}
+function function overviewCombinedFilterActive(){return filterActive()}
 function overviewFilterAllowsModel(id){
   return !overviewCombinedFilterActive()||filteredContext().modelIds.has(id);
 }
