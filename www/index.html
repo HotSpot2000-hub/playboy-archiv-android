@@ -6203,7 +6203,7 @@ function invalidateArchiveFilterCache(){
 function archiveFilterCacheKey(){
   return JSON.stringify([
     archiveFilter.text,archiveFilter.heightMin,archiveFilter.heightMax,
-    archiveFilter.photosMin,archiveFilter.photosMax,archiveFilter.video,
+    archiveFilter.photosMin,archiveFilter.photosMax,archiveFilter.ratingMin,archiveFilter.ratingMax,archiveFilter.video,
     !!modelFavoritesOnly,(state.models||[]).length,(state.archive||[]).length
   ]);
 }
