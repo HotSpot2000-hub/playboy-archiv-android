@@ -3746,7 +3746,16 @@ function ratingStarsValue(value){
  if(!Number.isFinite(n))return 0;
  return Math.max(0,Math.min(3,Math.round(n)));
 }
-
+function setStarRating(el,value){
+ const rating=ratingStarsValue(value);
+ if(!el)return;
+ el.dataset.rating=String(rating);
+ el.querySelectorAll('[data-star]').forEach(btn=>{
+  const star=Number(btn.dataset.star);
+  btn.textContent=star<=rating?'★':'☆';
+ });
+}
+  
 function modelRatingSummary(m,heightValue){
  const size=heightRatingStars(heightValue);
  const face=ratingStarsValue(m?.ratingFace);
