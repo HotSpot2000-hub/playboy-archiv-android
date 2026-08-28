@@ -3656,6 +3656,43 @@ function formatHeightDisplay(value){
 
  return raw;
 }
+  function heightToCm(value){
+ const raw=String(value||'').trim();
+ if(!raw)return null;
+ const s=raw.toLowerCase().replace(/\s+/g,' ').trim();
+
+ // centimeters: 160 / 160 cm / 160cm
+ let m=s.match(/^(\d{3})\s*(?:cm)?$/);
+ if(m){
+  const cm=Number(m[1]);
+  if(cm>=100&&cm<=250)return cm;
+ }
+
+ // meters: 1.60 / 1,60 / 1.60 m / 1,60m
+ m=s.match(/^([12])[\.,](\d{1,2})\s*m?$/);
+ if(m){
+  const cm=Math.round(Number(m[1]+'.'+(m[2]+'0').slice(0,2))*100);
+  if(cm>=100&&cm<=250)return cm;
+ }
+
+ // feet/inches: 5'3", 5' 3", 5 ft 3 in, 5ft3in
+ m=s.match(/^(\d)\s*(?:'|ft|feet)\s*(\d{1,2})\s*(?:\"|in|inch|inches)?$/);
+ if(m){
+  const ft=Number(m[1]),inch=Number(m[2]);
+  if(ft>=3&&ft<=8&&inch>=0&&inch<12){
+   return Math.round((ft*12+inch)*2.54);
+  }
+ }
+
+ // feet only with decimal, e.g. 5.25 ft
+ m=s.match(/^([3-8](?:[\.,]\d+)?)\s*(?:ft|feet)$/);
+ if(m){
+  const ft=Number(m[1].replace(',','.'));
+  return Math.round(ft*30.48);
+ }
+
+ return null;
+  }
 function renderFact(key,valueId,revisionId){
  const g=group(key), cur=currentEvidence(key);
  const val=document.getElementById(valueId);
