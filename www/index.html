@@ -7012,7 +7012,11 @@ function openProfileEdit(){
  document.getElementById('editMeasurements').value=m.measurements||'';
  document.getElementById('editWeight').value=m.weight||'';
  document.getElementById('editBirthdate').value=m.birthdate||'';
- refreshLocationSuggestions(m.country||'',m.region||'');
+ document.getElementById('editRatingFace').value=String(ratingStarsValue(m.ratingFace));
+document.getElementById('editRatingBust').value=String(ratingStarsValue(m.ratingBust));
+document.getElementById('editRatingPussy').value=String(ratingStarsValue(m.ratingPussy));
+document.getElementById('editRatingImpression').value=String(ratingStarsValue(m.ratingImpression));
+  refreshLocationSuggestions(m.country||'',m.region||'');
  bindLocationSuggestionInputs('editCountry','editRegion','editCity');
  openOverlay('profileEditPane');
 }
