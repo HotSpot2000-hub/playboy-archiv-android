@@ -3758,8 +3758,9 @@ document.addEventListener('click',function(e){
 
  const box=btn.closest('.starRating'); 
  const value=Number(btn.dataset.star||0);
+const current=ratingStarsValue(box.dataset.rating);
 
- setStarRating(box,value);
+setStarRating(box,current===value?0:value);
 });
   
 function modelRatingSummary(m,heightValue){
