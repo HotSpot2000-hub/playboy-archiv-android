@@ -3911,7 +3911,11 @@ function renderProfileArchiveOverview(){
 }
 function render(){
  const m=model();
- document.getElementById('name').textContent=m.name;
+ const heightEvidence=currentEvidence('height');
+const heightValue=heightEvidence?.value||m.height||'';
+const rating=modelRatingSummary(m,heightValue);
+document.getElementById('profileRatingSummary').textContent=`${rating.stars}/10 ★`;
+  document.getElementById('name').textContent=m.name;
  const o=currentEvidence('origin'),he=currentEvidence('height');
  const originRaw=o?.value||m.country||'';
  const originFlag=o?.value?countryFlag(o.value):effectiveFlag(m);
