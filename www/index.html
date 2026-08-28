@@ -7069,8 +7069,12 @@ document.getElementById('deleteProfileBtn').onclick=()=>{
  toast('Modelprofil gelöscht.');
 };
 document.getElementById('favoriteBtn').onclick=()=>{
- const m=model();m.favorite=!m.favorite;save();initCollapsibles();render();renderModels();renderPeople();renderTimeline();renderFavoritesOverview();renderArchiveStats();renderRecentActivity();renderMissingData();initCollapsibles();bindInteractiveMedia(document);
- toast(m.favorite?'Als Favorit markiert.':'Favorit entfernt.');
+ const m=model();
+const he=currentEvidence('height');
+const rating=modelRatingSummary(m,he?.value||m.height||'');
+m.favorite=rating.stars===10;
+save();initCollapsibles();render();renderModels();
+toast(m.favorite?'10/10 – automatisch als Favorit markiert.':'Favorit wird nur bei 10/10 gesetzt.');
 };
 
 async function optimizedProfilePhotoDataUrl(file){
@@ -7111,6 +7115,8 @@ document.getElementById('saveProfileBtn').onclick=()=>{
 m.ratingBust=ratingStarsValue(document.getElementById('editRatingBust').value);
 m.ratingPussy=ratingStarsValue(document.getElementById('editRatingPussy').value);
 m.ratingImpression=ratingStarsValue(document.getElementById('editRatingImpression').value);
+const rating=modelRatingSummary(m,m.height||'');
+m.favorite=rating.stars===10;
   const f=document.getElementById('editPhoto').files[0];
  const finish=()=>{
    if(!save()){toast('Profil konnte nicht gespeichert werden.');return}
