@@ -6611,10 +6611,8 @@ function openArchiveFilter(){
   document.getElementById('archiveFilterHeightMax').value=archiveFilter.heightMax??'';
   document.getElementById('archiveFilterPhotosMin').value=archiveFilter.photosMin??'';
   document.getElementById('archiveFilterPhotosMax').value=archiveFilter.photosMax??'';
-  const rmin=parseInt(document.getElementById('archiveFilterRatingMin').value,10);
-const rmax=parseInt(document.getElementById('archiveFilterRatingMax').value,10);
-archiveFilter.ratingMin=Number.isFinite(rmin)?Math.max(0,Math.min(10,rmin)):null;
-archiveFilter.ratingMax=Number.isFinite(rmax)?Math.max(0,Math.min(10,rmax)):null;
+  document.getElementById('archiveFilterRatingMin').value=archiveFilter.ratingMin??'';
+document.getElementById('archiveFilterRatingMax').value=archiveFilter.ratingMax??'';
   document.getElementById('archiveFilterVideo').value=archiveFilter.video;
   updateFilterSummary();
   document.getElementById('archiveFilterModal').classList.remove('hidden');
