@@ -3679,6 +3679,30 @@ function heightRatingStars(value){
 
  return 0;
 }
+ function ratingStarsValue(value){
+ const n=Number(value);
+ if(!Number.isFinite(n))return 0;
+ return Math.max(0,Math.min(3,Math.round(n)));
+}
+
+function modelRatingSummary(m,heightValue){
+ const size=heightRatingStars(heightValue);
+ const face=ratingStarsValue(m?.ratingFace);
+ const bust=ratingStarsValue(m?.ratingBust);
+ const pussy=ratingStarsValue(m?.ratingPussy);
+ const impression=ratingStarsValue(m?.ratingImpression);
+
+ const percent=
+  (size/3)*30+
+  (face/3)*25+
+  (bust/3)*20+
+  (pussy/3)*15+
+  (impression/3)*10;
+
+ const stars=Math.min(10,Math.floor((percent+0.000001)/10));
+
+ return {size,face,bust,pussy,impression,percent,stars};
+}   
  // meters: 1.60 / 1,60 / 1.60 m / 1,60m
  m=s.match(/^([12])[\.,](\d{1,2})\s*m?$/);
  if(m){
