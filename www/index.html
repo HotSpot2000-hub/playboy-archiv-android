@@ -7099,7 +7099,11 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  m.measurements=document.getElementById('editMeasurements').value.trim();
  m.weight=document.getElementById('editWeight').value.trim();
  m.birthdate=document.getElementById('editBirthdate').value;
- const f=document.getElementById('editPhoto').files[0];
+ m.ratingFace=ratingStarsValue(document.getElementById('editRatingFace').value);
+m.ratingBust=ratingStarsValue(document.getElementById('editRatingBust').value);
+m.ratingPussy=ratingStarsValue(document.getElementById('editRatingPussy').value);
+m.ratingImpression=ratingStarsValue(document.getElementById('editRatingImpression').value);
+  const f=document.getElementById('editPhoto').files[0];
  const finish=()=>{
    if(!save()){toast('Profil konnte nicht gespeichert werden.');return}
    closeOverlay();initCollapsibles();render();renderModels();renderPeople();initCollapsibles();bindInteractiveMedia(document);showProfile();toast('Profil gespeichert.');
