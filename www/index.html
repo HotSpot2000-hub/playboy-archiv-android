@@ -6417,7 +6417,7 @@ function filteredContext(){
   const raw=archiveFilter.text.trim();
   const expr=parseFreeSearchExpression(raw);
 
-  let selectedModels=allModels.filter(m=>modelPassesBasicFilter(m)&&(!modelFavoritesOnly||m.favorite));
+  let selectedModels=allModels.filter(m=>modelPassesBasicFilter(m));
   let modelIds=new Set(selectedModels.map(m=>m.id));
 
   let shoots=archive.filter(sh=>sh.type==='shoot'&&shootingModelIds(sh).some(id=>modelIds.has(id)));
