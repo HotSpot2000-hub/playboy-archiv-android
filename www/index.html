@@ -3667,7 +3667,18 @@ function formatHeightDisplay(value){
   const cm=Number(m[1]);
   if(cm>=100&&cm<=250)return cm;
  }
+function heightRatingStars(value){
+ const cm=heightToCm(value);
+ if(cm===null)return 0;
 
+ if(cm>=155&&cm<=163)return 3;
+
+ if((cm>=150&&cm<155)||(cm>163&&cm<=168))return 2;
+
+ if(cm<150||(cm>168&&cm<=170))return 1;
+
+ return 0;
+}
  // meters: 1.60 / 1,60 / 1.60 m / 1,60m
  m=s.match(/^([12])[\.,](\d{1,2})\s*m?$/);
  if(m){
