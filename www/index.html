@@ -2269,12 +2269,11 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   </div>
     
   <label>Gesamteindruck</label>
-  <select id="editRatingImpression">
-  <option value="0">0 Sterne</option>
-  <option value="1">1 Stern</option>
-  <option value="2">2 Sterne</option>
-  <option value="3">3 Sterne</option>
-</select>
+  <div id="editRatingImpression" class="starRating" data-rating="0">
+  <button type="button" data-star="1">☆</button>
+  <button type="button" data-star="2">☆</button>
+  <button type="button" data-star="3">☆</button>
+  </div>
     
   </div>
   <button class="btn primary" id="saveProfileBtn">Profil speichern</button>
