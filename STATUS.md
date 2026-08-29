@@ -1,5 +1,12 @@
 # Playboy Archiv – Projektstatus
 
+Stand: 2026-08-29  
+Referenz-Commit: `76b7b301bc6dccbe11a3a7584aba63f7c1a3e7b2`
+
+> Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
+> Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
+> Referenz-Commit weitergelaufen ist.
+
 ## Aktueller stabiler Stand
 
 Die Android-App läuft stabil und wird per GitHub Actions als signierte APK gebaut.
@@ -17,6 +24,7 @@ Wichtige Hinweise:
   - Navigation
   - Archiv- und Model-Logik
   - Foto- und Videoanzeige
+  - Filter und Bewertungsdarstellung
   - IndexedDB / lokale Datenlogik
 
 - `native/MainActivity.java`
@@ -25,6 +33,10 @@ Wichtige Hinweise:
 
 - `native/ArchiveDirectoryPlugin.java`
   - SAF-Verzeichniszugriff für Archiv-Restore
+
+- `AGENTS.md`
+  - verbindliche Arbeits- und Übergaberegeln
+  - legt fest, dass `STATUS.md` nach funktionalen Änderungen gepflegt werden muss
 
 ## Was bereits funktioniert
 
@@ -69,15 +81,16 @@ Die Karten wurden kompakter gemacht.
 Titel:
 - Es werden nur Titel der höchsten erreichten Stufe angezeigt.
 - Gleichstände bleiben erhalten.
-- Beispiel:
-  - Cyber Girl of the Year
-  - SE Model of the Year
-  werden beide angezeigt.
 - Niedrigere Stufen werden ausgeblendet.
 
 Serien:
 - Pro Model werden nur Serien mit der höchsten Anzahl an zugehörigen Shootings angezeigt.
 - Gleichstände bleiben erhalten.
+
+### Bewertung / Filter
+- Bewertungsfilter mit Von-/Bis-Bereich ist vorhanden.
+- Bewertungsdarstellung in der Model-Übersicht wurde zuletzt weiter angepasst.
+- Bewertungsdarstellung verwendet goldene Hervorhebung.
 
 ## Offene Punkte
 
@@ -105,7 +118,7 @@ Mehrere Ansätze wurden getestet und wieder verworfen:
 
 Der letzte Ansatz entfernte den Effekt, machte das Scrollen aber stark ruckelig und ließ Inhalte wieder oberhalb der Titelleiste erscheinen.
 
-Deshalb aktueller stabiler Zustand beibehalten.
+Deshalb aktuellen stabilen Zustand beibehalten.
 
 ## Dinge, die NICHT wiederholt werden sollten
 
@@ -124,8 +137,8 @@ Nicht wieder:
 `main{height:100vh;overflow-y:auto;...}`
 
 Folgen:
-- Scrollen wurde unflüssig
-- Inhalte erschienen wieder oberhalb der Titelleiste
+- Scrollen wurde unflüssig.
+- Inhalte erschienen wieder oberhalb der Titelleiste.
 
 ### Native Video-Fullscreen
 Aktuell deaktiviert, weil Freeze reproduzierbar war.
@@ -139,3 +152,11 @@ Vorher:
 - Änderungen klein halten
 - jeweils nur eine Sache testen
 - neue APK immer als Update installieren
+
+## Pflegehinweis
+
+Nach jeder abgeschlossenen funktionalen Änderung:
+- prüfen, ob diese Datei angepasst werden muss,
+- Referenz-Commit aktualisieren,
+- offenen bzw. nächsten Schritt korrigieren,
+- Sitzung erst danach als abgeschlossen betrachten.
