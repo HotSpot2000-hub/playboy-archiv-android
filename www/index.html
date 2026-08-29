@@ -3933,7 +3933,7 @@ function render(){
  const heightEvidence=currentEvidence('height');
 const heightValue=heightEvidence?.value||m.height||'';
 const rating=modelRatingSummary(m,heightValue);
-document.getElementById('profileRatingSummary').textContent=`${rating.stars}/10 ★`;
+document.getElementById('profileRatingSummary').textContent=`${rating.stars}/10 ★ · ${Math.round(rating.percent)}%`;
 document.getElementById('profileRatingDetails').textContent=
  `Größe ${rating.size} · Gesicht ${rating.face} · Busen ${rating.bust} · Pussy ${rating.pussy} · Eindruck ${rating.impression}`;
   document.getElementById('name').textContent=m.name;
