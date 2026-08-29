@@ -6644,7 +6644,7 @@ function applyArchiveFilter(){
 function resetArchiveFilter(){
   invalidateArchiveFilterCache();
   Object.assign(archiveFilter,{text:'',heightMin:null,heightMax:null,photosMin:null,photosMax:null,ratingMin:null,ratingMax:null,video:''});
-  ['archiveFilterText','archiveFilterHeightMin','archiveFilterHeightMax','archiveFilterPhotosMin','archiveFilterPhotosMax'],'archiveFilterRatingMin','archiveFilterRatingMax'.forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+  ['archiveFilterText','archiveFilterHeightMin','archiveFilterHeightMax','archiveFilterPhotosMin','archiveFilterPhotosMax','archiveFilterRatingMin','archiveFilterRatingMax'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});  
   const v=document.getElementById('archiveFilterVideo');if(v)v.value='';
   updateFilterSummary();
   rerenderFilteredOverviews();
