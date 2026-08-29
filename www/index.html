@@ -3496,6 +3496,7 @@ function renderGlobalModelOverview(){
   const heightRaw=String(m.height||'').trim();
   const heightText=heightRaw?formatHeightDisplay(heightRaw):'Größe offen';
   const measurementsText=String(m.measurements||'').trim()||'Maße offen';
+  const rating=modelRatingSummary(m,m.height||'').stars;
   let titles=modelHighestTitles(m.id);
   let series=(state.archive||[]).filter(a=>a.type==='series'&&seriesShootingsAll(a).some(sh=>shootingModelIds(sh).includes(m.id))).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
   const titleRank={week:1,month:2,year:3};
