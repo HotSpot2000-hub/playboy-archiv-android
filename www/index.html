@@ -3444,10 +3444,6 @@ function setupModelOverviewSearch(){
  const btn=document.getElementById('modelOverviewSearchBtn'),panel=document.getElementById('modelOverviewSearchPanel'),input=document.getElementById('modelOverviewSearchInput'),close=document.getElementById('modelOverviewSearchClose');if(!btn||!panel||!input)return;
  if(!btn.dataset.bound){btn.dataset.bound='1';btn.onclick=()=>{const opening=panel.classList.contains('hidden');panel.classList.toggle('hidden');btn.setAttribute('aria-expanded',opening?'true':'false');if(opening){renderModelOverviewSearch();setTimeout(()=>input.focus(),0)}else{input.value='';renderGlobalModelOverview()}};input.oninput=renderModelOverviewSearch;if(close)close.onclick=()=>{input.value='';panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');renderGlobalModelOverview()}};
 }
-let modelFavoritesOnly=false;
-function setupModelFavoritesFilter(){
-  modelFavoritesOnly=false;
-  }
   
 function overviewContentAvailability(){
  const shoots=(state.archive||[]).filter(a=>a.type==='shoot');
