@@ -6502,8 +6502,8 @@ function filteredContext(){
   archiveFilterContextCacheKey=key;
   return archiveFilterContextCache;
 }
-function function overviewCombinedFilterActive(){return filterActive()}
-function overviewFilterAllowsModel(id){
+ function overviewCombinedFilterActive(){return filterActive()}
+ function overviewFilterAllowsModel(id){
   return !overviewCombinedFilterActive()||filteredContext().modelIds.has(id);
 }
 function overviewFilterAllowsShoot(id){
