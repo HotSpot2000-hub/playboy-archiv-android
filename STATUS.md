@@ -1,11 +1,25 @@
 # Playboy Archiv – Projektstatus
 
-Stand: 2026-08-29  
-Referenz-Commit: `1530b90f5e0ffbfc9d4be0fa01dbd1f4c6fc0bec`
+Stand: 2026-08-30  
+Referenz-Commit: `d3ec76abeb8cfc5b64eafbd8b226af72a9ae9cb7`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
 > Referenz-Commit weitergelaufen ist.
+
+## Verbindlicher Arbeitsablauf
+
+Für Änderungen gilt der in `AGENTS.md` festgelegte Datei-Workflow:
+
+- Vor jeder Bearbeitung zuerst die aktuelle Version der betroffenen Datei aus `main` lesen.
+- Nur diese aktuelle Datei bearbeiten.
+- Änderungen möglichst klein und gezielt halten.
+- Fertige Dateien als vollständige Ersatzdateien mit exakt dem Repository-Dateinamen bereitstellen, z. B. `index.html` oder `STATUS.md`.
+- Keine Patches oder umbenannten Ersatzdateien, sofern nicht ausdrücklich gewünscht.
+- Der Benutzer lädt die fertige Datei selbst in GitHub hoch bzw. ersetzt dort die bestehende Datei.
+- Vor dem nächsten Arbeitsschritt den neuen Stand von `main` erneut prüfen.
+
+Dieser Ablauf ist der bevorzugte Standard und soll auch nach einem Chat- oder Sitzungswechsel beibehalten werden.
 
 ## Aktueller stabiler Stand
 
@@ -36,6 +50,7 @@ Wichtige Hinweise:
 
 - `AGENTS.md`
   - verbindliche Arbeits- und Übergaberegeln
+  - enthält den verbindlichen Datei-Workflow
   - legt fest, dass `STATUS.md` nach funktionalen Änderungen gepflegt werden muss
 
 ## Was bereits funktioniert
@@ -88,8 +103,8 @@ Serien:
 - Gleichstände bleiben erhalten.
 
 Sortierung:
-- Standardmäßig alphabetisch A–Z.
-- Alternativ kann nach Bewertung absteigend sortiert werden.
+- Standardmäßig alphabetisch `A–Z`.
+- Alternativ nach Gesamtbewertung absteigend mit `% ↓`.
 - Bei gleicher Bewertung bleibt die Reihenfolge alphabetisch.
 - Die Sortierung wurde auf dem Gerät erfolgreich getestet.
 
@@ -98,7 +113,6 @@ Profilbild-Filter:
 - Auswahl: `Alle`, `✓` (Profilbild vorhanden), `✕` (Profilbild nicht vorhanden).
 - Profilbild-Filter und Sortierung bleiben in der mobilen Ansicht gemeinsam in einer Zeile.
 - Der Profilbild-Filter kann mit der Bewertungssortierung kombiniert werden.
-- Damit lassen sich insbesondere Models ohne Profilbild nach Bewertung priorisieren.
 - Darstellung und Filter wurden auf dem Gerät erfolgreich getestet.
 
 Filterwirkung auf weitere Übersichten:
@@ -109,16 +123,54 @@ Filterwirkung auf weitere Übersichten:
 - Dieses Verhalten wurde auf dem Gerät erfolgreich getestet.
 
 ### Bewertung / Filter
-- Bewertungsfilter mit Von-/Bis-Bereich ist vorhanden.
-- Bewertungsdarstellung verwendet goldene Hervorhebung.
-- Im Model-Profil wird die Gesamtwertung als Sternezahl plus Prozentwert angezeigt, z. B. `8/10 ★ · 83%`.
-- Darunter werden die fünf Einzelwerte kompakt angezeigt:
+
+Das Bewertungssystem wurde auf fünf Sterne pro Kategorie erweitert und erfolgreich auf dem Gerät getestet.
+
+Kategorien:
+- Größe
+- Gesicht
+- Busen
+- Pussy
+- Eindruck
+
+Sternebewertung innerhalb jeder Kategorie:
+- `5 = 100%`
+- `4 = 90%`
+- `3 = 75%`
+- `2 = 55%`
+- `1 = 30%`
+- `0 = 0%`
+
+Die bestehende Gewichtung der Kategorien untereinander bleibt unverändert:
+- Größe: 30%
+- Gesicht: 25%
+- Busen: 20%
+- Pussy: 15%
+- Eindruck: 10%
+
+Größe:
+- `5★ = 5'1"–5'4"`
+- `4★ = 5'0" / 5'5"`
+- `3★ = 4'11" / 5'6"`
+- `2★ = 4'10" / 5'7"`
+- `1★ = 4'9" / 5'8"`
+- `0★ = Rest`
+
+Gesamtbewertung:
+- Wird nur noch als Prozentwert dargestellt.
+- Das gilt sowohl im Model-Profil als auch in der Model-Übersicht.
+- Die Sortierung verwendet `% ↓`.
+- Der Bewertungsfilter arbeitet mit einem Prozentbereich bis 100%.
+- `0 Sterne` ist ein gültiger Bewertungswert.
+- `Bewertung unvollständig` erscheint nur, wenn eine Kategorie tatsächlich noch nicht bewertet wurde.
+- Automatische Favoritenmarkierung erfolgt bei `100%`.
+- Die Bewertungsberechnung verwendet weiterhin `modelRatingSummary()`.
+
+Darstellung:
+- Die fünf Einzelwerte werden weiterhin kompakt angezeigt:
   `Größe · Gesicht · Busen · Pussy · Eindruck`.
 - Die Einzelwerte bleiben in einer kompakten Zeile (`11px`, `white-space: nowrap`).
-- Ist mindestens eine der fünf Kategorien `0`, erscheint der Hinweis `Bewertung unvollständig`.
-- Auch `Größe = 0` zählt ausdrücklich als unvollständige Bewertung.
-- Die Bewertungsberechnung verwendet weiterhin die bestehende Funktion `modelRatingSummary()`.
-- Prozentwert, Einzelwerte und Unvollständig-Hinweis wurden auf dem Gerät erfolgreich getestet.
+- Goldene Hervorhebung der Bewertung bleibt erhalten.
 
 ## Offene Punkte
 
@@ -173,28 +225,32 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Model-Übersicht und Filterzusammenhang wurden erweitert und auf dem Gerät erfolgreich getestet:
+Bewertungssystem wurde verfeinert und auf dem Gerät erfolgreich getestet:
 
+- fünf Sterne pro Kategorie
+- neue prozentuale Abstufung je Stern
+- neue Größenstaffel mit fünf Sternen
+- bestehende Kategoriegewichtung beibehalten
+- Gesamtbewertung ausschließlich als Prozentwert
+- Sortierung `A–Z / % ↓`
+- Bewertungsfilter bis 100%
+- `0 Sterne` als gültige Bewertung
+- `Bewertung unvollständig` nur bei tatsächlich fehlender Bewertung
+- automatische Favoritenmarkierung bei 100%
+
+Der vorherige Filterblock bleibt stabil:
 - Profilbild-Filter mit `Alle / ✓ / ✕`
-- kompakte einzeilige Darstellung zusammen mit der Sortierung
-- Kombination mit `A–Z` bzw. `★ ↓`
-- Profilbildfilter wirkt auf Models sowie auf Titel, Serien und Individuals
-- Shootings ausgeblendeter Models verschwinden aus den gefilterten Übersichten
+- Filter wirkt auf Models sowie auf Titel, Serien und Individuals
 - gemeinsame Shootings bleiben sichtbar, wenn mindestens ein sichtbares Model beteiligt ist
-
-Der vorherige Bewertungsblock bleibt ebenfalls stabil:
-- Gesamtwertung plus Prozentwert
-- kompakte Aufschlüsselung aller fünf Bewertungskategorien
-- Kennzeichnung unvollständiger Bewertungen
-- Sortierung der Model-Übersicht nach Bewertung
 
 ## Letzter sinnvoller nächster Schritt
 
-Der aktuelle Filter-/Sortierblock ist abgeschlossen und erfolgreich getestet.
+Der aktuelle Bewertungsblock ist abgeschlossen und erfolgreich getestet.
 
 Vor der nächsten funktionalen Erweiterung:
 - `AGENTS.md` und diese Datei lesen,
-- prüfen, ob `main` seit `1530b90f5e0ffbfc9d4be0fa01dbd1f4c6fc0bec` weitergelaufen ist,
+- prüfen, ob `main` seit `d3ec76abeb8cfc5b64eafbd8b226af72a9ae9cb7` weitergelaufen ist,
+- die aktuelle Version der zu ändernden Datei aus `main` laden,
 - den nächsten Funktionsschwerpunkt bewusst festlegen,
 - den aktuellen stabilen Stand nicht unnötig verändern.
 

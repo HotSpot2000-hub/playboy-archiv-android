@@ -17,6 +17,21 @@ Vor jeder inhaltlichen oder technischen Änderung:
    - den tatsächlichen Projektstand zuerst rekonstruieren.
 4. Erst danach neue Änderungen planen oder umsetzen.
 
+## Verbindlicher Datei-Workflow
+
+Für Änderungen am Projekt gilt grundsätzlich dieser Ablauf:
+
+1. Vor jeder Bearbeitung die aktuell auf `main` liegende Version der betroffenen Datei aus dem Repository lesen.
+2. Ausschließlich auf Basis dieser aktuellen Datei arbeiten.
+3. Die Änderung möglichst klein und auf den gewünschten Funktionsblock begrenzen.
+4. Dem Benutzer die fertig bearbeitete Datei als vollständige Ersatzdatei mit exakt demselben Repository-Dateinamen bereitstellen, z. B. `index.html` oder `STATUS.md`.
+5. Keine Patch-Datei und keinen umbenannten Ersatz liefern, wenn nicht ausdrücklich gewünscht.
+6. Der Benutzer lädt die fertige Datei anschließend selbst in das Repository hoch bzw. ersetzt dort die bestehende Datei.
+7. Nach dem Upload und vor weiteren Änderungen den neuen Stand von `main` erneut prüfen.
+
+Direkte Schreibversuche in das Repository sind nicht der bevorzugte Arbeitsweg.
+Der dokumentierte Standard ist: aktuellen Stand lesen → vollständige Ersatzdatei erstellen → Benutzer lädt hoch → neuen Stand prüfen.
+
 ## Während der Arbeit
 
 - Den aktuell stabilen Stand nicht unnötig verändern.
@@ -38,6 +53,7 @@ Nach jeder abgeschlossenen funktionalen Änderung muss geprüft werden, ob sich 
 - verworfene Ansätze
 - sinnvoller nächster Schritt
 - relevante Dateien oder Build-/Installationshinweise
+- Arbeitsablauf
 
 Wenn ja, muss `STATUS.md` im selben Arbeitsgang aktualisiert werden.
 
