@@ -2064,7 +2064,10 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   </div>
   <div class="profile">
    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-  <div id="profileRatingSummary" class="small" style="font-weight:700"></div>
+  <div>
+<div id="profileRatingSummary" class="small" style="font-weight:700"></div>
+<div id="profileRatingDetails" class="small"></div>
+</div>
   <button class="favoriteBtn favoriteHeart" id="favoriteBtn" aria-label="Favorit">♡</button>
    </div>   
     <div class="hidden" id="meta"></div>
@@ -3931,6 +3934,8 @@ function render(){
 const heightValue=heightEvidence?.value||m.height||'';
 const rating=modelRatingSummary(m,heightValue);
 document.getElementById('profileRatingSummary').textContent=`${rating.stars}/10 ★`;
+document.getElementById('profileRatingDetails').textContent=
+ `Größe ${rating.size} · Gesicht ${rating.face} · Busen ${rating.bust} · Pussy ${rating.pussy} · Eindruck ${rating.impression}`;
   document.getElementById('name').textContent=m.name;
  const o=currentEvidence('origin'),he=currentEvidence('height');
  const originRaw=o?.value||m.country||'';
