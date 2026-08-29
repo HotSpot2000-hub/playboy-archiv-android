@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-08-29  
-Referenz-Commit: `f3e83ebcbb2aafaa41755279328f12e8fca5e7c2`
+Referenz-Commit: `1530b90f5e0ffbfc9d4be0fa01dbd1f4c6fc0bec`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -91,7 +91,22 @@ Sortierung:
 - Standardmäßig alphabetisch A–Z.
 - Alternativ kann nach Bewertung absteigend sortiert werden.
 - Bei gleicher Bewertung bleibt die Reihenfolge alphabetisch.
-- Die neue Sortierung wurde auf dem Gerät erfolgreich getestet.
+- Die Sortierung wurde auf dem Gerät erfolgreich getestet.
+
+Profilbild-Filter:
+- Models können nach Profilbild gefiltert werden.
+- Auswahl: `Alle`, `✓` (Profilbild vorhanden), `✕` (Profilbild nicht vorhanden).
+- Profilbild-Filter und Sortierung bleiben in der mobilen Ansicht gemeinsam in einer Zeile.
+- Der Profilbild-Filter kann mit der Bewertungssortierung kombiniert werden.
+- Damit lassen sich insbesondere Models ohne Profilbild nach Bewertung priorisieren.
+- Darstellung und Filter wurden auf dem Gerät erfolgreich getestet.
+
+Filterwirkung auf weitere Übersichten:
+- Aktive Model-/Profilbildfilter wirken auch auf `Titel`, `Serien` und `Individuals`.
+- Shootings eines ausgeblendeten Models werden dort ebenfalls ausgeblendet.
+- Ausnahme: Enthält ein Shooting zusätzlich mindestens ein weiterhin sichtbares Model, bleibt das Shooting sichtbar.
+- Ausgeblendete Models werden in diesen gefilterten Übersichten nicht zusätzlich als Model-Gruppe geführt.
+- Dieses Verhalten wurde auf dem Gerät erfolgreich getestet.
 
 ### Bewertung / Filter
 - Bewertungsfilter mit Von-/Bis-Bereich ist vorhanden.
@@ -158,22 +173,28 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Bewertungsdarstellung und Model-Sortierung wurden erweitert und auf dem Gerät erfolgreich getestet:
+Model-Übersicht und Filterzusammenhang wurden erweitert und auf dem Gerät erfolgreich getestet:
 
-- Gesamtwertung zusätzlich als Prozentwert
+- Profilbild-Filter mit `Alle / ✓ / ✕`
+- kompakte einzeilige Darstellung zusammen mit der Sortierung
+- Kombination mit `A–Z` bzw. `★ ↓`
+- Profilbildfilter wirkt auf Models sowie auf Titel, Serien und Individuals
+- Shootings ausgeblendeter Models verschwinden aus den gefilterten Übersichten
+- gemeinsame Shootings bleiben sichtbar, wenn mindestens ein sichtbares Model beteiligt ist
+
+Der vorherige Bewertungsblock bleibt ebenfalls stabil:
+- Gesamtwertung plus Prozentwert
 - kompakte Aufschlüsselung aller fünf Bewertungskategorien
 - Kennzeichnung unvollständiger Bewertungen
-- `Größe = 0` wird als unvollständig erkannt
-- Model-Übersicht nach Bewertung absteigend sortierbar
-- alphabetische Reihenfolge als Standard und als Tie-Breaker erhalten
+- Sortierung der Model-Übersicht nach Bewertung
 
 ## Letzter sinnvoller nächster Schritt
 
-Der Bewertungsblock ist abgeschlossen.
+Der aktuelle Filter-/Sortierblock ist abgeschlossen und erfolgreich getestet.
 
 Vor der nächsten funktionalen Erweiterung:
 - `AGENTS.md` und diese Datei lesen,
-- prüfen, ob `main` seit `f3e83ebcbb2aafaa41755279328f12e8fca5e7c2` weitergelaufen ist,
+- prüfen, ob `main` seit `1530b90f5e0ffbfc9d4be0fa01dbd1f4c6fc0bec` weitergelaufen ist,
 - den nächsten Funktionsschwerpunkt bewusst festlegen,
 - den aktuellen stabilen Stand nicht unnötig verändern.
 
