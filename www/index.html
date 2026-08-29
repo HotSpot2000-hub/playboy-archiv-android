@@ -3491,7 +3491,6 @@ function syncProfileContentNav(modelId){
 }
 function renderGlobalModelOverview(){
  syncOverviewContentNav();
- setupModelFavoritesFilter();
  const box=document.getElementById('globalModelOverview');if(!box)return;
  const searchInput=document.getElementById('modelOverviewSearchInput');const nq=searchInput&&!document.getElementById('modelOverviewSearchPanel')?.classList.contains('hidden')?normalizeModelSearch(searchInput.value.trim()):'';
  const models=alphabeticalModels((state.models||[]).filter(m=>(!nq||normalizeModelSearch(m.name).includes(nq))&&overviewFilterAllowsModel(m.id)));
