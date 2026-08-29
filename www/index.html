@@ -3498,7 +3498,7 @@ function renderGlobalModelOverview(){
  const sortSelect=document.getElementById('modelOverviewSort');
  if(sortSelect&&!sortSelect.dataset.bound){sortSelect.dataset.bound='1';sortSelect.onchange=renderGlobalModelOverview;}
  const photoFilter=document.getElementById('modelOverviewPhotoFilter');
- if(photoFilter&&!photoFilter.dataset.bound){photoFilter.dataset.bound='1';photoFilter.onchange=renderGlobalModelOverview;}
+ if(photoFilter&&!photoFilter.dataset.bound){photoFilter.dataset.bound='1';photoFilter.onchange=rerenderFilteredOverviews;}
  const filteredModels=(state.models||[]).filter(m=>{
   const matchesSearch=!nq||normalizeModelSearch(m.name).includes(nq);
   const matchesOverview=overviewFilterAllowsModel(m.id);
@@ -3570,7 +3570,7 @@ function renderGlobalTitles(){
  const visible=matched.filter(t=>t.titleClass===globalTitleBrowseClass&&t.titleLevel===globalTitleBrowseLevel).slice().sort(sortTitlesChronological);
  const classTabs=classes.map(c=>`<button type="button" class="${c===globalTitleBrowseClass?'active':''}" data-global-title-class="${c}">${esc(classNames[c])}</button>`).join('');
  const levelTabs=levels.map(l=>`<button type="button" class="${l===globalTitleBrowseLevel?'active':''}" data-global-title-level="${l}">${esc(levelNames[l])}</button>`).join('');
- const cards=visible.map(t=>{const period=modelTitleWhen(t);const shoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&overviewFilterAllowsShoot(sh.id)).slice().sort(sortShootingsNatural);const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id));const modelHtml=mids.map(id=>{const m=state.models.find(x=>x.id===id);return `<button type="button" class="titleBrowseModel" data-global-open-model="${esc(id)}">${esc(m?.name||'Model')}</button>`}).join('');const shootHtml=`<div class="titleShootings"><div class="shootingGridStandalone">${shoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null,mid=shootingModelIds(sh)[0]||'';return `<div class="shootingCardStandalone" data-global-open-title-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="titleShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-global-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-global-unlink-title-shooting="${esc(sh.id)}" data-title-id="${esc(t.id)}">Löschen</button></div></div>`}).join('')}</div></div>`;return `<div class="titleBrowseCard" data-global-title-card="${esc(t.id)}"><div class="titleBrowseHead"><button type="button" class="titleTrophy" data-global-edit-title="${esc(t.id)}">🏆</button><div><div class="titleBrowseName">${esc(period||t.title||'Titel')}</div>${modelHtml}</div><div class="titleBrowseActions"><button type="button" class="titleDeleteX" data-global-delete-title="${esc(t.id)}">×</button></div></div>${shootHtml}</div>`}).join('');
+ const cards=visible.map(t=>{const period=modelTitleWhen(t);const shoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&overviewFilterAllowsShoot(sh.id)).slice().sort(sortShootingsNatural);const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id)&&overviewFilterAllowsModel(id));const modelHtml=mids.map(id=>{const m=state.models.find(x=>x.id===id);return `<button type="button" class="titleBrowseModel" data-global-open-model="${esc(id)}">${esc(m?.name||'Model')}</button>`}).join('');const shootHtml=`<div class="titleShootings"><div class="shootingGridStandalone">${shoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null,mid=shootingModelIds(sh)[0]||'';return `<div class="shootingCardStandalone" data-global-open-title-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="titleShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-global-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-global-unlink-title-shooting="${esc(sh.id)}" data-title-id="${esc(t.id)}">Löschen</button></div></div>`}).join('')}</div></div>`;return `<div class="titleBrowseCard" data-global-title-card="${esc(t.id)}"><div class="titleBrowseHead"><button type="button" class="titleTrophy" data-global-edit-title="${esc(t.id)}">🏆</button><div><div class="titleBrowseName">${esc(period||t.title||'Titel')}</div>${modelHtml}</div><div class="titleBrowseActions"><button type="button" class="titleDeleteX" data-global-delete-title="${esc(t.id)}">×</button></div></div>${shootHtml}</div>`}).join('');
  if(!matched.length){box.innerHTML=q?`<div class="titleSearchHint">Kein passender Titel gefunden.</div><button type="button" class="titleSearchAdd" data-title-search-add="1">＋ Titel hinzufügen</button>`:'<div class="small" style="margin-top:10px">Noch keine zugeordneten Titel im Archiv.</div>';const add=box.querySelector('[data-title-search-add]');if(add)add.onclick=openNewTitle;return}
  box.innerHTML=`<div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards}</div>`;
  box.querySelectorAll('[data-global-title-class]').forEach(x=>x.onclick=()=>{globalTitleBrowseClass=x.dataset.globalTitleClass;globalTitleBrowseLevel='';renderGlobalTitles()});box.querySelectorAll('[data-global-title-level]').forEach(x=>x.onclick=()=>{globalTitleBrowseLevel=x.dataset.globalTitleLevel;renderGlobalTitles()});
@@ -3595,7 +3595,7 @@ function renderGlobalSeries(){
  if(!sr){box.innerHTML=q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Serie gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine zugeordneten Serien im Archiv.</div>';return}
  const picker=allSeries.map(x=>`<button type="button" class="${x.id===globalSeriesBrowseId?'active':''}" data-global-series-pick="${esc(x.id)}">${esc(x.title||'Serie ohne Titel')}</button>`).join('');
  const shoots=seriesShootingsAll(sr).filter(sh=>overviewFilterAllowsShoot(sh.id)).slice().sort(sortShootingsNatural);
- const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id)).sort((a,b)=>String(state.models.find(m=>m.id===a)?.name||'').localeCompare(String(state.models.find(m=>m.id===b)?.name||''),'de',{sensitivity:'base'}));
+ const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id)&&overviewFilterAllowsModel(id)).sort((a,b)=>String(state.models.find(m=>m.id===a)?.name||'').localeCompare(String(state.models.find(m=>m.id===b)?.name||''),'de',{sensitivity:'base'}));
  const groups=mids.map(mid=>{const m=state.models.find(x=>x.id===mid);const ms=shoots.filter(sh=>shootingModelIds(sh).includes(mid));const cards=ms.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-global-open-series-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-global-series-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-global-unlink-series-shooting="${esc(sh.id)}" data-series-id="${esc(sr.id)}">Löschen</button></div></div>`}).join('');return `<div class="seriesBrowseModel"><button type="button" class="seriesBrowseModelName" data-global-series-open-model="${esc(mid)}">${esc(m?.name||'Model')}</button><div class="shootingGridStandalone">${cards}</div></div>`}).join('');
  box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="globalSeriesTitleButton" aria-expanded="false">${esc(sr.title||'Serie ohne Titel')} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="globalSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${groups||'<div class="small">Noch keine Shootings zugeordnet.</div>'}</div></div>`;
  const titleBtn=box.querySelector('#globalSeriesTitleButton'),pickBox=box.querySelector('#globalSeriesPicker');
@@ -3634,7 +3634,7 @@ function shootingIsIndividual(sh){
 function renderGlobalShootings(){
  const box=document.getElementById('globalShootingsList');if(!box)return;setupIndividualOverviewSearch();const q=individualSearchQuery();
  const shoots=(state.archive||[]).filter(a=>a.type==='shoot'&&shootingIsIndividual(a)&&overviewFilterAllowsShoot(a.id)).filter(sh=>{if(!q)return true;const names=shootingModelIds(sh).map(id=>state.models.find(m=>m.id===id)?.name||'');return normalizeSeriesSearch([sh.title,sh.date,...names].join(' ')).includes(q)}).slice().sort(sortShootingsNatural);
- const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id)).sort((a,b)=>String(state.models.find(m=>m.id===a)?.name||'').localeCompare(String(state.models.find(m=>m.id===b)?.name||''),'de',{sensitivity:'base'}));
+ const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id)&&overviewFilterAllowsModel(id)).sort((a,b)=>String(state.models.find(m=>m.id===a)?.name||'').localeCompare(String(state.models.find(m=>m.id===b)?.name||''),'de',{sensitivity:'base'}));
  const groups=mids.map(mid=>{const m=state.models.find(x=>x.id===mid);const rows=shoots.filter(sh=>shootingModelIds(sh).includes(mid));const cards=rows.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-global-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-individual-edit="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-individual-delete="${esc(sh.id)}">Löschen</button></div></div>`}).join('');return `<div class="seriesBrowseModel"><button type="button" class="seriesBrowseModelName" data-individual-open-model="${esc(mid)}">${esc(m?.name||'Model')}</button><div class="shootingGridStandalone">${cards}</div></div>`}).join('');
  const withoutModel=shoots.filter(sh=>!shootingModelIds(sh).length);const loose=withoutModel.length?`<div class="seriesBrowseModel"><div class="seriesBrowseModelName">Ohne Model</div><div class="shootingGridStandalone">${withoutModel.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-global-shooting="${esc(sh.id)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-individual-edit="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-individual-delete="${esc(sh.id)}">Löschen</button></div></div>`}).join('')}</div></div>`:'';
  box.innerHTML=(groups||loose)?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody">${groups}${loose}</div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals im Archiv.</div>');
@@ -6532,18 +6532,43 @@ function filteredContext(){
   archiveFilterContextCacheKey=key;
   return archiveFilterContextCache;
 }
- function overviewCombinedFilterActive(){return filterActive()}
- function overviewFilterAllowsModel(id){
-  return !overviewCombinedFilterActive()||filteredContext().modelIds.has(id);
+ function overviewPhotoFilterValue(){
+  return document.getElementById('modelOverviewPhotoFilter')?.value||'all';
+}
+function overviewPhotoFilterActive(){
+  return overviewPhotoFilterValue()!=='all';
+}
+function overviewPhotoFilterAllowsModel(id){
+  const mode=overviewPhotoFilterValue();
+  if(mode==='all')return true;
+  const m=(state.models||[]).find(x=>x.id===id);
+  const hasPhoto=!!String(m?.photo||'').trim();
+  return mode==='with'?hasPhoto:!hasPhoto;
+}
+function overviewCombinedFilterActive(){return filterActive()||overviewPhotoFilterActive()}
+function overviewFilterAllowsModel(id){
+  const archiveAllowed=!filterActive()||filteredContext().modelIds.has(id);
+  return archiveAllowed&&overviewPhotoFilterAllowsModel(id);
 }
 function overviewFilterAllowsShoot(id){
-  return !overviewCombinedFilterActive()||filteredContext().shootIds.has(id);
+  const archiveAllowed=!filterActive()||filteredContext().shootIds.has(id);
+  if(!archiveAllowed)return false;
+  if(!overviewPhotoFilterActive())return true;
+  const sh=(state.archive||[]).find(a=>a.id===id&&a.type==='shoot');
+  return !!sh&&shootingModelIds(sh).some(mid=>overviewFilterAllowsModel(mid));
 }
 function overviewFilterAllowsTitle(id){
-  return !overviewCombinedFilterActive()||filteredContext().titleIds.has(id);
+  const archiveAllowed=!filterActive()||filteredContext().titleIds.has(id);
+  if(!archiveAllowed)return false;
+  if(!overviewPhotoFilterActive())return true;
+  return (state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(id)&&overviewFilterAllowsShoot(sh.id));
 }
 function overviewFilterAllowsSeries(id){
-  return !overviewCombinedFilterActive()||filteredContext().seriesIds.has(id);
+  const archiveAllowed=!filterActive()||filteredContext().seriesIds.has(id);
+  if(!archiveAllowed)return false;
+  if(!overviewPhotoFilterActive())return true;
+  const sr=(state.archive||[]).find(a=>a.id===id&&a.type==='series');
+  return !!sr&&seriesShootingsAll(sr).some(sh=>overviewFilterAllowsShoot(sh.id));
 }
 function syncFilteredOverviewNav(){
   const active=overviewCombinedFilterActive();
