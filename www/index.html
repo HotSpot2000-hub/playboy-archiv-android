@@ -1052,6 +1052,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 /* v190 model search / quick add */
 .modelOverviewTools,.titleOverviewTools,.seriesOverviewTools{display:flex;gap:8px;align-items:center}.modelOverviewTools .btn,.titleOverviewTools .btn,.seriesOverviewTools .btn{width:auto;margin:0;white-space:nowrap}
+.modelOverviewSortRow{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:9px}.modelOverviewSortRow select{width:auto;min-width:132px;margin:0;padding:7px 9px;font-size:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
 .titleSearchPanel,.seriesSearchPanel{margin-top:10px}.titleSearchRow,.seriesSearchRow{display:flex;gap:8px;align-items:center}.titleSearchRow input,.seriesSearchRow input{margin:0;min-width:0;flex:1}.titleSearchClose,.seriesSearchClose{width:40px;min-width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:18px}.titleSearchHint,.seriesSearchHint{font-size:11px;color:var(--muted);padding:7px 1px}.titleSearchAdd{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px;text-align:left;font:inherit;font-weight:700;color:inherit;margin-top:8px}.modelSearchPanel{margin-top:10px}.modelSearchRow{display:flex;gap:8px;align-items:center}.modelSearchRow input{margin:0;min-width:0;flex:1}.modelSearchClose{width:40px;min-width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:18px}
 .modelSearchResults{display:grid;gap:7px;margin-top:8px}.modelSearchHit,.modelSearchAdd{width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px;text-align:left;font:inherit;color:inherit}.modelSearchHit{display:grid;grid-template-columns:44px 1fr;gap:9px;align-items:center}.modelSearchHitPhoto{width:44px;height:56px;border-radius:8px;background:#eee;overflow:hidden;display:grid;place-items:center}.modelSearchHitPhoto img{width:100%;height:100%;object-fit:cover}.modelSearchHitName{font-weight:750}.modelSearchHitMeta{font-size:11px;color:var(--muted);margin-top:2px}.modelSearchAdd{font-weight:700}.modelSearchHint{font-size:11px;color:var(--muted);padding:3px 1px}
 @media(max-width:460px){.globalModelsHeader{align-items:flex-start}.modelOverviewTools,.titleOverviewTools,.seriesOverviewTools{gap:6px}.modelOverviewTools .btn,.titleOverviewTools .btn,.seriesOverviewTools .btn{padding:8px 9px;font-size:11px}}
@@ -1893,6 +1894,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 <div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Serien</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
 <div class="card globalModelsCard">
  <div class="globalModelsHeader"><div><h2>Models</h2><div class="small">Alle Models im Archiv.</div></div><div class="modelOverviewTools"><button class="btn" id="modelOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addModelOverviewBtn">＋ Model</button></div></div>
+ <div class="modelOverviewSortRow"><span class="small">Sortierung:</span><select id="modelOverviewSort" aria-label="Models sortieren"><option value="name">A–Z</option><option value="rating-desc">Bewertung ↓</option></select></div>
  <div id="modelOverviewSearchPanel" class="modelSearchPanel hidden"><div class="modelSearchRow"><input id="modelOverviewSearchInput" type="search" autocomplete="off" placeholder="Model suchen …" aria-label="Model suchen"><button type="button" id="modelOverviewSearchClose" class="modelSearchClose" aria-label="Suche schließen">×</button></div><div id="modelOverviewSearchResults" class="modelSearchResults"></div></div>
  <div id="globalModelOverview" class="globalModelOverview"></div>
 </div>
@@ -3493,7 +3495,16 @@ function renderGlobalModelOverview(){
  syncOverviewContentNav();
  const box=document.getElementById('globalModelOverview');if(!box)return;
  const searchInput=document.getElementById('modelOverviewSearchInput');const nq=searchInput&&!document.getElementById('modelOverviewSearchPanel')?.classList.contains('hidden')?normalizeModelSearch(searchInput.value.trim()):'';
- const models=alphabeticalModels((state.models||[]).filter(m=>(!nq||normalizeModelSearch(m.name).includes(nq))&&overviewFilterAllowsModel(m.id)));
+ const sortSelect=document.getElementById('modelOverviewSort');
+ if(sortSelect&&!sortSelect.dataset.bound){sortSelect.dataset.bound='1';sortSelect.onchange=renderGlobalModelOverview;}
+ const filteredModels=(state.models||[]).filter(m=>(!nq||normalizeModelSearch(m.name).includes(nq))&&overviewFilterAllowsModel(m.id));
+ const models=sortSelect?.value==='rating-desc'
+  ? filteredModels.slice().sort((a,b)=>{
+     const rb=modelRatingSummary(b,b.height||'').percent;
+     const ra=modelRatingSummary(a,a.height||'').percent;
+     return rb-ra||String(a.name||'').localeCompare(String(b.name||''),'de',{sensitivity:'base'});
+    })
+  : alphabeticalModels(filteredModels);
  box.innerHTML=models.length?models.map(m=>{
   const locationParts=[m.city,m.region,m.country].map(x=>String(x||'').trim()).filter(Boolean);
   const originText=((effectiveFlag(m)||'')+' '+locationParts.join(', ')).trim()||'Herkunft offen';
