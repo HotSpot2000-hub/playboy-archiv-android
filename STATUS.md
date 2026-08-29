@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-08-29  
-Referenz-Commit: `76b7b301bc6dccbe11a3a7584aba63f7c1a3e7b2`
+Referenz-Commit: `f3e83ebcbb2aafaa41755279328f12e8fca5e7c2`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -87,19 +87,32 @@ Serien:
 - Pro Model werden nur Serien mit der höchsten Anzahl an zugehörigen Shootings angezeigt.
 - Gleichstände bleiben erhalten.
 
+Sortierung:
+- Standardmäßig alphabetisch A–Z.
+- Alternativ kann nach Bewertung absteigend sortiert werden.
+- Bei gleicher Bewertung bleibt die Reihenfolge alphabetisch.
+- Die neue Sortierung wurde auf dem Gerät erfolgreich getestet.
+
 ### Bewertung / Filter
 - Bewertungsfilter mit Von-/Bis-Bereich ist vorhanden.
-- Bewertungsdarstellung in der Model-Übersicht wurde zuletzt weiter angepasst.
 - Bewertungsdarstellung verwendet goldene Hervorhebung.
+- Im Model-Profil wird die Gesamtwertung als Sternezahl plus Prozentwert angezeigt, z. B. `8/10 ★ · 83%`.
+- Darunter werden die fünf Einzelwerte kompakt angezeigt:
+  `Größe · Gesicht · Busen · Pussy · Eindruck`.
+- Die Einzelwerte bleiben in einer kompakten Zeile (`11px`, `white-space: nowrap`).
+- Ist mindestens eine der fünf Kategorien `0`, erscheint der Hinweis `Bewertung unvollständig`.
+- Auch `Größe = 0` zählt ausdrücklich als unvollständige Bewertung.
+- Die Bewertungsberechnung verwendet weiterhin die bestehende Funktion `modelRatingSummary()`.
+- Prozentwert, Einzelwerte und Unvollständig-Hinweis wurden auf dem Gerät erfolgreich getestet.
 
 ## Offene Punkte
 
-### 1. Video-Fullscreen
-Hohe Priorität.
+### Video-Fullscreen
+Weiterhin offen, aktuell aber nicht der laufende Arbeitsschwerpunkt.
 
 Nicht wieder den nativen WebView-Video-Fullscreen verwenden, ohne neue Strategie.
 
-Besserer Ansatz:
+Falls das Thema wieder aufgenommen wird, ist der bevorzugte Ansatz:
 Eigener Fullscreen-Modus innerhalb der App:
 - Video-Overlay über gesamte App
 - schwarzer Hintergrund
@@ -107,7 +120,7 @@ Eigener Fullscreen-Modus innerhalb der App:
 - Android-Zurück sauber behandeln
 - keine problematische native WebView-Fullscreen-Umschaltung
 
-### 2. Kleiner Pull-Down-Effekt am oberen Rand
+### Kleiner Pull-Down-Effekt am oberen Rand
 Niedrige Priorität.
 
 Mehrere Ansätze wurden getestet und wieder verworfen:
@@ -143,15 +156,28 @@ Folgen:
 ### Native Video-Fullscreen
 Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
+## Zuletzt abgeschlossener Arbeitsblock
+
+Bewertungsdarstellung und Model-Sortierung wurden erweitert und auf dem Gerät erfolgreich getestet:
+
+- Gesamtwertung zusätzlich als Prozentwert
+- kompakte Aufschlüsselung aller fünf Bewertungskategorien
+- Kennzeichnung unvollständiger Bewertungen
+- `Größe = 0` wird als unvollständig erkannt
+- Model-Übersicht nach Bewertung absteigend sortierbar
+- alphabetische Reihenfolge als Standard und als Tie-Breaker erhalten
+
 ## Letzter sinnvoller nächster Schritt
 
-Video-Fullscreen neu konzipieren und als eigenen App-Fullscreen umsetzen.
+Der Bewertungsblock ist abgeschlossen.
 
-Vorher:
-- aktuellen stabilen Stand nicht verändern
-- Änderungen klein halten
-- jeweils nur eine Sache testen
-- neue APK immer als Update installieren
+Vor der nächsten funktionalen Erweiterung:
+- `AGENTS.md` und diese Datei lesen,
+- prüfen, ob `main` seit `f3e83ebcbb2aafaa41755279328f12e8fca5e7c2` weitergelaufen ist,
+- den nächsten Funktionsschwerpunkt bewusst festlegen,
+- den aktuellen stabilen Stand nicht unnötig verändern.
+
+Video-Fullscreen bleibt ein offener Punkt, ist aber nicht automatisch der nächste Arbeitsschritt.
 
 ## Pflegehinweis
 
