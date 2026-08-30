@@ -1610,7 +1610,48 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 #runFinalRcCheckBtn{pointer-events:auto!important}
 
 .archiveFilterBtn.filterActive{font-weight:800}
-.archiveFilterCard{max-height:88vh;overflow:auto}
+
+/* Filterdialog als echtes Overlay halten.
+   So bleibt die App-Navigation am unteren Rand unbeeinflusst und der Dialog
+   kann auch bei geöffneter Android-Tastatur vollständig gescrollt werden. */
+#archiveFilterModal{
+ position:fixed;
+ inset:0;
+ z-index:1000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:rgba(0,0,0,.28);
+ padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));
+}
+#archiveFilterModal.hidden{display:none!important}
+.archiveFilterCard{
+ position:relative;
+ width:min(520px,100%);
+ max-height:calc(100dvh - 28px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ background:#fff;
+ border-radius:18px;
+ padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));
+ box-shadow:0 12px 35px rgba(0,0,0,.18);
+}
+#archiveFilterClose{
+ position:sticky;
+ top:0;
+ z-index:2;
+ float:right;
+ width:42px;
+ min-width:42px;
+ height:42px;
+ margin:-4px -2px 0 8px;
+ border:0;
+ border-radius:50%;
+ background:#fff;
+ font-size:24px;
+ line-height:1;
+}
 .filterGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .filterSummary{margin:12px 0;padding:10px;border:1px solid var(--line);border-radius:10px}
 @media(max-width:520px){.filterGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.filterGrid input{min-width:0;width:100%}}
