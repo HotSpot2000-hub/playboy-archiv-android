@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-08-30  
-Referenz-Commit: `d3ec76abeb8cfc5b64eafbd8b226af72a9ae9cb7`
+Referenz-Commit: `6476f5b799c8f557b6436c990a695b2ed5de3cd6`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -105,8 +105,9 @@ Serien:
 Sortierung:
 - Standardmäßig alphabetisch `A–Z`.
 - Alternativ nach Gesamtbewertung absteigend mit `% ↓`.
-- Bei gleicher Bewertung bleibt die Reihenfolge alphabetisch.
-- Die Sortierung wurde auf dem Gerät erfolgreich getestet.
+- Sortiert wird nach der gerundeten, angezeigten Prozentzahl.
+- Bei gleicher angezeigter Prozentzahl wird alphabetisch nach Modelname sortiert.
+- Die korrigierte Sortierung wurde auf dem Gerät erfolgreich getestet.
 
 Profilbild-Filter:
 - Models können nach Profilbild gefiltert werden.
@@ -157,20 +158,29 @@ Größe:
 - `0★ = Rest`
 
 Gesamtbewertung:
-- Wird nur noch als Prozentwert dargestellt.
+- Wird grundsätzlich als Prozentwert dargestellt.
+- Bei exakt `100%` wird statt `100%` ein Favoriten-Herz `❤️` angezeigt.
 - Das gilt sowohl im Model-Profil als auch in der Model-Übersicht.
 - Die Sortierung verwendet `% ↓`.
-- Der Bewertungsfilter arbeitet mit einem Prozentbereich bis 100%.
+- Sortierung und Bewertungsfilter verwenden die gerundete, angezeigte Prozentzahl.
+- Der Bewertungsfilter arbeitet korrekt mit einem Prozentbereich von `0–100`.
+- Min-/Max-Eingaben wie `80` bleiben `80` und werden nicht mehr auf `10` begrenzt.
 - `0 Sterne` ist ein gültiger Bewertungswert.
 - `Bewertung unvollständig` erscheint nur, wenn eine Kategorie tatsächlich noch nicht bewertet wurde.
 - Automatische Favoritenmarkierung erfolgt bei `100%`.
 - Die Bewertungsberechnung verwendet weiterhin `modelRatingSummary()`.
+- Korrigierte Sortierung und korrigierter Bewertungsfilter wurden auf dem Gerät erfolgreich getestet.
 
 Darstellung:
 - Die fünf Einzelwerte werden weiterhin kompakt angezeigt:
   `Größe · Gesicht · Busen · Pussy · Eindruck`.
-- Die Einzelwerte bleiben in einer kompakten Zeile (`11px`, `white-space: nowrap`).
-- Goldene Hervorhebung der Bewertung bleibt erhalten.
+- Die Einzelwerte stehen links in einer kompakten Zeile (`11px`, `white-space: nowrap`).
+- Gesamtbewertung bzw. Favoriten-Herz steht rechts daneben.
+- Die Einzelwerte sind vertikal mittig zur Gesamtbewertung bzw. zum Favoriten-Herz ausgerichtet.
+- Das Favoriten-Herz ist im Profil größer und in der Model-Übersicht kleiner/dezenter.
+- Ein separates Favoriten-Herz im Profil gibt es nicht mehr.
+- Normale Prozentbewertungen bleiben golden hervorgehoben.
+- Diese Darstellung wurde auf dem Gerät erfolgreich getestet.
 
 ## Offene Punkte
 
@@ -225,18 +235,26 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Bewertungssystem wurde verfeinert und auf dem Gerät erfolgreich getestet:
+Bewertungssystem und Bewertungsdarstellung wurden verfeinert und auf dem Gerät erfolgreich getestet:
 
 - fünf Sterne pro Kategorie
-- neue prozentuale Abstufung je Stern
-- neue Größenstaffel mit fünf Sternen
+- prozentuale Abstufung je Stern
+- Größenstaffel mit fünf Sternen
 - bestehende Kategoriegewichtung beibehalten
-- Gesamtbewertung ausschließlich als Prozentwert
+- Gesamtbewertung als Prozentwert
+- bei 100% Herz statt Prozentzahl in Profil und Übersicht
+- separates Favoriten-Herz im Profil entfernt
+- Gesamtbewertung rechts, Einzelwerte links und vertikal zentriert
+- Profil-Herz größer, Übersichts-Herz kleiner
 - Sortierung `A–Z / % ↓`
-- Bewertungsfilter bis 100%
+- bei gleicher angezeigter Prozentzahl alphabetische Zweitsortierung
+- Bewertungsfilter korrekt auf `0–100%`
+- Sortierung und Filter vergleichen die gerundete, angezeigte Prozentzahl
 - `0 Sterne` als gültige Bewertung
 - `Bewertung unvollständig` nur bei tatsächlich fehlender Bewertung
 - automatische Favoritenmarkierung bei 100%
+
+Alle zuletzt korrigierten Punkte wurden auf dem Gerät erfolgreich bestätigt.
 
 Der vorherige Filterblock bleibt stabil:
 - Profilbild-Filter mit `Alle / ✓ / ✕`
@@ -249,7 +267,7 @@ Der aktuelle Bewertungsblock ist abgeschlossen und erfolgreich getestet.
 
 Vor der nächsten funktionalen Erweiterung:
 - `AGENTS.md` und diese Datei lesen,
-- prüfen, ob `main` seit `d3ec76abeb8cfc5b64eafbd8b226af72a9ae9cb7` weitergelaufen ist,
+- prüfen, ob `main` seit `6476f5b799c8f557b6436c990a695b2ed5de3cd6` weitergelaufen ist,
 - die aktuelle Version der zu ändernden Datei aus `main` laden,
 - den nächsten Funktionsschwerpunkt bewusst festlegen,
 - den aktuellen stabilen Stand nicht unnötig verändern.
