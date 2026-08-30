@@ -1615,19 +1615,18 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
    So bleibt die App-Navigation am unteren Rand unbeeinflusst und der Dialog
    kann auch bei geöffneter Android-Tastatur vollständig gescrollt werden. */
 body.archiveFilterOpen{overflow:hidden!important}
-body.archiveFilterKeyboardOpen .bottom{display:none!important}
+body.archiveFilterOpen .bottom{display:none!important}
 #archiveFilterModal{
  position:fixed;
- inset:0 0 calc(72px + env(safe-area-inset-bottom,0px)) 0;
+ inset:0;
  z-index:1000;
  display:flex;
  align-items:stretch;
  justify-content:center;
  background:rgba(0,0,0,.32);
- padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;
+ padding:calc(12px + env(safe-area-inset-top,0px)) 14px calc(12px + env(safe-area-inset-bottom,0px));
  overflow:hidden;
- overscroll-behavior:contain;
- touch-action:none;
+ overscroll-behavior:none;
 }
 #archiveFilterModal.hidden{display:none!important}
 .archiveFilterCard{
@@ -1635,9 +1634,9 @@ body.archiveFilterKeyboardOpen .bottom{display:none!important}
  height:100%;
  min-height:0;
  margin:0 auto;
- display:flex;
- flex-direction:column;
- overflow:hidden;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
  background:#fff;
  border-radius:18px;
  padding:0;
@@ -1645,7 +1644,9 @@ body.archiveFilterKeyboardOpen .bottom{display:none!important}
  pointer-events:auto;
 }
 .archiveFilterHeader{
- flex:0 0 auto;
+ position:sticky;
+ top:0;
+ z-index:4;
  display:flex;
  align-items:center;
  justify-content:space-between;
@@ -1668,16 +1669,13 @@ body.archiveFilterKeyboardOpen .bottom{display:none!important}
  touch-action:manipulation;
 }
 .archiveFilterScroll{
- flex:1 1 auto;
- min-height:0;
- overflow-y:auto;
- overscroll-behavior:contain;
- -webkit-overflow-scrolling:touch;
- touch-action:pan-y;
+ overflow:visible;
  padding:0 16px 16px;
 }
 .archiveFilterActions{
- flex:0 0 auto;
+ position:sticky;
+ bottom:0;
+ z-index:4;
  display:grid;
  gap:8px;
  padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));
@@ -2473,44 +2471,29 @@ document.addEventListener('click',function(e){
 },true);
 
 document.addEventListener('click',function(e){
- const f=e.target&&e.target.closest?e.target.closest('.archiveFilterBtn,#archiveFilterClose,#archiveFilterApply,#archiveFilterReset'):null;
+ const f=e.target&&e.target.closest?e.target.closest('.archiveFilterBtn'):null;
  if(!f)return;
  e.preventDefault();
  e.stopPropagation();
-
- if(f.classList.contains('archiveFilterBtn')){
-   openArchiveFilter();
-   return;
- }
-
- if(f.id==='archiveFilterClose'){
-   closeArchiveFilter();
-   return;
- }
-
- if(f.id==='archiveFilterApply'){
-   applyArchiveFilter();
-   return;
- }
-
- if(f.id==='archiveFilterReset'){
-   resetArchiveFilter();
- }
+ openArchiveFilter();
 },true);
 
-document.addEventListener('focusin',function(e){
- if(e.target&&e.target.closest&&e.target.closest('#archiveFilterModal')&&e.target.matches('input,textarea')){
-   document.body.classList.add('archiveFilterKeyboardOpen');
- }
-},true);
-document.addEventListener('focusout',function(e){
- if(!(e.target&&e.target.closest&&e.target.closest('#archiveFilterModal')))return;
- setTimeout(()=>{
-   const active=document.activeElement;
-   const stillEditing=!!(active&&active.closest&&active.closest('#archiveFilterModal')&&active.matches('input,textarea'));
-   document.body.classList.toggle('archiveFilterKeyboardOpen',stillEditing);
- },80);
-},true);
+function bindArchiveFilterAction(id,action){
+ const btn=document.getElementById(id);
+ if(!btn)return;
+ btn.addEventListener('pointerup',function(e){
+   e.preventDefault();
+   e.stopPropagation();
+   action();
+ },true);
+ btn.addEventListener('click',function(e){
+   e.preventDefault();
+   e.stopPropagation();
+ },true);
+}
+bindArchiveFilterAction('archiveFilterClose',closeArchiveFilter);
+bindArchiveFilterAction('archiveFilterApply',applyArchiveFilter);
+bindArchiveFilterAction('archiveFilterReset',resetArchiveFilter);
 /* Filter nicht bei jedem Tastendruck komplett neu berechnen.
    Die Archivsuche kann viele Beziehungen und Medien umfassen; eine synchrone
    Neuberechnung pro Zeichen blockiert sonst Eingabe und Schließen des Dialogs.
@@ -6794,11 +6777,10 @@ document.getElementById('archiveFilterRatingMax').value=archiveFilter.ratingMax?
   document.getElementById('archiveFilterVideo').value=archiveFilter.video;
   updateFilterSummary();
   document.body.classList.add('archiveFilterOpen');
-  document.body.classList.remove('archiveFilterKeyboardOpen');
   const modal=document.getElementById('archiveFilterModal');
   modal.classList.remove('hidden');
-  const scroll=document.getElementById('archiveFilterScroll');
-  if(scroll)scroll.scrollTop=0;
+  const card=modal.querySelector('.archiveFilterCard');
+  if(card)card.scrollTop=0;
 }
 function readArchiveFilterForm(){
   invalidateArchiveFilterCache();
@@ -6827,12 +6809,11 @@ function rerenderFilteredOverviews(){
 }
 function closeArchiveFilter(){
   document.getElementById('archiveFilterModal').classList.add('hidden');
-  document.body.classList.remove('archiveFilterOpen','archiveFilterKeyboardOpen');
+  document.body.classList.remove('archiveFilterOpen');
 }
 function applyArchiveFilter(){
   readArchiveFilterForm();
   updateFilterSummary();
-  closeArchiveFilter();
   rerenderFilteredOverviews();
 }
 function resetArchiveFilter(){
