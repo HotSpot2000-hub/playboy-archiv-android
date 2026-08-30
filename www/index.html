@@ -1202,7 +1202,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .titleDateFields{display:grid;grid-template-columns:.7fr 1.35fr 1fr;gap:8px}.titleDateFields>*{min-width:0}
 
 .mediaWorkShootPanel{max-height:min(82vh,760px);overflow:auto}
-.shootFinderHead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
+.shootFinderHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
 .shootFinderHead button{margin:0}
 .shootFinderFilters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px}
 .shootFinderSectionTitle{font-size:12px;font-weight:800;color:var(--muted);margin:12px 0 7px;text-transform:uppercase;letter-spacing:.04em}
@@ -3516,8 +3516,8 @@ function renderGlobalModelOverview(){
  });
  const models=sortSelect?.value==='rating-desc'
   ? filteredModels.slice().sort((a,b)=>{
-     const rb=modelRatingSummary(b,b.height||'').percent;
-     const ra=modelRatingSummary(a,a.height||'').percent;
+     const rb=Math.round(modelRatingSummary(b,b.height||'').percent);
+     const ra=Math.round(modelRatingSummary(a,a.height||'').percent);
      return rb-ra||String(a.name||'').localeCompare(String(b.name||''),'de',{sensitivity:'base'});
     })
   : alphabeticalModels(filteredModels);
@@ -6440,7 +6440,7 @@ if(!searchIds.has(m.id))return false;
 if(!modelPassesHeightFilter(m))return false;
 
 const heightValue=m.height||'';
-  const rating=modelRatingSummary(m,heightValue).percent;
+  const rating=Math.round(modelRatingSummary(m,heightValue).percent);
 
 if(archiveFilter.ratingMin!=null&&rating<archiveFilter.ratingMin)return false;
 if(archiveFilter.ratingMax!=null&&rating>archiveFilter.ratingMax)return false;
@@ -6700,8 +6700,8 @@ function readArchiveFilterForm(){
   archiveFilter.photosMax=Number.isFinite(pmax)?pmax:null;
   const rmin=parseInt(document.getElementById('archiveFilterRatingMin').value,10);
 const rmax=parseInt(document.getElementById('archiveFilterRatingMax').value,10);
-archiveFilter.ratingMin=Number.isFinite(rmin)?Math.max(0,Math.min(10,rmin)):null;
-archiveFilter.ratingMax=Number.isFinite(rmax)?Math.max(0,Math.min(10,rmax)):null;
+archiveFilter.ratingMin=Number.isFinite(rmin)?Math.max(0,Math.min(100,rmin)):null;
+archiveFilter.ratingMax=Number.isFinite(rmax)?Math.max(0,Math.min(100,rmax)):null;
   archiveFilter.video=document.getElementById('archiveFilterVideo').value;
 }
 function rerenderFilteredOverviews(){
