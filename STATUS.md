@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-08-30  
-Referenz-Commit: `6476f5b799c8f557b6436c990a695b2ed5de3cd6`
+Referenz-Commit: `e2bae4fc31c3b122312d285533d2d1aa79bc793d`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -34,24 +34,17 @@ Wichtige Hinweise:
 ## Wichtige Dateien
 
 - `www/index.html`
-  - Hauptoberfläche
-  - Navigation
-  - Archiv- und Model-Logik
+  - Hauptoberfläche, Navigation, Archiv- und Model-Logik
   - Foto- und Videoanzeige
   - Filter und Bewertungsdarstellung
   - IndexedDB / lokale Datenlogik
-
 - `native/MainActivity.java`
   - Capacitor BridgeActivity
   - registriert `ArchiveDirectoryPlugin`
-
 - `native/ArchiveDirectoryPlugin.java`
   - SAF-Verzeichniszugriff für Archiv-Restore
-
 - `AGENTS.md`
   - verbindliche Arbeits- und Übergaberegeln
-  - enthält den verbindlichen Datei-Workflow
-  - legt fest, dass `STATUS.md` nach funktionalen Änderungen gepflegt werden muss
 
 ## Was bereits funktioniert
 
@@ -74,67 +67,62 @@ Wichtige Hinweise:
 - Video-Wiedergabe funktioniert.
 - Hochkant und Querformat funktionieren.
 - Android-Zurück beendet die Videoansicht sauber.
+- Nativer Video-Fullscreen bleibt deaktiviert (`controlsList="nofullscreen"`), weil er reproduzierbar Freezes verursachte.
 
-Aktuell ist nativer Video-Fullscreen deaktiviert:
-`controlsList="nofullscreen"`
-
-Grund:
-Der native WebView-Video-Fullscreen führte reproduzierbar zu Freeze-Problemen.
-
-### Navigation
+### Navigation / normales Scrollen
 - Rückkehr aus „Zuletzt bearbeitet“ funktioniert korrekt.
 - Shooting-Detail kehrt wieder zur Archivansicht zurück.
+- Inhalte erscheinen beim normalen Scrollen nicht mehr oberhalb der Titelleiste.
+- Kleiner Pull-Down-Effekt am oberen Rand bleibt kosmetisch.
 
-### Titelleiste / Scroll
-- Inhalte erscheinen beim Scrollen nicht mehr oberhalb der Titelleiste.
-- Scrollen ist aktuell flüssig.
-- Kleiner Pull-Down-Effekt am oberen Rand ist noch vorhanden, aber nur kosmetisch.
+### Ein-Finger-Scrollen in Bearbeitungskarten
+- Das zuvor stark hakelige Ein-Finger-Scrollen in Bearbeitungskarten wurde behoben.
+- Ursache war ein globaler JavaScript-`touchmove`-Handler, der bei genau einem Finger und `window.scrollY <= 0` mit `preventDefault()` eingriff.
+- Dieser globale Touch-Block wurde entfernt.
+- Gerätetest erfolgreich bestätigt in:
+  - Archivfilter
+  - Model-Profil
+  - Verwaltung
+- Zwei-Finger-Scrollen war bereits vorher unauffällig.
+- Den globalen Ein-Finger-`touchmove`-Block nicht wieder einführen.
 
 ### Model-Übersicht
-Die Karten wurden kompakter gemacht.
-
-Titel:
-- Es werden nur Titel der höchsten erreichten Stufe angezeigt.
-- Gleichstände bleiben erhalten.
-- Niedrigere Stufen werden ausgeblendet.
-
-Serien:
-- Pro Model werden nur Serien mit der höchsten Anzahl an zugehörigen Shootings angezeigt.
-- Gleichstände bleiben erhalten.
-
-Sortierung:
-- Standardmäßig alphabetisch `A–Z`.
-- Alternativ nach Gesamtbewertung absteigend mit `% ↓`.
-- Sortiert wird nach der gerundeten, angezeigten Prozentzahl.
-- Bei gleicher angezeigter Prozentzahl wird alphabetisch nach Modelname sortiert.
-- Die korrigierte Sortierung wurde auf dem Gerät erfolgreich getestet.
+- Karten sind kompakt.
+- Titel: nur höchste erreichte Stufe, Gleichstände bleiben.
+- Serien: nur Serien mit höchster Shooting-Anzahl, Gleichstände bleiben.
+- Sortierung `A–Z` oder `% ↓`.
+- `% ↓` verwendet die gerundete angezeigte Prozentzahl; bei Gleichstand alphabetisch.
+- Korrigierte Sortierung auf Gerät getestet.
 
 Profilbild-Filter:
-- Models können nach Profilbild gefiltert werden.
-- Auswahl: `Alle`, `✓` (Profilbild vorhanden), `✕` (Profilbild nicht vorhanden).
-- Profilbild-Filter und Sortierung bleiben in der mobilen Ansicht gemeinsam in einer Zeile.
-- Der Profilbild-Filter kann mit der Bewertungssortierung kombiniert werden.
-- Darstellung und Filter wurden auf dem Gerät erfolgreich getestet.
+- `Alle / ✓ / ✕`
+- mit Bewertungssortierung kombinierbar
+- auf Gerät getestet.
 
-Filterwirkung auf weitere Übersichten:
-- Aktive Model-/Profilbildfilter wirken auch auf `Titel`, `Serien` und `Individuals`.
-- Shootings eines ausgeblendeten Models werden dort ebenfalls ausgeblendet.
-- Ausnahme: Enthält ein Shooting zusätzlich mindestens ein weiterhin sichtbares Model, bleibt das Shooting sichtbar.
-- Ausgeblendete Models werden in diesen gefilterten Übersichten nicht zusätzlich als Model-Gruppe geführt.
-- Dieses Verhalten wurde auf dem Gerät erfolgreich getestet.
+Filterwirkung:
+- Aktive Model-/Profilbildfilter wirken auf Models, Titel, Serien und Individuals.
+- Gemeinsame Shootings bleiben sichtbar, wenn mindestens ein sichtbares Model beteiligt ist.
+- Auf Gerät getestet.
+
+### Archivfilter / freie Suche
+Der Archivfilter ist jetzt als einfacher Bottom-Sheet-Dialog stabil nutzbar.
+
+Verhalten:
+- Ein-Finger-Scrollen funktioniert nach Entfernung des globalen `touchmove`-Blocks.
+- Freie Suche funktioniert.
+- `Filter anwenden` filtert, ohne die Filterkarte zu schließen.
+- `Filter zurücksetzen` setzt zurück, ohne die Karte zu schließen.
+- `×` schließt die Filterkarte.
+- Die untere App-Navigation wird bei geöffnetem Archivfilter ausgeblendet.
+
+Performance:
+- Die freie Suche wird pro Filterlauf nur einmal berechnet.
+- Die ermittelte Model-ID-Menge wird anschließend für die Modelprüfung wiederverwendet.
+- Dadurch friert die App beim Anwenden einer freien Suche nicht mehr ein.
+- Freie Suche wurde auf dem Gerät erfolgreich bestätigt.
 
 ### Bewertung / Filter
-
-Das Bewertungssystem wurde auf fünf Sterne pro Kategorie erweitert und erfolgreich auf dem Gerät getestet.
-
-Kategorien:
-- Größe
-- Gesicht
-- Busen
-- Pussy
-- Eindruck
-
-Sternebewertung innerhalb jeder Kategorie:
+Das Bewertungssystem verwendet fünf Sterne pro Kategorie:
 - `5 = 100%`
 - `4 = 90%`
 - `3 = 75%`
@@ -142,7 +130,7 @@ Sternebewertung innerhalb jeder Kategorie:
 - `1 = 30%`
 - `0 = 0%`
 
-Die bestehende Gewichtung der Kategorien untereinander bleibt unverändert:
+Gewichtung:
 - Größe: 30%
 - Gesicht: 25%
 - Busen: 20%
@@ -158,68 +146,51 @@ Größe:
 - `0★ = Rest`
 
 Gesamtbewertung:
-- Wird grundsätzlich als Prozentwert dargestellt.
-- Bei exakt `100%` wird statt `100%` ein Favoriten-Herz `❤️` angezeigt.
-- Das gilt sowohl im Model-Profil als auch in der Model-Übersicht.
-- Die Sortierung verwendet `% ↓`.
-- Sortierung und Bewertungsfilter verwenden die gerundete, angezeigte Prozentzahl.
-- Der Bewertungsfilter arbeitet korrekt mit einem Prozentbereich von `0–100`.
-- Min-/Max-Eingaben wie `80` bleiben `80` und werden nicht mehr auf `10` begrenzt.
-- `0 Sterne` ist ein gültiger Bewertungswert.
-- `Bewertung unvollständig` erscheint nur, wenn eine Kategorie tatsächlich noch nicht bewertet wurde.
-- Automatische Favoritenmarkierung erfolgt bei `100%`.
-- Die Bewertungsberechnung verwendet weiterhin `modelRatingSummary()`.
-- Korrigierte Sortierung und korrigierter Bewertungsfilter wurden auf dem Gerät erfolgreich getestet.
+- Prozentwert; bei exakt 100% wird `❤️` angezeigt.
+- Sortierung und Bewertungsfilter verwenden die gerundete angezeigte Prozentzahl.
+- Bewertungsfilter arbeitet mit `0–100`.
+- `0 Sterne` ist ein gültiger gesetzter Wert.
+- `Bewertung unvollständig` nur bei tatsächlich fehlender Kategorie.
+- Sortierung und Bewertungsfilter auf Gerät erfolgreich getestet.
 
 Darstellung:
-- Die fünf Einzelwerte werden weiterhin kompakt angezeigt:
-  `Größe · Gesicht · Busen · Pussy · Eindruck`.
-- Die Einzelwerte stehen links in einer kompakten Zeile (`11px`, `white-space: nowrap`).
-- Gesamtbewertung bzw. Favoriten-Herz steht rechts daneben.
-- Die Einzelwerte sind vertikal mittig zur Gesamtbewertung bzw. zum Favoriten-Herz ausgerichtet.
-- Das Favoriten-Herz ist im Profil größer und in der Model-Übersicht kleiner/dezenter.
-- Ein separates Favoriten-Herz im Profil gibt es nicht mehr.
-- Normale Prozentbewertungen bleiben golden hervorgehoben.
-- Diese Darstellung wurde auf dem Gerät erfolgreich getestet.
+- Einzelwerte links kompakt, Gesamtbewertung/Herz rechts und vertikal zentriert.
+- Herz im Profil größer als in der Übersicht.
+- Separates Favoriten-Herz im Profil entfernt.
+- Darstellung auf Gerät getestet.
 
 ## Offene Punkte
 
 ### Video-Fullscreen
-Weiterhin offen, aktuell aber nicht der laufende Arbeitsschwerpunkt.
+Weiterhin offen, aktuell kein Arbeitsschwerpunkt.
 
-Nicht wieder den nativen WebView-Video-Fullscreen verwenden, ohne neue Strategie.
-
-Falls das Thema wieder aufgenommen wird, ist der bevorzugte Ansatz:
-Eigener Fullscreen-Modus innerhalb der App:
-- Video-Overlay über gesamte App
+Bevorzugter zukünftiger Ansatz:
+- eigener Fullscreen-Modus innerhalb der App
 - schwarzer Hintergrund
 - App-Navigation ausblenden
 - Android-Zurück sauber behandeln
-- keine problematische native WebView-Fullscreen-Umschaltung
+- keine native WebView-Fullscreen-Umschaltung
 
 ### Kleiner Pull-Down-Effekt am oberen Rand
 Niedrige Priorität.
 
-Mehrere Ansätze wurden getestet und wieder verworfen:
-- `overscroll-behavior-y:none`
+Verworfene Ansätze:
+- `overscroll-behavior-y:none` als gezielter Lösungsversuch
 - `WebView.setOverScrollMode(View.OVER_SCROLL_NEVER)`
 - JavaScript-Abfangen von `touchmove`
 - `<main>` als eigener Scrollcontainer
 
-Der letzte Ansatz entfernte den Effekt, machte das Scrollen aber stark ruckelig und ließ Inhalte wieder oberhalb der Titelleiste erscheinen.
-
-Deshalb aktuellen stabilen Zustand beibehalten.
+Wichtig:
+Der zuletzt noch vorhandene globale JavaScript-`touchmove`-Block war zusätzlich die Ursache des hakeligen Ein-Finger-Scrollens in Bearbeitungskarten und wurde entfernt. Nicht wieder einführen.
 
 ## Dinge, die NICHT wiederholt werden sollten
 
 ### Immersive Fullscreen
-Frühere native Immersive-Versuche haben die App stark beschädigt bzw. unbenutzbar gemacht.
-
 Nicht global verwenden:
 - `WindowCompat.setDecorFitsSystemWindows(false)`
 
-Keine optionalen Plugin-Aufrufe wie:
-`plugin?.method?.().catch(...)`
+Keine optionalen Plugin-Aufrufe wie
+`plugin?.method?.().catch(...)`,
 wenn die Methode möglicherweise nicht existiert.
 
 ### Main-Scrollcontainer
@@ -230,49 +201,42 @@ Folgen:
 - Scrollen wurde unflüssig.
 - Inhalte erschienen wieder oberhalb der Titelleiste.
 
+### Globales Touchmove-Abfangen
+Keinen globalen Ein-Finger-`touchmove`-Handler mit `preventDefault()` wieder einführen.
+
+Folge:
+- Bearbeitungskarten scrollten mit einem Finger stark hakelig.
+- Filter, Profil und Verwaltung waren betroffen.
+
 ### Native Video-Fullscreen
 Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Bewertungssystem und Bewertungsdarstellung wurden verfeinert und auf dem Gerät erfolgreich getestet:
+Archivfilter und Bearbeitungskarten wurden stabilisiert:
 
-- fünf Sterne pro Kategorie
-- prozentuale Abstufung je Stern
-- Größenstaffel mit fünf Sternen
-- bestehende Kategoriegewichtung beibehalten
-- Gesamtbewertung als Prozentwert
-- bei 100% Herz statt Prozentzahl in Profil und Übersicht
-- separates Favoriten-Herz im Profil entfernt
-- Gesamtbewertung rechts, Einzelwerte links und vertikal zentriert
-- Profil-Herz größer, Übersichts-Herz kleiner
-- Sortierung `A–Z / % ↓`
-- bei gleicher angezeigter Prozentzahl alphabetische Zweitsortierung
-- Bewertungsfilter korrekt auf `0–100%`
-- Sortierung und Filter vergleichen die gerundete, angezeigte Prozentzahl
-- `0 Sterne` als gültige Bewertung
-- `Bewertung unvollständig` nur bei tatsächlich fehlender Bewertung
-- automatische Favoritenmarkierung bei 100%
+- freie Suche im Archivfilter funktioniert
+- Suchkorpus wird pro Filterlauf nur einmal berechnet
+- Freeze beim Anwenden der freien Suche behoben
+- `Filter anwenden` lässt die Filterkarte geöffnet
+- `Filter zurücksetzen` lässt die Filterkarte geöffnet
+- `×` schließt die Filterkarte
+- globales Ein-Finger-`touchmove`-Abfangen entfernt
+- Ein-Finger-Scrollen in Filter, Profil und Verwaltung auf dem Gerät erfolgreich getestet
 
-Alle zuletzt korrigierten Punkte wurden auf dem Gerät erfolgreich bestätigt.
-
-Der vorherige Filterblock bleibt stabil:
-- Profilbild-Filter mit `Alle / ✓ / ✕`
-- Filter wirkt auf Models sowie auf Titel, Serien und Individuals
-- gemeinsame Shootings bleiben sichtbar, wenn mindestens ein sichtbares Model beteiligt ist
+Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Stand.
 
 ## Letzter sinnvoller nächster Schritt
 
-Der aktuelle Bewertungsblock ist abgeschlossen und erfolgreich getestet.
+Der Archivfilter-/Scroll-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
 
-Vor der nächsten funktionalen Erweiterung:
-- `AGENTS.md` und diese Datei lesen,
-- prüfen, ob `main` seit `6476f5b799c8f557b6436c990a695b2ed5de3cd6` weitergelaufen ist,
-- die aktuelle Version der zu ändernden Datei aus `main` laden,
-- den nächsten Funktionsschwerpunkt bewusst festlegen,
-- den aktuellen stabilen Stand nicht unnötig verändern.
+Vor der nächsten funktionalen Änderung:
+- aktuellen `main`-Stand erneut prüfen,
+- aktuelle betroffene Datei aus `main` lesen,
+- neuen Funktionsschwerpunkt bewusst festlegen,
+- stabilen Filter- und Scrollstand nicht unnötig verändern.
 
-Video-Fullscreen bleibt ein offener Punkt, ist aber nicht automatisch der nächste Arbeitsschritt.
+Video-Fullscreen und der kleine kosmetische Pull-Down-Effekt bleiben offen, sind aber nicht automatisch der nächste Arbeitsschritt.
 
 ## Pflegehinweis
 
