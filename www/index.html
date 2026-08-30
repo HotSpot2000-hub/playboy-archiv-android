@@ -1616,19 +1616,19 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
    kann auch bei geöffneter Android-Tastatur vollständig gescrollt werden. */
 #archiveFilterModal{
  position:fixed;
- inset:0;
- z-index:1000;
+ inset:0 0 calc(72px + env(safe-area-inset-bottom,0px)) 0;
+ z-index:110;
  display:flex;
  align-items:center;
  justify-content:center;
  background:rgba(0,0,0,.28);
- padding:calc(14px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));
+ padding:calc(14px + env(safe-area-inset-top,0px)) 14px 14px;
 }
 #archiveFilterModal.hidden{display:none!important}
 .archiveFilterCard{
  position:relative;
  width:min(520px,100%);
- max-height:calc(100dvh - 28px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+ max-height:calc(100dvh - 100px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
  overflow-y:auto;
  overscroll-behavior:contain;
  -webkit-overflow-scrolling:touch;
@@ -2442,14 +2442,10 @@ document.addEventListener('click',function(e){
  else if(f.id==='archiveFilterApply')applyArchiveFilter();
  else if(f.id==='archiveFilterReset')resetArchiveFilter();
 },true);
-document.addEventListener('input',function(e){
- if(!e.target?.closest?.('#archiveFilterModal'))return;
- readArchiveFilterForm();updateFilterSummary();
-},true);
-document.addEventListener('change',function(e){
- if(!e.target?.closest?.('#archiveFilterModal'))return;
- readArchiveFilterForm();updateFilterSummary();
-},true);
+/* Filter nicht bei jedem Tastendruck komplett neu berechnen.
+   Die Archivsuche kann viele Beziehungen und Medien umfassen; eine synchrone
+   Neuberechnung pro Zeichen blockiert sonst Eingabe und Schließen des Dialogs.
+   Ausgewertet wird gezielt bei „Filter anwenden“ bzw. „Filter zurücksetzen“. */
 
 document.addEventListener('click',function(e){
   const b=e.target&&e.target.closest?e.target.closest('#runFinalRcCheckBtn'):null;
