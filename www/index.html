@@ -1617,21 +1617,20 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 #archiveFilterModal{
  position:fixed;
  inset:0 0 calc(72px + env(safe-area-inset-bottom,0px)) 0;
- z-index:110;
- display:flex;
- align-items:center;
- justify-content:center;
+ z-index:130;
+ display:block;
+ overflow-y:auto;
  background:rgba(0,0,0,.28);
  padding:calc(14px + env(safe-area-inset-top,0px)) 14px 14px;
+ touch-action:pan-y;
 }
 #archiveFilterModal.hidden{display:none!important}
 .archiveFilterCard{
  position:relative;
  width:min(520px,100%);
- max-height:calc(100dvh - 100px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
- overflow-y:auto;
- overscroll-behavior:contain;
- -webkit-overflow-scrolling:touch;
+ max-height:none;
+ overflow:visible;
+ margin:0 auto;
  background:#fff;
  border-radius:18px;
  padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));
@@ -2433,13 +2432,15 @@ document.addEventListener('click',function(e){
   }
 },true);
 
-document.addEventListener('pointerdown',function(e){
+document.addEventListener('click',function(e){
  const f=e.target&&e.target.closest?e.target.closest('.archiveFilterBtn,#archiveFilterClose,#archiveFilterApply,#archiveFilterReset'):null;
  if(!f)return;
- e.preventDefault();e.stopPropagation();
+ e.preventDefault();
+ e.stopPropagation();
 
  if(f.classList.contains('archiveFilterBtn')){
    openArchiveFilter();
+   document.getElementById('archiveFilterModal').scrollTop=0;
    return;
  }
 
@@ -2454,12 +2455,12 @@ document.addEventListener('pointerdown',function(e){
  }
 
  if(f.id==='archiveFilterApply'){
-   requestAnimationFrame(()=>applyArchiveFilter());
+   applyArchiveFilter();
    return;
  }
 
  if(f.id==='archiveFilterReset'){
-   requestAnimationFrame(()=>resetArchiveFilter());
+   resetArchiveFilter();
  }
 },true);
 /* Filter nicht bei jedem Tastendruck komplett neu berechnen.
