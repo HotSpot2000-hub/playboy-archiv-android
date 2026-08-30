@@ -1614,43 +1614,77 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 /* Filterdialog als echtes Overlay halten.
    So bleibt die App-Navigation am unteren Rand unbeeinflusst und der Dialog
    kann auch bei geöffneter Android-Tastatur vollständig gescrollt werden. */
+body.archiveFilterOpen{overflow:hidden!important}
+body.archiveFilterKeyboardOpen .bottom{display:none!important}
 #archiveFilterModal{
  position:fixed;
  inset:0 0 calc(72px + env(safe-area-inset-bottom,0px)) 0;
- z-index:130;
- display:block;
- overflow-y:auto;
- background:rgba(0,0,0,.28);
- padding:calc(14px + env(safe-area-inset-top,0px)) 14px 14px;
- touch-action:pan-y;
+ z-index:1000;
+ display:flex;
+ align-items:stretch;
+ justify-content:center;
+ background:rgba(0,0,0,.32);
+ padding:calc(12px + env(safe-area-inset-top,0px)) 14px 12px;
+ overflow:hidden;
+ overscroll-behavior:contain;
+ touch-action:none;
 }
 #archiveFilterModal.hidden{display:none!important}
 .archiveFilterCard{
- position:relative;
  width:min(520px,100%);
- max-height:none;
- overflow:visible;
+ height:100%;
+ min-height:0;
  margin:0 auto;
+ display:flex;
+ flex-direction:column;
+ overflow:hidden;
  background:#fff;
  border-radius:18px;
- padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));
+ padding:0;
  box-shadow:0 12px 35px rgba(0,0,0,.18);
+ pointer-events:auto;
 }
+.archiveFilterHeader{
+ flex:0 0 auto;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ padding:18px 16px 10px;
+ background:#fff;
+ border-bottom:1px solid var(--line);
+}
+.archiveFilterHeader h2{margin:0}
 #archiveFilterClose{
- position:sticky;
- top:0;
- z-index:2;
- float:right;
+ flex:0 0 42px;
  width:42px;
- min-width:42px;
  height:42px;
- margin:-4px -2px 0 8px;
+ margin:0;
  border:0;
  border-radius:50%;
  background:#fff;
  font-size:24px;
  line-height:1;
+ touch-action:manipulation;
 }
+.archiveFilterScroll{
+ flex:1 1 auto;
+ min-height:0;
+ overflow-y:auto;
+ overscroll-behavior:contain;
+ -webkit-overflow-scrolling:touch;
+ touch-action:pan-y;
+ padding:0 16px 16px;
+}
+.archiveFilterActions{
+ flex:0 0 auto;
+ display:grid;
+ gap:8px;
+ padding:10px 16px calc(14px + env(safe-area-inset-bottom,0px));
+ background:#fff;
+ border-top:1px solid var(--line);
+}
+.archiveFilterActions .btn{margin:0;touch-action:manipulation}
 .filterGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .filterSummary{margin:12px 0;padding:10px;border:1px solid var(--line);border-radius:10px}
 @media(max-width:520px){.filterGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}.filterGrid input{min-width:0;width:100%}}
@@ -1896,39 +1930,45 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 <div id="archiveFilterModal" class="modal hidden">
  <div class="modalCard archiveFilterCard">
-  <button type="button" class="modalClose" id="archiveFilterClose">×</button>
-  <h2>Übersicht filtern</h2>
-  <label>Freie Suche</label>
-  <input id="archiveFilterText" placeholder='z. B. "Cyber Girl" + "SE Model"'>
-  <div class="small" style="margin-top:6px">
-   UND: <b>+</b> oder <b>AND</b> · ODER: <b>|</b> oder <b>OR</b> · mehrteilige Begriffe am besten in Anführungszeichen.
+  <div class="archiveFilterHeader">
+   <h2>Übersicht filtern</h2>
+   <button type="button" class="modalClose" id="archiveFilterClose" aria-label="Filter schließen">×</button>
   </div>
-  <div class="filterSection">
-   <div class="filterSectionTitle">Größe</div>
-   <div class="filterGrid">
-    <div><label>von</label><input id="archiveFilterHeightMin" inputmode="decimal" placeholder="1,50 m"></div>
-    <div><label>bis</label><input id="archiveFilterHeightMax" inputmode="decimal" placeholder="1,60 m"></div>
+  <div class="archiveFilterScroll" id="archiveFilterScroll">
+   <label>Freie Suche</label>
+   <input id="archiveFilterText" placeholder='z. B. "Cyber Girl" + "SE Model"'>
+   <div class="small" style="margin-top:6px">
+    UND: <b>+</b> oder <b>AND</b> · ODER: <b>|</b> oder <b>OR</b> · mehrteilige Begriffe am besten in Anführungszeichen.
    </div>
-  </div>
-  <div class="filterSection">
-   <div class="filterSectionTitle">Fotos</div>
-   <div class="filterGrid">
-    <div><label>mindestens</label><input id="archiveFilterPhotosMin" inputmode="numeric" placeholder="z. B. 40"></div>
-    <div><label>maximal</label><input id="archiveFilterPhotosMax" inputmode="numeric"></div>
+   <div class="filterSection">
+    <div class="filterSectionTitle">Größe</div>
+    <div class="filterGrid">
+     <div><label>von</label><input id="archiveFilterHeightMin" inputmode="decimal" placeholder="1,50 m"></div>
+     <div><label>bis</label><input id="archiveFilterHeightMax" inputmode="decimal" placeholder="1,60 m"></div>
+    </div>
    </div>
+   <div class="filterSection">
+    <div class="filterSectionTitle">Fotos</div>
+    <div class="filterGrid">
+     <div><label>mindestens</label><input id="archiveFilterPhotosMin" inputmode="numeric" placeholder="z. B. 40"></div>
+     <div><label>maximal</label><input id="archiveFilterPhotosMax" inputmode="numeric"></div>
+    </div>
+   </div>
+   <div class="filterSection">
+    <div class="filterSectionTitle">Bewertung</div>
+    <div class="filterGrid">
+     <div><label>von</label><input id="archiveFilterRatingMin" inputmode="numeric" placeholder="0"></div>
+     <div><label>bis</label><input id="archiveFilterRatingMax" inputmode="numeric" placeholder="100"></div>
+    </div>
+   </div>
+   <label>Video</label>
+   <select id="archiveFilterVideo"><option value="">egal</option><option value="yes">mindestens ein Video</option><option value="no">kein Video</option></select>
+   <div id="archiveFilterSummary" class="filterSummary">Keine Filter aktiv.</div>
   </div>
- <div class="filterSection">
-  <div class="filterSectionTitle">Bewertung</div>
-  <div class="filterGrid">
-    <div><label>von</label><input id="archiveFilterRatingMin" inputmode="numeric" placeholder="0"></div>
-    <div><label>bis</label><input id="archiveFilterRatingMax" inputmode="numeric" placeholder="100"></div>
+  <div class="archiveFilterActions">
+   <button type="button" class="btn primary" id="archiveFilterApply">Filter anwenden</button>
+   <button type="button" class="btn" id="archiveFilterReset">Filter zurücksetzen</button>
   </div>
- </div> 
-  <label>Video</label>
-  <select id="archiveFilterVideo"><option value="">egal</option><option value="yes">mindestens ein Video</option><option value="no">kein Video</option></select>
-  <div id="archiveFilterSummary" class="filterSummary">Keine Filter aktiv.</div>
-  <button type="button" class="btn primary" id="archiveFilterApply">Filter anwenden</button>
-  <button type="button" class="btn" id="archiveFilterReset">Filter zurücksetzen</button>
  </div>
 </div>
 <section id="modelsView">
@@ -2440,17 +2480,11 @@ document.addEventListener('click',function(e){
 
  if(f.classList.contains('archiveFilterBtn')){
    openArchiveFilter();
-   document.getElementById('archiveFilterModal').scrollTop=0;
    return;
  }
 
- const active=document.activeElement;
- if(active&&active.closest&&active.closest('#archiveFilterModal')&&typeof active.blur==='function'){
-   active.blur();
- }
-
  if(f.id==='archiveFilterClose'){
-   document.getElementById('archiveFilterModal').classList.add('hidden');
+   closeArchiveFilter();
    return;
  }
 
@@ -2462,6 +2496,20 @@ document.addEventListener('click',function(e){
  if(f.id==='archiveFilterReset'){
    resetArchiveFilter();
  }
+},true);
+
+document.addEventListener('focusin',function(e){
+ if(e.target&&e.target.closest&&e.target.closest('#archiveFilterModal')&&e.target.matches('input,textarea')){
+   document.body.classList.add('archiveFilterKeyboardOpen');
+ }
+},true);
+document.addEventListener('focusout',function(e){
+ if(!(e.target&&e.target.closest&&e.target.closest('#archiveFilterModal')))return;
+ setTimeout(()=>{
+   const active=document.activeElement;
+   const stillEditing=!!(active&&active.closest&&active.closest('#archiveFilterModal')&&active.matches('input,textarea'));
+   document.body.classList.toggle('archiveFilterKeyboardOpen',stillEditing);
+ },80);
 },true);
 /* Filter nicht bei jedem Tastendruck komplett neu berechnen.
    Die Archivsuche kann viele Beziehungen und Medien umfassen; eine synchrone
@@ -6745,7 +6793,12 @@ function openArchiveFilter(){
 document.getElementById('archiveFilterRatingMax').value=archiveFilter.ratingMax??'';
   document.getElementById('archiveFilterVideo').value=archiveFilter.video;
   updateFilterSummary();
-  document.getElementById('archiveFilterModal').classList.remove('hidden');
+  document.body.classList.add('archiveFilterOpen');
+  document.body.classList.remove('archiveFilterKeyboardOpen');
+  const modal=document.getElementById('archiveFilterModal');
+  modal.classList.remove('hidden');
+  const scroll=document.getElementById('archiveFilterScroll');
+  if(scroll)scroll.scrollTop=0;
 }
 function readArchiveFilterForm(){
   invalidateArchiveFilterCache();
@@ -6772,10 +6825,14 @@ function rerenderFilteredOverviews(){
     requestAnimationFrame(()=>syncFilteredOverviewNav());
   });
 }
+function closeArchiveFilter(){
+  document.getElementById('archiveFilterModal').classList.add('hidden');
+  document.body.classList.remove('archiveFilterOpen','archiveFilterKeyboardOpen');
+}
 function applyArchiveFilter(){
   readArchiveFilterForm();
   updateFilterSummary();
-  document.getElementById('archiveFilterModal').classList.add('hidden');
+  closeArchiveFilter();
   rerenderFilteredOverviews();
 }
 function resetArchiveFilter(){
