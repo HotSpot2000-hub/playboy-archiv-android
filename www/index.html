@@ -2433,14 +2433,34 @@ document.addEventListener('click',function(e){
   }
 },true);
 
-document.addEventListener('click',function(e){
+document.addEventListener('pointerdown',function(e){
  const f=e.target&&e.target.closest?e.target.closest('.archiveFilterBtn,#archiveFilterClose,#archiveFilterApply,#archiveFilterReset'):null;
  if(!f)return;
  e.preventDefault();e.stopPropagation();
- if(f.classList.contains('archiveFilterBtn'))openArchiveFilter();
- else if(f.id==='archiveFilterClose')document.getElementById('archiveFilterModal').classList.add('hidden');
- else if(f.id==='archiveFilterApply')applyArchiveFilter();
- else if(f.id==='archiveFilterReset')resetArchiveFilter();
+
+ if(f.classList.contains('archiveFilterBtn')){
+   openArchiveFilter();
+   return;
+ }
+
+ const active=document.activeElement;
+ if(active&&active.closest&&active.closest('#archiveFilterModal')&&typeof active.blur==='function'){
+   active.blur();
+ }
+
+ if(f.id==='archiveFilterClose'){
+   document.getElementById('archiveFilterModal').classList.add('hidden');
+   return;
+ }
+
+ if(f.id==='archiveFilterApply'){
+   requestAnimationFrame(()=>applyArchiveFilter());
+   return;
+ }
+
+ if(f.id==='archiveFilterReset'){
+   requestAnimationFrame(()=>resetArchiveFilter());
+ }
 },true);
 /* Filter nicht bei jedem Tastendruck komplett neu berechnen.
    Die Archivsuche kann viele Beziehungen und Medien umfassen; eine synchrone
