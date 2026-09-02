@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
-Stand: 2026-08-30  
-Referenz-Commit: `e2bae4fc31c3b122312d285533d2d1aa79bc793d`
+Stand: 2026-09-02  
+Referenz-Commit: `3417dbb541f5a33ade3caa48fbea757be02318e5`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -73,6 +73,9 @@ Wichtige Hinweise:
 - Rückkehr aus „Zuletzt bearbeitet“ funktioniert korrekt.
 - Shooting-Detail kehrt wieder zur Archivansicht zurück.
 - Inhalte erscheinen beim normalen Scrollen nicht mehr oberhalb der Titelleiste.
+- Beim Öffnen eines Model-Profils aus den Übersichten `Models`, `Titel`, `Serien` und `Individuals` wird die Seite gezielt auf `top: 0` gesetzt.
+- Dadurch startet das Profil wieder ganz oben beim Profilbild statt auf der vorherigen Scrollhöhe der Übersicht.
+- Dieses Verhalten wurde auf dem Gerät erfolgreich getestet.
 - Kleiner Pull-Down-Effekt am oberen Rand bleibt kosmetisch.
 
 ### Ein-Finger-Scrollen in Bearbeitungskarten
@@ -213,28 +216,31 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Archivfilter und Bearbeitungskarten wurden stabilisiert:
+Profilnavigation aus den Übersichten wurde korrigiert:
 
-- freie Suche im Archivfilter funktioniert
-- Suchkorpus wird pro Filterlauf nur einmal berechnet
-- Freeze beim Anwenden der freien Suche behoben
-- `Filter anwenden` lässt die Filterkarte geöffnet
-- `Filter zurücksetzen` lässt die Filterkarte geöffnet
+- Beim Antippen eines Models aus `Models` startet das Profil wieder ganz oben.
+- Dasselbe gilt für Model-Links in `Titel`, `Serien` und `Individuals`.
+- Die vorherige Scrollposition der Übersicht wird beim Wechsel ins Profil nicht mehr übernommen.
+- Umsetzung über einen gezielten `window.scrollTo({top:0,behavior:'auto'})` direkt nach dem Profilwechsel.
+- Gerätetest erfolgreich bestätigt.
+
+Der vorherige stabile Archivfilter-/Scroll-Stand bleibt unverändert:
+- freie Suche funktioniert ohne Freeze
+- `Filter anwenden` und `Filter zurücksetzen` lassen die Filterkarte geöffnet
 - `×` schließt die Filterkarte
-- globales Ein-Finger-`touchmove`-Abfangen entfernt
-- Ein-Finger-Scrollen in Filter, Profil und Verwaltung auf dem Gerät erfolgreich getestet
+- Ein-Finger-Scrollen funktioniert in Filter, Profil und Verwaltung
 
 Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Stand.
 
 ## Letzter sinnvoller nächster Schritt
 
-Der Archivfilter-/Scroll-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
+Der Profil-Scroll-Fehler ist abgeschlossen und auf dem Gerät bestätigt.
 
 Vor der nächsten funktionalen Änderung:
 - aktuellen `main`-Stand erneut prüfen,
 - aktuelle betroffene Datei aus `main` lesen,
 - neuen Funktionsschwerpunkt bewusst festlegen,
-- stabilen Filter- und Scrollstand nicht unnötig verändern.
+- den stabilen Filter-, Scroll- und Profilnavigationsstand nicht unnötig verändern.
 
 Video-Fullscreen und der kleine kosmetische Pull-Down-Effekt bleiben offen, sind aber nicht automatisch der nächste Arbeitsschritt.
 
