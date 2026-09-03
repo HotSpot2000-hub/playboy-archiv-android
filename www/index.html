@@ -51,15 +51,15 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profilePhotoWrap{position:relative}.profilePhotoWrap .photo{aspect-ratio:2/3;height:auto;overflow:hidden}.profilePhotoWrap img{width:100%;height:100%;object-fit:cover}
 .photoAction{position:absolute;right:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:13px}
 .bioBox{line-height:1.55;margin-top:14px}.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.mini{background:#fafafa;border:1px solid var(--line);border-radius:12px;padding:10px}
-.profileShortBioCard{padding:0;overflow:hidden}
+.profileShortBioCard{padding:0;overflow:hidden;position:relative}
 .profileShortBioHead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:#fff;padding:16px;font:inherit;text-align:left}
 .profileShortBioHead strong{font-size:18px}
 .profileShortBioIcon{font-size:18px;line-height:1;transition:transform .16s ease}
 .profileShortBioContent{position:relative;padding:0 16px 16px;white-space:pre-wrap;line-height:1.55;font-size:14px}
-.profileShortBioCard.closed .profileShortBioContent{max-height:190px;overflow:hidden;padding-bottom:28px}
-.profileShortBioCard.closed .profileShortBioContent::after{content:"";position:absolute;left:0;right:0;bottom:0;height:58px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 78%)}
+.profileShortBioCard.closed .profileShortBioContent{max-height:160px;overflow:hidden;padding-bottom:34px}
+.profileShortBioCard.closed .profileShortBioContent::after{content:"";position:absolute;left:0;right:0;bottom:0;height:76px;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.88) 58%,#fff 82%);pointer-events:none}
 .profileShortBioCard.closed .profileShortBioIcon{transform:rotate(-90deg)}
-.profileShortBioToggleHint{position:absolute;right:16px;bottom:8px;z-index:1;font-size:11px;font-weight:700;color:var(--muted);background:#fff;padding-left:8px}
+.profileShortBioToggleHint{position:absolute;right:14px;bottom:10px;z-index:2;border:0;border-radius:999px;background:#fff;color:var(--ink);padding:6px 9px;font:inherit;font-size:11px;font-weight:750;box-shadow:0 1px 8px rgba(0,0,0,.08)}
 .profileShortBioCard:not(.closed) .profileShortBioToggleHint{display:none}
 #editBio{min-height:260px;line-height:1.45}
 
@@ -2176,7 +2176,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <span class="profileShortBioIcon" aria-hidden="true">⌄</span>
  </button>
  <div class="profileShortBioContent" id="profileShortBioContent"></div>
- <div class="profileShortBioToggleHint">Mehr anzeigen</div>
+ <button type="button" class="profileShortBioToggleHint" id="profileShortBioMore">Mehr anzeigen</button>
 </div>
 
 <div class="profileArchiveCard">
@@ -7290,12 +7290,14 @@ function openProfileEdit(){
  bindLocationSuggestionInputs('editCountry','editRegion','editCity');
  openOverlay('profileEditPane');
 }
-document.getElementById('profileShortBioToggle').onclick=()=>{
+function toggleProfileShortBio(){
  const card=document.getElementById('profileShortBioCard');
  if(!card)return;
  const closed=card.classList.toggle('closed');
  document.getElementById('profileShortBioToggle').setAttribute('aria-expanded',closed?'false':'true');
-};
+}
+document.getElementById('profileShortBioToggle').onclick=toggleProfileShortBio;
+document.getElementById('profileShortBioMore').onclick=toggleProfileShortBio;
 document.getElementById('profilePhotoArea').onclick=openProfileEdit;
 document.getElementById('profilePhotoArea').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfileEdit()}};
 document.getElementById('cancelProfileBtn').onclick=closeOverlay;
