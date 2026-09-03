@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
-Stand: 2026-09-02  
-Referenz-Commit: `3417dbb541f5a33ade3caa48fbea757be02318e5`
+Stand: 2026-09-03  
+Referenz-Commit: `1e8d49248f620ba98f9f44a5b620387218f48cc5`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -125,42 +125,46 @@ Performance:
 - Freie Suche wurde auf dem Gerät erfolgreich bestätigt.
 
 ### Bewertung / Filter
-Das Bewertungssystem verwendet fünf Sterne pro Kategorie:
+Das Bewertungssystem verwendet fünf bewertete Stufen pro Kategorie:
 - `5 = 100%`
 - `4 = 90%`
-- `3 = 75%`
-- `2 = 55%`
-- `1 = 30%`
-- `0 = 0%`
+- `3 = 70%`
+- `2 = 40%`
+- `1 = 0%`
+
+`Nicht bewertet` bleibt davon getrennt. Eine bereits gewählte Sternstufe kann durch erneutes Antippen wieder auf `nicht bewertet` gesetzt werden.
 
 Gewichtung:
-- Größe: 30%
-- Gesicht: 25%
+- Größe: 20%
+- Gesicht: 20%
 - Busen: 20%
-- Pussy: 15%
-- Eindruck: 10%
+- Pussy: 20%
+- Eindruck: 20%
 
 Größe:
 - `5★ = 5'1"–5'4"`
 - `4★ = 5'0" / 5'5"`
 - `3★ = 4'11" / 5'6"`
 - `2★ = 4'10" / 5'7"`
-- `1★ = 4'9" / 5'8"`
-- `0★ = Rest`
+- `1★ = Rest`
 
-Gesamtbewertung:
-- Prozentwert; bei exakt 100% wird `❤️` angezeigt.
+Entscheidungshilfen:
+- Gesicht: `5★ zum verlieben`, `4★ sehr attraktiv`, `3★ attraktiv`, `2★ neutral`, `1★ Rest`
+- Busen: `5★ geile Dinger`, `4★ 1 kleiner Abstrich`, `3★ 2 kleine Abstriche`, `2★ neutral`, `1★ Rest`
+- Pussy: `5★ blank`, `4★ kurz, schmal`, `3★ kurz, breit`, `2★ neutral`, `1★ Rest`
+- Eindruck: `5★ top`, `4★ irgendetwas fehlt`, `3★ hat was`, `2★ neutral`, `1★ Rest`
+
+Darstellung und Verhalten:
+- Die Entscheidungshilfen werden direkt beim Bewerten im Model-Profil angezeigt.
+- Gesamtbewertung ist der gleichgewichtete Mittelwert der fünf Kategorien.
+- Bei exakt 100% wird `❤️` angezeigt.
 - Sortierung und Bewertungsfilter verwenden die gerundete angezeigte Prozentzahl.
 - Bewertungsfilter arbeitet mit `0–100`.
-- `0 Sterne` ist ein gültiger gesetzter Wert.
 - `Bewertung unvollständig` nur bei tatsächlich fehlender Kategorie.
-- Sortierung und Bewertungsfilter auf Gerät erfolgreich getestet.
-
-Darstellung:
+- Die neue Bewertungslogik wurde im normalen Gebrauch auf dem Gerät erfolgreich bestätigt.
 - Einzelwerte links kompakt, Gesamtbewertung/Herz rechts und vertikal zentriert.
 - Herz im Profil größer als in der Übersicht.
 - Separates Favoriten-Herz im Profil entfernt.
-- Darstellung auf Gerät getestet.
 
 ## Offene Punkte
 
@@ -216,31 +220,30 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Profilnavigation aus den Übersichten wurde korrigiert:
+Das Bewertungssystem wurde auf feste, nachvollziehbare Regeln umgestellt:
 
-- Beim Antippen eines Models aus `Models` startet das Profil wieder ganz oben.
-- Dasselbe gilt für Model-Links in `Titel`, `Serien` und `Individuals`.
-- Die vorherige Scrollposition der Übersicht wird beim Wechsel ins Profil nicht mehr übernommen.
-- Umsetzung über einen gezielten `window.scrollTo({top:0,behavior:'auto'})` direkt nach dem Profilwechsel.
-- Gerätetest erfolgreich bestätigt.
+- neue Werteskala `5/4/3/2/1 = 100/90/70/40/0%`
+- keine bewertete 0-Sterne-Stufe mehr; `nicht bewertet` bleibt separat
+- alle fünf Kategorien sind mit jeweils 20% gleich gewichtet
+- Größenwertung verwendet `1★ = Rest`
+- Gesicht, Busen, Pussy und Eindruck haben feste Entscheidungshilfen
+- die Regeln werden direkt bei den Sternwertungen angezeigt
+- erneutes Antippen derselben Stufe setzt eine manuelle Kategorie auf `nicht bewertet`
+- Gerätetest und normaler Gebrauch erfolgreich bestätigt
 
-Der vorherige stabile Archivfilter-/Scroll-Stand bleibt unverändert:
-- freie Suche funktioniert ohne Freeze
-- `Filter anwenden` und `Filter zurücksetzen` lassen die Filterkarte geöffnet
-- `×` schließt die Filterkarte
-- Ein-Finger-Scrollen funktioniert in Filter, Profil und Verwaltung
+Der vorherige stabile Archivfilter-, Scroll- und Profilnavigationsstand bleibt unverändert.
 
-Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Stand.
+Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Bewertungsstand.
 
 ## Letzter sinnvoller nächster Schritt
 
-Der Profil-Scroll-Fehler ist abgeschlossen und auf dem Gerät bestätigt.
+Der Bewertungs-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
 
 Vor der nächsten funktionalen Änderung:
 - aktuellen `main`-Stand erneut prüfen,
 - aktuelle betroffene Datei aus `main` lesen,
 - neuen Funktionsschwerpunkt bewusst festlegen,
-- den stabilen Filter-, Scroll- und Profilnavigationsstand nicht unnötig verändern.
+- den stabilen Bewertungs-, Filter-, Scroll- und Profilnavigationsstand nicht unnötig verändern.
 
 Video-Fullscreen und der kleine kosmetische Pull-Down-Effekt bleiben offen, sind aber nicht automatisch der nächste Arbeitsschritt.
 
