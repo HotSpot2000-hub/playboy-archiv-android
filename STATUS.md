@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-09-03  
-Referenz-Commit: `1e8d49248f620ba98f9f44a5b620387218f48cc5`
+Referenz-Commit: `0ca344275969d63ba6c3f3bc934fa71af3e4f1a8`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -124,6 +124,18 @@ Performance:
 - Dadurch friert die App beim Anwenden einer freien Suche nicht mehr ein.
 - Freie Suche wurde auf dem Gerät erfolgreich bestätigt.
 
+### Kurzbio im Model-Profil
+- Direkt unter den Kerndaten gibt es eine eigene klappbare `Kurzbio`-Karte.
+- Die Kurzbio wird pro Model gespeichert und in der normalen Profil-Bearbeitung als Freitext gepflegt.
+- Absätze und Zwischenüberschriften bleiben im Profil erhalten.
+- Modelle ohne hinterlegte Kurzbio zeigen die Karte nicht an.
+- Die Karte startet eingeklappt.
+- Im eingeklappten Zustand bleibt der Anfang der Bio sichtbar.
+- Der untere Textbereich läuft in einen deutlich sichtbaren weißen Verlauf aus.
+- Unten rechts erscheint `Mehr anzeigen`; Antippen klappt die vollständige Bio auf.
+- Der Pfeil in der Kartenüberschrift kann ebenfalls zum Auf- und Zuklappen verwendet werden.
+- Darstellung, Bearbeitung, Speichern sowie Auf-/Zuklappen wurden auf dem Gerät erfolgreich getestet.
+
 ### Bewertung / Filter
 Das Bewertungssystem verwendet fünf bewertete Stufen pro Kategorie:
 - `5 = 100%`
@@ -220,30 +232,32 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Das Bewertungssystem wurde auf feste, nachvollziehbare Regeln umgestellt:
+Die Kurzbio im Model-Profil wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
 
-- neue Werteskala `5/4/3/2/1 = 100/90/70/40/0%`
-- keine bewertete 0-Sterne-Stufe mehr; `nicht bewertet` bleibt separat
-- alle fünf Kategorien sind mit jeweils 20% gleich gewichtet
-- Größenwertung verwendet `1★ = Rest`
-- Gesicht, Busen, Pussy und Eindruck haben feste Entscheidungshilfen
-- die Regeln werden direkt bei den Sternwertungen angezeigt
-- erneutes Antippen derselben Stufe setzt eine manuelle Kategorie auf `nicht bewertet`
-- Gerätetest und normaler Gebrauch erfolgreich bestätigt
+- eigene Kurzbio-Karte direkt unter den Kerndaten
+- Kurzbio pro Model frei bearbeitbar und speicherbar
+- Modelle ohne Bio zeigen keine leere Karte
+- eingeklappt bleibt der Anfang lesbar
+- sanftes Ausblenden am unteren Rand
+- sichtbare Schaltfläche `Mehr anzeigen`
+- vollständiger Text nach dem Aufklappen
+- Auf-/Zuklappen auch über den Pfeil in der Kartenüberschrift
+- Absätze und Zwischenüberschriften werden beibehalten
+- Gerätetest erfolgreich bestätigt
 
-Der vorherige stabile Archivfilter-, Scroll- und Profilnavigationsstand bleibt unverändert.
+Der zuvor stabile Bewertungs-, Archivfilter-, Scroll- und Profilnavigationsstand bleibt unverändert.
 
-Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Bewertungsstand.
+Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Kurzbio-Stand.
 
 ## Letzter sinnvoller nächster Schritt
 
-Der Bewertungs-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
+Der Kurzbio-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
 
 Vor der nächsten funktionalen Änderung:
 - aktuellen `main`-Stand erneut prüfen,
 - aktuelle betroffene Datei aus `main` lesen,
 - neuen Funktionsschwerpunkt bewusst festlegen,
-- den stabilen Bewertungs-, Filter-, Scroll- und Profilnavigationsstand nicht unnötig verändern.
+- den stabilen Kurzbio-, Bewertungs-, Filter-, Scroll- und Profilnavigationsstand nicht unnötig verändern.
 
 Video-Fullscreen und der kleine kosmetische Pull-Down-Effekt bleiben offen, sind aber nicht automatisch der nächste Arbeitsschritt.
 
