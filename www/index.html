@@ -51,6 +51,18 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profilePhotoWrap{position:relative}.profilePhotoWrap .photo{aspect-ratio:2/3;height:auto;overflow:hidden}.profilePhotoWrap img{width:100%;height:100%;object-fit:cover}
 .photoAction{position:absolute;right:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:13px}
 .bioBox{line-height:1.55;margin-top:14px}.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.mini{background:#fafafa;border:1px solid var(--line);border-radius:12px;padding:10px}
+.profileShortBioCard{padding:0;overflow:hidden}
+.profileShortBioHead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:#fff;padding:16px;font:inherit;text-align:left}
+.profileShortBioHead strong{font-size:18px}
+.profileShortBioIcon{font-size:18px;line-height:1;transition:transform .16s ease}
+.profileShortBioContent{position:relative;padding:0 16px 16px;white-space:pre-wrap;line-height:1.55;font-size:14px}
+.profileShortBioCard.closed .profileShortBioContent{max-height:190px;overflow:hidden;padding-bottom:28px}
+.profileShortBioCard.closed .profileShortBioContent::after{content:"";position:absolute;left:0;right:0;bottom:0;height:58px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 78%)}
+.profileShortBioCard.closed .profileShortBioIcon{transform:rotate(-90deg)}
+.profileShortBioToggleHint{position:absolute;right:16px;bottom:8px;z-index:1;font-size:11px;font-weight:700;color:var(--muted);background:#fff;padding-left:8px}
+.profileShortBioCard:not(.closed) .profileShortBioToggleHint{display:none}
+#editBio{min-height:260px;line-height:1.45}
+
 
 .archiveTabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.archiveTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px}.archiveTabs button.active{background:#171717;color:#fff}
 .managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}@media(max-width:520px){.managementTools{grid-template-columns:1fr}}
@@ -2158,6 +2170,14 @@ body.archiveFilterOpen .bottom{display:none!important}
   </div>
 </div>
 
+<div class="card profileShortBioCard closed hidden" id="profileShortBioCard">
+ <button type="button" class="profileShortBioHead" id="profileShortBioToggle" aria-expanded="false">
+  <strong>Kurzbio</strong>
+  <span class="profileShortBioIcon" aria-hidden="true">⌄</span>
+ </button>
+ <div class="profileShortBioContent" id="profileShortBioContent"></div>
+ <div class="profileShortBioToggleHint">Mehr anzeigen</div>
+</div>
 
 <div class="profileArchiveCard">
  <div class="archiveMainNav profileArchiveNav">
@@ -2323,6 +2343,9 @@ body.archiveFilterOpen .bottom{display:none!important}
 <label>Gewicht</label><input id="editWeight" inputmode="text" placeholder="z. B. 54 kg oder 119 lb">
 <div class="small" style="margin-top:-6px;margin-bottom:8px">Eingabe wahlweise in kg oder lb; die Anzeige wird automatisch vereinheitlicht.</div>
   <label>Geburtsdatum</label><input id="editBirthdate" type="date">
+  <label>Kurzbio</label>
+  <textarea id="editBio" placeholder="Kurzbio mit Absätzen und Zwischenüberschriften eingeben"></textarea>
+  <div class="small" style="margin-top:4px;margin-bottom:8px">Im Profil bleibt der Anfang auch eingeklappt lesbar; erst beim Aufklappen erscheint der vollständige Text.</div>
   <div class="modelRatingEdit">
   <div class="small" style="margin-top:12px;font-weight:700">Bewertung · alle Kategorien je 20%</div>
 
@@ -4103,6 +4126,16 @@ document.getElementById('profileRatingIncomplete').textContent=
  document.getElementById('meta').innerHTML=`${esc(originText)} · <strong>${esc(heightText)}</strong>`;
  document.getElementById('categoryTags').innerHTML=(m.categories||[]).map(c=>`<span class="tag">${esc(c)}</span>`).join('');
  document.getElementById('shortBio').textContent=m.bio||'Noch keine Kurzbiografie.';
+ const bioCard=document.getElementById('profileShortBioCard');
+ const bioContent=document.getElementById('profileShortBioContent');
+ const bioToggle=document.getElementById('profileShortBioToggle');
+ const bioText=String(m.bio||'').trim();
+ if(bioCard&&bioContent&&bioToggle){
+   bioCard.classList.toggle('hidden',!bioText);
+   bioCard.classList.add('closed');
+   bioContent.textContent=bioText;
+   bioToggle.setAttribute('aria-expanded','false');
+ }
  const photo=document.getElementById('profilePhotoArea');
  photo.innerHTML=m.photo?`<img src="${m.photo}" alt="Profilbild">`:'Profilbild';
  const locationParts=[m.city,m.region,m.country].filter(Boolean);
@@ -7248,6 +7281,7 @@ function openProfileEdit(){
  document.getElementById('editMeasurements').value=m.measurements||'';
  document.getElementById('editWeight').value=m.weight||'';
  document.getElementById('editBirthdate').value=m.birthdate||'';
+ document.getElementById('editBio').value=m.bio||'';
  setStarRating(document.getElementById('editRatingFace'),m.ratingFace);
  setStarRating(document.getElementById('editRatingBust'),m.ratingBust); 
  setStarRating(document.getElementById('editRatingPussy'),m.ratingPussy); 
@@ -7256,6 +7290,12 @@ function openProfileEdit(){
  bindLocationSuggestionInputs('editCountry','editRegion','editCity');
  openOverlay('profileEditPane');
 }
+document.getElementById('profileShortBioToggle').onclick=()=>{
+ const card=document.getElementById('profileShortBioCard');
+ if(!card)return;
+ const closed=card.classList.toggle('closed');
+ document.getElementById('profileShortBioToggle').setAttribute('aria-expanded',closed?'false':'true');
+};
 document.getElementById('profilePhotoArea').onclick=openProfileEdit;
 document.getElementById('profilePhotoArea').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfileEdit()}};
 document.getElementById('cancelProfileBtn').onclick=closeOverlay;
@@ -7331,6 +7371,7 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  m.measurements=document.getElementById('editMeasurements').value.trim();
  m.weight=document.getElementById('editWeight').value.trim();
  m.birthdate=document.getElementById('editBirthdate').value;
+ m.bio=document.getElementById('editBio').value.trim();
  m.ratingFace=ratingStoredValue(document.getElementById('editRatingFace'));
  m.ratingBust=ratingStoredValue(document.getElementById('editRatingBust')); 
  m.ratingPussy=ratingStoredValue(document.getElementById('editRatingPussy'));
