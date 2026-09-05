@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-09-05  
-Referenz-Commit: `802dc1246d9230213bf14ef92ba6ac34ab89af1f`
+Referenz-Commit: `61657ec04cfbddcfa27ddff913acb47102064a02`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -159,7 +159,13 @@ Performance:
 - Research kann nach Model und Status gefiltert werden.
 - Alte freie Research-Notizen werden beim Normalisieren des Zustands in strukturierte offene Research-Fälle überführt.
 - Allgemeines, nicht modelbezogenes Research wird separat unterstützt.
-- Daten-Schema-Version ist für diesen Stand auf `2` angehoben.
+- Daten-Schema-Version ist für diesen Stand auf `3` angehoben.
+- Belege innerhalb eines Research-Falls sind jetzt einzeln strukturiert.
+- Jeder Beleg kann als `Stützt` oder `Widerspricht` markiert werden.
+- Pro Beleg können Quelle, Fundstelle, konkrete Aussage, Quellenart, Qualität und Prüfdatum gespeichert werden.
+- Belege können einzeln hinzugefügt und entfernt werden.
+- Die Research-Übersicht zeigt die Anzahl stützender und widersprechender Belege.
+- Bestehende einfache Belege werden beim Normalisieren in die neue Struktur übernommen.
 - Research-Ergebnisse werden noch nicht automatisch in den finalen Archivbestand übernommen.
 - Grundsatz bleibt: `Indizienbasiert` ist kein bestätigter Fakt.
 - Research-Bereich, Anlegen/Speichern eines Falls und Filter wurden auf dem Gerät erfolgreich getestet.
@@ -209,11 +215,10 @@ Darstellung und Verhalten:
 ## Offene Punkte
 
 ### Research – nächste Ausbaustufe
-Der erste Research-Arbeitsblock ist stabil und auf dem Gerät getestet.
+Die ersten beiden Research-Arbeitsblöcke sind stabil und auf dem Gerät getestet.
 
 Bewusst noch nicht umgesetzt:
 - kontrollierte Übernahme eines bestätigten Research-Ergebnisses als kanonischer Archiv-Fakt bzw. Archiv-Beziehung
-- strukturierte Einzelbelege mit eigener Fundstelle, Aussage, Quellenart/Qualität und `stützt / widerspricht`
 - weitergehende kanonische Strukturen für Galerie/Pictorial, Ausgabe/Issue, Collection/Reihe, Bereich/Plattform und Titelprogramme
 - automatische Ableitung oder Aktualisierung der Kurzbio aus bestätigten Fakten
 
@@ -276,30 +281,30 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Der erste separate Research-Bereich wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
+Research Schritt 2 wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
 
-- eigene Hauptansicht `Research`
-- Research-Fälle anlegen, bearbeiten und löschen
-- Status `Offen / Indizienbasiert / Unklar / Bestätigt / Verworfen`
-- Model-Zuordnung und optionale Shooting-Zuordnung
-- Art der Forschungsfrage
-- Frage/Behauptung, Belege/Quellen und Zwischenergebnis
-- Datum `Zuletzt geprüft`
-- Filter nach Model und Status
-- allgemeines Research ohne Model-Zuordnung
-- Migration alter freier Research-Notizen in strukturierte offene Fälle
-- Daten-Schema-Version `2`
-- keine automatische Übernahme in das finale Archiv
+- strukturierte Einzelbelege innerhalb eines Research-Falls
+- Wirkung je Beleg: `Stützt` oder `Widerspricht`
+- Quelle und genaue Fundstelle
+- konkrete Aussage des Belegs
+- Quellenart
+- Qualitätsstufe `Hoch / Mittel / Niedrig / Nicht bewertet`
+- eigenes Prüfdatum je Beleg
+- einzelne Belege hinzufügen und entfernen
+- Übersicht zählt stützende und widersprechende Belege getrennt
+- bestehende einfache Belege werden in die neue Struktur übernommen
+- Daten-Schema-Version `3`
+- weiterhin keine automatische Übernahme in das finale Archiv
 
-Der Research-Bereich, das Anlegen/Speichern eines Falls und die Filter wurden auf dem Gerät erfolgreich getestet.
+Anlegen, Speichern, erneutes Öffnen sowie die strukturierte Belegdarstellung wurden auf dem Gerät erfolgreich getestet.
 
 Der zuvor stabile Kurzbio-, Bewertungs-, Archivfilter-, Scroll- und Profilnavigationsstand bleibt unverändert.
 
-Der aktuelle `www/index.html`-Stand auf `main` am Referenz-Commit `802dc1246d9230213bf14ef92ba6ac34ab89af1f` entspricht diesem erfolgreich getesteten Research-Stand.
+Der aktuelle `www/index.html`-Stand auf `main` am Referenz-Commit `61657ec04cfbddcfa27ddff913acb47102064a02` entspricht diesem erfolgreich getesteten Research-Stand.
 
 ## Letzter sinnvoller nächster Schritt
 
-Der erste Research-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
+Research Schritt 2 ist abgeschlossen und auf dem Gerät bestätigt.
 
 Vor der nächsten funktionalen Änderung:
 - aktuellen `main`-Stand erneut prüfen,
@@ -307,9 +312,9 @@ Vor der nächsten funktionalen Änderung:
 - Research schrittweise erweitern und den stabilen Archiv-/Profilbereich nicht unnötig verändern.
 
 Sinnvolle nächste Research-Stufe:
-- Belege innerhalb eines Research-Falls stärker strukturieren, damit Quelle, Fundstelle, Aussage und `stützt / widerspricht` einzeln nachvollziehbar werden.
+- die kontrollierte Übernahme bestätigter Research-Ergebnisse vorbereiten, zunächst mit einer Vorschau der konkreten kanonischen Änderung und ausdrücklicher Bestätigung vor dem Schreiben.
 
-Die kontrollierte Übernahme bestätigter Research-Ergebnisse in kanonische Archiv-Fakten/-Beziehungen sollte erst danach folgen.
+Dabei Stammdaten-Anzeige, recherchierten Bestwert und redaktionelle Kurzbio weiterhin getrennt halten.
 
 Video-Fullscreen und der kleine kosmetische Pull-Down-Effekt bleiben offen, sind aber nicht automatisch der nächste Arbeitsschritt.
 
