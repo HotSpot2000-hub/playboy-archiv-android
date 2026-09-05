@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-09-05  
-Referenz-Commit: `6e72531a32761f1903134965f1f8ebc0f0f7b23b`
+Referenz-Commit: `fde95f3cffbe154ca2c3c2db1559f567d24cae43`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -40,6 +40,7 @@ Wichtige Hinweise:
   - Research-Bereich und Research-Datenlogik
   - IndexedDB / lokale Datenlogik
   - Datenmodell-Grundlage für `careerFacts` und `bioFacts`
+  - schreibgeschützte Anzeige bestätigter Karriere-/Biofakten im Model-Profil
 - `native/MainActivity.java`
   - Capacitor BridgeActivity
   - registriert `ArchiveDirectoryPlugin`
@@ -135,6 +136,17 @@ Wichtige Hinweise:
 - Die gesicherte Fundstelle `ab Seite 110` bleibt als Herkunfts-/Beleginformation im Research-Fall.
 - Die Übernahme und Speicherung funktionieren auf dem Gerät.
 
+### Bestätigte Fakten im Model-Profil
+- Bestätigte `careerFacts` und `bioFacts` werden im Model-Profil in einer eigenen klappbaren Karte `Bestätigte Fakten` angezeigt.
+- Die Karte erscheint nur, wenn für das Model mindestens ein aktiver kanonischer Fakt vorhanden ist.
+- Karriere- und Biografiefakten werden getrennt dargestellt.
+- Bei vorhandener Herkunft wird die verknüpfte Research-ID angezeigt.
+- Die Ansicht ist bewusst schreibgeschützt; Bearbeiten und Löschen wurden in diesem Schritt nicht ergänzt.
+- Model ohne bestätigte Fakten: Karte bleibt ausgeblendet.
+- Model mit bestätigtem Fakt: Karte, Inhalt und Auf-/Zuklappen funktionieren.
+- Bestehende Kurzbio, Archivansicht und Navigation funktionieren weiterhin.
+- Gerätetest erfolgreich.
+
 Fachliche Zielstruktur:
 - Research bleibt Belege- und Herkunftsebene.
 - Bestätigte Ergebnisse können später kontrolliert in Stammdaten, bestehende Archivobjekte/-beziehungen, Titelvergaben, Karrierefakten oder Biofakten überführt werden.
@@ -204,26 +216,19 @@ Verworfene Ansätze:
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Research – erste kontrollierte Übernahme in die Faktenebene wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
+Die kanonische Faktenebene wurde im Model-Profil sichtbar gemacht und auf dem Gerät erfolgreich getestet:
 
-- nur `Bestätigt`-Research mit Modelbezug kann übernommen werden
-- Ziel wahlweise `Karrierefakt` oder `Biofakt`
-- konkrete Vorschau vor dem Schreiben
-- ausdrückliche Bestätigung erforderlich
-- Herkunft über `sourceResearchIds`
-- Research-Belege und Fundstellen bleiben unverändert im Research-Fall
-- erzeugte Fakten werden am Research-Fall kenntlich gemacht
+- neue klappbare Karte `Bestätigte Fakten`
+- Anzeige nur bei vorhandenen aktiven Karriere-/Biofakten
+- getrennte Bereiche `Karriere` und `Biografie`
+- Anzeige der Research-Herkunft über `sourceResearchIds`
+- bewusst nur lesend, ohne Bearbeiten/Löschen
+- Model ohne Fakten bleibt unverändert ohne zusätzliche Karte
+- bestehende Kurzbio, Archivansicht und Navigation bleiben funktionsfähig
 
-Erster Praxistest erfolgreich:
-- Model: Tiffany Ryan
-- Art: Magazinauftritt
-- Medium: American Curves
-- Werk/Ausgabe: More Lingerie — Summer 2009
-- Zeitraum: 2009
-- Rolle: Model
-- gesicherte Fundstelle: ab Seite 110, weiterhin im Research-Fall
+Der bereits übernommene Tiffany-Ryan-/American-Curves-Karrierefakt wird damit im Profil als kanonischer Fakt sichtbar.
 
-Der fachlich getestete Code-Stand ist Commit `6e72531a32761f1903134965f1f8ebc0f0f7b23b`.
+Der fachlich getestete Code-Stand ist Commit `fde95f3cffbe154ca2c3c2db1559f567d24cae43`.
 
 ## Letzter sinnvoller nächster Schritt
 
@@ -233,9 +238,10 @@ Vor der nächsten funktionalen Änderung:
 - den stabilen Archiv-/Profilbereich nicht unnötig verändern.
 
 Nächster kleiner Research-Schritt:
-- die kontrollierte Übernahme auf weitere sinnvolle Fälle prüfen und die Faktenebene sichtbar nutzbar machen,
-- dabei weiterhin keine automatische Übernahme in Stammdaten oder komplexe Archivbeziehungen,
-- anschließend den geplanten Recherche-Import vorbereiten, damit recherchierte Erkenntnisse nicht manuell einzeln zerlegt werden müssen.
+- den geplanten Recherche-Import konzipieren und anschließend klein umsetzen,
+- Ziel: mehrere recherchierte Erkenntnisse strukturiert vorbereiten, damit sie nicht manuell einzeln zerlegt werden müssen,
+- Übernahme in kanonische Fakten weiterhin nur kontrolliert und ausdrücklich bestätigt,
+- noch kein automatisches Überschreiben der Kurzbio.
 
 ## Pflegehinweis
 
