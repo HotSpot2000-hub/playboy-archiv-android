@@ -62,6 +62,15 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profileShortBioToggleHint{position:absolute;right:14px;bottom:10px;z-index:2;border:0;border-radius:999px;background:#fff;color:var(--ink);padding:6px 9px;font:inherit;font-size:11px;font-weight:750;box-shadow:0 1px 8px rgba(0,0,0,.08)}
 .profileShortBioCard:not(.closed) .profileShortBioToggleHint{display:none}
 #editBio{min-height:260px;line-height:1.45}
+.profileFactsCard.hidden{display:none}
+.profileFactsSection+.profileFactsSection{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.profileFactsSectionTitle{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
+.profileFactItem{border-top:1px solid var(--line);padding:10px 0}
+.profileFactItem:first-of-type{border-top:0;padding-top:0}
+.profileFactTitle{font-weight:800}
+.profileFactMeta{font-size:13px;line-height:1.45;margin-top:3px}
+.profileFactDetails{font-size:13px;line-height:1.45;margin-top:5px;white-space:pre-wrap}
+.profileFactSource{font-size:11px;color:var(--muted);margin-top:5px}
 
 .researchToolbar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}
 .researchToolbar .btn{margin-top:0;width:auto}
@@ -2206,6 +2215,14 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button type="button" class="profileShortBioToggleHint" id="profileShortBioMore">Mehr anzeigen</button>
 </div>
 
+<div class="card collapseCard profileFactsCard hidden" id="profileFactsCard" data-collapse-key="profile-confirmed-facts" data-collapse-default="closed">
+ <button type="button" class="collapseHead">
+  <h2>Bestätigte Fakten <span class="small" id="profileFactsCount"></span></h2>
+  <span class="collapseIcon">⌄</span>
+ </button>
+ <div class="collapseBody" id="profileFactsBody"></div>
+</div>
+
 <div class="profileArchiveCard">
  <div class="archiveMainNav profileArchiveNav">
   <button type="button" class="active" data-profile-archive-tab="titles">Titel</button>
@@ -4185,6 +4202,36 @@ function renderProfileArchiveOverview(){
  box.innerHTML=profileArchiveHeader('Individuals',`Shootings von ${modelName} ohne Zuordnung zu Serie oder Titel.`,'Shooting')+(individuals.length?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${cards}</div></div></div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals für dieses Model.</div>'));
  bindProfileArchiveCommon(box);
 }
+function profileFactSourceText(f){
+ const ids=Array.isArray(f?.sourceResearchIds)?f.sourceResearchIds.filter(Boolean):[];
+ return ids.length?`Research-Herkunft: ${ids.join(', ')}`:'';
+}
+function renderProfileConfirmedFacts(modelId){
+ const card=document.getElementById('profileFactsCard');
+ const body=document.getElementById('profileFactsBody');
+ const count=document.getElementById('profileFactsCount');
+ if(!card||!body||!count)return;
+ const career=(state.careerFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const bio=(state.bioFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const total=career.length+bio.length;
+ card.classList.toggle('hidden',total===0);
+ count.textContent=total?`(${total})`:'';
+ if(!total){body.innerHTML='';return}
+ const careerHtml=career.map(f=>{
+  const meta=[f.organization,f.work,f.date,f.role].filter(Boolean).map(esc).join(' · ');
+  const source=profileFactSourceText(f);
+  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Karrierefakt')}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
+ }).join('');
+ const bioHtml=bio.map(f=>{
+  const span=[f.from,f.to].filter(Boolean).join(' – ');
+  const type=f.statementType==='self'?'Selbstaussage':'';
+  const meta=[span,type].filter(Boolean).map(esc).join(' · ');
+  const source=profileFactSourceText(f);
+  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.category||'Biofakt')}</div>${f.statement?`<div class="profileFactDetails">${esc(f.statement)}</div>`:''}${meta?`<div class="profileFactMeta">${meta}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
+ }).join('');
+ body.innerHTML=(career.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Karriere</div>${careerHtml}</div>`:'')+
+  (bio.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Biografie</div>${bioHtml}</div>`:'');
+}
 function render(){
  const m=model();
  const heightEvidence=currentEvidence('height');
@@ -4230,6 +4277,7 @@ document.getElementById('profileRatingIncomplete').textContent=
  document.getElementById('summaryMeasurements').textContent=m.measurements||'—';
  document.getElementById('summaryWeight').textContent=formatWeightDisplay(m.weight);
  document.getElementById('summaryBirth').textContent=formatBirthWithAge(m.birthdate);
+ renderProfileConfirmedFacts(m.id);
  renderProfileArchiveOverview();
  renderArchive();
 }
