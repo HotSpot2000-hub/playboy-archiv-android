@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-09-05  
-Referenz-Commit: `4304e9e2c7275fefbe61507a5790b17f56697336`
+Referenz-Commit: `6430cbd9a2e1a0a136e4c879fc357987ebd50e9c`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -137,6 +137,17 @@ Wichtige Hinweise:
 - Die gesicherte Fundstelle `ab Seite 110` bleibt als Herkunfts-/Beleginformation im Research-Fall.
 - Die Übernahme und Speicherung funktionieren auf dem Gerät.
 
+### Standardisierte Faktübernahme – Research Schritt 4.1
+- Der bestehende Übernahme-Assistent füllt bei bestätigten Research-Fällen die kanonischen Faktfelder jetzt möglichst automatisch und einheitlich voraus.
+- Karrierefakten verwenden kontrollierte Auswahllisten für `Art` und `Rolle`, damit gleiche Sachverhalte nicht durch unterschiedliche freie Schreibweisen auseinanderlaufen.
+- Regelbasierte Vorschläge erkennen bereits typische Fälle wie Magazinauftritt, Videoauftritt, TV-Auftritt, Werbung/Kampagne, Kalender, Auszeichnung und Event/Auftritt.
+- Bei bekannten Quellen bzw. Medien können Medium/Organisation, Werk/Ausgabe, Datum/Zeitraum, Rolle und sichere Details soweit eindeutig ableitbar vorausgefüllt werden.
+- Vorausgefüllte Werte bleiben vollständig editierbar; bei Unsicherheit soll nicht geraten werden.
+- Belege und Fundstellen bleiben weiterhin ausschließlich als Herkunfts-/Belegspur im Research-Fall; `sourceResearchIds` verknüpft den kanonischen Fakt mit seiner Research-Herkunft.
+- Biofakten erhalten ebenfalls eine vorsichtige Vorauswahl für Kategorie und Aussageart, insbesondere für Selbstaussagen.
+- Gerätetest mit den beiden verbliebenen bestätigten Tiffany-Ryan-Fällen erfolgreich: Die vorgeschlagenen Felder konnten praktisch ohne unnötige Nacharbeit übernommen werden.
+- Damit ist der gewünschte Standardablauf bestätigt: `Research-Fall → standardisierter Vorschlag → bei Bedarf korrigieren → Vorschau → Übernahme bestätigen`.
+
 ### Bestätigte Fakten im Model-Profil
 - Bestätigte `careerFacts` und `bioFacts` werden im Model-Profil in einer eigenen klappbaren Karte `Bestätigte Fakten` angezeigt.
 - Die Karte erscheint nur, wenn für das Model mindestens ein aktiver kanonischer Fakt vorhanden ist.
@@ -190,7 +201,7 @@ Fachliche Zielstruktur:
 Bewusst noch nicht umgesetzt:
 - eigene Übersicht und nachträgliche Bearbeitung von `careerFacts` und `bioFacts`
 - kontrollierte Übernahme bestätigter Research-Ergebnisse in bestehende Archivobjekte/-beziehungen oder Stammdaten
-- weitergehende Zieltypen und automatische Feldzuordnung für die Research-Übernahme
+- weitere Zieltypen und zusätzliche standardisierte Zuordnungsregeln für die Research-Übernahme, falls sie sich in der Praxis als nötig erweisen
 - weitergehende Präzisierung vorhandener Archivstrukturen für Galerie/Pictorial, Ausgabe/Issue, Collection/Reihe, Bereich/Plattform und Titelprogramme
 - Bio-Generator aus bestätigten Fakten
 - automatisch erzeugtes „Auf einen Blick“
@@ -209,7 +220,8 @@ Geplante Reihenfolge:
 1. Research 3: Faktenmodell und erste kontrollierte Übernahme in `careerFacts` / `bioFacts` – abgeschlossen.
 2. Research 4: Übernahme-Assistent mit exakter Vorschau und ausdrücklicher Bestätigung – erster stabiler Stand abgeschlossen.
 3. Research 5: Recherche-Import zur strukturierten Vorbereitung mehrerer Erkenntnisse – erster stabiler Stand abgeschlossen und praktisch getestet.
-4. Research 6: Bio-Generator aus bestätigten Fakten mit Entwurf und Freigabe – nächster Schritt.
+4. Research 4.1: standardisierte und vorausgefüllte Faktübernahme – abgeschlossen und auf dem Gerät praktisch getestet.
+5. Research 6: Bio-Generator aus bestätigten Fakten mit Entwurf und Freigabe – nächster Schritt.
 
 ### Video-Fullscreen
 Weiterhin offen, aktuell kein Arbeitsschwerpunkt.
@@ -234,21 +246,19 @@ Verworfene Ansätze:
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Research 5 – Recherche-Import wurde als kleiner erster stabiler Stand umgesetzt und auf dem Gerät erfolgreich getestet:
+Research 4.1 – standardisierte Faktübernahme wurde als gezielte Verbesserung des bestehenden Übernahme-Assistenten umgesetzt und auf dem Gerät erfolgreich getestet:
 
-- eigener Recherche-Import im Research-Bereich
-- gemeinsamer Import mehrerer vorbereiteter Research-Fälle
-- Vorschau mit Anzahl und Statusverteilung
-- strukturierte Einzelbelege bleiben vollständig erhalten
-- keine automatische Übernahme in kanonische Fakten
-- keine automatische Änderung der Kurzbio
-- erster echter Tiffany-Ryan-Import mit 13 neuen Research-Fällen erfolgreich
-- vorhandener American-Curves-2009-Fall wurde nicht dupliziert
-- MuscleMag-Fall vollständig kontrolliert
-- kontrollierte Übernahme des importierten bestätigten MuscleMag-Falls als Karrierefakt erfolgreich
-- komplette Herkunftskette bis zur Anzeige im Model-Profil praktisch bestätigt
+- bestätigte Research-Fälle werden weiterhin nur nach ausdrücklicher Bestätigung zu kanonischen Fakten
+- Felder werden jetzt soweit sicher möglich standardisiert vorausgefüllt
+- Karrierefakten verwenden einheitliche Arten und Rollen statt ausschließlich freie Texteingabe
+- bekannte Medien-/Auftrittsmuster werden regelbasiert erkannt
+- Medium/Organisation, Werk/Ausgabe, Datum/Zeitraum, Rolle und sichere Details werden soweit ableitbar vorgeschlagen
+- Vorschläge bleiben editierbar; Unsicherheit wird nicht durch erfundene Werte verdeckt
+- Fundstellen und Belege bleiben im Research-Fall
+- zwei weitere bestätigte Tiffany-Ryan-Fälle wurden mit dem neuen Assistenten erfolgreich als Fakten übernommen
+- der Nutzer bestätigte, dass die Vorausfüllung genau dem gewünschten Arbeitsablauf entspricht
 
-Der fachlich getestete Code-Stand ist Commit `4304e9e2c7275fefbe61507a5790b17f56697336`.
+Der fachlich getestete Code-Stand ist Commit `6430cbd9a2e1a0a136e4c879fc357987ebd50e9c`.
 
 ## Letzter sinnvoller nächster Schritt
 
