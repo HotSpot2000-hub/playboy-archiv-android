@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-09-05  
-Referenz-Commit: `fde95f3cffbe154ca2c3c2db1559f567d24cae43`
+Referenz-Commit: `4304e9e2c7275fefbe61507a5790b17f56697336`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -38,6 +38,7 @@ Wichtige Hinweise:
   - Foto- und Videoanzeige
   - Filter und Bewertungsdarstellung
   - Research-Bereich und Research-Datenlogik
+  - Recherche-Import für mehrere strukturierte Research-Fälle
   - IndexedDB / lokale Datenlogik
   - Datenmodell-Grundlage für `careerFacts` und `bioFacts`
   - schreibgeschützte Anzeige bestätigter Karriere-/Biofakten im Model-Profil
@@ -125,7 +126,7 @@ Wichtige Hinweise:
 - Playboy-/Archivfakten werden nicht parallel in diesen Sammlungen dupliziert; vorhandene Archivobjekte und Beziehungen bleiben dafür die kanonische Grundlage.
 - App-Start, vorhandene Daten, Speichern und erneutes Öffnen wurden nach Schema-4-Umstellung auf dem Gerät erfolgreich getestet.
 
-### Kontrollierte Research-Übernahme – erster Praxistest
+### Kontrollierte Research-Übernahme – Research Schritt 4
 - Bei bestätigten, modelbezogenen Research-Fällen kann eine kontrollierte Übernahme als `Karrierefakt` oder `Biofakt` gestartet werden.
 - Vor dem Speichern wird eine konkrete Vorschau des neuen Fakts angezeigt.
 - Erst `Übernahme bestätigen` schreibt den Fakt in die kanonische Sammlung.
@@ -147,6 +148,21 @@ Wichtige Hinweise:
 - Bestehende Kurzbio, Archivansicht und Navigation funktionieren weiterhin.
 - Gerätetest erfolgreich.
 
+### Recherche-Import – Research Schritt 5
+- Im Research-Bereich steht ein eigener `Recherche-Import` zur Verfügung.
+- Ein Model kann einmal für den Import ausgewählt werden.
+- Mehrere vorbereitete Research-Fälle können gemeinsam als strukturierter JSON-Block eingelesen werden.
+- Vor dem Speichern zeigt die Vorschau Anzahl und Statusverteilung der vorbereiteten Fälle.
+- Importiert werden Research-Fälle einschließlich mehrerer strukturierter Einzelbelege.
+- Status, Behauptung, Zwischenergebnis, Prüfdatum sowie Quelle, Fundstelle, Aussage, Quellenart, Qualität und Belegrelation bleiben erhalten.
+- Der Import erzeugt keine kanonischen Karriere-/Biofakten und überschreibt keine Kurzbio.
+- Bestätigte importierte Research-Fälle müssen weiterhin ausdrücklich über den bestehenden Übernahme-Assistenten in kanonische Fakten überführt werden.
+- Erster echter Mehrfachimport mit Tiffany Ryan erfolgreich auf dem Gerät getestet.
+- Importiert wurden 13 neue Fälle mit gemischten Statuswerten; zusammen mit dem bereits vorhandenen American-Curves-Fall zeigte der Research-Bestand danach `4 bestätigt`, `8 indizienbasiert`, `2 unklar`.
+- Beim Kontrolltest eines MuscleMag-Falls waren Behauptung, beide Belege, Fundstellen, Quellenarten, Qualitätsstufen und Ergebnis vollständig vorhanden.
+- Anschließende kontrollierte Übernahme von `MuscleMag International #324`, Mai 2009, als Karrierefakt funktionierte ebenfalls.
+- Damit ist die Kette `Recherche-Import → Research → Prüfung → bestätigter Fall → kontrollierte Übernahme → kanonischer Karrierefakt → Model-Profil` praktisch getestet.
+
 Fachliche Zielstruktur:
 - Research bleibt Belege- und Herkunftsebene.
 - Bestätigte Ergebnisse können später kontrolliert in Stammdaten, bestehende Archivobjekte/-beziehungen, Titelvergaben, Karrierefakten oder Biofakten überführt werden.
@@ -154,6 +170,9 @@ Fachliche Zielstruktur:
 - `bioFacts` ist für allgemeine biografische Fakten vorgesehen.
 - Stammdaten-Anzeige, recherchierter Bestwert und redaktionelle Kurzbio bleiben getrennt.
 - Quellen sollen über `sourceResearchIds` auf Research-Fälle zurückverfolgbar sein, statt Belege unnötig zu kopieren.
+- Eine Selbstauskunft ist als solche zu kennzeichnen und nicht automatisch als unabhängige Bestätigung zu behandeln.
+- Ein Beleg benötigt nicht zwingend einen Screenshot; URL/Quelle, genaue Fundstelle, konkrete Aussage und Prüfdatum können als nachvollziehbare Belegspur ausreichen.
+- Wiederholungen einer Behauptung in voneinander abgeleiteten Quellen dürfen nicht wie mehrere unabhängige Bestätigungen behandelt werden.
 
 ### Bewertung / Filter
 - Fünf bewertete Stufen: `5 = 100%`, `4 = 90%`, `3 = 70%`, `2 = 40%`, `1 = 0%`.
@@ -173,7 +192,6 @@ Bewusst noch nicht umgesetzt:
 - kontrollierte Übernahme bestätigter Research-Ergebnisse in bestehende Archivobjekte/-beziehungen oder Stammdaten
 - weitergehende Zieltypen und automatische Feldzuordnung für die Research-Übernahme
 - weitergehende Präzisierung vorhandener Archivstrukturen für Galerie/Pictorial, Ausgabe/Issue, Collection/Reihe, Bereich/Plattform und Titelprogramme
-- Recherche-Import, der mehrere recherchierte Erkenntnisse strukturiert vorbereitet
 - Bio-Generator aus bestätigten Fakten
 - automatisch erzeugtes „Auf einen Blick“
 
@@ -188,10 +206,10 @@ Fachliche Leitlinie:
 - Eine veröffentlichte/redaktionell bearbeitete Kurzbio darf später nicht ohne ausdrückliche Bestätigung überschrieben werden.
 
 Geplante Reihenfolge:
-1. Research 3: Faktenmodell und erste kontrollierte Übernahme in `careerFacts` / `bioFacts`.
-2. Research 4: Übernahme-Assistent mit exakter Vorschau und ausdrücklicher Bestätigung, anschließend Erweiterung auf weitere kanonische Zieltypen.
-3. Research 5: Recherche-Import zur strukturierten Vorbereitung mehrerer Erkenntnisse.
-4. Research 6: Bio-Generator aus bestätigten Fakten mit Entwurf und Freigabe.
+1. Research 3: Faktenmodell und erste kontrollierte Übernahme in `careerFacts` / `bioFacts` – abgeschlossen.
+2. Research 4: Übernahme-Assistent mit exakter Vorschau und ausdrücklicher Bestätigung – erster stabiler Stand abgeschlossen.
+3. Research 5: Recherche-Import zur strukturierten Vorbereitung mehrerer Erkenntnisse – erster stabiler Stand abgeschlossen und praktisch getestet.
+4. Research 6: Bio-Generator aus bestätigten Fakten mit Entwurf und Freigabe – nächster Schritt.
 
 ### Video-Fullscreen
 Weiterhin offen, aktuell kein Arbeitsschwerpunkt.
@@ -216,32 +234,36 @@ Verworfene Ansätze:
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Die kanonische Faktenebene wurde im Model-Profil sichtbar gemacht und auf dem Gerät erfolgreich getestet:
+Research 5 – Recherche-Import wurde als kleiner erster stabiler Stand umgesetzt und auf dem Gerät erfolgreich getestet:
 
-- neue klappbare Karte `Bestätigte Fakten`
-- Anzeige nur bei vorhandenen aktiven Karriere-/Biofakten
-- getrennte Bereiche `Karriere` und `Biografie`
-- Anzeige der Research-Herkunft über `sourceResearchIds`
-- bewusst nur lesend, ohne Bearbeiten/Löschen
-- Model ohne Fakten bleibt unverändert ohne zusätzliche Karte
-- bestehende Kurzbio, Archivansicht und Navigation bleiben funktionsfähig
+- eigener Recherche-Import im Research-Bereich
+- gemeinsamer Import mehrerer vorbereiteter Research-Fälle
+- Vorschau mit Anzahl und Statusverteilung
+- strukturierte Einzelbelege bleiben vollständig erhalten
+- keine automatische Übernahme in kanonische Fakten
+- keine automatische Änderung der Kurzbio
+- erster echter Tiffany-Ryan-Import mit 13 neuen Research-Fällen erfolgreich
+- vorhandener American-Curves-2009-Fall wurde nicht dupliziert
+- MuscleMag-Fall vollständig kontrolliert
+- kontrollierte Übernahme des importierten bestätigten MuscleMag-Falls als Karrierefakt erfolgreich
+- komplette Herkunftskette bis zur Anzeige im Model-Profil praktisch bestätigt
 
-Der bereits übernommene Tiffany-Ryan-/American-Curves-Karrierefakt wird damit im Profil als kanonischer Fakt sichtbar.
-
-Der fachlich getestete Code-Stand ist Commit `fde95f3cffbe154ca2c3c2db1559f567d24cae43`.
+Der fachlich getestete Code-Stand ist Commit `4304e9e2c7275fefbe61507a5790b17f56697336`.
 
 ## Letzter sinnvoller nächster Schritt
 
 Vor der nächsten funktionalen Änderung:
 - aktuellen `main`-Stand erneut prüfen,
 - aktuelle `www/index.html` aus `main` lesen,
-- den stabilen Archiv-/Profilbereich nicht unnötig verändern.
+- den stabilen Research-/Archiv-/Profilbereich nicht unnötig verändern.
 
 Nächster kleiner Research-Schritt:
-- den geplanten Recherche-Import konzipieren und anschließend klein umsetzen,
-- Ziel: mehrere recherchierte Erkenntnisse strukturiert vorbereiten, damit sie nicht manuell einzeln zerlegt werden müssen,
-- Übernahme in kanonische Fakten weiterhin nur kontrolliert und ausdrücklich bestätigt,
-- noch kein automatisches Überschreiben der Kurzbio.
+- Research 6: Bio-Generator aus bestätigten Fakten konzipieren und anschließend klein umsetzen,
+- zunächst nur einen Bio-Entwurf erzeugen, noch kein automatisches Überschreiben der bestehenden Kurzbio,
+- sichtbare Stammdaten nicht unnötig wiederholen,
+- Playboy als Schwerpunkt behalten und bestätigte relevante Informationen außerhalb der Playboy-Zeit berücksichtigen,
+- Selbstaussagen sprachlich als solche behandeln,
+- offene, unklare und lediglich indizienbasierte Research-Ergebnisse nicht als Tatsachen in den Entwurf übernehmen.
 
 ## Pflegehinweis
 
