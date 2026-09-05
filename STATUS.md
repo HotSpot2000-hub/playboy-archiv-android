@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
-Stand: 2026-09-03  
-Referenz-Commit: `0ca344275969d63ba6c3f3bc934fa71af3e4f1a8`
+Stand: 2026-09-05  
+Referenz-Commit: `802dc1246d9230213bf14ef92ba6ac34ab89af1f`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -37,6 +37,7 @@ Wichtige Hinweise:
   - Hauptoberfläche, Navigation, Archiv- und Model-Logik
   - Foto- und Videoanzeige
   - Filter und Bewertungsdarstellung
+  - Research-Bereich und Research-Datenlogik
   - IndexedDB / lokale Datenlogik
 - `native/MainActivity.java`
   - Capacitor BridgeActivity
@@ -136,6 +137,33 @@ Performance:
 - Der Pfeil in der Kartenüberschrift kann ebenfalls zum Auf- und Zuklappen verwendet werden.
 - Darstellung, Bearbeitung, Speichern sowie Auf-/Zuklappen wurden auf dem Gerät erfolgreich getestet.
 
+### Research
+- Research ist als eigener Hauptbereich getrennt vom finalen Archiv und Model-Profil vorhanden.
+- Research-Fälle können angelegt, bearbeitet und gelöscht werden.
+- Unterstützte Status:
+  - `Offen`
+  - `Indizienbasiert`
+  - `Unklar`
+  - `Bestätigt`
+  - `Verworfen`
+- Research-Fälle können einem Model und optional einem vorhandenen Shooting zugeordnet werden.
+- Arten der Forschungsfrage:
+  - Zuordnung
+  - Datierung
+  - Identifikation
+  - Wiederverwendung
+  - Titel/Auszeichnung
+  - Stammdatum
+  - Sonstiges
+- Pro Fall werden Frage/Behauptung, Belege/Quellen, Zwischenergebnis und Datum der letzten Prüfung gespeichert.
+- Research kann nach Model und Status gefiltert werden.
+- Alte freie Research-Notizen werden beim Normalisieren des Zustands in strukturierte offene Research-Fälle überführt.
+- Allgemeines, nicht modelbezogenes Research wird separat unterstützt.
+- Daten-Schema-Version ist für diesen Stand auf `2` angehoben.
+- Research-Ergebnisse werden noch nicht automatisch in den finalen Archivbestand übernommen.
+- Grundsatz bleibt: `Indizienbasiert` ist kein bestätigter Fakt.
+- Research-Bereich, Anlegen/Speichern eines Falls und Filter wurden auf dem Gerät erfolgreich getestet.
+
 ### Bewertung / Filter
 Das Bewertungssystem verwendet fünf bewertete Stufen pro Kategorie:
 - `5 = 100%`
@@ -179,6 +207,22 @@ Darstellung und Verhalten:
 - Separates Favoriten-Herz im Profil entfernt.
 
 ## Offene Punkte
+
+### Research – nächste Ausbaustufe
+Der erste Research-Arbeitsblock ist stabil und auf dem Gerät getestet.
+
+Bewusst noch nicht umgesetzt:
+- kontrollierte Übernahme eines bestätigten Research-Ergebnisses als kanonischer Archiv-Fakt bzw. Archiv-Beziehung
+- strukturierte Einzelbelege mit eigener Fundstelle, Aussage, Quellenart/Qualität und `stützt / widerspricht`
+- weitergehende kanonische Strukturen für Galerie/Pictorial, Ausgabe/Issue, Collection/Reihe, Bereich/Plattform und Titelprogramme
+- automatische Ableitung oder Aktualisierung der Kurzbio aus bestätigten Fakten
+
+Fachliche Leitlinie:
+- Übersicht und Model-Profil bleiben möglichst final und eindeutig.
+- Offene, unklare, indizienbasierte und verworfene Annahmen gehören in Research.
+- Ein Indiz, auch ein starkes, ist kein Fakt.
+- Erst bestätigte Ergebnisse dürfen später kontrolliert in den kanonischen Archivbestand übernommen werden.
+- Verworfene Annahmen sollen als Forschungshistorie erhalten bleiben.
 
 ### Video-Fullscreen
 Weiterhin offen, aktuell kein Arbeitsschwerpunkt.
@@ -232,32 +276,40 @@ Aktuell deaktiviert, weil Freeze reproduzierbar war.
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Die Kurzbio im Model-Profil wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
+Der erste separate Research-Bereich wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
 
-- eigene Kurzbio-Karte direkt unter den Kerndaten
-- Kurzbio pro Model frei bearbeitbar und speicherbar
-- Modelle ohne Bio zeigen keine leere Karte
-- eingeklappt bleibt der Anfang lesbar
-- sanftes Ausblenden am unteren Rand
-- sichtbare Schaltfläche `Mehr anzeigen`
-- vollständiger Text nach dem Aufklappen
-- Auf-/Zuklappen auch über den Pfeil in der Kartenüberschrift
-- Absätze und Zwischenüberschriften werden beibehalten
-- Gerätetest erfolgreich bestätigt
+- eigene Hauptansicht `Research`
+- Research-Fälle anlegen, bearbeiten und löschen
+- Status `Offen / Indizienbasiert / Unklar / Bestätigt / Verworfen`
+- Model-Zuordnung und optionale Shooting-Zuordnung
+- Art der Forschungsfrage
+- Frage/Behauptung, Belege/Quellen und Zwischenergebnis
+- Datum `Zuletzt geprüft`
+- Filter nach Model und Status
+- allgemeines Research ohne Model-Zuordnung
+- Migration alter freier Research-Notizen in strukturierte offene Fälle
+- Daten-Schema-Version `2`
+- keine automatische Übernahme in das finale Archiv
 
-Der zuvor stabile Bewertungs-, Archivfilter-, Scroll- und Profilnavigationsstand bleibt unverändert.
+Der Research-Bereich, das Anlegen/Speichern eines Falls und die Filter wurden auf dem Gerät erfolgreich getestet.
 
-Der aktuelle `www/index.html`-Stand auf `main` entspricht dem erfolgreich getesteten Kurzbio-Stand.
+Der zuvor stabile Kurzbio-, Bewertungs-, Archivfilter-, Scroll- und Profilnavigationsstand bleibt unverändert.
+
+Der aktuelle `www/index.html`-Stand auf `main` am Referenz-Commit `802dc1246d9230213bf14ef92ba6ac34ab89af1f` entspricht diesem erfolgreich getesteten Research-Stand.
 
 ## Letzter sinnvoller nächster Schritt
 
-Der Kurzbio-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
+Der erste Research-Arbeitsblock ist abgeschlossen und auf dem Gerät bestätigt.
 
 Vor der nächsten funktionalen Änderung:
 - aktuellen `main`-Stand erneut prüfen,
 - aktuelle betroffene Datei aus `main` lesen,
-- neuen Funktionsschwerpunkt bewusst festlegen,
-- den stabilen Kurzbio-, Bewertungs-, Filter-, Scroll- und Profilnavigationsstand nicht unnötig verändern.
+- Research schrittweise erweitern und den stabilen Archiv-/Profilbereich nicht unnötig verändern.
+
+Sinnvolle nächste Research-Stufe:
+- Belege innerhalb eines Research-Falls stärker strukturieren, damit Quelle, Fundstelle, Aussage und `stützt / widerspricht` einzeln nachvollziehbar werden.
+
+Die kontrollierte Übernahme bestätigter Research-Ergebnisse in kanonische Archiv-Fakten/-Beziehungen sollte erst danach folgen.
 
 Video-Fullscreen und der kleine kosmetische Pull-Down-Effekt bleiben offen, sind aber nicht automatisch der nächste Arbeitsschritt.
 
