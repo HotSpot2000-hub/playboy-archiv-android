@@ -63,6 +63,23 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profileShortBioCard:not(.closed) .profileShortBioToggleHint{display:none}
 #editBio{min-height:260px;line-height:1.45}
 
+.researchToolbar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}
+.researchToolbar .btn{margin-top:0;width:auto}
+.researchFilters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.researchList{display:grid;gap:9px;margin-top:10px}
+.researchItem{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+.researchItemHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.researchStatus{display:inline-block;border-radius:999px;padding:4px 8px;background:#f1f1f1;font-size:11px;font-weight:750;white-space:nowrap}
+.researchStatus[data-status="bestätigt"]{background:#eaf5ee;color:var(--good)}
+.researchStatus[data-status="indizienbasiert"]{background:#fff3d8;color:var(--warn)}
+.researchStatus[data-status="verworfen"]{background:#f5eaea;color:#8a2c2c}
+.researchMeta{margin-top:6px;font-size:12px;color:var(--muted)}
+.researchClaim{margin-top:7px;line-height:1.4}
+.researchEvidence{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;white-space:pre-wrap}
+.researchActions{display:flex;gap:7px;margin-top:9px}.researchActions button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px;font-size:12px}
+#researchEvidenceInput{min-height:120px}
+@media(max-width:520px){.researchFilters{grid-template-columns:1fr}.researchToolbar{grid-template-columns:1fr}.researchToolbar .btn{width:100%}}
+
 
 .archiveTabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.archiveTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px}.archiveTabs button.active{background:#171717;color:#fff}
 .managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}@media(max-width:520px){.managementTools{grid-template-columns:1fr}}
@@ -2138,6 +2155,15 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
 </section>
 
+<section id="researchView" class="hidden">
+ <div class="card">
+  <div class="researchToolbar"><div><h2 style="margin:0">Research</h2><div class="small">Offene Fragen, Indizien und Belege getrennt vom finalen Archivstand.</div></div><button type="button" class="btn primary" id="addResearchBtn">＋ Research</button></div>
+  <div class="researchFilters"><select id="researchModelFilter" aria-label="Research nach Model filtern"><option value="">Alle Models</option></select><select id="researchStatusFilter" aria-label="Research nach Status filtern"><option value="active">Offen + Indizien</option><option value="">Alle Status</option><option value="offen">Offen</option><option value="indizienbasiert">Indizienbasiert</option><option value="unklar">Unklar</option><option value="bestätigt">Bestätigt</option><option value="verworfen">Verworfen</option></select></div>
+  <div id="researchSummary" class="small" style="margin-top:10px"></div>
+  <div id="researchList" class="researchList"></div>
+ </div>
+</section>
+
 <section id="profileView" class="hidden">
  <div class="hero">
   <div class="profilePhotoWrap">
@@ -2206,13 +2232,27 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="shootFinderFilters"><select id="mediaWorkShootModelFilter"><option value="">Alle Models</option></select><select id="mediaWorkShootYearFilter"><option value="">Alle Jahre</option></select></div>
  <div id="mediaWorkShootRecent"></div><div id="mediaWorkShootResults" class="shootFinderResults"></div>
 </div>
-<div class="bottom"><div class="nav"><button id="profileBtn">Profil</button><button id="spotBtn">Archiv</button><button id="managementBtn">Verwaltung</button><button id="inboxBtn">Inbox</button><button id="peopleBtn">Personen</button></div></div>
+<div class="bottom"><div class="nav"><button id="profileBtn">Profil</button><button id="spotBtn">Archiv</button><button id="researchBtn">Research</button><button id="managementBtn">Verwaltung</button><button id="inboxBtn">Inbox</button><button id="peopleBtn">Personen</button></div></div>
 
 <div class="overlay" id="overlay"><div class="sheet">
  <div id="timelinePane" class="hidden"><h2>Karriereereignis</h2><input type="hidden" id="timelineEditId">
 <label>Datum / Zeitraum</label><input id="timelineDateInput"><label>Titel</label><input id="timelineTitleInput">
 <label>Notiz</label><textarea id="timelineNoteInput"></textarea><button class="btn primary" id="saveTimelineBtn">Speichern</button>
 <button class="btn" id="cancelTimelineBtn">Abbrechen</button></div>
+<div id="researchPane" class="hidden">
+ <h2 id="researchPaneTitle">Research-Fall</h2>
+ <input type="hidden" id="researchEditId">
+ <label>Model</label><select id="researchModelInput"><option value="">Allgemeines Research</option></select>
+ <label>Shooting</label><select id="researchShootingInput"><option value="">Kein Shooting verknüpft</option></select>
+ <label>Art</label><select id="researchKindInput"><option>Zuordnung</option><option>Datierung</option><option>Identifikation</option><option>Wiederverwendung</option><option>Titel/Auszeichnung</option><option>Stammdatum</option><option>Sonstiges</option></select>
+ <label>Status</label><select id="researchStatusInput"><option value="offen">Offen</option><option value="indizienbasiert">Indizienbasiert</option><option value="unklar">Unklar</option><option value="bestätigt">Bestätigt</option><option value="verworfen">Verworfen</option></select>
+ <label>Frage / Behauptung</label><textarea id="researchClaimInput" placeholder="Was soll geklärt oder belegt werden?"></textarea>
+ <label>Belege / Quellen</label><textarea id="researchEvidenceInput" placeholder="Pro Zeile ein Beleg, eine Fundstelle oder ein Gegenbeleg"></textarea>
+ <label>Zwischenergebnis / Notiz</label><textarea id="researchResultInput" placeholder="Aktueller Erkenntnisstand"></textarea>
+ <label>Zuletzt geprüft</label><input id="researchReviewedInput" type="date">
+ <button class="btn primary" id="saveResearchBtn">Speichern</button>
+ <button class="btn" id="cancelResearchBtn">Abbrechen</button>
+</div>
 <div id="personPane" class="hidden">
  <h2 id="personPaneTitle">Person hinzufügen</h2>
  <input type="hidden" id="personEditId">
@@ -2705,7 +2745,7 @@ let metadataStorageError='';
 let metadataSaveChain=Promise.resolve();
 
 const APP_VERSION='1.2 Beta 6';
-const DATA_SCHEMA_VERSION=1;
+const DATA_SCHEMA_VERSION=2;
 const DATA_SCHEMA_KEY='playboyArchivDataSchemaVersion';
 const LAST_APP_VERSION_KEY='playboyArchivLastAppVersion';
 const STARTUP_ERROR_KEY='playboyArchivStartupErrorV1';
@@ -2785,6 +2825,14 @@ function normalizeStateForSchema(s){
  if(!Array.isArray(s.evidence))s.evidence=[];
  if(!Array.isArray(s.revisions))s.revisions=[];
  if(!s.research||typeof s.research!=='object')s.research={};
+ Object.keys(s.research).forEach(modelId=>{
+  const rows=Array.isArray(s.research[modelId])?s.research[modelId]:[];
+  s.research[modelId]=rows.map((row,index)=>{
+   if(row&&typeof row==='object')return {id:row.id||`R-${Date.now()}-${index}`,modelId:row.modelId??(modelId==='_global'?'':modelId),shootingId:row.shootingId||'',kind:row.kind||'Sonstiges',status:row.status||'offen',claim:row.claim||row.note||'',evidence:Array.isArray(row.evidence)?row.evidence:[],result:row.result||'',createdAt:row.createdAt||new Date().toISOString(),updatedAt:row.updatedAt||row.createdAt||new Date().toISOString(),lastReviewedAt:row.lastReviewedAt||''};
+   return {id:`R-legacy-${modelId}-${index}`,modelId:modelId==='_global'?'':modelId,shootingId:'',kind:'Sonstiges',status:'offen',claim:String(row||''),evidence:[],result:'Aus früherer Research-Notiz übernommen.',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),lastReviewedAt:''};
+  });
+ });
+ if(!Array.isArray(s.research._global))s.research._global=[];
  if(!s.currentModelId||!s.models.some(m=>m.id===s.currentModelId))s.currentModelId=s.models[0]?.id||'';
  return s;
 }
@@ -2869,6 +2917,7 @@ function initialState(){
   archive:[],
   people:[],
   research:{
+   '_global':[],
    'MODEL-0001':[
     'MuscleMag International #324 · Mai 2009 · S. 308 ff. · Justin Price',
     'American Curves Presents More Lingerie · Summer 2009 · S. 110 ff.',
@@ -3301,7 +3350,7 @@ function resetSearchesInView(view){
 let activeMainView='';
 function hideMainViews(){
  activeMainView='';
- ['inboxView','peopleView','profileView','modelsView','titlesView','seriesView','publicationsView','shootingsView','archiveView','managementView'].forEach(id=>{
+ ['inboxView','peopleView','researchView','profileView','modelsView','titlesView','seriesView','publicationsView','shootingsView','archiveView','managementView'].forEach(id=>{
    const view=document.getElementById(id);
    if(view&&!view.classList.contains('hidden'))resetSearchesInView(view);
    view?.classList.add('hidden');
@@ -4153,7 +4202,7 @@ document.getElementById('profileRatingIncomplete').textContent=
  renderArchive();
 }
 function openOverlay(pane){
- ['timelinePane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+ ['timelinePane','researchPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
  document.getElementById(pane).classList.remove('hidden');
  document.getElementById('overlay').classList.add('open');
 }
@@ -7059,6 +7108,13 @@ document.getElementById('settingsRecentArchiveLimit').onchange=e=>{
 };
 
 document.getElementById('spotBtn').onclick=showArchiveTools;
+document.getElementById('researchBtn').onclick=showResearch;
+document.getElementById('addResearchBtn').onclick=()=>openResearchPane();
+document.getElementById('researchModelFilter').onchange=renderResearch;
+document.getElementById('researchStatusFilter').onchange=renderResearch;
+document.getElementById('researchModelInput').onchange=()=>fillResearchShootingOptions();
+document.getElementById('saveResearchBtn').onclick=saveResearchItem;
+document.getElementById('cancelResearchBtn').onclick=closeOverlay;
 document.getElementById('managementBtn').onclick=showManagement; document.getElementById('profileBtn').onclick=showProfile;
 document.getElementById('peopleBtn').onclick=showPeople;
 document.getElementById('inboxBtn').onclick=showInbox;
@@ -7476,6 +7532,78 @@ async function renderInbox(){
  list.querySelectorAll('[data-inbox-pdf-open]').forEach(el=>el.onclick=async e=>{e.stopPropagation();const item=inboxLoad().find(x=>x.id===el.dataset.inboxPdfOpen);if(!item||item.kind!=='PDF')return;try{const blob=await getMedia('inbox:'+item.id);if(!blob){toast('PDF ist nicht mehr im lokalen Speicher.');return}const url=URL.createObjectURL(blob);const opened=window.open(url,'_blank');if(!opened){URL.revokeObjectURL(url);toast('PDF konnte nicht geöffnet werden.');return}setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(err){console.error(err);toast('PDF konnte nicht geöffnet werden.')}});
  list.querySelectorAll('[data-inbox-delete]').forEach(b=>b.onclick=async e=>{e.preventDefault();e.stopPropagation();const item=inboxLoad().find(x=>x.id===b.dataset.inboxDelete);if(!item)return;if(!confirm(`„${item.name}“ wirklich aus der Inbox löschen?`))return;try{await deleteMediaBlob('inbox:'+item.id);inboxSelected.delete(item.id);inboxSave(inboxLoad().filter(x=>x.id!==item.id));await renderInbox();toast('Datei aus der Inbox gelöscht.')}catch(e){console.error(e);toast('Datei konnte nicht gelöscht werden.')}});
  for(const x of shown){if(x.kind!=='Foto')continue;try{const f=await getMedia('inbox:'+x.id),el=list.querySelector(`[data-inbox-preview="${CSS.escape(x.id)}"]`);if(f&&el){const u=URL.createObjectURL(f);const selectBtn=el.querySelector('.inboxSelectBtn');el.innerHTML=`<img src="${u}" alt="">`;if(selectBtn)el.appendChild(selectBtn);el.querySelector('img').onload=()=>URL.revokeObjectURL(u)}}catch(e){console.error(e)}}
+}
+function allResearchItems(){
+ const out=[];
+ Object.entries(state.research||{}).forEach(([bucket,rows])=>{
+  (Array.isArray(rows)?rows:[]).forEach(row=>{if(row&&typeof row==='object')out.push({...row,_bucket:bucket})});
+ });
+ return out;
+}
+function researchStatusLabel(status){return ({offen:'Offen',indizienbasiert:'Indizienbasiert',unklar:'Unklar',bestätigt:'Bestätigt',verworfen:'Verworfen'})[status]||status||'Offen'}
+function researchModelName(id){return (state.models||[]).find(m=>m.id===id)?.name||''}
+function researchShootingName(id){return (state.archive||[]).find(x=>x.id===id)?.title||''}
+function formatResearchDate(value){if(!value)return 'noch nicht geprüft';try{return new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value+'T12:00:00'))}catch(_){return value}}
+function fillResearchModelOptions(){
+ const html=['<option value="">Allgemeines Research</option>',...(state.models||[]).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'de',{sensitivity:'base'})).map(m=>`<option value="${esc(m.id)}">${esc(m.name||m.id)}</option>`)].join('');
+ const input=document.getElementById('researchModelInput'),filter=document.getElementById('researchModelFilter');
+ if(input)input.innerHTML=html;
+ if(filter){const current=filter.value;filter.innerHTML='<option value="">Alle Models</option><option value="_global">Allgemeines Research</option>'+html.replace('<option value="">Allgemeines Research</option>','');filter.value=current}
+}
+function fillResearchShootingOptions(selected=''){
+ const modelId=document.getElementById('researchModelInput')?.value||'';
+ const shoots=(state.archive||[]).filter(x=>x.type==='shoot'&&(!modelId||shootingModelIds(x).includes(modelId))).sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{numeric:true,sensitivity:'base'}));
+ const el=document.getElementById('researchShootingInput');if(!el)return;
+ el.innerHTML='<option value="">Kein Shooting verknüpft</option>'+shoots.map(x=>`<option value="${esc(x.id)}">${esc(x.title||x.id)}</option>`).join('');
+ if(selected&&shoots.some(x=>x.id===selected))el.value=selected;
+}
+function renderResearch(){
+ fillResearchModelOptions();
+ const list=document.getElementById('researchList'),summary=document.getElementById('researchSummary');if(!list)return;
+ const modelFilter=document.getElementById('researchModelFilter')?.value||'',statusFilter=document.getElementById('researchStatusFilter')?.value||'active';
+ let rows=allResearchItems();
+ if(modelFilter)rows=rows.filter(r=>(modelFilter==='_global'?!r.modelId:r.modelId===modelFilter));
+ if(statusFilter==='active')rows=rows.filter(r=>['offen','indizienbasiert','unklar'].includes(r.status));else if(statusFilter)rows=rows.filter(r=>r.status===statusFilter);
+ const order={offen:0,indizienbasiert:1,unklar:2,bestätigt:3,verworfen:4};
+ rows.sort((a,b)=>(order[a.status]??9)-(order[b.status]??9)||String(b.lastReviewedAt||b.updatedAt||'').localeCompare(String(a.lastReviewedAt||a.updatedAt||'')));
+ if(summary)summary.textContent=`${rows.length} ${rows.length===1?'Research-Fall':'Research-Fälle'} angezeigt · ${allResearchItems().filter(r=>['offen','indizienbasiert','unklar'].includes(r.status)).length} mit Klärungsbedarf`;
+ if(!rows.length){list.innerHTML='<div class="small">Keine passenden Research-Fälle.</div>';return}
+ list.innerHTML=rows.map(r=>{
+  const model=researchModelName(r.modelId),shoot=researchShootingName(r.shootingId),ev=Array.isArray(r.evidence)?r.evidence:[];
+  return `<div class="researchItem"><div class="researchItemHead"><div><b>${esc(r.kind||'Research')}</b>${model?`<div class="researchMeta">${esc(model)}${shoot?' · '+esc(shoot):''}</div>`:shoot?`<div class="researchMeta">${esc(shoot)}</div>`:'<div class="researchMeta">Allgemeines Research</div>'}</div><span class="researchStatus" data-status="${esc(r.status||'offen')}">${esc(researchStatusLabel(r.status))}</span></div><div class="researchClaim">${esc(r.claim||'Ohne Frage / Behauptung')}</div>${r.result?`<div class="researchMeta">Zwischenergebnis: ${esc(r.result)}</div>`:''}${ev.length?`<div class="researchEvidence"><b>Belege / Quellen:</b> ${ev.length}</div>`:''}<div class="researchMeta">Zuletzt geprüft: ${esc(formatResearchDate(r.lastReviewedAt))}</div><div class="researchActions"><button type="button" data-research-edit="${esc(r.id)}">Bearbeiten</button><button type="button" data-research-delete="${esc(r.id)}">Löschen</button></div></div>`;
+ }).join('');
+ list.querySelectorAll('[data-research-edit]').forEach(b=>b.onclick=()=>openResearchPane(b.dataset.researchEdit));
+ list.querySelectorAll('[data-research-delete]').forEach(b=>b.onclick=()=>deleteResearchItem(b.dataset.researchDelete));
+}
+function showResearch(){hideMainViews();document.getElementById('researchView').classList.remove('hidden');renderResearch()}
+function openResearchPane(id=''){
+ fillResearchModelOptions();
+ const row=id?allResearchItems().find(r=>r.id===id):null;
+ document.getElementById('researchPaneTitle').textContent=row?'Research-Fall bearbeiten':'Research-Fall anlegen';
+ document.getElementById('researchEditId').value=row?.id||'';
+ document.getElementById('researchModelInput').value=row?.modelId||'';
+ fillResearchShootingOptions(row?.shootingId||'');
+ document.getElementById('researchKindInput').value=row?.kind||'Zuordnung';
+ document.getElementById('researchStatusInput').value=row?.status||'offen';
+ document.getElementById('researchClaimInput').value=row?.claim||'';
+ document.getElementById('researchEvidenceInput').value=(row?.evidence||[]).map(e=>typeof e==='string'?e:(e.text||e.source||'')).filter(Boolean).join('\n');
+ document.getElementById('researchResultInput').value=row?.result||'';
+ document.getElementById('researchReviewedInput').value=row?.lastReviewedAt||'';
+ openOverlay('researchPane');
+}
+function saveResearchItem(){
+ const id=document.getElementById('researchEditId').value,modelId=document.getElementById('researchModelInput').value,claim=document.getElementById('researchClaimInput').value.trim();
+ if(!claim){toast('Bitte eine Frage oder Behauptung eingeben.');return}
+ const now=new Date().toISOString(),evidence=document.getElementById('researchEvidenceInput').value.split('\n').map(x=>x.trim()).filter(Boolean).map(text=>({text,addedAt:now}));
+ const item={id:id||`R-${Date.now()}`,modelId,shootingId:document.getElementById('researchShootingInput').value||'',kind:document.getElementById('researchKindInput').value,status:document.getElementById('researchStatusInput').value,claim,evidence,result:document.getElementById('researchResultInput').value.trim(),createdAt:now,updatedAt:now,lastReviewedAt:document.getElementById('researchReviewedInput').value||''};
+ if(id){const old=allResearchItems().find(r=>r.id===id);if(old)item.createdAt=old.createdAt||now;Object.keys(state.research||{}).forEach(k=>{if(Array.isArray(state.research[k]))state.research[k]=state.research[k].filter(r=>!(r&&typeof r==='object'&&r.id===id))})}
+ const bucket=modelId||'_global';if(!Array.isArray(state.research[bucket]))state.research[bucket]=[];state.research[bucket].push(item);
+ save();closeOverlay();renderResearch();toast(id?'Research aktualisiert.':'Research-Fall angelegt.');
+}
+function deleteResearchItem(id){
+ const row=allResearchItems().find(r=>r.id===id);if(!row||!confirm(`Research-Fall „${row.claim||row.kind}“ wirklich löschen?`))return;
+ Object.keys(state.research||{}).forEach(k=>{if(Array.isArray(state.research[k]))state.research[k]=state.research[k].filter(r=>!(r&&typeof r==='object'&&r.id===id))});
+ save();renderResearch();toast('Research-Fall gelöscht.');
 }
 function showInbox(){hideMainViews();document.getElementById('inboxView').classList.remove('hidden');renderInbox()}
 async function importInboxFiles(files){
