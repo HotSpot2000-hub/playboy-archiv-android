@@ -1,7 +1,7 @@
 # Playboy Archiv – Projektstatus
 
 Stand: 2026-09-05  
-Referenz-Commit: `5ef0a0f7541b8c03aed7d5cb4b1a354d98834fc9`
+Referenz-Commit: `6e72531a32761f1903134965f1f8ebc0f0f7b23b`
 
 > Diese Datei ist die verbindliche Übergabedatei zwischen Arbeitssitzungen.
 > Vor neuer Arbeit zusätzlich `AGENTS.md` lesen und prüfen, ob `main` seit dem
@@ -124,6 +124,17 @@ Wichtige Hinweise:
 - Playboy-/Archivfakten werden nicht parallel in diesen Sammlungen dupliziert; vorhandene Archivobjekte und Beziehungen bleiben dafür die kanonische Grundlage.
 - App-Start, vorhandene Daten, Speichern und erneutes Öffnen wurden nach Schema-4-Umstellung auf dem Gerät erfolgreich getestet.
 
+### Kontrollierte Research-Übernahme – erster Praxistest
+- Bei bestätigten, modelbezogenen Research-Fällen kann eine kontrollierte Übernahme als `Karrierefakt` oder `Biofakt` gestartet werden.
+- Vor dem Speichern wird eine konkrete Vorschau des neuen Fakts angezeigt.
+- Erst `Übernahme bestätigen` schreibt den Fakt in die kanonische Sammlung.
+- Die Herkunft wird über `sourceResearchIds` mit dem Research-Fall verknüpft; Belege und Fundstellen bleiben im Research-Fall und werden nicht in den Fakt kopiert.
+- Bereits aus einem Research-Fall erzeugte Karriere-/Biofakten werden am Research-Fall kenntlich gemacht.
+- Erster Gerätetest mit Tiffany Ryan / `American Curves: More Lingerie — Summer 2009` erfolgreich.
+- Getesteter Karrierefakt: Magazinauftritt, Medium `American Curves`, Werk/Ausgabe `More Lingerie — Summer 2009`, Zeitraum `2009`, Rolle `Model`.
+- Die gesicherte Fundstelle `ab Seite 110` bleibt als Herkunfts-/Beleginformation im Research-Fall.
+- Die Übernahme und Speicherung funktionieren auf dem Gerät.
+
 Fachliche Zielstruktur:
 - Research bleibt Belege- und Herkunftsebene.
 - Bestätigte Ergebnisse können später kontrolliert in Stammdaten, bestehende Archivobjekte/-beziehungen, Titelvergaben, Karrierefakten oder Biofakten überführt werden.
@@ -146,10 +157,9 @@ Fachliche Zielstruktur:
 ### Research / Faktenmodell – nächste Ausbaustufe
 
 Bewusst noch nicht umgesetzt:
-- sichtbare Bearbeitung von `careerFacts` und `bioFacts`
-- kontrollierte Übernahme eines bestätigten Research-Ergebnisses in diese Faktenebene
+- eigene Übersicht und nachträgliche Bearbeitung von `careerFacts` und `bioFacts`
 - kontrollierte Übernahme bestätigter Research-Ergebnisse in bestehende Archivobjekte/-beziehungen oder Stammdaten
-- Vorschau der konkreten kanonischen Änderung vor der Übernahme
+- weitergehende Zieltypen und automatische Feldzuordnung für die Research-Übernahme
 - weitergehende Präzisierung vorhandener Archivstrukturen für Galerie/Pictorial, Ausgabe/Issue, Collection/Reihe, Bereich/Plattform und Titelprogramme
 - Recherche-Import, der mehrere recherchierte Erkenntnisse strukturiert vorbereitet
 - Bio-Generator aus bestätigten Fakten
@@ -194,23 +204,26 @@ Verworfene Ansätze:
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-Research Schritt 3 – Schema-4-Grundstein wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
+Research – erste kontrollierte Übernahme in die Faktenebene wurde ergänzt und auf dem Gerät erfolgreich bestätigt:
 
-- `DATA_SCHEMA_VERSION = 4`
-- `careerFacts: []`
-- `bioFacts: []`
-- sichere Normalisierung bestehender Zustände
-- keine neue Oberfläche
-- keine automatische Research-Übernahme
-- keine Änderung bestehender Archivdaten
+- nur `Bestätigt`-Research mit Modelbezug kann übernommen werden
+- Ziel wahlweise `Karrierefakt` oder `Biofakt`
+- konkrete Vorschau vor dem Schreiben
+- ausdrückliche Bestätigung erforderlich
+- Herkunft über `sourceResearchIds`
+- Research-Belege und Fundstellen bleiben unverändert im Research-Fall
+- erzeugte Fakten werden am Research-Fall kenntlich gemacht
 
-Gerätetest erfolgreich:
-- App startet.
-- Vorhandene Daten sind vollständig vorhanden.
-- Bestehende Daten lassen sich speichern.
-- Nach vollständigem Schließen und erneutem Öffnen bleiben die Daten erhalten.
+Erster Praxistest erfolgreich:
+- Model: Tiffany Ryan
+- Art: Magazinauftritt
+- Medium: American Curves
+- Werk/Ausgabe: More Lingerie — Summer 2009
+- Zeitraum: 2009
+- Rolle: Model
+- gesicherte Fundstelle: ab Seite 110, weiterhin im Research-Fall
 
-Der fachlich getestete Code-Stand ist Commit `5ef0a0f7541b8c03aed7d5cb4b1a354d98834fc9`.
+Der fachlich getestete Code-Stand ist Commit `6e72531a32761f1903134965f1f8ebc0f0f7b23b`.
 
 ## Letzter sinnvoller nächster Schritt
 
@@ -220,12 +233,9 @@ Vor der nächsten funktionalen Änderung:
 - den stabilen Archiv-/Profilbereich nicht unnötig verändern.
 
 Nächster kleiner Research-Schritt:
-- für einen `Bestätigt`-Research-Fall eine kontrollierte Übernahme als `Karrierefakt` oder `Biofakt` vorbereiten,
-- vor dem Schreiben eine genaue Vorschau zeigen,
-- nur nach ausdrücklicher Bestätigung speichern,
-- Herkunft über die Research-ID erhalten.
-
-Noch keine automatische Übernahme in Stammdaten oder komplexe Archivbeziehungen in demselben Schritt.
+- die kontrollierte Übernahme auf weitere sinnvolle Fälle prüfen und die Faktenebene sichtbar nutzbar machen,
+- dabei weiterhin keine automatische Übernahme in Stammdaten oder komplexe Archivbeziehungen,
+- anschließend den geplanten Recherche-Import vorbereiten, damit recherchierte Erkenntnisse nicht manuell einzeln zerlegt werden müssen.
 
 ## Pflegehinweis
 
