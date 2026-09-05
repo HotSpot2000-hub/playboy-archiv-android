@@ -2418,6 +2418,16 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button class="btn" id="cancelArchiveBtn">Abbrechen</button>
 </div>
 
+<div id="bioDraftPane" class="hidden">
+  <h2>Bio-Entwurf</h2>
+  <div class="small">Erzeugt ausschließlich aus kanonischen Archivdaten sowie aktiven bestätigten Karriere- und Biofakten. Offene, unklare oder nur indizienbasierte Research-Fälle werden nicht verwendet.</div>
+  <div id="bioDraftBasis" class="factPromotionSource"></div>
+  <label>Entwurf</label>
+  <textarea id="bioDraftText" style="min-height:360px;line-height:1.5"></textarea>
+  <button type="button" class="btn primary" id="useBioDraftBtn">In Kurzbio-Editor übernehmen</button>
+  <button type="button" class="btn" id="cancelBioDraftBtn">Zurück ohne Übernahme</button>
+</div>
+
 <div id="profileEditPane" class="hidden">
   <h2>Profil bearbeiten</h2>
   <label>Name</label><input id="editName">
@@ -2440,7 +2450,8 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Geburtsdatum</label><input id="editBirthdate" type="date">
   <label>Kurzbio</label>
   <textarea id="editBio" placeholder="Kurzbio mit Absätzen und Zwischenüberschriften eingeben"></textarea>
-  <div class="small" style="margin-top:4px;margin-bottom:8px">Im Profil bleibt der Anfang auch eingeklappt lesbar; erst beim Aufklappen erscheint der vollständige Text.</div>
+  <button type="button" class="btn" id="generateBioDraftBtn">✦ Bio-Entwurf aus bestätigten Fakten</button>
+  <div class="small" style="margin-top:4px;margin-bottom:8px">Der Generator erstellt nur einen prüfbaren Entwurf. Die bestehende Kurzbio wird erst geändert, wenn du den Entwurf ausdrücklich in den Editor übernimmst und anschließend das Profil speicherst.</div>
   <div class="modelRatingEdit">
   <div class="small" style="margin-top:12px;font-weight:700">Bewertung · alle Kategorien je 20%</div>
 
@@ -4292,7 +4303,7 @@ document.getElementById('profileRatingIncomplete').textContent=
  renderArchive();
 }
 function openOverlay(pane){
- ['timelinePane','researchPane','researchImportPane','factPromotionPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+ ['timelinePane','researchPane','researchImportPane','factPromotionPane','bioDraftPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
  document.getElementById(pane).classList.remove('hidden');
  document.getElementById('overlay').classList.add('open');
 }
@@ -7423,6 +7434,80 @@ function canonicalLocationValue(field,value,country='',region=''){
  const match=models.map(m=>String(m[field]||'').trim()).find(v=>v&&v.localeCompare(raw,'de',{sensitivity:'base'})===0);
  return match||raw;
 }
+function bioDraftFormatDate(value){
+ const raw=String(value||'').trim();if(!raw)return '';
+ const m=raw.match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+ if(m){const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];return `${months[Number(m[2])-1]} ${m[1]}`}
+ return raw;
+}
+function bioDraftJoin(items){
+ const rows=items.filter(Boolean);if(!rows.length)return '';if(rows.length===1)return rows[0];if(rows.length===2)return `${rows[0]} und ${rows[1]}`;return `${rows.slice(0,-1).join(', ')} sowie ${rows[rows.length-1]}`;
+}
+function bioDraftCareerLabel(f){
+ const org=String(f.organization||'').trim(),work=String(f.work||'').trim(),date=bioDraftFormatDate(f.date),details=String(f.details||'').trim(),role=String(f.role||'').trim();
+ let label='';
+ if(f.kind==='Magazinauftritt')label=`ein Magazinauftritt${org?` bei ${org}`:''}${work?` (${work})`:''}`;
+ else if(f.kind==='Videoauftritt')label=`ein Videoauftritt${org?` bei ${org}`:''}${work?` (${work})`:''}`;
+ else if(f.kind==='TV-Auftritt')label=`ein TV-Auftritt${org?` bei ${org}`:''}${work?` (${work})`:''}`;
+ else if(f.kind==='Werbung/Kampagne')label=`eine Arbeit für ${org||work||'eine Kampagne'}${org&&work?` (${work})`:''}`;
+ else if(f.kind==='Kalender')label=`eine Kalenderarbeit${org?` für ${org}`:''}${work?` (${work})`:''}`;
+ else if(f.kind==='Auszeichnung')label=`eine Auszeichnung${org?` bei ${org}`:''}${work?` (${work})`:''}`;
+ else if(f.kind==='Event/Auftritt')label=`ein Auftritt${org?` bei ${org}`:''}${work?` (${work})`:''}`;
+ else label=[f.kind,org,work].filter(Boolean).join(' · ')||'ein weiterer bestätigter Karrierefakt';
+ if(date)label+=` im ${date.match(/^\d{4}$/)?'Jahr ':''}${date}`;
+ const extras=[];if(role&&role!=='Model')extras.push(`Rolle: ${role}`);if(details)extras.push(details);
+ if(extras.length)label+=` (${extras.join('; ')})`;
+ return label;
+}
+function buildBioDraft(modelId){
+ const m=(state.models||[]).find(x=>x.id===modelId);if(!m)return {text:'',basis:'Kein Model ausgewählt.'};
+ const archive=state.archive||[];
+ const shoots=archive.filter(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(modelId));
+ const series=archive.filter(sr=>sr.type==='series'&&seriesShootingsAll(sr).some(sh=>shootingModelIds(sh).includes(modelId)));
+ const individuals=shoots.filter(sh=>shootingIsIndividual(sh));
+ const titles=archive.filter(t=>t.type==='title'&&titleBelongsToProfileModel(t,modelId));
+ const career=(state.careerFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv').slice().sort((a,b)=>String(a.date||'9999').localeCompare(String(b.date||'9999')));
+ const bio=(state.bioFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const objective=bio.filter(f=>f.statementType!=='self');
+ const self=bio.filter(f=>f.statementType==='self');
+ const sections=[];
+ if(shoots.length||series.length||titles.length){
+  const parts=[];
+  if(shoots.length)parts.push(`${shoots.length} ${shoots.length===1?'Shooting ist':'Shootings sind'} mit ihr dokumentiert`);
+  if(series.length)parts.push(`${series.length} ${series.length===1?'Serie':'Serien'} sind mit diesen Arbeiten verknüpft`);
+  if(individuals.length)parts.push(`${individuals.length} ${individuals.length===1?'Shooting ist als Individual':'Shootings sind als Individuals'} geführt`);
+  if(titles.length)parts.push(`${titles.length} ${titles.length===1?'Titelzuordnung ist':'Titelzuordnungen sind'} über zugehörige Shootings belegt`);
+  sections.push(`Playboy-Karriere\n\nIm aktuellen Playboy-Archiv ${parts.join('. ')}.`);
+ }
+ if(career.length){
+  const labels=career.map(bioDraftCareerLabel).filter(Boolean);
+  sections.push(`Weitere Karriere\n\nAußerhalb bzw. ergänzend zum Playboy-Archiv sind derzeit ${career.length} bestätigte ${career.length===1?'Karrierefakt':'Karrierefakten'} erfasst. Dazu ${career.length===1?'gehört':'gehören'} ${bioDraftJoin(labels)}.`);
+ }
+ if(objective.length){
+  const statements=objective.map(f=>String(f.statement||'').trim()).filter(Boolean).map(s=>/[.!?]$/.test(s)?s:`${s}.`);
+  if(statements.length)sections.push(`Hintergrund & Werdegang\n\n${statements.join(' ')}`);
+ }
+ if(self.length){
+  const statements=self.map(f=>String(f.statement||'').trim()).filter(Boolean).map(s=>/[.!?]$/.test(s)?s:`${s}.`);
+  if(statements.length)sections.push(`Persönliches\n\nAls eigene Beschreibung ist dokumentiert: ${statements.join(' ')}`);
+ }
+ const basis=[`${shoots.length} Archiv-Shootings`,`${series.length} Serien`,`${titles.length} Titelzuordnungen`,`${career.length} Karrierefakten`,`${bio.length} Biofakten`].join(' · ');
+ return {text:sections.join('\n\n'),basis};
+}
+function openBioDraft(){
+ const m=model();if(!m||!m.id){toast('Kein Model ausgewählt.');return}
+ const draft=buildBioDraft(m.id);
+ document.getElementById('bioDraftBasis').textContent=`Verwendete Basis: ${draft.basis}. Research-Status unterhalb „bestätigt“ bleibt ausgeschlossen.`;
+ document.getElementById('bioDraftText').value=draft.text||'Für dieses Model liegen noch nicht genügend kanonische Daten für einen Bio-Entwurf vor.';
+ openOverlay('bioDraftPane');
+}
+function useBioDraft(){
+ const draft=document.getElementById('bioDraftText').value.trim();
+ if(!draft){toast('Der Bio-Entwurf ist leer.');return}
+ document.getElementById('editBio').value=draft;
+ openOverlay('profileEditPane');
+ toast('Entwurf in den Kurzbio-Editor übernommen. Noch nicht gespeichert.');
+}
 function openProfileEdit(){
  const m=model();
  document.getElementById('editName').value=m.name||'';
@@ -7453,6 +7538,9 @@ function toggleProfileShortBio(){
 }
 document.getElementById('profileShortBioToggle').onclick=toggleProfileShortBio;
 document.getElementById('profileShortBioMore').onclick=toggleProfileShortBio;
+document.getElementById('generateBioDraftBtn').onclick=openBioDraft;
+document.getElementById('useBioDraftBtn').onclick=useBioDraft;
+document.getElementById('cancelBioDraftBtn').onclick=()=>openOverlay('profileEditPane');
 document.getElementById('profilePhotoArea').onclick=openProfileEdit;
 document.getElementById('profilePhotoArea').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfileEdit()}};
 document.getElementById('cancelProfileBtn').onclick=closeOverlay;
