@@ -2748,7 +2748,7 @@ let metadataStorageError='';
 let metadataSaveChain=Promise.resolve();
 
 const APP_VERSION='1.2 Beta 6';
-const DATA_SCHEMA_VERSION=3;
+const DATA_SCHEMA_VERSION=4;
 const DATA_SCHEMA_KEY='playboyArchivDataSchemaVersion';
 const LAST_APP_VERSION_KEY='playboyArchivLastAppVersion';
 const STARTUP_ERROR_KEY='playboyArchivStartupErrorV1';
@@ -2827,6 +2827,8 @@ function normalizeStateForSchema(s){
  if(!Array.isArray(s.people))s.people=[];
  if(!Array.isArray(s.evidence))s.evidence=[];
  if(!Array.isArray(s.revisions))s.revisions=[];
+ if(!Array.isArray(s.careerFacts))s.careerFacts=[];
+ if(!Array.isArray(s.bioFacts))s.bioFacts=[];
  if(!s.research||typeof s.research!=='object')s.research={};
  Object.keys(s.research).forEach(modelId=>{
   const rows=Array.isArray(s.research[modelId])?s.research[modelId]:[];
@@ -2917,6 +2919,8 @@ function initialState(){
   ],
   evidence:[],
   revisions:[],
+  careerFacts:[],
+  bioFacts:[],
   archive:[],
   people:[],
   research:{
