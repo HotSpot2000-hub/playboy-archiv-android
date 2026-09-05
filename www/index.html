@@ -2291,10 +2291,10 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Ziel</label>
  <select id="factPromotionTarget"><option value="career">Karrierefakt</option><option value="bio">Biofakt</option></select>
  <div id="factPromotionCareerFields">
-  <label>Art</label><input id="factCareerKind" placeholder="z. B. Magazinauftritt">
-  <label>Medium / Organisation</label><input id="factCareerOrganization" placeholder="z. B. American Curves">
-  <label>Werk / Ausgabe</label><input id="factCareerWork" placeholder="z. B. More Lingerie — Summer 2009">
-  <div class="factPromotionGrid"><div><label>Datum / Zeitraum</label><input id="factCareerDate" placeholder="z. B. 2009"></div><div><label>Rolle</label><input id="factCareerRole" placeholder="z. B. Model"></div></div>
+  <label>Art</label><select id="factCareerKind"><option>Magazinauftritt</option><option>Videoauftritt</option><option>TV-Auftritt</option><option>Werbung/Kampagne</option><option>Kalender</option><option>Auszeichnung</option><option>Event/Auftritt</option><option>Sonstiges</option></select>
+  <label>Medium / Organisation</label><input id="factCareerOrganization" placeholder="wird soweit sicher ableitbar vorausgefüllt">
+  <label>Werk / Ausgabe</label><input id="factCareerWork" placeholder="wird soweit sicher ableitbar vorausgefüllt">
+  <div class="factPromotionGrid"><div><label>Datum / Zeitraum</label><input id="factCareerDate" placeholder="z. B. 2009-05"></div><div><label>Rolle</label><select id="factCareerRole"><option>Model</option><option>Darstellerin</option><option>Sie selbst</option><option>Preisträgerin</option><option>Sonstiges</option></select></div></div>
   <label>Details</label><textarea id="factCareerDetails" placeholder="Kanonische Aussage; Quellenangaben bleiben im Research-Fall."></textarea>
  </div>
  <div id="factPromotionBioFields" class="hidden">
@@ -7723,21 +7723,72 @@ function confirmResearchImport(){
 function factPromotionRow(id){return allResearchItems().find(r=>r.id===id)||null}
 function factPromotionValue(id){return document.getElementById(id)?.value?.trim()||''}
 function factPromotionModelName(row){return researchModelName(row?.modelId)||row?.modelId||'—'}
+function factPromotionText(row){return [row?.claim,row?.result,...(Array.isArray(row?.evidence)?row.evidence.flatMap(e=>[e?.source,e?.location,e?.statement,e?.sourceType]):[])].filter(Boolean).join(' \n ')}
+function factPromotionMonthDate(text){
+ const months={january:'01',jan:'01',januar:'01',february:'02',feb:'02',februar:'02',march:'03',mar:'03','märz':'03',april:'04',apr:'04',may:'05',mai:'05',june:'06',jun:'06',juni:'06',july:'07',jul:'07',juli:'07',august:'08',aug:'08',september:'09',sep:'09',sept:'09',october:'10',oct:'10',oktober:'10',okt:'10',november:'11',nov:'11',december:'12',dec:'12',dezember:'12',dez:'12'};
+ const lower=String(text||'').toLowerCase(),m=lower.match(/\b(january|jan|januar|february|feb|februar|march|mar|märz|april|apr|may|mai|june|jun|juni|july|jul|juli|august|aug|september|sep|sept|october|oct|oktober|okt|november|nov|december|dec|dezember|dez)[\s.,/-]+(19|20)\d{2}\b/i);
+ if(m)return `${m[2]}${m[0].match(/\d{4}/)[0].slice(2)}`.replace(/^(\d{4})$/,m[0].match(/\d{4}/)[0]) && `${m[0].match(/\d{4}/)[0]}-${months[m[1].toLowerCase()]}`;
+ const iso=lower.match(/\b((?:19|20)\d{2})[-/.](0?[1-9]|1[0-2])\b/);if(iso)return `${iso[1]}-${String(iso[2]).padStart(2,'0')}`;
+ const year=lower.match(/\b((?:19|20)\d{2})\b/);return year?year[1]:'';
+}
+function factPromotionSuggestion(row){
+ const text=factPromotionText(row),lower=text.toLowerCase(),claim=String(row?.claim||'').trim(),result=String(row?.result||'').trim();
+ let kind='Sonstiges',organization='',work='',date=factPromotionMonthDate(text),role='Model',details='';
+ const rules=[
+  {keys:['musclemag'],kind:'Magazinauftritt',org:'MuscleMag International'},
+  {keys:['american curves'],kind:'Magazinauftritt',org:'American Curves'},
+  {keys:['fast & sexy','fast and sexy'],kind:'Magazinauftritt',org:'Fast & Sexy'},
+  {keys:['maxim'],kind:'Magazinauftritt',org:'Maxim'},
+  {keys:['monday night football'],kind:'TV-Auftritt',org:'Monday Night Football',role:'Darstellerin'},
+  {keys:['teaseum','teasum'],kind:'Videoauftritt',org:'TeasUm',role:'Darstellerin'},
+  {keys:['pango pango'],kind:'Werbung/Kampagne',org:'Pango Pango Swimwear'},
+  {keys:['jason aldean'],kind:'Werbung/Kampagne',org:'Jason Aldean Tour'},
+  {keys:['match tools'],kind:'Kalender',org:'Match Tools'},
+  {keys:['honey of the month','btb honey'],kind:'Auszeichnung',org:'Below the Belt Show',role:'Preisträgerin'}
+ ];
+ const rule=rules.find(r=>r.keys.some(k=>lower.includes(k)));if(rule){kind=rule.kind;organization=rule.org;role=rule.role||role}
+ if(!rule){
+  if(/magazin|magazine|issue|ausgabe/.test(lower))kind='Magazinauftritt';
+  else if(/\bvideo\b/.test(lower))kind='Videoauftritt',role='Darstellerin';
+  else if(/\b(tv|television|intro)\b/.test(lower))kind='TV-Auftritt',role='Darstellerin';
+  else if(/calendar|kalender/.test(lower))kind='Kalender';
+  else if(/award|auszeichnung|honey of the month/.test(lower))kind='Auszeichnung',role='Preisträgerin';
+  else if(/kampagne|campaign|tour content|swimwear/.test(lower))kind='Werbung/Kampagne';
+  else if(/event|party|auftritt/.test(lower))kind='Event/Auftritt';
+  else if(row?.kind==='Titel/Auszeichnung')kind='Auszeichnung',role='Preisträgerin';
+ }
+ const issue=text.match(/#\s*([A-Za-z0-9.-]+)/);if(issue)work=`#${issue[1]}`;
+ if(organization==='American Curves'&&/more lingerie/i.test(text)){const m=text.match(/More Lingerie(?:\s*[—–-]\s*|\s+)?(?:Summer|Spring|Fall|Autumn|Winter)?\s*(?:19|20)\d{2}/i);if(m)work=m[0].replace(/\s+/g,' ').trim()}
+ if(organization==='Fast & Sexy'&&!work){const m=text.match(/\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+(?:19|20)\d{2}\b/i);if(m)work=m[0]}
+ if(kind==='Kalender'&&!work){const m=text.match(/\b(?:19|20)\d{2}\s*\/\s*(?:19|20)?\d{2}\b/);if(m)work=m[0].replace(/\s/g,'')}
+ const photographer=text.match(/(?:fotograf|photographer)\s*:?\s*([A-ZÄÖÜ][A-Za-zÄÖÜäöüß.'-]+(?:\s+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.'-]+){1,3})/i);if(photographer)details=`Fotograf: ${photographer[1].trim()}`;
+ let bioCategory='Sonstiges',bioType='objective';
+ if(/beschrieb sich|self-description|selbstaussage|energetic|work ethic|arbeitsmoral/.test(lower)){bioCategory='Persönlichkeit';bioType='self'}
+ else if(/barkeeper|bartender|beruf/.test(lower))bioCategory='Beruf';
+ else if(/hobby|freizeit|basketball|strand|shoppen|shopping/.test(lower))bioCategory='Privatleben';
+ else if(/retired|karriereende|zog sich|career end/.test(lower))bioCategory='Späteres Leben';
+ else if(/lingerie|swimwear|west coast|modeling/.test(lower)){bioCategory='Modeling';if(/beschrieb sich|self-description|selbstauskunft|profile/.test(lower))bioType='self'}
+ return {career:{kind,organization,work,date,role,details},bio:{category:bioCategory,statement:result||claim,from:date,to:'',statementType:bioType}};
+}
+function applyFactPromotionSuggestion(row){
+ const s=factPromotionSuggestion(row);
+ document.getElementById('factCareerKind').value=s.career.kind;
+ document.getElementById('factCareerOrganization').value=s.career.organization;
+ document.getElementById('factCareerWork').value=s.career.work;
+ document.getElementById('factCareerDate').value=s.career.date;
+ document.getElementById('factCareerRole').value=s.career.role;
+ document.getElementById('factCareerDetails').value=s.career.details;
+ document.getElementById('factBioCategory').value=s.bio.category;
+ document.getElementById('factBioStatement').value=s.bio.statement;
+ document.getElementById('factBioFrom').value=s.bio.from;document.getElementById('factBioTo').value=s.bio.to;document.getElementById('factBioStatementType').value=s.bio.statementType;
+}
 function openFactPromotion(id){
  const row=factPromotionRow(id);if(!row||row.status!=='bestätigt'||!row.modelId){toast('Nur bestätigte modelbezogene Research-Fälle können übernommen werden.');return}
  document.getElementById('factPromotionResearchId').value=row.id;
  document.getElementById('factPromotionTarget').value='career';
  document.getElementById('factPromotionIntro').textContent=`${factPromotionModelName(row)} · ${row.kind||'Research'} · bestätigt`;
- document.getElementById('factCareerKind').value=row.kind==='Titel/Auszeichnung'?'Auszeichnung':row.kind==='Sonstiges'?'':row.kind||'';
- document.getElementById('factCareerOrganization').value='';
- document.getElementById('factCareerWork').value='';
- document.getElementById('factCareerDate').value='';
- document.getElementById('factCareerRole').value='Model';
- document.getElementById('factCareerDetails').value=row.result||row.claim||'';
- document.getElementById('factBioCategory').value='Sonstiges';
- document.getElementById('factBioStatement').value=row.result||row.claim||'';
- document.getElementById('factBioFrom').value='';document.getElementById('factBioTo').value='';document.getElementById('factBioStatementType').value='objective';
- document.getElementById('factPromotionSource').textContent=`Research-Herkunft: ${row.id}. Belege und Fundstellen bleiben im Research-Fall und werden nicht in den Fakt kopiert.`;
+ applyFactPromotionSuggestion(row);
+ document.getElementById('factPromotionSource').textContent=`Research-Herkunft: ${row.id}. Felder sind soweit sicher ableitbar standardisiert vorausgefüllt. Belege und Fundstellen bleiben im Research-Fall.`;
  renderFactPromotionPreview();openOverlay('factPromotionPane');
 }
 function renderFactPromotionPreview(){
