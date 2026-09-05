@@ -77,7 +77,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .researchClaim{margin-top:7px;line-height:1.4}
 .researchEvidence{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;white-space:pre-wrap}
 .researchActions{display:flex;gap:7px;margin-top:9px}.researchActions button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px;font-size:12px}
-#researchEvidenceInput{min-height:120px}
+.researchEvidenceEditor{display:grid;gap:9px;margin-top:8px}.researchEvidenceRow{border:1px solid var(--line);border-radius:13px;padding:10px;background:#fafafa}.researchEvidenceGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.researchEvidenceRow label{font-size:12px;margin-top:8px}.researchEvidenceRow textarea{min-height:72px}.researchEvidenceRemove{width:auto!important;margin-top:8px!important;padding:8px 10px!important;color:#9b1c1c}@media(max-width:520px){.researchEvidenceGrid{grid-template-columns:1fr}}
 @media(max-width:520px){.researchFilters{grid-template-columns:1fr}.researchToolbar{grid-template-columns:1fr}.researchToolbar .btn{width:100%}}
 
 
@@ -2247,7 +2247,10 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Art</label><select id="researchKindInput"><option>Zuordnung</option><option>Datierung</option><option>Identifikation</option><option>Wiederverwendung</option><option>Titel/Auszeichnung</option><option>Stammdatum</option><option>Sonstiges</option></select>
  <label>Status</label><select id="researchStatusInput"><option value="offen">Offen</option><option value="indizienbasiert">Indizienbasiert</option><option value="unklar">Unklar</option><option value="bestätigt">Bestätigt</option><option value="verworfen">Verworfen</option></select>
  <label>Frage / Behauptung</label><textarea id="researchClaimInput" placeholder="Was soll geklärt oder belegt werden?"></textarea>
- <label>Belege / Quellen</label><textarea id="researchEvidenceInput" placeholder="Pro Zeile ein Beleg, eine Fundstelle oder ein Gegenbeleg"></textarea>
+ <label>Belege / Quellen</label>
+ <div class="small">Jeden Beleg einzeln erfassen. Ein Beleg kann die Behauptung stützen oder ihr widersprechen.</div>
+ <div id="researchEvidenceEditor" class="researchEvidenceEditor"></div>
+ <button type="button" class="btn" id="addResearchEvidenceBtn">＋ Beleg hinzufügen</button>
  <label>Zwischenergebnis / Notiz</label><textarea id="researchResultInput" placeholder="Aktueller Erkenntnisstand"></textarea>
  <label>Zuletzt geprüft</label><input id="researchReviewedInput" type="date">
  <button class="btn primary" id="saveResearchBtn">Speichern</button>
@@ -2745,7 +2748,7 @@ let metadataStorageError='';
 let metadataSaveChain=Promise.resolve();
 
 const APP_VERSION='1.2 Beta 6';
-const DATA_SCHEMA_VERSION=2;
+const DATA_SCHEMA_VERSION=3;
 const DATA_SCHEMA_KEY='playboyArchivDataSchemaVersion';
 const LAST_APP_VERSION_KEY='playboyArchivLastAppVersion';
 const STARTUP_ERROR_KEY='playboyArchivStartupErrorV1';
@@ -2828,7 +2831,7 @@ function normalizeStateForSchema(s){
  Object.keys(s.research).forEach(modelId=>{
   const rows=Array.isArray(s.research[modelId])?s.research[modelId]:[];
   s.research[modelId]=rows.map((row,index)=>{
-   if(row&&typeof row==='object')return {id:row.id||`R-${Date.now()}-${index}`,modelId:row.modelId??(modelId==='_global'?'':modelId),shootingId:row.shootingId||'',kind:row.kind||'Sonstiges',status:row.status||'offen',claim:row.claim||row.note||'',evidence:Array.isArray(row.evidence)?row.evidence:[],result:row.result||'',createdAt:row.createdAt||new Date().toISOString(),updatedAt:row.updatedAt||row.createdAt||new Date().toISOString(),lastReviewedAt:row.lastReviewedAt||''};
+   if(row&&typeof row==='object')return {id:row.id||`R-${Date.now()}-${index}`,modelId:row.modelId??(modelId==='_global'?'':modelId),shootingId:row.shootingId||'',kind:row.kind||'Sonstiges',status:row.status||'offen',claim:row.claim||row.note||'',evidence:(Array.isArray(row.evidence)?row.evidence:[]).map((e,eIndex)=>typeof e==='string'?{id:`RE-${Date.now()}-${index}-${eIndex}`,relation:'supports',source:e,location:'',statement:'',sourceType:'',quality:'',checkedAt:'',addedAt:new Date().toISOString()}:{id:e.id||`RE-${Date.now()}-${index}-${eIndex}`,relation:e.relation||'supports',source:e.source||e.text||'',location:e.location||'',statement:e.statement||'',sourceType:e.sourceType||'',quality:e.quality||'',checkedAt:e.checkedAt||'',addedAt:e.addedAt||new Date().toISOString()}),result:row.result||'',createdAt:row.createdAt||new Date().toISOString(),updatedAt:row.updatedAt||row.createdAt||new Date().toISOString(),lastReviewedAt:row.lastReviewedAt||''};
    return {id:`R-legacy-${modelId}-${index}`,modelId:modelId==='_global'?'':modelId,shootingId:'',kind:'Sonstiges',status:'offen',claim:String(row||''),evidence:[],result:'Aus früherer Research-Notiz übernommen.',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),lastReviewedAt:''};
   });
  });
@@ -7113,6 +7116,7 @@ document.getElementById('addResearchBtn').onclick=()=>openResearchPane();
 document.getElementById('researchModelFilter').onchange=renderResearch;
 document.getElementById('researchStatusFilter').onchange=renderResearch;
 document.getElementById('researchModelInput').onchange=()=>fillResearchShootingOptions();
+document.getElementById('addResearchEvidenceBtn').onclick=addResearchEvidence;
 document.getElementById('saveResearchBtn').onclick=saveResearchItem;
 document.getElementById('cancelResearchBtn').onclick=closeOverlay;
 document.getElementById('managementBtn').onclick=showManagement; document.getElementById('profileBtn').onclick=showProfile;
@@ -7557,6 +7561,20 @@ function fillResearchShootingOptions(selected=''){
  el.innerHTML='<option value="">Kein Shooting verknüpft</option>'+shoots.map(x=>`<option value="${esc(x.id)}">${esc(x.title||x.id)}</option>`).join('');
  if(selected&&shoots.some(x=>x.id===selected))el.value=selected;
 }
+function researchEvidenceRowHtml(e={}){
+ const id=e.id||`RE-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+ return `<div class="researchEvidenceRow" data-research-evidence-id="${esc(id)}"><div class="researchEvidenceGrid"><div><label>Wirkung</label><select data-ev="relation"><option value="supports"${e.relation==='contradicts'?'':' selected'}>Stützt</option><option value="contradicts"${e.relation==='contradicts'?' selected':''}>Widerspricht</option></select></div><div><label>Geprüft am</label><input type="date" data-ev="checkedAt" value="${esc(e.checkedAt||'')}"></div></div><label>Quelle</label><input data-ev="source" value="${esc(e.source||e.text||'')}" placeholder="z. B. Playboy Plus, Ausgabe, Website"><label>Fundstelle</label><input data-ev="location" value="${esc(e.location||'')}" placeholder="URL, Ausgabe, Seite, Abschnitt …"><label>Aussage</label><textarea data-ev="statement" placeholder="Was belegt oder widerlegt diese Quelle konkret?">${esc(e.statement||'')}</textarea><div class="researchEvidenceGrid"><div><label>Quellenart</label><input data-ev="sourceType" value="${esc(e.sourceType||'')}" placeholder="z. B. Primärquelle, Scan, Sekundärquelle"></div><div><label>Qualität</label><select data-ev="quality"><option value=""${e.quality?'':' selected'}>Nicht bewertet</option><option value="hoch"${e.quality==='hoch'?' selected':''}>Hoch</option><option value="mittel"${e.quality==='mittel'?' selected':''}>Mittel</option><option value="niedrig"${e.quality==='niedrig'?' selected':''}>Niedrig</option></select></div></div><button type="button" class="btn researchEvidenceRemove" data-remove-research-evidence>Beleg entfernen</button></div>`;
+}
+function bindResearchEvidenceRemove(){document.querySelectorAll('#researchEvidenceEditor [data-remove-research-evidence]').forEach(b=>b.onclick=()=>b.closest('.researchEvidenceRow')?.remove())}
+function renderResearchEvidenceEditor(rows=[]){
+ const editor=document.getElementById('researchEvidenceEditor');if(!editor)return;
+ const normalized=(Array.isArray(rows)?rows:[]).map(e=>typeof e==='string'?{source:e,relation:'supports'}:e);
+ editor.innerHTML=normalized.map(researchEvidenceRowHtml).join('');bindResearchEvidenceRemove();
+}
+function addResearchEvidence(){const editor=document.getElementById('researchEvidenceEditor');if(!editor)return;editor.insertAdjacentHTML('beforeend',researchEvidenceRowHtml({relation:'supports'}));bindResearchEvidenceRemove();editor.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function collectResearchEvidence(){
+ const now=new Date().toISOString();return [...document.querySelectorAll('#researchEvidenceEditor .researchEvidenceRow')].map(row=>{const get=k=>row.querySelector(`[data-ev="${k}"]`)?.value?.trim()||'';return {id:row.dataset.researchEvidenceId||`RE-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,relation:get('relation')||'supports',source:get('source'),location:get('location'),statement:get('statement'),sourceType:get('sourceType'),quality:get('quality'),checkedAt:get('checkedAt'),addedAt:now}}).filter(e=>e.source||e.location||e.statement);
+}
 function renderResearch(){
  fillResearchModelOptions();
  const list=document.getElementById('researchList'),summary=document.getElementById('researchSummary');if(!list)return;
@@ -7570,7 +7588,7 @@ function renderResearch(){
  if(!rows.length){list.innerHTML='<div class="small">Keine passenden Research-Fälle.</div>';return}
  list.innerHTML=rows.map(r=>{
   const model=researchModelName(r.modelId),shoot=researchShootingName(r.shootingId),ev=Array.isArray(r.evidence)?r.evidence:[];
-  return `<div class="researchItem"><div class="researchItemHead"><div><b>${esc(r.kind||'Research')}</b>${model?`<div class="researchMeta">${esc(model)}${shoot?' · '+esc(shoot):''}</div>`:shoot?`<div class="researchMeta">${esc(shoot)}</div>`:'<div class="researchMeta">Allgemeines Research</div>'}</div><span class="researchStatus" data-status="${esc(r.status||'offen')}">${esc(researchStatusLabel(r.status))}</span></div><div class="researchClaim">${esc(r.claim||'Ohne Frage / Behauptung')}</div>${r.result?`<div class="researchMeta">Zwischenergebnis: ${esc(r.result)}</div>`:''}${ev.length?`<div class="researchEvidence"><b>Belege / Quellen:</b> ${ev.length}</div>`:''}<div class="researchMeta">Zuletzt geprüft: ${esc(formatResearchDate(r.lastReviewedAt))}</div><div class="researchActions"><button type="button" data-research-edit="${esc(r.id)}">Bearbeiten</button><button type="button" data-research-delete="${esc(r.id)}">Löschen</button></div></div>`;
+  return `<div class="researchItem"><div class="researchItemHead"><div><b>${esc(r.kind||'Research')}</b>${model?`<div class="researchMeta">${esc(model)}${shoot?' · '+esc(shoot):''}</div>`:shoot?`<div class="researchMeta">${esc(shoot)}</div>`:'<div class="researchMeta">Allgemeines Research</div>'}</div><span class="researchStatus" data-status="${esc(r.status||'offen')}">${esc(researchStatusLabel(r.status))}</span></div><div class="researchClaim">${esc(r.claim||'Ohne Frage / Behauptung')}</div>${r.result?`<div class="researchMeta">Zwischenergebnis: ${esc(r.result)}</div>`:''}${ev.length?`<div class="researchEvidence"><b>Belege:</b> ${ev.length} · ${ev.filter(e=>(e.relation||'supports')==='supports').length} stützen · ${ev.filter(e=>e.relation==='contradicts').length} widersprechen</div>`:''}<div class="researchMeta">Zuletzt geprüft: ${esc(formatResearchDate(r.lastReviewedAt))}</div><div class="researchActions"><button type="button" data-research-edit="${esc(r.id)}">Bearbeiten</button><button type="button" data-research-delete="${esc(r.id)}">Löschen</button></div></div>`;
  }).join('');
  list.querySelectorAll('[data-research-edit]').forEach(b=>b.onclick=()=>openResearchPane(b.dataset.researchEdit));
  list.querySelectorAll('[data-research-delete]').forEach(b=>b.onclick=()=>deleteResearchItem(b.dataset.researchDelete));
@@ -7586,7 +7604,7 @@ function openResearchPane(id=''){
  document.getElementById('researchKindInput').value=row?.kind||'Zuordnung';
  document.getElementById('researchStatusInput').value=row?.status||'offen';
  document.getElementById('researchClaimInput').value=row?.claim||'';
- document.getElementById('researchEvidenceInput').value=(row?.evidence||[]).map(e=>typeof e==='string'?e:(e.text||e.source||'')).filter(Boolean).join('\n');
+ renderResearchEvidenceEditor(row?.evidence||[]);
  document.getElementById('researchResultInput').value=row?.result||'';
  document.getElementById('researchReviewedInput').value=row?.lastReviewedAt||'';
  openOverlay('researchPane');
@@ -7594,7 +7612,7 @@ function openResearchPane(id=''){
 function saveResearchItem(){
  const id=document.getElementById('researchEditId').value,modelId=document.getElementById('researchModelInput').value,claim=document.getElementById('researchClaimInput').value.trim();
  if(!claim){toast('Bitte eine Frage oder Behauptung eingeben.');return}
- const now=new Date().toISOString(),evidence=document.getElementById('researchEvidenceInput').value.split('\n').map(x=>x.trim()).filter(Boolean).map(text=>({text,addedAt:now}));
+ const now=new Date().toISOString(),evidence=collectResearchEvidence();
  const item={id:id||`R-${Date.now()}`,modelId,shootingId:document.getElementById('researchShootingInput').value||'',kind:document.getElementById('researchKindInput').value,status:document.getElementById('researchStatusInput').value,claim,evidence,result:document.getElementById('researchResultInput').value.trim(),createdAt:now,updatedAt:now,lastReviewedAt:document.getElementById('researchReviewedInput').value||''};
  if(id){const old=allResearchItems().find(r=>r.id===id);if(old)item.createdAt=old.createdAt||now;Object.keys(state.research||{}).forEach(k=>{if(Array.isArray(state.research[k]))state.research[k]=state.research[k].filter(r=>!(r&&typeof r==='object'&&r.id===id))})}
  const bucket=modelId||'_global';if(!Array.isArray(state.research[bucket]))state.research[bucket]=[];state.research[bucket].push(item);
