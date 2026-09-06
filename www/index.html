@@ -7460,6 +7460,41 @@ function bioDraftWorkContainsDate(work,date){
  }
  return false;
 }
+function bioDraftCareerFactLabel(f){
+ const org=String(f.organization||'').trim(),work=String(f.work||'').trim(),date=bioDraftFormatDate(f.date),details=bioDraftCleanDetails(f.details);
+ let label=org||'einem Magazin';
+ if(work)label+=` „${work}“`;
+ if(date&&!bioDraftWorkContainsDate(work,f.date))label+=date.match(/^\d{4}$/)?` (${date})`:` im ${date}`;
+ if(details){
+  const photographer=details.match(/^Fotograf:\s*(.+)$/i);
+  label+=photographer?`, fotografiert von ${photographer[1].trim()}`:`, ${details.charAt(0).toLowerCase()+details.slice(1)}`;
+ }
+ return label;
+}
+function bioDraftCareerParagraph(career,name){
+ const magazines=career.filter(f=>f.kind==='Magazinauftritt');
+ const others=career.filter(f=>f.kind!=='Magazinauftritt');
+ const parts=[];
+ if(magazines.length){
+  if(magazines.length===1)parts.push(`Auch außerhalb von Playboy arbeitete ${name} als Model. Ein bestätigter Magazinauftritt ist ${bioDraftCareerFactLabel(magazines[0])}.`);
+  else parts.push(`Auch außerhalb von Playboy arbeitete ${name} als Model. Zu ihren bestätigten Magazinauftritten zählen ${bioDraftJoin(magazines.map(bioDraftCareerFactLabel))}.`);
+ }
+ if(others.length){
+  const sentences=others.map((f,i)=>{
+   const org=String(f.organization||'').trim(),work=String(f.work||'').trim(),date=bioDraftFormatDate(f.date);
+   const when=date&&!bioDraftWorkContainsDate(work,f.date)?(date.match(/^\d{4}$/)?` ${date}`:` im ${date}`):'';
+   if(f.kind==='Videoauftritt')return `Darüber hinaus sind${org?` Videoauftritte für ${org}`:' weitere Videoauftritte'}${work?` in „${work}“`:''}${when} bestätigt.`;
+   if(f.kind==='TV-Auftritt')return `Im Fernsehen war ${name}${when}${org?` bei ${org}`:''}${work?` in „${work}“`:''} zu sehen.`;
+   if(f.kind==='Werbung/Kampagne')return `Außerdem arbeitete ${name}${when}${org?` für ${org}`:' für eine Kampagne'}${work?` an „${work}“`:''}.`;
+   if(f.kind==='Kalender')return `Zu ihren weiteren Arbeiten gehört${when}${org?` ein Kalender für ${org}`:' ein Kalender'}${work?` „${work}“`:''}.`;
+   if(f.kind==='Auszeichnung')return `${name} erhielt${when}${org?` bei ${org}`:''}${work?` die Auszeichnung „${work}“`:' eine Auszeichnung'}.`;
+   if(f.kind==='Event/Auftritt')return `Daneben trat ${name}${when}${org?` bei ${org}`:''}${work?` im Rahmen von „${work}“`:''} auf.`;
+   return bioDraftCareerSentence(f,name,i);
+  });
+  parts.push(sentences.join(' '));
+ }
+ return parts.join(' ');
+}
 function bioDraftCareerSentence(f,name,index){
  const org=String(f.organization||'').trim(),work=String(f.work||'').trim(),date=bioDraftFormatDate(f.date),details=bioDraftCleanDetails(f.details),role=String(f.role||'').trim();
  const when=date&&!bioDraftWorkContainsDate(work,f.date)?(date.match(/^\d{4}$/)?` ${date}`:` im ${date}`):'';
@@ -7505,8 +7540,7 @@ function buildBioDraft(modelId){
  if(seriesInfo.text)sections.push(`Playboy-Karriere\n\n${seriesInfo.text}`);
  else if(shoots.length)sections.push(`Playboy-Karriere\n\n${name} war für Playboy vor der Kamera aktiv. Im aktuellen Archiv ${shoots.length===1?'ist ein Shooting':'sind '+shoots.length+' Shootings'} mit ${name} dokumentiert.`);
  if(career.length){
-  const sentences=career.map((f,i)=>bioDraftCareerSentence(f,name,i));
-  sections.push(`Weitere Karriere\n\n${sentences.join(' ')}`);
+  sections.push(`Weitere Karriere\n\n${bioDraftCareerParagraph(career,name)}`);
  }
  if(objective.length){
   const statements=objective.map(f=>String(f.statement||'').trim()).filter(Boolean).map(s=>/[.!?]$/.test(s)?s:`${s}.`);
