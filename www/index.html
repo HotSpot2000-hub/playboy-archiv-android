@@ -51,6 +51,45 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profilePhotoWrap{position:relative}.profilePhotoWrap .photo{aspect-ratio:2/3;height:auto;overflow:hidden}.profilePhotoWrap img{width:100%;height:100%;object-fit:cover}
 .photoAction{position:absolute;right:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:999px;padding:8px 11px;font-size:13px}
 .bioBox{line-height:1.55;margin-top:14px}.infoGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.mini{background:#fafafa;border:1px solid var(--line);border-radius:12px;padding:10px}
+.profileShortBioCard{padding:0;overflow:hidden;position:relative}
+.profileShortBioHead{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:#fff;padding:16px;font:inherit;text-align:left}
+.profileShortBioHead strong{font-size:18px}
+.profileShortBioIcon{font-size:18px;line-height:1;transition:transform .16s ease}
+.profileShortBioContent{position:relative;padding:0 16px 16px;white-space:pre-wrap;line-height:1.55;font-size:14px}
+.profileShortBioCard.closed .profileShortBioContent{max-height:160px;overflow:hidden;padding-bottom:34px}
+.profileShortBioCard.closed .profileShortBioContent::after{content:"";position:absolute;left:0;right:0;bottom:0;height:76px;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.88) 58%,#fff 82%);pointer-events:none}
+.profileShortBioCard.closed .profileShortBioIcon{transform:rotate(-90deg)}
+.profileShortBioToggleHint{position:absolute;right:14px;bottom:10px;z-index:2;border:0;border-radius:999px;background:#fff;color:var(--ink);padding:6px 9px;font:inherit;font-size:11px;font-weight:750;box-shadow:0 1px 8px rgba(0,0,0,.08)}
+.profileShortBioCard:not(.closed) .profileShortBioToggleHint{display:none}
+#editBio{min-height:260px;line-height:1.45}
+.profileFactsCard.hidden{display:none}
+.profileFactsSection+.profileFactsSection{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.profileFactsSectionTitle{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
+.profileFactItem{border-top:1px solid var(--line);padding:10px 0}
+.profileFactItem:first-of-type{border-top:0;padding-top:0}
+.profileFactTitle{font-weight:800}
+.profileFactMeta{font-size:13px;line-height:1.45;margin-top:3px}
+.profileFactDetails{font-size:13px;line-height:1.45;margin-top:5px;white-space:pre-wrap}
+.profileFactSource{font-size:11px;color:var(--muted);margin-top:5px}
+
+.researchToolbar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}
+.researchToolbar .btn{margin-top:0;width:auto}
+.researchFilters{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.researchList{display:grid;gap:9px;margin-top:10px}
+.researchItem{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+.researchItemHead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.researchStatus{display:inline-block;border-radius:999px;padding:4px 8px;background:#f1f1f1;font-size:11px;font-weight:750;white-space:nowrap}
+.researchStatus[data-status="bestätigt"]{background:#eaf5ee;color:var(--good)}
+.researchStatus[data-status="indizienbasiert"]{background:#fff3d8;color:var(--warn)}
+.researchStatus[data-status="verworfen"]{background:#f5eaea;color:#8a2c2c}
+.researchMeta{margin-top:6px;font-size:12px;color:var(--muted)}
+.researchClaim{margin-top:7px;line-height:1.4}
+.researchEvidence{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;white-space:pre-wrap}
+.researchActions{display:flex;gap:7px;margin-top:9px}.researchActions button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px;font-size:12px}
+.researchEvidenceEditor{display:grid;gap:9px;margin-top:8px}.researchEvidenceRow{border:1px solid var(--line);border-radius:13px;padding:10px;background:#fafafa}.researchEvidenceGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.researchEvidenceRow label{font-size:12px;margin-top:8px}.researchEvidenceRow textarea{min-height:72px}.researchEvidenceRemove{width:auto!important;margin-top:8px!important;padding:8px 10px!important;color:#9b1c1c}@media(max-width:520px){.researchEvidenceGrid{grid-template-columns:1fr}}
+.factPromotionPreview{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fafafa;margin-top:10px}.factPromotionPreview b{display:block}.factPromotionGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.factPromotionSource{margin-top:10px;padding:9px 10px;border-radius:11px;background:#f1f1f1;font-size:12px}.researchPromoted{margin-top:7px;font-size:12px;color:var(--good);font-weight:700}@media(max-width:520px){.factPromotionGrid{grid-template-columns:1fr}}
+@media(max-width:520px){.researchFilters{grid-template-columns:1fr}.researchToolbar{grid-template-columns:1fr}.researchToolbar .btn{width:100%}}
+
 
 .archiveTabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.archiveTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px}.archiveTabs button.active{background:#171717;color:#fff}
 .managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}@media(max-width:520px){.managementTools{grid-template-columns:1fr}}
@@ -1046,6 +1085,11 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 /* v187 global model overview */
 .globalModelsHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.globalModelsHeader h2{margin:0}.globalModelsHeader .btn{width:auto;margin:0;white-space:nowrap}
 .globalModelOverview{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.globalModelCard{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;position:relative}.globalModelOpen{display:grid;grid-template-columns:minmax(112px,36%) 1fr;width:100%;border:0;background:transparent;padding:0;text-align:left;font:inherit;color:inherit}.globalModelPhoto{position:relative;aspect-ratio:2/3;background:#eee;display:grid;place-items:center;overflow:hidden}.globalModelPhoto img{width:100%;height:100%;object-fit:cover}.globalModelFavorite{position:absolute;top:8px;right:8px;z-index:2;border:0;background:transparent;padding:0;width:auto;height:auto;display:grid;place-items:center;font-size:14px;box-shadow:none}.globalModelRating{position:absolute;top:8px;right:8px;z-index:2;font-size:13px;font-weight:800;line-height:1;white-space:nowrap}.globalModelBody{padding:12px;min-width:0}.globalModelName{font-weight:800;line-height:1.2;font-size:16px}.globalModelCard.hasFavorite .globalModelName{padding-right:30px}.globalModelFacts{display:grid;gap:4px;margin-top:7px;font-size:12px;color:var(--muted)}.globalModelOrigin{display:flex;align-items:center;gap:5px;min-width:0}.globalModelOriginFlag{display:inline-flex;align-items:center;justify-content:center;line-height:1;flex:0 0 auto}.globalModelOriginText{min-width:0}.globalModelTitles{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:7px;margin-top:10px;background:#eee7ef;border-radius:10px;padding:7px 8px}.globalModelTitlesTrophy{font-size:17px;line-height:1;text-align:center;align-self:center}.globalModelTitlesList{display:grid;gap:5px;min-width:0}.globalModelTitle{font-size:11px;line-height:1.25;padding:0}.globalModelTitle+.globalModelTitle{padding-top:5px;border-top:1px solid rgba(0,0,0,.07)}.globalModelTitleName{display:block;font-weight:700;color:var(--ink)}.globalModelTitleWhen{display:inline-block;border:0;background:transparent;padding:3px 0 0;font:inherit;font-size:10px;color:var(--muted);text-decoration:underline;text-underline-offset:2px;cursor:pointer}.globalModelNoTitles{font-size:10px;color:var(--muted);margin-top:9px}.globalModelSeries{margin-top:5px;padding-top:0;border-top:0;display:grid;gap:3px}.globalModelSeriesLabel{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}.globalModelSeriesLink{display:block;width:max-content;max-width:100%;border:0;background:transparent;padding:2px 0;font:inherit;font-size:11px;color:var(--ink);text-align:left;text-decoration:underline;text-underline-offset:2px;cursor:pointer}.starRating button{color:#d4af37}.globalModelRating{color:#d4af37}#profileRatingSummary{color:#d4af37}
+.ratingGuide{margin:6px 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fafafa;font-size:11px;line-height:1.45;color:var(--muted)}
+.ratingGuide div{display:grid;grid-template-columns:78px minmax(0,1fr);gap:7px;align-items:start}
+.ratingGuideStars{color:#9a7b00;font-weight:700;white-space:nowrap}
+.ratingGuideNote{margin-top:6px;font-size:10px;color:var(--muted)}
+
 .modelFavoriteFilterBtn{min-width:auto!important;border:0!important;background:transparent!important;box-shadow:none!important;color:#777;font-size:20px;line-height:1;padding:8px 6px!important}.modelFavoriteFilterBtn.isActive{color:#d61f2c!important;background:transparent!important;border-color:transparent!important}.globalModelFavorite{color:#d61f2c}
 #profileRatingSummary.isFavorite{font-size:24px;line-height:1;color:#d61f2c}
 @media(max-width:460px){.globalModelOpen{grid-template-columns:minmax(105px,38%) 1fr}.globalModelBody{padding:10px}.globalModelName{font-size:15px}.globalModelCard.hasFavorite .globalModelName{padding-right:28px}.globalModelFacts{font-size:11px}.globalModelTitle{font-size:10px;padding:0}.globalModelTitleWhen{font-size:9px}}
@@ -2121,6 +2165,15 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
 </section>
 
+<section id="researchView" class="hidden">
+ <div class="card">
+  <div class="researchToolbar"><div><h2 style="margin:0">Research</h2><div class="small">Offene Fragen, Indizien und Belege getrennt vom finalen Archivstand.</div></div><div><button type="button" class="btn" id="importResearchBtn">⇩ Recherche-Import</button><button type="button" class="btn primary" id="addResearchBtn">＋ Research</button></div></div>
+  <div class="researchFilters"><select id="researchModelFilter" aria-label="Research nach Model filtern"><option value="">Alle Models</option></select><select id="researchStatusFilter" aria-label="Research nach Status filtern"><option value="active">Offen + Indizien</option><option value="">Alle Status</option><option value="offen">Offen</option><option value="indizienbasiert">Indizienbasiert</option><option value="unklar">Unklar</option><option value="bestätigt">Bestätigt</option><option value="verworfen">Verworfen</option></select></div>
+  <div id="researchSummary" class="small" style="margin-top:10px"></div>
+  <div id="researchList" class="researchList"></div>
+ </div>
+</section>
+
 <section id="profileView" class="hidden">
  <div class="hero">
   <div class="profilePhotoWrap">
@@ -2153,6 +2206,22 @@ body.archiveFilterOpen .bottom{display:none!important}
   </div>
 </div>
 
+<div class="card profileShortBioCard closed hidden" id="profileShortBioCard">
+ <button type="button" class="profileShortBioHead" id="profileShortBioToggle" aria-expanded="false">
+  <strong>Kurzbio</strong>
+  <span class="profileShortBioIcon" aria-hidden="true">⌄</span>
+ </button>
+ <div class="profileShortBioContent" id="profileShortBioContent"></div>
+ <button type="button" class="profileShortBioToggleHint" id="profileShortBioMore">Mehr anzeigen</button>
+</div>
+
+<div class="card collapseCard profileFactsCard hidden" id="profileFactsCard" data-collapse-key="profile-confirmed-facts" data-collapse-default="closed">
+ <button type="button" class="collapseHead">
+  <h2>Bestätigte Fakten <span class="small" id="profileFactsCount"></span></h2>
+  <span class="collapseIcon">⌄</span>
+ </button>
+ <div class="collapseBody" id="profileFactsBody"></div>
+</div>
 
 <div class="profileArchiveCard">
  <div class="archiveMainNav profileArchiveNav">
@@ -2181,13 +2250,64 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="shootFinderFilters"><select id="mediaWorkShootModelFilter"><option value="">Alle Models</option></select><select id="mediaWorkShootYearFilter"><option value="">Alle Jahre</option></select></div>
  <div id="mediaWorkShootRecent"></div><div id="mediaWorkShootResults" class="shootFinderResults"></div>
 </div>
-<div class="bottom"><div class="nav"><button id="profileBtn">Profil</button><button id="spotBtn">Archiv</button><button id="managementBtn">Verwaltung</button><button id="inboxBtn">Inbox</button><button id="peopleBtn">Personen</button></div></div>
+<div class="bottom"><div class="nav"><button id="profileBtn">Profil</button><button id="spotBtn">Archiv</button><button id="researchBtn">Research</button><button id="managementBtn">Verwaltung</button><button id="inboxBtn">Inbox</button><button id="peopleBtn">Personen</button></div></div>
 
 <div class="overlay" id="overlay"><div class="sheet">
  <div id="timelinePane" class="hidden"><h2>Karriereereignis</h2><input type="hidden" id="timelineEditId">
 <label>Datum / Zeitraum</label><input id="timelineDateInput"><label>Titel</label><input id="timelineTitleInput">
 <label>Notiz</label><textarea id="timelineNoteInput"></textarea><button class="btn primary" id="saveTimelineBtn">Speichern</button>
 <button class="btn" id="cancelTimelineBtn">Abbrechen</button></div>
+<div id="researchPane" class="hidden">
+ <h2 id="researchPaneTitle">Research-Fall</h2>
+ <input type="hidden" id="researchEditId">
+ <label>Model</label><select id="researchModelInput"><option value="">Allgemeines Research</option></select>
+ <label>Shooting</label><select id="researchShootingInput"><option value="">Kein Shooting verknüpft</option></select>
+ <label>Art</label><select id="researchKindInput"><option>Zuordnung</option><option>Datierung</option><option>Identifikation</option><option>Wiederverwendung</option><option>Titel/Auszeichnung</option><option>Stammdatum</option><option>Sonstiges</option></select>
+ <label>Status</label><select id="researchStatusInput"><option value="offen">Offen</option><option value="indizienbasiert">Indizienbasiert</option><option value="unklar">Unklar</option><option value="bestätigt">Bestätigt</option><option value="verworfen">Verworfen</option></select>
+ <label>Frage / Behauptung</label><textarea id="researchClaimInput" placeholder="Was soll geklärt oder belegt werden?"></textarea>
+ <label>Belege / Quellen</label>
+ <div class="small">Jeden Beleg einzeln erfassen. Ein Beleg kann die Behauptung stützen oder ihr widersprechen.</div>
+ <div id="researchEvidenceEditor" class="researchEvidenceEditor"></div>
+ <button type="button" class="btn" id="addResearchEvidenceBtn">＋ Beleg hinzufügen</button>
+ <label>Zwischenergebnis / Notiz</label><textarea id="researchResultInput" placeholder="Aktueller Erkenntnisstand"></textarea>
+ <label>Zuletzt geprüft</label><input id="researchReviewedInput" type="date">
+ <button class="btn primary" id="saveResearchBtn">Speichern</button>
+ <button class="btn" id="cancelResearchBtn">Abbrechen</button>
+</div>
+<div id="researchImportPane" class="hidden">
+ <h2>Recherche-Import</h2>
+ <div class="small">Mehrere vorbereitete Erkenntnisse auf einmal als Research-Fälle anlegen. Der Import erzeugt keine kanonischen Fakten.</div>
+ <label>Model</label><select id="researchImportModel"><option value="">Allgemeines Research</option></select>
+ <label>Vorbereitete Erkenntnisse (JSON)</label>
+ <textarea id="researchImportInput" style="min-height:260px" placeholder='[{"kind":"Sonstiges","status":"offen","claim":"…","evidence":[{"relation":"supports","source":"…","location":"…","statement":"…","sourceType":"Primärquelle","quality":"hoch","checkedAt":"2026-09-05"}],"result":"…","lastReviewedAt":"2026-09-05"}]'></textarea>
+ <div id="researchImportPreview" class="factPromotionPreview"><b>Noch keine Importdaten.</b></div>
+ <button type="button" class="btn primary" id="confirmResearchImportBtn">Research-Fälle importieren</button>
+ <button type="button" class="btn" id="cancelResearchImportBtn">Abbrechen</button>
+</div>
+<div id="factPromotionPane" class="hidden">
+ <h2>Als Fakt übernehmen</h2>
+ <input type="hidden" id="factPromotionResearchId">
+ <div id="factPromotionIntro" class="small"></div>
+ <label>Ziel</label>
+ <select id="factPromotionTarget"><option value="career">Karrierefakt</option><option value="bio">Biofakt</option></select>
+ <div id="factPromotionCareerFields">
+  <label>Art</label><select id="factCareerKind"><option>Magazinauftritt</option><option>Videoauftritt</option><option>TV-Auftritt</option><option>Werbung/Kampagne</option><option>Kalender</option><option>Auszeichnung</option><option>Event/Auftritt</option><option>Sonstiges</option></select>
+  <label>Medium / Organisation</label><input id="factCareerOrganization" placeholder="wird soweit sicher ableitbar vorausgefüllt">
+  <label>Werk / Ausgabe</label><input id="factCareerWork" placeholder="wird soweit sicher ableitbar vorausgefüllt">
+  <div class="factPromotionGrid"><div><label>Datum / Zeitraum</label><input id="factCareerDate" placeholder="z. B. 2009-05"></div><div><label>Rolle</label><select id="factCareerRole"><option>Model</option><option>Darstellerin</option><option>Sie selbst</option><option>Preisträgerin</option><option>Sonstiges</option></select></div></div>
+  <label>Details</label><textarea id="factCareerDetails" placeholder="Kanonische Aussage; Quellenangaben bleiben im Research-Fall."></textarea>
+ </div>
+ <div id="factPromotionBioFields" class="hidden">
+  <label>Kategorie</label><select id="factBioCategory"><option>Hintergrund</option><option>Ausbildung</option><option>Beruf</option><option>Modeling</option><option>Film & Fernsehen</option><option>Weitere Karriere</option><option>Privatleben</option><option>Späteres Leben</option><option>Persönlichkeit</option><option>Sonstiges</option></select>
+  <label>Aussage</label><textarea id="factBioStatement" placeholder="Bestätigte biografische Aussage"></textarea>
+  <div class="factPromotionGrid"><div><label>Von / Zeitpunkt</label><input id="factBioFrom" placeholder="optional"></div><div><label>Bis</label><input id="factBioTo" placeholder="optional"></div></div>
+  <label>Art der Aussage</label><select id="factBioStatementType"><option value="objective">Objektive Angabe</option><option value="self">Selbstaussage</option></select>
+ </div>
+ <div id="factPromotionPreview" class="factPromotionPreview"></div>
+ <div id="factPromotionSource" class="factPromotionSource"></div>
+ <button class="btn primary" id="confirmFactPromotionBtn">Übernahme bestätigen</button>
+ <button class="btn" id="cancelFactPromotionBtn">Abbrechen</button>
+</div>
 <div id="personPane" class="hidden">
  <h2 id="personPaneTitle">Person hinzufügen</h2>
  <input type="hidden" id="personEditId">
@@ -2298,6 +2418,16 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button class="btn" id="cancelArchiveBtn">Abbrechen</button>
 </div>
 
+<div id="bioDraftPane" class="hidden">
+  <h2>Bio-Entwurf</h2>
+  <div class="small">Erzeugt ausschließlich aus kanonischen Archivdaten sowie aktiven bestätigten Karriere- und Biofakten. Offene, unklare oder nur indizienbasierte Research-Fälle werden nicht verwendet.</div>
+  <div id="bioDraftBasis" class="factPromotionSource"></div>
+  <label>Entwurf</label>
+  <textarea id="bioDraftText" style="min-height:360px;line-height:1.5"></textarea>
+  <button type="button" class="btn primary" id="useBioDraftBtn">In Kurzbio-Editor übernehmen</button>
+  <button type="button" class="btn" id="cancelBioDraftBtn">Zurück ohne Übernahme</button>
+</div>
+
 <div id="profileEditPane" class="hidden">
   <h2>Profil bearbeiten</h2>
   <label>Name</label><input id="editName">
@@ -2318,8 +2448,21 @@ body.archiveFilterOpen .bottom{display:none!important}
 <label>Gewicht</label><input id="editWeight" inputmode="text" placeholder="z. B. 54 kg oder 119 lb">
 <div class="small" style="margin-top:-6px;margin-bottom:8px">Eingabe wahlweise in kg oder lb; die Anzeige wird automatisch vereinheitlicht.</div>
   <label>Geburtsdatum</label><input id="editBirthdate" type="date">
+  <label>Kurzbio</label>
+  <textarea id="editBio" placeholder="Kurzbio mit Absätzen und Zwischenüberschriften eingeben"></textarea>
+  <button type="button" class="btn" id="generateBioDraftBtn">✦ Bio-Entwurf aus bestätigten Fakten</button>
+  <div class="small" style="margin-top:4px;margin-bottom:8px">Der Generator erstellt nur einen prüfbaren Entwurf. Die bestehende Kurzbio wird erst geändert, wenn du den Entwurf ausdrücklich in den Editor übernimmst und anschließend das Profil speicherst.</div>
   <div class="modelRatingEdit">
-  <div class="small" style="margin-top:12px;font-weight:700">Bewertung</div>
+  <div class="small" style="margin-top:12px;font-weight:700">Bewertung · alle Kategorien je 20%</div>
+
+  <label>Größe (automatisch)</label>
+  <div class="ratingGuide">
+   <div><span class="ratingGuideStars">★★★★★ 100%</span><span>5'1"–5'4"</span></div>
+   <div><span class="ratingGuideStars">★★★★ 90%</span><span>5'0" / 5'5"</span></div>
+   <div><span class="ratingGuideStars">★★★ 70%</span><span>4'11" / 5'6"</span></div>
+   <div><span class="ratingGuideStars">★★ 40%</span><span>4'10" / 5'7"</span></div>
+   <div><span class="ratingGuideStars">★ 0%</span><span>Rest</span></div>
+  </div>
 
   <label>Gesicht</label>
   <div id="editRatingFace" class="starRating" data-rating="0">
@@ -2329,7 +2472,14 @@ body.archiveFilterOpen .bottom{display:none!important}
   <button type="button" data-star="4">☆</button>
   <button type="button" data-star="5">☆</button>
   </div>
-    
+  <div class="ratingGuide">
+   <div><span class="ratingGuideStars">★★★★★ 100%</span><span>zum verlieben</span></div>
+   <div><span class="ratingGuideStars">★★★★ 90%</span><span>sehr attraktiv</span></div>
+   <div><span class="ratingGuideStars">★★★ 70%</span><span>attraktiv</span></div>
+   <div><span class="ratingGuideStars">★★ 40%</span><span>neutral</span></div>
+   <div><span class="ratingGuideStars">★ 0%</span><span>Rest</span></div>
+  </div>
+
   <label>Busen</label>
   <div id="editRatingBust" class="starRating" data-rating="0">
   <button type="button" data-star="1">☆</button>
@@ -2337,8 +2487,15 @@ body.archiveFilterOpen .bottom{display:none!important}
   <button type="button" data-star="3">☆</button>
   <button type="button" data-star="4">☆</button>
   <button type="button" data-star="5">☆</button>
-  </div> 
-    
+  </div>
+  <div class="ratingGuide">
+   <div><span class="ratingGuideStars">★★★★★ 100%</span><span>geile Dinger</span></div>
+   <div><span class="ratingGuideStars">★★★★ 90%</span><span>1 kleiner Abstrich</span></div>
+   <div><span class="ratingGuideStars">★★★ 70%</span><span>2 kleine Abstriche</span></div>
+   <div><span class="ratingGuideStars">★★ 40%</span><span>neutral</span></div>
+   <div><span class="ratingGuideStars">★ 0%</span><span>Rest</span></div>
+  </div>
+
   <label>Pussy</label>
   <div id="editRatingPussy" class="starRating" data-rating="0">
   <button type="button" data-star="1">☆</button>
@@ -2347,7 +2504,14 @@ body.archiveFilterOpen .bottom{display:none!important}
   <button type="button" data-star="4">☆</button>
   <button type="button" data-star="5">☆</button>
   </div>
-    
+  <div class="ratingGuide">
+   <div><span class="ratingGuideStars">★★★★★ 100%</span><span>blank</span></div>
+   <div><span class="ratingGuideStars">★★★★ 90%</span><span>kurz, schmal</span></div>
+   <div><span class="ratingGuideStars">★★★ 70%</span><span>kurz, breit</span></div>
+   <div><span class="ratingGuideStars">★★ 40%</span><span>neutral</span></div>
+   <div><span class="ratingGuideStars">★ 0%</span><span>Rest</span></div>
+  </div>
+
   <label>Gesamteindruck</label>
   <div id="editRatingImpression" class="starRating" data-rating="0">
   <button type="button" data-star="1">☆</button>
@@ -2356,7 +2520,15 @@ body.archiveFilterOpen .bottom{display:none!important}
   <button type="button" data-star="4">☆</button>
   <button type="button" data-star="5">☆</button>
   </div>
-    
+  <div class="ratingGuide">
+   <div><span class="ratingGuideStars">★★★★★ 100%</span><span>top</span></div>
+   <div><span class="ratingGuideStars">★★★★ 90%</span><span>irgendetwas fehlt</span></div>
+   <div><span class="ratingGuideStars">★★★ 70%</span><span>hat was</span></div>
+   <div><span class="ratingGuideStars">★★ 40%</span><span>neutral</span></div>
+   <div><span class="ratingGuideStars">★ 0%</span><span>Rest</span></div>
+  </div>
+
+  <div class="ratingGuideNote">Erneutes Antippen der bereits gewählten Stufe setzt die Kategorie auf „nicht bewertet“ zurück.</div>
   </div>
   <button class="btn primary" id="saveProfileBtn">Profil speichern</button>
   <button class="btn" id="cancelProfileBtn">Abbrechen</button>
@@ -2639,7 +2811,7 @@ let metadataStorageError='';
 let metadataSaveChain=Promise.resolve();
 
 const APP_VERSION='1.2 Beta 6';
-const DATA_SCHEMA_VERSION=1;
+const DATA_SCHEMA_VERSION=4;
 const DATA_SCHEMA_KEY='playboyArchivDataSchemaVersion';
 const LAST_APP_VERSION_KEY='playboyArchivLastAppVersion';
 const STARTUP_ERROR_KEY='playboyArchivStartupErrorV1';
@@ -2718,7 +2890,17 @@ function normalizeStateForSchema(s){
  if(!Array.isArray(s.people))s.people=[];
  if(!Array.isArray(s.evidence))s.evidence=[];
  if(!Array.isArray(s.revisions))s.revisions=[];
+ if(!Array.isArray(s.careerFacts))s.careerFacts=[];
+ if(!Array.isArray(s.bioFacts))s.bioFacts=[];
  if(!s.research||typeof s.research!=='object')s.research={};
+ Object.keys(s.research).forEach(modelId=>{
+  const rows=Array.isArray(s.research[modelId])?s.research[modelId]:[];
+  s.research[modelId]=rows.map((row,index)=>{
+   if(row&&typeof row==='object')return {id:row.id||`R-${Date.now()}-${index}`,modelId:row.modelId??(modelId==='_global'?'':modelId),shootingId:row.shootingId||'',kind:row.kind||'Sonstiges',status:row.status||'offen',claim:row.claim||row.note||'',evidence:(Array.isArray(row.evidence)?row.evidence:[]).map((e,eIndex)=>typeof e==='string'?{id:`RE-${Date.now()}-${index}-${eIndex}`,relation:'supports',source:e,location:'',statement:'',sourceType:'',quality:'',checkedAt:'',addedAt:new Date().toISOString()}:{id:e.id||`RE-${Date.now()}-${index}-${eIndex}`,relation:e.relation||'supports',source:e.source||e.text||'',location:e.location||'',statement:e.statement||'',sourceType:e.sourceType||'',quality:e.quality||'',checkedAt:e.checkedAt||'',addedAt:e.addedAt||new Date().toISOString()}),result:row.result||'',createdAt:row.createdAt||new Date().toISOString(),updatedAt:row.updatedAt||row.createdAt||new Date().toISOString(),lastReviewedAt:row.lastReviewedAt||''};
+   return {id:`R-legacy-${modelId}-${index}`,modelId:modelId==='_global'?'':modelId,shootingId:'',kind:'Sonstiges',status:'offen',claim:String(row||''),evidence:[],result:'Aus früherer Research-Notiz übernommen.',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),lastReviewedAt:''};
+  });
+ });
+ if(!Array.isArray(s.research._global))s.research._global=[];
  if(!s.currentModelId||!s.models.some(m=>m.id===s.currentModelId))s.currentModelId=s.models[0]?.id||'';
  return s;
 }
@@ -2800,9 +2982,12 @@ function initialState(){
   ],
   evidence:[],
   revisions:[],
+  careerFacts:[],
+  bioFacts:[],
   archive:[],
   people:[],
   research:{
+   '_global':[],
    'MODEL-0001':[
     'MuscleMag International #324 · Mai 2009 · S. 308 ff. · Justin Price',
     'American Curves Presents More Lingerie · Summer 2009 · S. 110 ff.',
@@ -3235,7 +3420,7 @@ function resetSearchesInView(view){
 let activeMainView='';
 function hideMainViews(){
  activeMainView='';
- ['inboxView','peopleView','profileView','modelsView','titlesView','seriesView','publicationsView','shootingsView','archiveView','managementView'].forEach(id=>{
+ ['inboxView','peopleView','researchView','profileView','modelsView','titlesView','seriesView','publicationsView','shootingsView','archiveView','managementView'].forEach(id=>{
    const view=document.getElementById(id);
    if(view&&!view.classList.contains('hidden'))resetSearchesInView(view);
    view?.classList.add('hidden');
@@ -3614,7 +3799,7 @@ if(highestSeriesCount){
 }
   return `<article class="globalModelCard${rating===100?' hasFavorite':''}"><div class="globalModelOpen" role="button" tabindex="0" data-global-model-open="${esc(m.id)}"><div class="globalModelPhoto">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name||'Model')}">`:'<span class="small">Profilbild</span>'}</div><div class="globalModelBody"><div class="globalModelName">${esc(m.name||'Ohne Namen')}</div><div class="globalModelFacts"><span class="globalModelOrigin"><span class="globalModelOriginFlag">${esc(effectiveFlag(m)||'')}</span><span class="globalModelOriginText">${esc(locationParts.join(', ')||'Herkunft offen')}</span></span><span class="globalModelBodyStats"><strong>${esc(heightText)}</strong><span class="globalModelStatsGap" aria-hidden="true"></span><span>${esc(measurementsText)}</span></span></div>${titles.length?`<div class="globalModelTitles"><div class="globalModelTitlesTrophy" aria-hidden="true">🏆</div><div class="globalModelTitlesList">${titles.map(t=>`<div class="globalModelTitle"><span class="globalModelTitleName">${esc(t.name)}</span>${t.when?`<button type="button" class="globalModelTitleWhen" data-global-model-title-date="${esc(t.id)}" data-title-class="${esc(t.titleClass)}" data-title-level="${esc(t.titleLevel)}">${esc(t.when)}</button>`:''}</div>`).join('')}</div></div>`:''}${series.length?`<div class="globalModelSeries"><div class="globalModelSeriesLabel">Serien</div>${series.map(sr=>`<button type="button" class="globalModelSeriesLink" data-global-model-series="${esc(sr.id)}">${esc(sr.title||'Serie ohne Titel')}</button>`).join('')}</div>`:''}</div></div>${rating===100?`<span class="globalModelFavorite" aria-label="Favorit" title="100%">❤️</span>`:rating>=0?`<span class="globalModelRating">${rating}%</span>`:''}</article>` 
  }).join(''):`<div class="small">${nq?'Keine Models passend zur Suche.':'Noch keine Models angelegt.'}</div>`;
- box.querySelectorAll('[data-global-model-open]').forEach(b=>b.onclick=()=>{state.currentModelId=b.dataset.globalModelOpen;save();rememberRecentProfile(state.currentModelId);showProfile()});
+ box.querySelectorAll('[data-global-model-open]').forEach(b=>b.onclick=()=>{state.currentModelId=b.dataset.globalModelOpen;save();rememberRecentProfile(state.currentModelId);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}))});
  box.querySelectorAll('[data-global-model-favorite]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const m=(state.models||[]).find(x=>x.id===b.dataset.globalModelFavorite);if(!m)return;m.favorite=!m.favorite;save();renderGlobalModelOverview();renderFavoritesOverview();});
  box.querySelectorAll('[data-global-model-title-date]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();globalTitleBrowseClass=b.dataset.titleClass||'';globalTitleBrowseLevel=b.dataset.titleLevel||'';const id=b.dataset.globalModelTitleDate;showGlobalTitlesView();requestAnimationFrame(()=>{const card=document.querySelector(`[data-global-title-card="${CSS.escape(id)}"]`);if(card)card.scrollIntoView({behavior:'smooth',block:'center'});});});
  box.querySelectorAll('[data-global-model-series]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();globalSeriesBrowseId=b.dataset.globalModelSeries||'';showGlobalSeriesView();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}));});
@@ -3650,7 +3835,7 @@ function renderGlobalTitles(){
  if(!matched.length){box.innerHTML=q?`<div class="titleSearchHint">Kein passender Titel gefunden.</div><button type="button" class="titleSearchAdd" data-title-search-add="1">＋ Titel hinzufügen</button>`:'<div class="small" style="margin-top:10px">Noch keine zugeordneten Titel im Archiv.</div>';const add=box.querySelector('[data-title-search-add]');if(add)add.onclick=openNewTitle;return}
  box.innerHTML=`<div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards}</div>`;
  box.querySelectorAll('[data-global-title-class]').forEach(x=>x.onclick=()=>{globalTitleBrowseClass=x.dataset.globalTitleClass;globalTitleBrowseLevel='';renderGlobalTitles()});box.querySelectorAll('[data-global-title-level]').forEach(x=>x.onclick=()=>{globalTitleBrowseLevel=x.dataset.globalTitleLevel;renderGlobalTitles()});
- box.querySelectorAll('[data-global-open-model]').forEach(x=>x.onclick=()=>{state.currentModelId=x.dataset.globalOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile()});
+ box.querySelectorAll('[data-global-open-model]').forEach(x=>x.onclick=()=>{state.currentModelId=x.dataset.globalOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}))});
  box.querySelectorAll('[data-global-open-title-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid){state.currentModelId=mid;save()}openShootingDetail(x.dataset.globalOpenTitleShooting,null,{source:'global-title',titleClass:globalTitleBrowseClass,titleLevel:globalTitleBrowseLevel,scrollY:window.scrollY})});
  box.querySelectorAll('[data-global-edit-title]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.globalEditTitle)});box.querySelectorAll('[data-global-delete-title]').forEach(x=>x.onclick=e=>{e.stopPropagation();deleteArchiveItem(x.dataset.globalDeleteTitle)});box.querySelectorAll('[data-global-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.globalEditArchive)});box.querySelectorAll('[data-global-unlink-title-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.globalUnlinkTitleShooting&&a.type==='shoot');if(!sh||!confirm('Shooting wirklich von diesem Titel lösen? Das Shooting selbst bleibt im Archiv.'))return;sh.links=(sh.links||[]).filter(id=>id!==x.dataset.titleId);if(save()){renderGlobalTitles();toast('Shooting vom Titel gelöst.')}});box.querySelectorAll('[data-pin-archive]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();toggleArchivePin(x.dataset.pinArchive)});hydrateShootingCovers(box);
 }
@@ -3677,7 +3862,7 @@ function renderGlobalSeries(){
  const titleBtn=box.querySelector('#globalSeriesTitleButton'),pickBox=box.querySelector('#globalSeriesPicker');
  if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
  box.querySelectorAll('[data-global-series-pick]').forEach(x=>x.onclick=e=>{e.stopPropagation();globalSeriesBrowseId=x.dataset.globalSeriesPick;renderGlobalSeries()});
- box.querySelectorAll('[data-global-series-open-model]').forEach(x=>x.onclick=e=>{e.stopPropagation();state.currentModelId=x.dataset.globalSeriesOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile()});
+ box.querySelectorAll('[data-global-series-open-model]').forEach(x=>x.onclick=e=>{e.stopPropagation();state.currentModelId=x.dataset.globalSeriesOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}))});
  box.querySelectorAll('[data-global-open-series-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid){state.currentModelId=mid;save()}openShootingDetail(x.dataset.globalOpenSeriesShooting,null,{source:'global-series',seriesId:globalSeriesBrowseId,scrollY:window.scrollY})});
  box.querySelectorAll('[data-global-series-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.globalSeriesEditArchive)});
  box.querySelectorAll('[data-global-unlink-series-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.globalUnlinkSeriesShooting&&a.type==='shoot');const sr=(state.archive||[]).find(a=>a.id===x.dataset.seriesId&&a.type==='series');if(!sh||!sr||!confirm('Shooting wirklich von dieser Serie lösen? Das Shooting selbst bleibt im Archiv.'))return;sh.links=(sh.links||[]).filter(id=>id!==sr.id);sr.links=(sr.links||[]).filter(id=>id!==sh.id);if(save()){renderGlobalSeries();toast('Shooting von der Serie gelöst.')}});
@@ -3714,7 +3899,7 @@ function renderGlobalShootings(){
  const groups=mids.map(mid=>{const m=state.models.find(x=>x.id===mid);const rows=shoots.filter(sh=>shootingModelIds(sh).includes(mid));const cards=rows.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-global-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-individual-edit="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-individual-delete="${esc(sh.id)}">Löschen</button></div></div>`}).join('');return `<div class="seriesBrowseModel"><button type="button" class="seriesBrowseModelName" data-individual-open-model="${esc(mid)}">${esc(m?.name||'Model')}</button><div class="shootingGridStandalone">${cards}</div></div>`}).join('');
  const withoutModel=shoots.filter(sh=>!shootingModelIds(sh).length);const loose=withoutModel.length?`<div class="seriesBrowseModel"><div class="seriesBrowseModelName">Ohne Model</div><div class="shootingGridStandalone">${withoutModel.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-global-shooting="${esc(sh.id)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-individual-edit="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-individual-delete="${esc(sh.id)}">Löschen</button></div></div>`}).join('')}</div></div>`:'';
  box.innerHTML=(groups||loose)?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody">${groups}${loose}</div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals im Archiv.</div>');
- box.querySelectorAll('[data-global-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid){state.currentModelId=mid;save()}openShootingDetail(x.dataset.globalShooting,null,{source:'global-shootings',scrollY:window.scrollY})});box.querySelectorAll('[data-individual-open-model]').forEach(x=>x.onclick=e=>{e.stopPropagation();state.currentModelId=x.dataset.individualOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile()});box.querySelectorAll('[data-individual-edit]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.individualEdit)});box.querySelectorAll('[data-individual-delete]').forEach(x=>x.onclick=e=>{e.stopPropagation();deleteArchiveItem(x.dataset.individualDelete)});box.querySelectorAll('[data-pin-archive]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();toggleArchivePin(x.dataset.pinArchive)});hydrateShootingCovers(box);
+ box.querySelectorAll('[data-global-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid){state.currentModelId=mid;save()}openShootingDetail(x.dataset.globalShooting,null,{source:'global-shootings',scrollY:window.scrollY})});box.querySelectorAll('[data-individual-open-model]').forEach(x=>x.onclick=e=>{e.stopPropagation();state.currentModelId=x.dataset.individualOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}))});box.querySelectorAll('[data-individual-edit]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.individualEdit)});box.querySelectorAll('[data-individual-delete]').forEach(x=>x.onclick=e=>{e.stopPropagation();deleteArchiveItem(x.dataset.individualDelete)});box.querySelectorAll('[data-pin-archive]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();toggleArchivePin(x.dataset.pinArchive)});hydrateShootingCovers(box);
 }
 function renderModels(){
  syncOverviewContentNav();
@@ -3836,18 +4021,18 @@ function heightRatingStars(value){
  if(inches===60||inches===65)return 4; // 5'0", 5'5"
  if(inches===59||inches===66)return 3; // 4'11", 5'6"
  if(inches===58||inches===67)return 2; // 4'10", 5'7"
- if(inches===57||inches===68)return 1; // 4'9", 5'8"
 
- return 0;
+ return 1; // Rest
 }
 
 function ratingIsSet(value){
  return value!==null&&value!==undefined&&String(value).trim()!=='';
 }
 function ratingStarsValue(value){
+ if(!ratingIsSet(value))return 0;
  const n=Number(value);
  if(!Number.isFinite(n))return 0;
- return Math.max(0,Math.min(5,Math.round(n)));
+ return Math.max(1,Math.min(5,Math.round(n)));
 }
 function ratingStoredValue(el){
  return el?.dataset.isRated==='1'?ratingStarsValue(el.dataset.rating):null;
@@ -3864,32 +4049,30 @@ function setStarRating(el,value){
  });
 }
 document.addEventListener('click',function(e){
- const btn=e.target?.closest?.('#editRatingFace [data-star], #editRatingBust [data-star], #editRatingPussy [data-star], #editRatingImpression [data-star]'); 
-  if(!btn)return;
+ const btn=e.target?.closest?.('#editRatingFace [data-star], #editRatingBust [data-star], #editRatingPussy [data-star], #editRatingImpression [data-star]');
+ if(!btn)return;
 
- const box=btn.closest('.starRating'); 
+ const box=btn.closest('.starRating');
  const value=Number(btn.dataset.star||0);
-const current=ratingStarsValue(box.dataset.rating);
+ const current=box.dataset.isRated==='1'?ratingStarsValue(box.dataset.rating):0;
 
-setStarRating(box,current===value?0:value);
-box.dataset.isRated='1';
+ setStarRating(box,current===value?null:value);
 });
-  
+
 function modelRatingSummary(m,heightValue){
  const size=heightRatingStars(heightValue);
  const face=ratingStarsValue(m?.ratingFace);
  const bust=ratingStarsValue(m?.ratingBust);
  const pussy=ratingStarsValue(m?.ratingPussy);
  const impression=ratingStarsValue(m?.ratingImpression);
- const categoryPercent=stars=>[0,30,55,75,90,100][ratingStarsValue(stars)]||0;
+ const categoryPercent=stars=>[0,0,40,70,90,100][ratingStarsValue(stars)]||0;
 
- // Die bestehende Gewichtung der Kategorien bleibt unverändert.
  const percent=
-  categoryPercent(size)*0.30+
-  categoryPercent(face)*0.25+
+  categoryPercent(size)*0.20+
+  categoryPercent(face)*0.20+
   categoryPercent(bust)*0.20+
-  categoryPercent(pussy)*0.15+
-  categoryPercent(impression)*0.10;
+  categoryPercent(pussy)*0.20+
+  categoryPercent(impression)*0.20;
 
  const complete=
   String(heightValue||'').trim()!==''&&
@@ -4040,6 +4223,36 @@ function renderProfileArchiveOverview(){
  box.innerHTML=profileArchiveHeader('Individuals',`Shootings von ${modelName} ohne Zuordnung zu Serie oder Titel.`,'Shooting')+(individuals.length?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${cards}</div></div></div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals für dieses Model.</div>'));
  bindProfileArchiveCommon(box);
 }
+function profileFactSourceText(f){
+ const ids=Array.isArray(f?.sourceResearchIds)?f.sourceResearchIds.filter(Boolean):[];
+ return ids.length?`Research-Herkunft: ${ids.join(', ')}`:'';
+}
+function renderProfileConfirmedFacts(modelId){
+ const card=document.getElementById('profileFactsCard');
+ const body=document.getElementById('profileFactsBody');
+ const count=document.getElementById('profileFactsCount');
+ if(!card||!body||!count)return;
+ const career=(state.careerFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const bio=(state.bioFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const total=career.length+bio.length;
+ card.classList.toggle('hidden',total===0);
+ count.textContent=total?`(${total})`:'';
+ if(!total){body.innerHTML='';return}
+ const careerHtml=career.map(f=>{
+  const meta=[f.organization,f.work,f.date,f.role].filter(Boolean).map(esc).join(' · ');
+  const source=profileFactSourceText(f);
+  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Karrierefakt')}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
+ }).join('');
+ const bioHtml=bio.map(f=>{
+  const span=[f.from,f.to].filter(Boolean).join(' – ');
+  const type=f.statementType==='self'?'Selbstaussage':'';
+  const meta=[span,type].filter(Boolean).map(esc).join(' · ');
+  const source=profileFactSourceText(f);
+  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.category||'Biofakt')}</div>${f.statement?`<div class="profileFactDetails">${esc(f.statement)}</div>`:''}${meta?`<div class="profileFactMeta">${meta}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
+ }).join('');
+ body.innerHTML=(career.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Karriere</div>${careerHtml}</div>`:'')+
+  (bio.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Biografie</div>${bioHtml}</div>`:'');
+}
 function render(){
  const m=model();
  const heightEvidence=currentEvidence('height');
@@ -4062,6 +4275,16 @@ document.getElementById('profileRatingIncomplete').textContent=
  document.getElementById('meta').innerHTML=`${esc(originText)} · <strong>${esc(heightText)}</strong>`;
  document.getElementById('categoryTags').innerHTML=(m.categories||[]).map(c=>`<span class="tag">${esc(c)}</span>`).join('');
  document.getElementById('shortBio').textContent=m.bio||'Noch keine Kurzbiografie.';
+ const bioCard=document.getElementById('profileShortBioCard');
+ const bioContent=document.getElementById('profileShortBioContent');
+ const bioToggle=document.getElementById('profileShortBioToggle');
+ const bioText=String(m.bio||'').trim();
+ if(bioCard&&bioContent&&bioToggle){
+   bioCard.classList.toggle('hidden',!bioText);
+   bioCard.classList.add('closed');
+   bioContent.textContent=bioText;
+   bioToggle.setAttribute('aria-expanded','false');
+ }
  const photo=document.getElementById('profilePhotoArea');
  photo.innerHTML=m.photo?`<img src="${m.photo}" alt="Profilbild">`:'Profilbild';
  const locationParts=[m.city,m.region,m.country].filter(Boolean);
@@ -4075,11 +4298,12 @@ document.getElementById('profileRatingIncomplete').textContent=
  document.getElementById('summaryMeasurements').textContent=m.measurements||'—';
  document.getElementById('summaryWeight').textContent=formatWeightDisplay(m.weight);
  document.getElementById('summaryBirth').textContent=formatBirthWithAge(m.birthdate);
+ renderProfileConfirmedFacts(m.id);
  renderProfileArchiveOverview();
  renderArchive();
 }
 function openOverlay(pane){
- ['timelinePane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+ ['timelinePane','researchPane','researchImportPane','factPromotionPane','bioDraftPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
  document.getElementById(pane).classList.remove('hidden');
  document.getElementById('overlay').classList.add('open');
 }
@@ -6985,6 +7209,22 @@ document.getElementById('settingsRecentArchiveLimit').onchange=e=>{
 };
 
 document.getElementById('spotBtn').onclick=showArchiveTools;
+document.getElementById('researchBtn').onclick=showResearch;
+document.getElementById('addResearchBtn').onclick=()=>openResearchPane();
+document.getElementById('importResearchBtn').onclick=openResearchImport;
+document.getElementById('researchImportInput').oninput=renderResearchImportPreview;
+document.getElementById('confirmResearchImportBtn').onclick=confirmResearchImport;
+document.getElementById('cancelResearchImportBtn').onclick=closeOverlay;
+document.getElementById('researchModelFilter').onchange=renderResearch;
+document.getElementById('researchStatusFilter').onchange=renderResearch;
+document.getElementById('researchModelInput').onchange=()=>fillResearchShootingOptions();
+document.getElementById('addResearchEvidenceBtn').onclick=addResearchEvidence;
+document.getElementById('saveResearchBtn').onclick=saveResearchItem;
+document.getElementById('cancelResearchBtn').onclick=closeOverlay;
+document.getElementById('factPromotionTarget').onchange=renderFactPromotionPreview;
+['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
+document.getElementById('confirmFactPromotionBtn').onclick=confirmFactPromotion;
+document.getElementById('cancelFactPromotionBtn').onclick=closeOverlay;
 document.getElementById('managementBtn').onclick=showManagement; document.getElementById('profileBtn').onclick=showProfile;
 document.getElementById('peopleBtn').onclick=showPeople;
 document.getElementById('inboxBtn').onclick=showInbox;
@@ -7194,6 +7434,105 @@ function canonicalLocationValue(field,value,country='',region=''){
  const match=models.map(m=>String(m[field]||'').trim()).find(v=>v&&v.localeCompare(raw,'de',{sensitivity:'base'})===0);
  return match||raw;
 }
+function bioDraftFormatDate(value){
+ const raw=String(value||'').trim();if(!raw)return '';
+ const m=raw.match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+ if(m){const months=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];return `${months[Number(m[2])-1]} ${m[1]}`}
+ return raw;
+}
+function bioDraftFirstName(m){return String(m?.name||'Das Model').trim().split(/\s+/)[0]||'Das Model'}
+function bioDraftJoin(items){
+ const rows=items.filter(Boolean);if(!rows.length)return '';if(rows.length===1)return rows[0];if(rows.length===2)return `${rows[0]} und ${rows[1]}`;return `${rows.slice(0,-1).join(', ')} sowie ${rows[rows.length-1]}`;
+}
+function bioDraftCleanDetails(value){
+ const raw=String(value||'').trim();
+ if(!raw||/^Aus früherer Research-Notiz übernommen\.?$/i.test(raw)||/^Aus Research(?:-Notiz)? übernommen\.?$/i.test(raw))return '';
+ return raw;
+}
+function bioDraftWorkContainsDate(work,date){
+ const w=String(work||'').toLowerCase(),d=String(date||'').trim();if(!w||!d)return false;
+ const year=(d.match(/\b(?:19|20)\d{2}\b/)||[])[0];if(year&&w.includes(year)){
+  if(/^\d{4}$/.test(d))return true;
+  const formatted=bioDraftFormatDate(d).toLowerCase();const month=formatted.replace(year,'').trim();
+  const english=['january','february','march','april','may','june','july','august','september','october','november','december'];
+  const german=['januar','februar','märz','april','mai','juni','juli','august','september','oktober','november','dezember'];
+  const idx=german.indexOf(month);return w.includes(month)||(idx>=0&&w.includes(english[idx]));
+ }
+ return false;
+}
+function bioDraftCareerSentence(f,name,index){
+ const org=String(f.organization||'').trim(),work=String(f.work||'').trim(),date=bioDraftFormatDate(f.date),details=bioDraftCleanDetails(f.details),role=String(f.role||'').trim();
+ const when=date&&!bioDraftWorkContainsDate(work,f.date)?(date.match(/^\d{4}$/)?` ${date}`:` im ${date}`):'';
+ let sentence='';
+ if(f.kind==='Magazinauftritt')sentence=`${index?name:'Auch außerhalb von Playboy arbeitete '+name+' als Model und'}${index?' war':' war'}${when}${org?` in ${org}`:' in einem Magazin'}${work?` mit „${work}“`:''} vertreten`;
+ else if(f.kind==='Videoauftritt')sentence=`${name} hatte${when}${org?` Videoauftritte für ${org}`:' einen bestätigten Videoauftritt'}${work?` in „${work}“`:''}`;
+ else if(f.kind==='TV-Auftritt')sentence=`${name} war${when}${org?` bei ${org}`:' im Fernsehen'}${work?` in „${work}“`:''} zu sehen`;
+ else if(f.kind==='Werbung/Kampagne')sentence=`${name} arbeitete${when}${org?` für ${org}`:' für eine Kampagne'}${work?` an „${work}“`:''}`;
+ else if(f.kind==='Kalender')sentence=`${name} war${when}${org?` für ${org}`:''} in einem Kalender${work?` „${work}“`:''} vertreten`;
+ else if(f.kind==='Auszeichnung')sentence=`${name} erhielt${when}${org?` bei ${org}`:''}${work?` die Auszeichnung „${work}“`:' eine Auszeichnung'}`;
+ else if(f.kind==='Event/Auftritt')sentence=`${name} trat${when}${org?` bei ${org}`:''}${work?` im Rahmen von „${work}“`:''} auf`;
+ else sentence=`${name}: ${[f.kind,org,work,date].filter(Boolean).join(' · ')}`;
+ if(details)sentence+=`, ${details.charAt(0).toLowerCase()+details.slice(1)}`;
+ if(role&&role!=='Model'&&f.kind!=='Videoauftritt')sentence+=` (als ${role})`;
+ return sentence+'.';
+}
+function bioDraftSeriesSummary(modelId,name){
+ const archive=state.archive||[];
+ const series=archive.filter(sr=>sr.type==='series'&&seriesShootingsAll(sr).some(sh=>shootingModelIds(sh).includes(modelId)));
+ if(!series.length)return {text:'',seriesCount:0,shootCount:0,videoCount:0};
+ const shootMap=new Map(),videoMap=new Map();
+ const labels=series.map(sr=>{
+  const shoots=seriesShootingsAll(sr).filter(sh=>shootingModelIds(sh).includes(modelId));
+  shoots.forEach(sh=>shootMap.set(sh.id,sh));
+  const media=[...shoots.flatMap(sh=>shootingMedia(sh)),...directSeriesMedia(sr)];
+  media.filter(x=>(x.mimeType||'').startsWith('video/')).forEach(v=>videoMap.set(v.id,v));
+  return `„${sr.title||'Unbenannte Serie'}“`;
+ });
+ const shootCount=shootMap.size,videoCount=videoMap.size;
+ let text=`${name} war für Playboy mehrfach vor der Kamera aktiv. Im aktuellen Archiv ${shootCount===1?'ist ein Shooting':'sind '+shootCount+' Shootings'} mit ${name} dokumentiert, die ${series.length===1?'zur Serie':'zu den Serien'} ${bioDraftJoin(labels)} gehören.`;
+ if(videoCount)text+=` Zu diesen Serien ${videoCount===1?'gehört außerdem ein Video':'gehören außerdem '+videoCount+' Videos'} mit ${name}.`;
+ return {text,seriesCount:series.length,shootCount,videoCount};
+}
+function buildBioDraft(modelId){
+ const m=(state.models||[]).find(x=>x.id===modelId);if(!m)return {text:'',basis:'Kein Model ausgewählt.'};
+ const name=bioDraftFirstName(m),archive=state.archive||[];
+ const shoots=archive.filter(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(modelId));
+ const titles=archive.filter(t=>t.type==='title'&&titleBelongsToProfileModel(t,modelId));
+ const career=(state.careerFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv').slice().sort((a,b)=>String(a.date||'9999').localeCompare(String(b.date||'9999')));
+ const bio=(state.bioFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const objective=bio.filter(f=>f.statementType!=='self'),self=bio.filter(f=>f.statementType==='self');
+ const seriesInfo=bioDraftSeriesSummary(modelId,name),sections=[];
+ if(seriesInfo.text)sections.push(`Playboy-Karriere\n\n${seriesInfo.text}`);
+ else if(shoots.length)sections.push(`Playboy-Karriere\n\n${name} war für Playboy vor der Kamera aktiv. Im aktuellen Archiv ${shoots.length===1?'ist ein Shooting':'sind '+shoots.length+' Shootings'} mit ${name} dokumentiert.`);
+ if(career.length){
+  const sentences=career.map((f,i)=>bioDraftCareerSentence(f,name,i));
+  sections.push(`Weitere Karriere\n\n${sentences.join(' ')}`);
+ }
+ if(objective.length){
+  const statements=objective.map(f=>String(f.statement||'').trim()).filter(Boolean).map(s=>/[.!?]$/.test(s)?s:`${s}.`);
+  if(statements.length)sections.push(`Hintergrund & Werdegang\n\n${statements.join(' ')}`);
+ }
+ if(self.length){
+  const statements=self.map(f=>String(f.statement||'').trim()).filter(Boolean).map(s=>/[.!?]$/.test(s)?s:`${s}.`);
+  if(statements.length)sections.push(`Persönliches\n\n${name} beschrieb sich selbst folgendermaßen: ${statements.join(' ')}`);
+ }
+ const basis=[`${shoots.length} Archiv-Shootings`,`${seriesInfo.seriesCount} Serien`,`${seriesInfo.videoCount} verknüpfte Serien-Videos`,`${titles.length} Titelzuordnungen`,`${career.length} Karrierefakten`,`${bio.length} Biofakten`].join(' · ');
+ return {text:sections.join('\n\n'),basis};
+}
+function openBioDraft(){
+ const m=model();if(!m||!m.id){toast('Kein Model ausgewählt.');return}
+ const draft=buildBioDraft(m.id);
+ document.getElementById('bioDraftBasis').textContent=`Verwendete Basis: ${draft.basis}. Research-Status unterhalb „bestätigt“ bleibt ausgeschlossen.`;
+ document.getElementById('bioDraftText').value=draft.text||'Für dieses Model liegen noch nicht genügend kanonische Daten für einen Bio-Entwurf vor.';
+ openOverlay('bioDraftPane');
+}
+function useBioDraft(){
+ const draft=document.getElementById('bioDraftText').value.trim();
+ if(!draft){toast('Der Bio-Entwurf ist leer.');return}
+ document.getElementById('editBio').value=draft;
+ openOverlay('profileEditPane');
+ toast('Entwurf in den Kurzbio-Editor übernommen. Noch nicht gespeichert.');
+}
 function openProfileEdit(){
  const m=model();
  document.getElementById('editName').value=m.name||'';
@@ -7207,6 +7546,7 @@ function openProfileEdit(){
  document.getElementById('editMeasurements').value=m.measurements||'';
  document.getElementById('editWeight').value=m.weight||'';
  document.getElementById('editBirthdate').value=m.birthdate||'';
+ document.getElementById('editBio').value=m.bio||'';
  setStarRating(document.getElementById('editRatingFace'),m.ratingFace);
  setStarRating(document.getElementById('editRatingBust'),m.ratingBust); 
  setStarRating(document.getElementById('editRatingPussy'),m.ratingPussy); 
@@ -7215,6 +7555,17 @@ function openProfileEdit(){
  bindLocationSuggestionInputs('editCountry','editRegion','editCity');
  openOverlay('profileEditPane');
 }
+function toggleProfileShortBio(){
+ const card=document.getElementById('profileShortBioCard');
+ if(!card)return;
+ const closed=card.classList.toggle('closed');
+ document.getElementById('profileShortBioToggle').setAttribute('aria-expanded',closed?'false':'true');
+}
+document.getElementById('profileShortBioToggle').onclick=toggleProfileShortBio;
+document.getElementById('profileShortBioMore').onclick=toggleProfileShortBio;
+document.getElementById('generateBioDraftBtn').onclick=openBioDraft;
+document.getElementById('useBioDraftBtn').onclick=useBioDraft;
+document.getElementById('cancelBioDraftBtn').onclick=()=>openOverlay('profileEditPane');
 document.getElementById('profilePhotoArea').onclick=openProfileEdit;
 document.getElementById('profilePhotoArea').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openProfileEdit()}};
 document.getElementById('cancelProfileBtn').onclick=closeOverlay;
@@ -7290,6 +7641,7 @@ document.getElementById('saveProfileBtn').onclick=()=>{
  m.measurements=document.getElementById('editMeasurements').value.trim();
  m.weight=document.getElementById('editWeight').value.trim();
  m.birthdate=document.getElementById('editBirthdate').value;
+ m.bio=document.getElementById('editBio').value.trim();
  m.ratingFace=ratingStoredValue(document.getElementById('editRatingFace'));
  m.ratingBust=ratingStoredValue(document.getElementById('editRatingBust')); 
  m.ratingPussy=ratingStoredValue(document.getElementById('editRatingPussy'));
@@ -7392,6 +7744,223 @@ async function renderInbox(){
  list.querySelectorAll('[data-inbox-pdf-open]').forEach(el=>el.onclick=async e=>{e.stopPropagation();const item=inboxLoad().find(x=>x.id===el.dataset.inboxPdfOpen);if(!item||item.kind!=='PDF')return;try{const blob=await getMedia('inbox:'+item.id);if(!blob){toast('PDF ist nicht mehr im lokalen Speicher.');return}const url=URL.createObjectURL(blob);const opened=window.open(url,'_blank');if(!opened){URL.revokeObjectURL(url);toast('PDF konnte nicht geöffnet werden.');return}setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(err){console.error(err);toast('PDF konnte nicht geöffnet werden.')}});
  list.querySelectorAll('[data-inbox-delete]').forEach(b=>b.onclick=async e=>{e.preventDefault();e.stopPropagation();const item=inboxLoad().find(x=>x.id===b.dataset.inboxDelete);if(!item)return;if(!confirm(`„${item.name}“ wirklich aus der Inbox löschen?`))return;try{await deleteMediaBlob('inbox:'+item.id);inboxSelected.delete(item.id);inboxSave(inboxLoad().filter(x=>x.id!==item.id));await renderInbox();toast('Datei aus der Inbox gelöscht.')}catch(e){console.error(e);toast('Datei konnte nicht gelöscht werden.')}});
  for(const x of shown){if(x.kind!=='Foto')continue;try{const f=await getMedia('inbox:'+x.id),el=list.querySelector(`[data-inbox-preview="${CSS.escape(x.id)}"]`);if(f&&el){const u=URL.createObjectURL(f);const selectBtn=el.querySelector('.inboxSelectBtn');el.innerHTML=`<img src="${u}" alt="">`;if(selectBtn)el.appendChild(selectBtn);el.querySelector('img').onload=()=>URL.revokeObjectURL(u)}}catch(e){console.error(e)}}
+}
+function allResearchItems(){
+ const out=[];
+ Object.entries(state.research||{}).forEach(([bucket,rows])=>{
+  (Array.isArray(rows)?rows:[]).forEach(row=>{if(row&&typeof row==='object')out.push({...row,_bucket:bucket})});
+ });
+ return out;
+}
+function researchStatusLabel(status){return ({offen:'Offen',indizienbasiert:'Indizienbasiert',unklar:'Unklar',bestätigt:'Bestätigt',verworfen:'Verworfen'})[status]||status||'Offen'}
+function researchModelName(id){return (state.models||[]).find(m=>m.id===id)?.name||''}
+function researchShootingName(id){return (state.archive||[]).find(x=>x.id===id)?.title||''}
+function formatResearchDate(value){if(!value)return 'noch nicht geprüft';try{return new Intl.DateTimeFormat('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value+'T12:00:00'))}catch(_){return value}}
+function fillResearchModelOptions(){
+ const html=['<option value="">Allgemeines Research</option>',...(state.models||[]).slice().sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'de',{sensitivity:'base'})).map(m=>`<option value="${esc(m.id)}">${esc(m.name||m.id)}</option>`)].join('');
+ const input=document.getElementById('researchModelInput'),filter=document.getElementById('researchModelFilter');
+ if(input)input.innerHTML=html;
+ if(filter){const current=filter.value;filter.innerHTML='<option value="">Alle Models</option><option value="_global">Allgemeines Research</option>'+html.replace('<option value="">Allgemeines Research</option>','');filter.value=current}
+}
+function fillResearchShootingOptions(selected=''){
+ const modelId=document.getElementById('researchModelInput')?.value||'';
+ const shoots=(state.archive||[]).filter(x=>x.type==='shoot'&&(!modelId||shootingModelIds(x).includes(modelId))).sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{numeric:true,sensitivity:'base'}));
+ const el=document.getElementById('researchShootingInput');if(!el)return;
+ el.innerHTML='<option value="">Kein Shooting verknüpft</option>'+shoots.map(x=>`<option value="${esc(x.id)}">${esc(x.title||x.id)}</option>`).join('');
+ if(selected&&shoots.some(x=>x.id===selected))el.value=selected;
+}
+function researchEvidenceRowHtml(e={}){
+ const id=e.id||`RE-${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+ return `<div class="researchEvidenceRow" data-research-evidence-id="${esc(id)}"><div class="researchEvidenceGrid"><div><label>Wirkung</label><select data-ev="relation"><option value="supports"${e.relation==='contradicts'?'':' selected'}>Stützt</option><option value="contradicts"${e.relation==='contradicts'?' selected':''}>Widerspricht</option></select></div><div><label>Geprüft am</label><input type="date" data-ev="checkedAt" value="${esc(e.checkedAt||'')}"></div></div><label>Quelle</label><input data-ev="source" value="${esc(e.source||e.text||'')}" placeholder="z. B. Playboy Plus, Ausgabe, Website"><label>Fundstelle</label><input data-ev="location" value="${esc(e.location||'')}" placeholder="URL, Ausgabe, Seite, Abschnitt …"><label>Aussage</label><textarea data-ev="statement" placeholder="Was belegt oder widerlegt diese Quelle konkret?">${esc(e.statement||'')}</textarea><div class="researchEvidenceGrid"><div><label>Quellenart</label><input data-ev="sourceType" value="${esc(e.sourceType||'')}" placeholder="z. B. Primärquelle, Scan, Sekundärquelle"></div><div><label>Qualität</label><select data-ev="quality"><option value=""${e.quality?'':' selected'}>Nicht bewertet</option><option value="hoch"${e.quality==='hoch'?' selected':''}>Hoch</option><option value="mittel"${e.quality==='mittel'?' selected':''}>Mittel</option><option value="niedrig"${e.quality==='niedrig'?' selected':''}>Niedrig</option></select></div></div><button type="button" class="btn researchEvidenceRemove" data-remove-research-evidence>Beleg entfernen</button></div>`;
+}
+function bindResearchEvidenceRemove(){document.querySelectorAll('#researchEvidenceEditor [data-remove-research-evidence]').forEach(b=>b.onclick=()=>b.closest('.researchEvidenceRow')?.remove())}
+function renderResearchEvidenceEditor(rows=[]){
+ const editor=document.getElementById('researchEvidenceEditor');if(!editor)return;
+ const normalized=(Array.isArray(rows)?rows:[]).map(e=>typeof e==='string'?{source:e,relation:'supports'}:e);
+ editor.innerHTML=normalized.map(researchEvidenceRowHtml).join('');bindResearchEvidenceRemove();
+}
+function addResearchEvidence(){const editor=document.getElementById('researchEvidenceEditor');if(!editor)return;editor.insertAdjacentHTML('beforeend',researchEvidenceRowHtml({relation:'supports'}));bindResearchEvidenceRemove();editor.lastElementChild?.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function collectResearchEvidence(){
+ const now=new Date().toISOString();return [...document.querySelectorAll('#researchEvidenceEditor .researchEvidenceRow')].map(row=>{const get=k=>row.querySelector(`[data-ev="${k}"]`)?.value?.trim()||'';return {id:row.dataset.researchEvidenceId||`RE-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,relation:get('relation')||'supports',source:get('source'),location:get('location'),statement:get('statement'),sourceType:get('sourceType'),quality:get('quality'),checkedAt:get('checkedAt'),addedAt:now}}).filter(e=>e.source||e.location||e.statement);
+}
+function renderResearch(){
+ fillResearchModelOptions();
+ const list=document.getElementById('researchList'),summary=document.getElementById('researchSummary');if(!list)return;
+ const modelFilter=document.getElementById('researchModelFilter')?.value||'',statusFilter=document.getElementById('researchStatusFilter')?.value||'active';
+ let rows=allResearchItems();
+ if(modelFilter)rows=rows.filter(r=>(modelFilter==='_global'?!r.modelId:r.modelId===modelFilter));
+ if(statusFilter==='active')rows=rows.filter(r=>['offen','indizienbasiert','unklar'].includes(r.status));else if(statusFilter)rows=rows.filter(r=>r.status===statusFilter);
+ const order={offen:0,indizienbasiert:1,unklar:2,bestätigt:3,verworfen:4};
+ rows.sort((a,b)=>(order[a.status]??9)-(order[b.status]??9)||String(b.lastReviewedAt||b.updatedAt||'').localeCompare(String(a.lastReviewedAt||a.updatedAt||'')));
+ if(summary)summary.textContent=`${rows.length} ${rows.length===1?'Research-Fall':'Research-Fälle'} angezeigt · ${allResearchItems().filter(r=>['offen','indizienbasiert','unklar'].includes(r.status)).length} mit Klärungsbedarf`;
+ if(!rows.length){list.innerHTML='<div class="small">Keine passenden Research-Fälle.</div>';return}
+ list.innerHTML=rows.map(r=>{
+  const model=researchModelName(r.modelId),shoot=researchShootingName(r.shootingId),ev=Array.isArray(r.evidence)?r.evidence:[];
+  const promotedCareer=(state.careerFacts||[]).filter(f=>Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(r.id)).length;
+  const promotedBio=(state.bioFacts||[]).filter(f=>Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(r.id)).length;
+  const promotedTotal=promotedCareer+promotedBio;
+  return `<div class="researchItem"><div class="researchItemHead"><div><b>${esc(r.kind||'Research')}</b>${model?`<div class="researchMeta">${esc(model)}${shoot?' · '+esc(shoot):''}</div>`:shoot?`<div class="researchMeta">${esc(shoot)}</div>`:'<div class="researchMeta">Allgemeines Research</div>'}</div><span class="researchStatus" data-status="${esc(r.status||'offen')}">${esc(researchStatusLabel(r.status))}</span></div><div class="researchClaim">${esc(r.claim||'Ohne Frage / Behauptung')}</div>${r.result?`<div class="researchMeta">Zwischenergebnis: ${esc(r.result)}</div>`:''}${ev.length?`<div class="researchEvidence"><b>Belege:</b> ${ev.length} · ${ev.filter(e=>(e.relation||'supports')==='supports').length} stützen · ${ev.filter(e=>e.relation==='contradicts').length} widersprechen</div>`:''}${promotedTotal?`<div class="researchPromoted">Übernommen: ${promotedCareer?promotedCareer+' Karrierefakt'+(promotedCareer===1?'':'en'):''}${promotedCareer&&promotedBio?' · ':''}${promotedBio?promotedBio+' Biofakt'+(promotedBio===1?'':'en'):''}</div>`:''}<div class="researchMeta">Zuletzt geprüft: ${esc(formatResearchDate(r.lastReviewedAt))}</div><div class="researchActions"><button type="button" data-research-edit="${esc(r.id)}">Bearbeiten</button>${r.status==='bestätigt'&&r.modelId?`<button type="button" data-research-promote="${esc(r.id)}">Als Fakt übernehmen</button>`:''}<button type="button" data-research-delete="${esc(r.id)}">Löschen</button></div></div>`;
+ }).join('');
+ list.querySelectorAll('[data-research-edit]').forEach(b=>b.onclick=()=>openResearchPane(b.dataset.researchEdit));
+ list.querySelectorAll('[data-research-promote]').forEach(b=>b.onclick=()=>openFactPromotion(b.dataset.researchPromote));
+ list.querySelectorAll('[data-research-delete]').forEach(b=>b.onclick=()=>deleteResearchItem(b.dataset.researchDelete));
+}
+function researchImportAllowedKind(value){const allowed=['Zuordnung','Datierung','Identifikation','Wiederverwendung','Titel/Auszeichnung','Stammdatum','Sonstiges'];return allowed.includes(value)?value:'Sonstiges'}
+function researchImportAllowedStatus(value){const allowed=['offen','indizienbasiert','unklar','bestätigt','verworfen'];return allowed.includes(value)?value:'offen'}
+function parseResearchImport(){
+ const raw=document.getElementById('researchImportInput')?.value?.trim()||'';if(!raw)return {rows:[],error:''};
+ try{const data=JSON.parse(raw);if(!Array.isArray(data))return {rows:[],error:'Der Import muss ein JSON-Array sein.'};if(!data.length)return {rows:[],error:'Das JSON-Array ist leer.'};
+  const bad=data.findIndex(x=>!x||typeof x!=='object'||Array.isArray(x)||!String(x.claim||'').trim());if(bad>=0)return {rows:[],error:`Eintrag ${bad+1}: „claim“ fehlt.`};return {rows:data,error:''};
+ }catch(e){return {rows:[],error:'JSON konnte nicht gelesen werden.'}}
+}
+function openResearchImport(){
+ fillResearchModelOptions();const target=document.getElementById('researchImportModel'),source=document.getElementById('researchModelFilter');
+ target.innerHTML=document.getElementById('researchModelInput').innerHTML;target.value=source?.value&&source.value!=='_global'?source.value:'';
+ document.getElementById('researchImportInput').value='';renderResearchImportPreview();openOverlay('researchImportPane');
+}
+function renderResearchImportPreview(){
+ const preview=document.getElementById('researchImportPreview'),parsed=parseResearchImport();if(!preview)return;
+ if(parsed.error){preview.innerHTML=`<b>Import nicht bereit</b><div class="researchMeta">${esc(parsed.error)}</div>`;return}
+ if(!parsed.rows.length){preview.innerHTML='<b>Noch keine Importdaten.</b><div class="researchMeta">Hier kann ein gemeinsam vorbereiteter JSON-Block mit mehreren Erkenntnissen eingefügt werden.</div>';return}
+ const counts={};parsed.rows.forEach(x=>{const st=researchImportAllowedStatus(x.status);counts[st]=(counts[st]||0)+1});
+ preview.innerHTML=`<b>Vorschau: ${parsed.rows.length} ${parsed.rows.length===1?'Research-Fall':'Research-Fälle'}</b><div class="researchMeta">${Object.entries(counts).map(([k,v])=>`${v} ${researchStatusLabel(k)}`).join(' · ')}</div><div class="researchMeta">Es werden nur Research-Fälle angelegt. Keine automatische Faktenübernahme.</div>`;
+}
+function confirmResearchImport(){
+ const parsed=parseResearchImport();if(parsed.error){toast(parsed.error);return}if(!parsed.rows.length){toast('Bitte vorbereitete Erkenntnisse einfügen.');return}
+ const modelId=document.getElementById('researchImportModel')?.value||'',now=new Date().toISOString();if(!state.research||typeof state.research!=='object')state.research={};const bucket=modelId||'_global';if(!Array.isArray(state.research[bucket]))state.research[bucket]=[];
+ parsed.rows.forEach((x,i)=>{const evidence=(Array.isArray(x.evidence)?x.evidence:[]).map((e,j)=>{if(typeof e==='string')e={source:e};e=e&&typeof e==='object'?e:{};return {id:e.id||`RE-${Date.now()}-${i}-${j}-${Math.random().toString(36).slice(2,5)}`,relation:e.relation==='contradicts'?'contradicts':'supports',source:String(e.source||e.text||'').trim(),location:String(e.location||'').trim(),statement:String(e.statement||'').trim(),sourceType:String(e.sourceType||'').trim(),quality:['hoch','mittel','niedrig'].includes(e.quality)?e.quality:'',checkedAt:String(e.checkedAt||'').trim(),addedAt:e.addedAt||now}}).filter(e=>e.source||e.location||e.statement);
+  state.research[bucket].push({id:`R-${Date.now()}-${i}-${Math.random().toString(36).slice(2,6)}`,modelId,shootingId:'',kind:researchImportAllowedKind(x.kind),status:researchImportAllowedStatus(x.status),claim:String(x.claim||'').trim(),evidence,result:String(x.result||'').trim(),createdAt:now,updatedAt:now,lastReviewedAt:String(x.lastReviewedAt||'').trim()});
+ });
+ save();closeOverlay();document.getElementById('researchModelFilter').value=modelId||'_global';document.getElementById('researchStatusFilter').value='';renderResearch();toast(`${parsed.rows.length} ${parsed.rows.length===1?'Research-Fall':'Research-Fälle'} importiert.`);
+}
+function factPromotionRow(id){return allResearchItems().find(r=>r.id===id)||null}
+function factPromotionValue(id){return document.getElementById(id)?.value?.trim()||''}
+function factPromotionModelName(row){return researchModelName(row?.modelId)||row?.modelId||'—'}
+function factPromotionText(row){return [row?.claim,row?.result,...(Array.isArray(row?.evidence)?row.evidence.flatMap(e=>[e?.source,e?.location,e?.statement,e?.sourceType]):[])].filter(Boolean).join(' \n ')}
+function factPromotionMonthDate(text){
+ const months={january:'01',jan:'01',januar:'01',february:'02',feb:'02',februar:'02',march:'03',mar:'03','märz':'03',april:'04',apr:'04',may:'05',mai:'05',june:'06',jun:'06',juni:'06',july:'07',jul:'07',juli:'07',august:'08',aug:'08',september:'09',sep:'09',sept:'09',october:'10',oct:'10',oktober:'10',okt:'10',november:'11',nov:'11',december:'12',dec:'12',dezember:'12',dez:'12'};
+ const lower=String(text||'').toLowerCase(),m=lower.match(/\b(january|jan|januar|february|feb|februar|march|mar|märz|april|apr|may|mai|june|jun|juni|july|jul|juli|august|aug|september|sep|sept|october|oct|oktober|okt|november|nov|december|dec|dezember|dez)[\s.,/-]+(19|20)\d{2}\b/i);
+ if(m)return `${m[2]}${m[0].match(/\d{4}/)[0].slice(2)}`.replace(/^(\d{4})$/,m[0].match(/\d{4}/)[0]) && `${m[0].match(/\d{4}/)[0]}-${months[m[1].toLowerCase()]}`;
+ const iso=lower.match(/\b((?:19|20)\d{2})[-/.](0?[1-9]|1[0-2])\b/);if(iso)return `${iso[1]}-${String(iso[2]).padStart(2,'0')}`;
+ const year=lower.match(/\b((?:19|20)\d{2})\b/);return year?year[1]:'';
+}
+function factPromotionSuggestion(row){
+ const text=factPromotionText(row),lower=text.toLowerCase(),claim=String(row?.claim||'').trim(),result=String(row?.result||'').trim();
+ let kind='Sonstiges',organization='',work='',date=factPromotionMonthDate(text),role='Model',details='';
+ const rules=[
+  {keys:['musclemag'],kind:'Magazinauftritt',org:'MuscleMag International'},
+  {keys:['american curves'],kind:'Magazinauftritt',org:'American Curves'},
+  {keys:['fast & sexy','fast and sexy'],kind:'Magazinauftritt',org:'Fast & Sexy'},
+  {keys:['maxim'],kind:'Magazinauftritt',org:'Maxim'},
+  {keys:['monday night football'],kind:'TV-Auftritt',org:'Monday Night Football',role:'Darstellerin'},
+  {keys:['teaseum','teasum'],kind:'Videoauftritt',org:'TeasUm',role:'Darstellerin'},
+  {keys:['pango pango'],kind:'Werbung/Kampagne',org:'Pango Pango Swimwear'},
+  {keys:['jason aldean'],kind:'Werbung/Kampagne',org:'Jason Aldean Tour'},
+  {keys:['match tools'],kind:'Kalender',org:'Match Tools'},
+  {keys:['honey of the month','btb honey'],kind:'Auszeichnung',org:'Below the Belt Show',role:'Preisträgerin'}
+ ];
+ const rule=rules.find(r=>r.keys.some(k=>lower.includes(k)));if(rule){kind=rule.kind;organization=rule.org;role=rule.role||role}
+ if(!rule){
+  if(/magazin|magazine|issue|ausgabe/.test(lower))kind='Magazinauftritt';
+  else if(/\bvideo\b/.test(lower))kind='Videoauftritt',role='Darstellerin';
+  else if(/\b(tv|television|intro)\b/.test(lower))kind='TV-Auftritt',role='Darstellerin';
+  else if(/calendar|kalender/.test(lower))kind='Kalender';
+  else if(/award|auszeichnung|honey of the month/.test(lower))kind='Auszeichnung',role='Preisträgerin';
+  else if(/kampagne|campaign|tour content|swimwear/.test(lower))kind='Werbung/Kampagne';
+  else if(/event|party|auftritt/.test(lower))kind='Event/Auftritt';
+  else if(row?.kind==='Titel/Auszeichnung')kind='Auszeichnung',role='Preisträgerin';
+ }
+ const issue=text.match(/#\s*([A-Za-z0-9.-]+)/);if(issue)work=`#${issue[1]}`;
+ if(organization==='American Curves'&&/more lingerie/i.test(text)){const m=text.match(/More Lingerie(?:\s*[—–-]\s*|\s+)?(?:Summer|Spring|Fall|Autumn|Winter)?\s*(?:19|20)\d{2}/i);if(m)work=m[0].replace(/\s+/g,' ').trim()}
+ if(organization==='Fast & Sexy'&&!work){const m=text.match(/\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+(?:19|20)\d{2}\b/i);if(m)work=m[0]}
+ if(kind==='Kalender'&&!work){const m=text.match(/\b(?:19|20)\d{2}\s*\/\s*(?:19|20)?\d{2}\b/);if(m)work=m[0].replace(/\s/g,'')}
+ const photographer=text.match(/(?:fotograf|photographer)\s*:?\s*([A-ZÄÖÜ][A-Za-zÄÖÜäöüß.'-]+(?:\s+[A-ZÄÖÜ][A-Za-zÄÖÜäöüß.'-]+){1,3})/i);if(photographer)details=`Fotograf: ${photographer[1].trim()}`;
+ let bioCategory='Sonstiges',bioType='objective';
+ if(/beschrieb sich|self-description|selbstaussage|energetic|work ethic|arbeitsmoral/.test(lower)){bioCategory='Persönlichkeit';bioType='self'}
+ else if(/barkeeper|bartender|beruf/.test(lower))bioCategory='Beruf';
+ else if(/hobby|freizeit|basketball|strand|shoppen|shopping/.test(lower))bioCategory='Privatleben';
+ else if(/retired|karriereende|zog sich|career end/.test(lower))bioCategory='Späteres Leben';
+ else if(/lingerie|swimwear|west coast|modeling/.test(lower)){bioCategory='Modeling';if(/beschrieb sich|self-description|selbstauskunft|profile/.test(lower))bioType='self'}
+ return {career:{kind,organization,work,date,role,details},bio:{category:bioCategory,statement:result||claim,from:date,to:'',statementType:bioType}};
+}
+function applyFactPromotionSuggestion(row){
+ const s=factPromotionSuggestion(row);
+ document.getElementById('factCareerKind').value=s.career.kind;
+ document.getElementById('factCareerOrganization').value=s.career.organization;
+ document.getElementById('factCareerWork').value=s.career.work;
+ document.getElementById('factCareerDate').value=s.career.date;
+ document.getElementById('factCareerRole').value=s.career.role;
+ document.getElementById('factCareerDetails').value=s.career.details;
+ document.getElementById('factBioCategory').value=s.bio.category;
+ document.getElementById('factBioStatement').value=s.bio.statement;
+ document.getElementById('factBioFrom').value=s.bio.from;document.getElementById('factBioTo').value=s.bio.to;document.getElementById('factBioStatementType').value=s.bio.statementType;
+}
+function openFactPromotion(id){
+ const row=factPromotionRow(id);if(!row||row.status!=='bestätigt'||!row.modelId){toast('Nur bestätigte modelbezogene Research-Fälle können übernommen werden.');return}
+ document.getElementById('factPromotionResearchId').value=row.id;
+ document.getElementById('factPromotionTarget').value='career';
+ document.getElementById('factPromotionIntro').textContent=`${factPromotionModelName(row)} · ${row.kind||'Research'} · bestätigt`;
+ applyFactPromotionSuggestion(row);
+ document.getElementById('factPromotionSource').textContent=`Research-Herkunft: ${row.id}. Felder sind soweit sicher ableitbar standardisiert vorausgefüllt. Belege und Fundstellen bleiben im Research-Fall.`;
+ renderFactPromotionPreview();openOverlay('factPromotionPane');
+}
+function renderFactPromotionPreview(){
+ const id=document.getElementById('factPromotionResearchId')?.value||'',row=factPromotionRow(id),target=document.getElementById('factPromotionTarget')?.value||'career';
+ const career=document.getElementById('factPromotionCareerFields'),bio=document.getElementById('factPromotionBioFields');if(career)career.classList.toggle('hidden',target!=='career');if(bio)bio.classList.toggle('hidden',target!=='bio');
+ const preview=document.getElementById('factPromotionPreview');if(!preview||!row)return;
+ if(target==='career'){
+  const vals=[['Model',factPromotionModelName(row)],['Art',factPromotionValue('factCareerKind')||'—'],['Medium / Organisation',factPromotionValue('factCareerOrganization')||'—'],['Werk / Ausgabe',factPromotionValue('factCareerWork')||'—'],['Datum / Zeitraum',factPromotionValue('factCareerDate')||'—'],['Rolle',factPromotionValue('factCareerRole')||'—'],['Details',factPromotionValue('factCareerDetails')||'—']];
+  preview.innerHTML='<b>Vorschau: Karrierefakt</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
+ }else{
+  const vals=[['Model',factPromotionModelName(row)],['Kategorie',factPromotionValue('factBioCategory')||'—'],['Aussage',factPromotionValue('factBioStatement')||'—'],['Von / Zeitpunkt',factPromotionValue('factBioFrom')||'—'],['Bis',factPromotionValue('factBioTo')||'—'],['Aussageart',factPromotionValue('factBioStatementType')==='self'?'Selbstaussage':'Objektive Angabe']];
+  preview.innerHTML='<b>Vorschau: Biofakt</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
+ }
+}
+function confirmFactPromotion(){
+ const researchId=document.getElementById('factPromotionResearchId')?.value||'',row=factPromotionRow(researchId);if(!row||row.status!=='bestätigt'||!row.modelId){toast('Research-Fall ist nicht mehr übernahmefähig.');return}
+ const now=new Date().toISOString(),target=document.getElementById('factPromotionTarget')?.value||'career';
+ if(target==='career'){
+  const kind=factPromotionValue('factCareerKind'),organization=factPromotionValue('factCareerOrganization'),work=factPromotionValue('factCareerWork'),date=factPromotionValue('factCareerDate'),role=factPromotionValue('factCareerRole'),details=factPromotionValue('factCareerDetails');
+  if(!kind||!(organization||work||details)){toast('Bitte Art und mindestens Medium, Werk oder Details ausfüllen.');return}
+  if(!Array.isArray(state.careerFacts))state.careerFacts=[];
+  state.careerFacts.push({id:`CF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,organization,work,date,role,details,sourceResearchIds:[row.id],status:'aktiv',createdAt:now,updatedAt:now});
+ }else{
+  const category=factPromotionValue('factBioCategory'),statement=factPromotionValue('factBioStatement'),from=factPromotionValue('factBioFrom'),to=factPromotionValue('factBioTo'),statementType=factPromotionValue('factBioStatementType')||'objective';
+  if(!category||!statement){toast('Bitte Kategorie und Aussage ausfüllen.');return}
+  if(!Array.isArray(state.bioFacts))state.bioFacts=[];
+  state.bioFacts.push({id:`BF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,category,statement,from,to,sortDate:from||'',statementType,sourceResearchIds:[row.id],status:'aktiv',createdAt:now,updatedAt:now});
+ }
+ save();closeOverlay();renderResearch();toast(target==='career'?'Karrierefakt übernommen.':'Biofakt übernommen.');
+}
+function showResearch(){hideMainViews();document.getElementById('researchView').classList.remove('hidden');renderResearch()}
+function openResearchPane(id=''){
+ fillResearchModelOptions();
+ const row=id?allResearchItems().find(r=>r.id===id):null;
+ document.getElementById('researchPaneTitle').textContent=row?'Research-Fall bearbeiten':'Research-Fall anlegen';
+ document.getElementById('researchEditId').value=row?.id||'';
+ document.getElementById('researchModelInput').value=row?.modelId||'';
+ fillResearchShootingOptions(row?.shootingId||'');
+ document.getElementById('researchKindInput').value=row?.kind||'Zuordnung';
+ document.getElementById('researchStatusInput').value=row?.status||'offen';
+ document.getElementById('researchClaimInput').value=row?.claim||'';
+ renderResearchEvidenceEditor(row?.evidence||[]);
+ document.getElementById('researchResultInput').value=row?.result||'';
+ document.getElementById('researchReviewedInput').value=row?.lastReviewedAt||'';
+ openOverlay('researchPane');
+}
+function saveResearchItem(){
+ const id=document.getElementById('researchEditId').value,modelId=document.getElementById('researchModelInput').value,claim=document.getElementById('researchClaimInput').value.trim();
+ if(!claim){toast('Bitte eine Frage oder Behauptung eingeben.');return}
+ const now=new Date().toISOString(),evidence=collectResearchEvidence();
+ const item={id:id||`R-${Date.now()}`,modelId,shootingId:document.getElementById('researchShootingInput').value||'',kind:document.getElementById('researchKindInput').value,status:document.getElementById('researchStatusInput').value,claim,evidence,result:document.getElementById('researchResultInput').value.trim(),createdAt:now,updatedAt:now,lastReviewedAt:document.getElementById('researchReviewedInput').value||''};
+ if(id){const old=allResearchItems().find(r=>r.id===id);if(old)item.createdAt=old.createdAt||now;Object.keys(state.research||{}).forEach(k=>{if(Array.isArray(state.research[k]))state.research[k]=state.research[k].filter(r=>!(r&&typeof r==='object'&&r.id===id))})}
+ const bucket=modelId||'_global';if(!Array.isArray(state.research[bucket]))state.research[bucket]=[];state.research[bucket].push(item);
+ save();closeOverlay();renderResearch();toast(id?'Research aktualisiert.':'Research-Fall angelegt.');
+}
+function deleteResearchItem(id){
+ const row=allResearchItems().find(r=>r.id===id);if(!row||!confirm(`Research-Fall „${row.claim||row.kind}“ wirklich löschen?`))return;
+ Object.keys(state.research||{}).forEach(k=>{if(Array.isArray(state.research[k]))state.research[k]=state.research[k].filter(r=>!(r&&typeof r==='object'&&r.id===id))});
+ save();renderResearch();toast('Research-Fall gelöscht.');
 }
 function showInbox(){hideMainViews();document.getElementById('inboxView').classList.remove('hidden');renderInbox()}
 async function importInboxFiles(files){
