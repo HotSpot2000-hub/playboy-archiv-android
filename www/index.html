@@ -2311,7 +2311,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Details</label><textarea id="factCareerDetails" placeholder="Kanonische Aussage; Quellenangaben bleiben im Research-Fall."></textarea>
  </div>
  <div id="factPromotionArchiveFields" class="hidden">
-  <div class="small">Bestätigtes Wissen festhalten, auch wenn die konkrete Archivstruktur noch nicht vollständig erschlossen ist. Leere Anzahl bedeutet ausdrücklich „unbekannt“.</div>
+  <div class="small">Playboy-bezogenes bestätigtes Wissen festhalten, auch wenn die konkrete Archivstruktur noch nicht vollständig erschlossen ist. Externe Magazine und sonstige Arbeiten bleiben Karrierefakten. Leere Anzahl bedeutet ausdrücklich „unbekannt“.</div>
   <label>Art</label><select id="factArchiveKind"><option>Titel</option><option>Serie</option><option>Print</option><option>Video</option><option>Pictorial</option><option>Sonstiges</option></select>
   <div id="factArchiveTitleFields">
    <div class="factPromotionGrid"><div><label>Titelklasse</label><select id="factArchiveTitleClass"><option value="coed">Coed</option><option value="special-edition">SE Model</option><option value="playmate">Playmate</option><option value="cyber-girl">Cyber Girl</option></select></div><div><label>Titelstufe</label><select id="factArchiveTitleLevel"></select></div></div>
@@ -2319,7 +2319,8 @@ body.archiveFilterOpen .bottom{display:none!important}
    <div id="factArchiveTitleMonthWrap" class="hidden"><label>Monat</label><select id="factArchiveTitleMonth"></select></div>
    <div id="factArchiveTitleYearWrap" class="hidden"><label>Jahr</label><input id="factArchiveTitleYear" inputmode="numeric" placeholder="z. B. 2016"></div>
   </div>
-  <div id="factArchiveGenericFields"><label>Bezeichnung</label><input id="factArchiveName" placeholder="z. B. Women of Playboy"><label>Datum / Zeitraum</label><input id="factArchiveDate" placeholder="optional"></div>
+  <div id="factArchiveGenericFields"><label>Bezeichnung</label><input id="factArchiveName" placeholder="optional, wenn Bezeichnung unbekannt"><label>Datum / Zeitraum</label><input id="factArchiveDate" placeholder="optional"></div>
+  <div id="factArchiveSeriesWrap" class="hidden"><label>Bekannte Serie</label><select id="factArchiveSeriesId"><option value="">Noch nicht bekannt / keine Zuordnung</option></select><div class="small" style="margin-top:4px">Nur eine bereits bekannte Serienzuordnung festhalten. Ein Shooting oder Medienobjekt wird dadurch nicht erzeugt.</div></div>
   <label>Anzahl</label><input id="factArchiveQuantity" type="number" min="0" step="1" placeholder="unbekannt">
   <label>Erschließung</label><select id="factArchiveState"><option value="unerschlossen">Noch nicht erschlossen</option><option value="teilweise">Teilweise erschlossen</option><option value="erschlossen">Im Archiv erschlossen</option></select>
   <label>Details</label><textarea id="factArchiveDetails" placeholder="Nur bestätigte Aussage; unbekannte Zuordnungen nicht ergänzen."></textarea>
@@ -4277,9 +4278,10 @@ function renderProfileConfirmedFacts(modelId){
   const stateLabel={unerschlossen:'Noch nicht erschlossen',teilweise:'Teilweise erschlossen',erschlossen:'Im Archiv erschlossen'}[f.archiveState]||'Erschließung unbekannt';
   const quantity=f.quantity===null||f.quantity===undefined||f.quantity===''?'Anzahl unbekannt':`Anzahl: ${f.quantity}`;
   const when=f.kind==='Titel'?modelTitleWhen(f):f.date;
-  const meta=[when,quantity,stateLabel].filter(Boolean).map(esc).join(' · ');
-  const source=profileFactSourceText(f);
-  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Archivwissen')}: ${esc(f.name||'Ohne Bezeichnung')}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}<div class="profileFactActions"><button type="button" data-fact-correct="archive:${esc(f.id)}">Korrigieren</button><button type="button" class="withdraw" data-fact-withdraw="archive:${esc(f.id)}">Zurückziehen</button></div></div>`;
+  const seriesId=(f.linkedArchiveIds||[]).find(id=>(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id))||'',series=factArchiveSeriesLabel(seriesId);
+  const meta=[when,series?`Serie: ${series}`:'',quantity,stateLabel].filter(Boolean).map(esc).join(' · ');
+  const source=profileFactSourceText(f),displayName=f.name||((f.kind==='Video'||f.kind==='Pictorial')?'Bezeichnung unbekannt':'Ohne Bezeichnung');
+  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Archivwissen')}: ${esc(displayName)}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}<div class="profileFactActions"><button type="button" data-fact-correct="archive:${esc(f.id)}">Korrigieren</button><button type="button" class="withdraw" data-fact-withdraw="archive:${esc(f.id)}">Zurückziehen</button></div></div>`;
  }).join('');
  const bioHtml=bio.map(f=>{
   const span=[f.from,f.to].filter(Boolean).join(' – ');
@@ -7277,7 +7279,7 @@ document.getElementById('factArchiveTitleDay').onchange=refreshFactArchiveTitleF
 document.getElementById('factArchiveTitleMonthWeek').onchange=refreshFactArchiveTitleFields;
 document.getElementById('factArchiveTitleWeekMonth').onchange=refreshFactArchiveTitleFields;
 document.getElementById('factArchiveTitleWeekYear').oninput=refreshFactArchiveTitleFields;
-['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factArchiveKind','factArchiveName','factArchiveDate','factArchiveQuantity','factArchiveState','factArchiveDetails','factArchiveTitleClass','factArchiveTitleLevel','factArchiveTitleMonthWeek','factArchiveTitleDay','factArchiveTitleWeekMonth','factArchiveTitleWeekYear','factArchiveTitleMonth','factArchiveTitleYear','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
+['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factArchiveKind','factArchiveName','factArchiveDate','factArchiveSeriesId','factArchiveQuantity','factArchiveState','factArchiveDetails','factArchiveTitleClass','factArchiveTitleLevel','factArchiveTitleMonthWeek','factArchiveTitleDay','factArchiveTitleWeekMonth','factArchiveTitleWeekYear','factArchiveTitleMonth','factArchiveTitleYear','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
 document.getElementById('confirmFactPromotionBtn').onclick=confirmFactPromotion;
 document.getElementById('cancelFactPromotionBtn').onclick=closeOverlay;
 document.getElementById('managementBtn').onclick=showManagement; document.getElementById('profileBtn').onclick=showProfile;
@@ -7998,7 +8000,24 @@ function factPromotionArchiveSuggestion(row){
  if(!name&&kind==='Video'&&/teaseum|teasum/i.test(text))name='TeasUm';
  const qty=text.match(/\b(\d+)\s*(?:x\s*)?(videos?|pictorials?|fotostrecken?)\b/i);if(qty)quantity=qty[1];
  details=result&&result!==claim?result:'';
- return {kind,name,date,quantity,state:'unerschlossen',details,titleClass,titleLevel,titleYear,titleMonth};
+ const seriesId=(kind==='Video'||kind==='Pictorial')?factArchiveSeriesIdForText(text):'';
+ return {kind,name,date,quantity,state:'unerschlossen',details,titleClass,titleLevel,titleYear,titleMonth,seriesId};
+}
+function factArchiveSeriesOptions(selected=''){
+ const sel=document.getElementById('factArchiveSeriesId');if(!sel)return;
+ const rows=(state.archive||[]).filter(a=>a&&a.type==='series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
+ sel.innerHTML='<option value="">Noch nicht bekannt / keine Zuordnung</option>'+rows.map(sr=>`<option value="${esc(sr.id)}">${esc(sr.title||'Serie ohne Titel')}</option>`).join('');
+ if(selected&&rows.some(sr=>sr.id===selected))sel.value=selected;
+}
+function factArchiveSeriesIdForText(text){
+ const q=String(text||'').toLocaleLowerCase('de-DE');
+ const rows=(state.archive||[]).filter(a=>a&&a.type==='series'&&String(a.title||'').trim());
+ const exact=rows.find(sr=>q.includes(String(sr.title||'').trim().toLocaleLowerCase('de-DE')));
+ return exact?.id||'';
+}
+function factArchiveSeriesLabel(id){
+ const sr=(state.archive||[]).find(a=>a&&a.type==='series'&&a.id===id);
+ return sr?.title||'';
 }
 function fillFactArchiveTitleLevels(preferred=''){
  const cls=document.getElementById('factArchiveTitleClass')?.value||'coed',sel=document.getElementById('factArchiveTitleLevel');if(!sel)return;
@@ -8007,9 +8026,10 @@ function fillFactArchiveTitleLevels(preferred=''){
  refreshFactArchiveTitleFields();
 }
 function refreshFactArchiveTitleFields(){
- const kind=factPromotionValue('factArchiveKind')||'Titel',isTitle=kind==='Titel';
+ const kind=factPromotionValue('factArchiveKind')||'Titel',isTitle=kind==='Titel',supportsSeries=kind==='Video'||kind==='Pictorial';
  document.getElementById('factArchiveTitleFields')?.classList.toggle('hidden',!isTitle);
  document.getElementById('factArchiveGenericFields')?.classList.toggle('hidden',isTitle);
+ document.getElementById('factArchiveSeriesWrap')?.classList.toggle('hidden',!supportsSeries);
  if(!isTitle){renderFactPromotionPreview();return}
  fillTitleDateSelectors('factArchiveTitle');
  const level=document.getElementById('factArchiveTitleLevel')?.value||'';
@@ -8050,6 +8070,7 @@ function applyFactPromotionSuggestion(row){
  document.getElementById('factBioFrom').value=s.bio.from;document.getElementById('factBioTo').value=s.bio.to;document.getElementById('factBioStatementType').value=s.bio.statementType;
  const a=factPromotionArchiveSuggestion(row);
  document.getElementById('factArchiveKind').value=a.kind;
+ factArchiveSeriesOptions(a.seriesId||'');
  document.getElementById('factArchiveName').value=a.kind==='Titel'?'':a.name;
  document.getElementById('factArchiveDate').value=a.kind==='Titel'?'':a.date;
  document.getElementById('factArchiveTitleClass').value=a.titleClass;
@@ -8093,6 +8114,8 @@ function openFactPromotion(id){
 }
 function setFactPromotionArchiveFromFact(f){
  document.getElementById('factArchiveKind').value=f.kind||'Sonstiges';
+ const linkedSeriesId=(f.linkedArchiveIds||[]).find(id=>(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id))||'';
+ factArchiveSeriesOptions(linkedSeriesId);
  document.getElementById('factArchiveName').value=f.kind==='Titel'?'':(f.name||'');
  document.getElementById('factArchiveDate').value=f.kind==='Titel'?'':(f.date||'');
  if(f.kind==='Titel'){
@@ -8140,9 +8163,10 @@ function renderFactPromotionPreview(){
   preview.innerHTML='<b>Vorschau: Karrierefakt</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
  }else if(target==='archive'){
   const kind=factPromotionValue('factArchiveKind')||'—',q=factPromotionValue('factArchiveQuantity'),stateLabel={unerschlossen:'Noch nicht erschlossen',teilweise:'Teilweise erschlossen',erschlossen:'Im Archiv erschlossen'}[factPromotionValue('factArchiveState')]||'—';
-  let name=factPromotionValue('factArchiveName')||'—',when=factPromotionValue('factArchiveDate')||'—';
+  let name=factPromotionValue('factArchiveName')||((kind==='Video'||kind==='Pictorial')?'unbekannt':'—'),when=factPromotionValue('factArchiveDate')||'—';
   if(kind==='Titel'){const t=factArchiveTitleData();name=t.name;when=factArchiveTitleWhen(t)||'—'}
-  const vals=[['Model',factPromotionModelName(row)],['Art',kind],['Bezeichnung',name],['Zeitpunkt',when],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
+  const seriesId=factPromotionValue('factArchiveSeriesId'),series=factArchiveSeriesLabel(seriesId);
+  const vals=[['Model',factPromotionModelName(row)],['Art',kind],['Bezeichnung',name],['Bekannte Serie',(kind==='Video'||kind==='Pictorial')?(series||'noch nicht bekannt'):'—'],['Zeitpunkt',when],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
   preview.innerHTML='<b>Vorschau: Archivwissen</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
  }else{
   const vals=[['Model',factPromotionModelName(row)],['Kategorie',factPromotionValue('factBioCategory')||'—'],['Aussage',factPromotionValue('factBioStatement')||'—'],['Von / Zeitpunkt',factPromotionValue('factBioFrom')||'—'],['Bis',factPromotionValue('factBioTo')||'—'],['Aussageart',factPromotionValue('factBioStatementType')==='self'?'Selbstaussage':'Objektive Angabe']];
@@ -8162,7 +8186,7 @@ function confirmFactPromotion(){
   if(!Array.isArray(state.careerFacts))state.careerFacts=[];
   createdFact={id:`CF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,organization,work,date,role,details,sourceResearchIds,status:'aktiv',createdAt:now,updatedAt:now};state.careerFacts.push(createdFact);
  }else if(target==='archive'){
-  const kind=factPromotionValue('factArchiveKind'),rawQuantity=factPromotionValue('factArchiveQuantity'),archiveState=factPromotionValue('factArchiveState')||'unerschlossen',details=factPromotionValue('factArchiveDetails');
+  const kind=factPromotionValue('factArchiveKind'),rawQuantity=factPromotionValue('factArchiveQuantity'),archiveState=factPromotionValue('factArchiveState')||'unerschlossen',details=factPromotionValue('factArchiveDetails'),selectedSeriesId=factPromotionValue('factArchiveSeriesId');
   let name=factPromotionValue('factArchiveName'),date=factPromotionValue('factArchiveDate'),titleData=null;
   if(kind==='Titel'){
    titleData=factArchiveTitleData();name=titleData.name;date='';
@@ -8170,12 +8194,23 @@ function confirmFactPromotion(){
    if(titleData.titleLevel==='week'&&!titleData.titlePeriod&&!(titleData.titleMonthWeek&&titleData.titleMonthWeekMonth)){toast('Bitte ein Datum oder eine Woche im Monat eingeben.');return}
    if(titleData.titleLevel==='month'&&!titleData.titlePeriod){toast('Bitte einen Monat auswählen.');return}
   }
-  if(!kind||!name){toast('Bitte Art und Bezeichnung ausfüllen.');return}
+  if(!kind||(!name&&kind!=='Video'&&kind!=='Pictorial')){toast('Bitte Art und Bezeichnung ausfüllen.');return}
   const quantity=rawQuantity===''?null:Number(rawQuantity);if(quantity!==null&&(!Number.isInteger(quantity)||quantity<0)){toast('Anzahl muss leer oder eine ganze Zahl ab 0 sein.');return}
   if(!Array.isArray(state.archiveFacts))state.archiveFacts=[];
-  const duplicate=state.archiveFacts.some(f=>f&&f.id!==oldFact?.id&&f.modelId===row.modelId&&(f.status||'aktiv')==='aktiv'&&String(f.kind||'').toLowerCase()===kind.toLowerCase()&&String(f.name||'').trim().toLowerCase()===name.toLowerCase()&&(kind!=='Titel'||(f.titleLevel===titleData.titleLevel&&String(f.titleYear||'')===titleData.titleYear&&String(f.titlePeriod||'')===titleData.titlePeriod&&String(f.titleMonthWeek||'')===titleData.titleMonthWeek&&String(f.titleMonthWeekMonth||'')===titleData.titleMonthWeekMonth))&&(!oldFact?Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(row.id):true));
+  const relationSeriesId=(kind==='Video'||kind==='Pictorial')?selectedSeriesId:'';
+  const duplicate=state.archiveFacts.some(f=>{
+   if(!f||f.id===oldFact?.id||f.modelId!==row.modelId||(f.status||'aktiv')!=='aktiv'||String(f.kind||'').toLowerCase()!==kind.toLowerCase()||String(f.name||'').trim().toLowerCase()!==String(name||'').trim().toLowerCase())return false;
+   if(kind==='Titel'&&!(f.titleLevel===titleData.titleLevel&&String(f.titleYear||'')===titleData.titleYear&&String(f.titlePeriod||'')===titleData.titlePeriod&&String(f.titleMonthWeek||'')===titleData.titleMonthWeek&&String(f.titleMonthWeekMonth||'')===titleData.titleMonthWeekMonth))return false;
+   if(kind==='Video'||kind==='Pictorial'){
+    const fSeries=(f.linkedArchiveIds||[]).find(id=>(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id))||'';
+    if(fSeries!==relationSeriesId)return false;
+   }
+   return !oldFact?(Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(row.id)):true;
+  });
   if(duplicate){toast(oldFact?'Ein gleiches aktives Archivwissen existiert bereits. Den alten Fakt gegebenenfalls zurückziehen.':'Dieses Archivwissen wurde aus diesem Research-Fall bereits übernommen.');return}
-  createdFact={id:`AF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,name,date,quantity,archiveState,details,linkedArchiveIds:[...(oldFact?.linkedArchiveIds||[])],sourceResearchIds,status:'aktiv',createdAt:now,updatedAt:now};
+  const preservedNonSeries=(oldFact?.linkedArchiveIds||[]).filter(id=>!(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id));
+  const linkedArchiveIds=[...preservedNonSeries,...(relationSeriesId?[relationSeriesId]:[])];
+  createdFact={id:`AF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,name,date,quantity,archiveState,details,linkedArchiveIds,sourceResearchIds,status:'aktiv',createdAt:now,updatedAt:now};
   if(titleData)Object.assign(createdFact,{titleClass:titleData.titleClass,titleLevel:titleData.titleLevel,titlePeriod:titleData.titlePeriod,titleMonthWeek:titleData.titleMonthWeek,titleMonthWeekMonth:titleData.titleMonthWeekMonth,titleYear:titleData.titleYear});
   state.archiveFacts.push(createdFact);
  }else{
