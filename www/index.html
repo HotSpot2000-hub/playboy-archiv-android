@@ -2289,13 +2289,21 @@ body.archiveFilterOpen .bottom{display:none!important}
  <input type="hidden" id="factPromotionResearchId">
  <div id="factPromotionIntro" class="small"></div>
  <label>Ziel</label>
- <select id="factPromotionTarget"><option value="career">Karrierefakt</option><option value="bio">Biofakt</option></select>
+ <select id="factPromotionTarget"><option value="career">Karrierefakt</option><option value="bio">Biofakt</option><option value="archive">Archivwissen</option></select>
  <div id="factPromotionCareerFields">
   <label>Art</label><select id="factCareerKind"><option>Magazinauftritt</option><option>Videoauftritt</option><option>TV-Auftritt</option><option>Werbung/Kampagne</option><option>Kalender</option><option>Auszeichnung</option><option>Event/Auftritt</option><option>Sonstiges</option></select>
   <label>Medium / Organisation</label><input id="factCareerOrganization" placeholder="wird soweit sicher ableitbar vorausgefüllt">
   <label>Werk / Ausgabe</label><input id="factCareerWork" placeholder="wird soweit sicher ableitbar vorausgefüllt">
   <div class="factPromotionGrid"><div><label>Datum / Zeitraum</label><input id="factCareerDate" placeholder="z. B. 2009-05"></div><div><label>Rolle</label><select id="factCareerRole"><option>Model</option><option>Darstellerin</option><option>Sie selbst</option><option>Preisträgerin</option><option>Sonstiges</option></select></div></div>
   <label>Details</label><textarea id="factCareerDetails" placeholder="Kanonische Aussage; Quellenangaben bleiben im Research-Fall."></textarea>
+ </div>
+ <div id="factPromotionArchiveFields" class="hidden">
+  <div class="small">Bestätigtes Wissen festhalten, auch wenn die konkrete Archivstruktur noch nicht vollständig erschlossen ist. Leere Anzahl bedeutet ausdrücklich „unbekannt“.</div>
+  <label>Art</label><select id="factArchiveKind"><option>Titel</option><option>Serie</option><option>Print</option><option>Video</option><option>Pictorial</option><option>Sonstiges</option></select>
+  <label>Bezeichnung</label><input id="factArchiveName" placeholder="z. B. Cyber Girl of the Year">
+  <div class="factPromotionGrid"><div><label>Datum / Zeitraum</label><input id="factArchiveDate" placeholder="optional"></div><div><label>Anzahl</label><input id="factArchiveQuantity" type="number" min="0" step="1" placeholder="unbekannt"></div></div>
+  <label>Erschließung</label><select id="factArchiveState"><option value="unerschlossen">Noch nicht erschlossen</option><option value="teilweise">Teilweise erschlossen</option><option value="erschlossen">Im Archiv erschlossen</option></select>
+  <label>Details</label><textarea id="factArchiveDetails" placeholder="Nur bestätigte Aussage; unbekannte Zuordnungen nicht ergänzen."></textarea>
  </div>
  <div id="factPromotionBioFields" class="hidden">
   <label>Kategorie</label><select id="factBioCategory"><option>Hintergrund</option><option>Ausbildung</option><option>Beruf</option><option>Modeling</option><option>Film & Fernsehen</option><option>Weitere Karriere</option><option>Privatleben</option><option>Späteres Leben</option><option>Persönlichkeit</option><option>Sonstiges</option></select>
@@ -2811,7 +2819,7 @@ let metadataStorageError='';
 let metadataSaveChain=Promise.resolve();
 
 const APP_VERSION='1.2 Beta 6';
-const DATA_SCHEMA_VERSION=4;
+const DATA_SCHEMA_VERSION=5;
 const DATA_SCHEMA_KEY='playboyArchivDataSchemaVersion';
 const LAST_APP_VERSION_KEY='playboyArchivLastAppVersion';
 const STARTUP_ERROR_KEY='playboyArchivStartupErrorV1';
@@ -2892,6 +2900,7 @@ function normalizeStateForSchema(s){
  if(!Array.isArray(s.revisions))s.revisions=[];
  if(!Array.isArray(s.careerFacts))s.careerFacts=[];
  if(!Array.isArray(s.bioFacts))s.bioFacts=[];
+ if(!Array.isArray(s.archiveFacts))s.archiveFacts=[];
  if(!s.research||typeof s.research!=='object')s.research={};
  Object.keys(s.research).forEach(modelId=>{
   const rows=Array.isArray(s.research[modelId])?s.research[modelId]:[];
@@ -2984,6 +2993,7 @@ function initialState(){
   revisions:[],
   careerFacts:[],
   bioFacts:[],
+  archiveFacts:[],
   archive:[],
   people:[],
   research:{
@@ -4233,8 +4243,9 @@ function renderProfileConfirmedFacts(modelId){
  const count=document.getElementById('profileFactsCount');
  if(!card||!body||!count)return;
  const career=(state.careerFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const archiveFacts=(state.archiveFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
  const bio=(state.bioFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
- const total=career.length+bio.length;
+ const total=career.length+archiveFacts.length+bio.length;
  card.classList.toggle('hidden',total===0);
  count.textContent=total?`(${total})`:'';
  if(!total){body.innerHTML='';return}
@@ -4243,6 +4254,13 @@ function renderProfileConfirmedFacts(modelId){
   const source=profileFactSourceText(f);
   return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Karrierefakt')}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
  }).join('');
+ const archiveHtml=archiveFacts.map(f=>{
+  const stateLabel={unerschlossen:'Noch nicht erschlossen',teilweise:'Teilweise erschlossen',erschlossen:'Im Archiv erschlossen'}[f.archiveState]||'Erschließung unbekannt';
+  const quantity=f.quantity===null||f.quantity===undefined||f.quantity===''?'Anzahl unbekannt':`Anzahl: ${f.quantity}`;
+  const meta=[f.date,quantity,stateLabel].filter(Boolean).map(esc).join(' · ');
+  const source=profileFactSourceText(f);
+  return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Archivwissen')}: ${esc(f.name||'Ohne Bezeichnung')}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
+ }).join('');
  const bioHtml=bio.map(f=>{
   const span=[f.from,f.to].filter(Boolean).join(' – ');
   const type=f.statementType==='self'?'Selbstaussage':'';
@@ -4250,7 +4268,8 @@ function renderProfileConfirmedFacts(modelId){
   const source=profileFactSourceText(f);
   return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.category||'Biofakt')}</div>${f.statement?`<div class="profileFactDetails">${esc(f.statement)}</div>`:''}${meta?`<div class="profileFactMeta">${meta}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}</div>`;
  }).join('');
- body.innerHTML=(career.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Karriere</div>${careerHtml}</div>`:'')+
+ body.innerHTML=(archiveFacts.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Archivwissen</div>${archiveHtml}</div>`:'')+
+  (career.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Karriere</div>${careerHtml}</div>`:'')+
   (bio.length?`<div class="profileFactsSection"><div class="profileFactsSectionTitle">Biografie</div>${bioHtml}</div>`:'');
 }
 function render(){
@@ -7222,7 +7241,7 @@ document.getElementById('addResearchEvidenceBtn').onclick=addResearchEvidence;
 document.getElementById('saveResearchBtn').onclick=saveResearchItem;
 document.getElementById('cancelResearchBtn').onclick=closeOverlay;
 document.getElementById('factPromotionTarget').onchange=renderFactPromotionPreview;
-['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
+['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factArchiveKind','factArchiveName','factArchiveDate','factArchiveQuantity','factArchiveState','factArchiveDetails','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
 document.getElementById('confirmFactPromotionBtn').onclick=confirmFactPromotion;
 document.getElementById('cancelFactPromotionBtn').onclick=closeOverlay;
 document.getElementById('managementBtn').onclick=showManagement; document.getElementById('profileBtn').onclick=showProfile;
@@ -7831,9 +7850,10 @@ function renderResearch(){
  list.innerHTML=rows.map(r=>{
   const model=researchModelName(r.modelId),shoot=researchShootingName(r.shootingId),ev=Array.isArray(r.evidence)?r.evidence:[];
   const promotedCareer=(state.careerFacts||[]).filter(f=>Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(r.id)).length;
+  const promotedArchive=(state.archiveFacts||[]).filter(f=>Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(r.id)).length;
   const promotedBio=(state.bioFacts||[]).filter(f=>Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(r.id)).length;
-  const promotedTotal=promotedCareer+promotedBio;
-  return `<div class="researchItem"><div class="researchItemHead"><div><b>${esc(r.kind||'Research')}</b>${model?`<div class="researchMeta">${esc(model)}${shoot?' · '+esc(shoot):''}</div>`:shoot?`<div class="researchMeta">${esc(shoot)}</div>`:'<div class="researchMeta">Allgemeines Research</div>'}</div><span class="researchStatus" data-status="${esc(r.status||'offen')}">${esc(researchStatusLabel(r.status))}</span></div><div class="researchClaim">${esc(r.claim||'Ohne Frage / Behauptung')}</div>${r.result?`<div class="researchMeta">Zwischenergebnis: ${esc(r.result)}</div>`:''}${ev.length?`<div class="researchEvidence"><b>Belege:</b> ${ev.length} · ${ev.filter(e=>(e.relation||'supports')==='supports').length} stützen · ${ev.filter(e=>e.relation==='contradicts').length} widersprechen</div>`:''}${promotedTotal?`<div class="researchPromoted">Übernommen: ${promotedCareer?promotedCareer+' Karrierefakt'+(promotedCareer===1?'':'en'):''}${promotedCareer&&promotedBio?' · ':''}${promotedBio?promotedBio+' Biofakt'+(promotedBio===1?'':'en'):''}</div>`:''}<div class="researchMeta">Zuletzt geprüft: ${esc(formatResearchDate(r.lastReviewedAt))}</div><div class="researchActions"><button type="button" data-research-edit="${esc(r.id)}">Bearbeiten</button>${r.status==='bestätigt'&&r.modelId?`<button type="button" data-research-promote="${esc(r.id)}">Als Fakt übernehmen</button>`:''}<button type="button" data-research-delete="${esc(r.id)}">Löschen</button></div></div>`;
+  const promotedTotal=promotedCareer+promotedArchive+promotedBio;
+  return `<div class="researchItem"><div class="researchItemHead"><div><b>${esc(r.kind||'Research')}</b>${model?`<div class="researchMeta">${esc(model)}${shoot?' · '+esc(shoot):''}</div>`:shoot?`<div class="researchMeta">${esc(shoot)}</div>`:'<div class="researchMeta">Allgemeines Research</div>'}</div><span class="researchStatus" data-status="${esc(r.status||'offen')}">${esc(researchStatusLabel(r.status))}</span></div><div class="researchClaim">${esc(r.claim||'Ohne Frage / Behauptung')}</div>${r.result?`<div class="researchMeta">Zwischenergebnis: ${esc(r.result)}</div>`:''}${ev.length?`<div class="researchEvidence"><b>Belege:</b> ${ev.length} · ${ev.filter(e=>(e.relation||'supports')==='supports').length} stützen · ${ev.filter(e=>e.relation==='contradicts').length} widersprechen</div>`:''}${promotedTotal?`<div class="researchPromoted">Übernommen: ${[promotedCareer?promotedCareer+' Karrierefakt'+(promotedCareer===1?'':'en'):'',promotedArchive?promotedArchive+' Archivwissen':'',promotedBio?promotedBio+' Biofakt'+(promotedBio===1?'':'en'):''].filter(Boolean).join(' · ')}</div>`:''}<div class="researchMeta">Zuletzt geprüft: ${esc(formatResearchDate(r.lastReviewedAt))}</div><div class="researchActions"><button type="button" data-research-edit="${esc(r.id)}">Bearbeiten</button>${r.status==='bestätigt'&&r.modelId?`<button type="button" data-research-promote="${esc(r.id)}">Als Fakt übernehmen</button>`:''}<button type="button" data-research-delete="${esc(r.id)}">Löschen</button></div></div>`;
  }).join('');
  list.querySelectorAll('[data-research-edit]').forEach(b=>b.onclick=()=>openResearchPane(b.dataset.researchEdit));
  list.querySelectorAll('[data-research-promote]').forEach(b=>b.onclick=()=>openFactPromotion(b.dataset.researchPromote));
@@ -7917,6 +7937,24 @@ function factPromotionSuggestion(row){
  else if(/lingerie|swimwear|west coast|modeling/.test(lower)){bioCategory='Modeling';if(/beschrieb sich|self-description|selbstauskunft|profile/.test(lower))bioType='self'}
  return {career:{kind,organization,work,date,role,details},bio:{category:bioCategory,statement:result||claim,from:date,to:'',statementType:bioType}};
 }
+function factPromotionArchiveSuggestion(row){
+ const text=factPromotionText(row),lower=text.toLowerCase(),claim=String(row?.claim||'').trim(),result=String(row?.result||'').trim();
+ let kind='Sonstiges',name='',date=factPromotionMonthDate(text),quantity='',details='';
+ if(row?.kind==='Titel/Auszeichnung'||/\b(cyber girl|playmate|playboy.*titel|title|titel)\b/i.test(text)){kind='Titel'}
+ else if(/\bserie|series\b/i.test(text)){kind='Serie'}
+ else if(/\b(video|videos)\b/i.test(text)){kind='Video'}
+ else if(/\b(pictorial|pictorials|fotostrecke)\b/i.test(text)){kind='Pictorial'}
+ else if(/\b(print|magazin|magazine|issue|ausgabe)\b/i.test(text)){kind='Print'}
+ const quoted=(claim+' '+result).match(/[„“"]([^„“"]{3,100})[“"]/);
+ if(quoted)name=quoted[1].trim();
+ if(!name&&/cyber girl of the year/i.test(text))name='Cyber Girl of the Year';
+ if(!name&&/women of playboy/i.test(text))name='Women of Playboy';
+ if(!name&&/busty babes/i.test(text))name='Busty Babes';
+ if(!name&&kind==='Video'&&/teaseum|teasum/i.test(text))name='TeasUm';
+ const qty=text.match(/\b(\d+)\s*(?:x\s*)?(videos?|pictorials?|fotostrecken?)\b/i);if(qty)quantity=qty[1];
+ details=result&&result!==claim?result:'';
+ return {kind,name,date,quantity,state:'unerschlossen',details};
+}
 function applyFactPromotionSuggestion(row){
  const s=factPromotionSuggestion(row);
  document.getElementById('factCareerKind').value=s.career.kind;
@@ -7928,6 +7966,13 @@ function applyFactPromotionSuggestion(row){
  document.getElementById('factBioCategory').value=s.bio.category;
  document.getElementById('factBioStatement').value=s.bio.statement;
  document.getElementById('factBioFrom').value=s.bio.from;document.getElementById('factBioTo').value=s.bio.to;document.getElementById('factBioStatementType').value=s.bio.statementType;
+ const a=factPromotionArchiveSuggestion(row);
+ document.getElementById('factArchiveKind').value=a.kind;
+ document.getElementById('factArchiveName').value=a.name;
+ document.getElementById('factArchiveDate').value=a.date;
+ document.getElementById('factArchiveQuantity').value=a.quantity;
+ document.getElementById('factArchiveState').value=a.state;
+ document.getElementById('factArchiveDetails').value=a.details;
 }
 function openFactPromotion(id){
  const row=factPromotionRow(id);if(!row||row.status!=='bestätigt'||!row.modelId){toast('Nur bestätigte modelbezogene Research-Fälle können übernommen werden.');return}
@@ -7940,11 +7985,16 @@ function openFactPromotion(id){
 }
 function renderFactPromotionPreview(){
  const id=document.getElementById('factPromotionResearchId')?.value||'',row=factPromotionRow(id),target=document.getElementById('factPromotionTarget')?.value||'career';
- const career=document.getElementById('factPromotionCareerFields'),bio=document.getElementById('factPromotionBioFields');if(career)career.classList.toggle('hidden',target!=='career');if(bio)bio.classList.toggle('hidden',target!=='bio');
+ const career=document.getElementById('factPromotionCareerFields'),archive=document.getElementById('factPromotionArchiveFields'),bio=document.getElementById('factPromotionBioFields');
+ if(career)career.classList.toggle('hidden',target!=='career');if(archive)archive.classList.toggle('hidden',target!=='archive');if(bio)bio.classList.toggle('hidden',target!=='bio');
  const preview=document.getElementById('factPromotionPreview');if(!preview||!row)return;
  if(target==='career'){
   const vals=[['Model',factPromotionModelName(row)],['Art',factPromotionValue('factCareerKind')||'—'],['Medium / Organisation',factPromotionValue('factCareerOrganization')||'—'],['Werk / Ausgabe',factPromotionValue('factCareerWork')||'—'],['Datum / Zeitraum',factPromotionValue('factCareerDate')||'—'],['Rolle',factPromotionValue('factCareerRole')||'—'],['Details',factPromotionValue('factCareerDetails')||'—']];
   preview.innerHTML='<b>Vorschau: Karrierefakt</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
+ }else if(target==='archive'){
+  const q=factPromotionValue('factArchiveQuantity'),stateLabel={unerschlossen:'Noch nicht erschlossen',teilweise:'Teilweise erschlossen',erschlossen:'Im Archiv erschlossen'}[factPromotionValue('factArchiveState')]||'—';
+  const vals=[['Model',factPromotionModelName(row)],['Art',factPromotionValue('factArchiveKind')||'—'],['Bezeichnung',factPromotionValue('factArchiveName')||'—'],['Datum / Zeitraum',factPromotionValue('factArchiveDate')||'—'],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
+  preview.innerHTML='<b>Vorschau: Archivwissen</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
  }else{
   const vals=[['Model',factPromotionModelName(row)],['Kategorie',factPromotionValue('factBioCategory')||'—'],['Aussage',factPromotionValue('factBioStatement')||'—'],['Von / Zeitpunkt',factPromotionValue('factBioFrom')||'—'],['Bis',factPromotionValue('factBioTo')||'—'],['Aussageart',factPromotionValue('factBioStatementType')==='self'?'Selbstaussage':'Objektive Angabe']];
   preview.innerHTML='<b>Vorschau: Biofakt</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
@@ -7958,13 +8008,21 @@ function confirmFactPromotion(){
   if(!kind||!(organization||work||details)){toast('Bitte Art und mindestens Medium, Werk oder Details ausfüllen.');return}
   if(!Array.isArray(state.careerFacts))state.careerFacts=[];
   state.careerFacts.push({id:`CF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,organization,work,date,role,details,sourceResearchIds:[row.id],status:'aktiv',createdAt:now,updatedAt:now});
+ }else if(target==='archive'){
+  const kind=factPromotionValue('factArchiveKind'),name=factPromotionValue('factArchiveName'),date=factPromotionValue('factArchiveDate'),rawQuantity=factPromotionValue('factArchiveQuantity'),archiveState=factPromotionValue('factArchiveState')||'unerschlossen',details=factPromotionValue('factArchiveDetails');
+  if(!kind||!name){toast('Bitte Art und Bezeichnung ausfüllen.');return}
+  const quantity=rawQuantity===''?null:Number(rawQuantity);if(quantity!==null&&(!Number.isInteger(quantity)||quantity<0)){toast('Anzahl muss leer oder eine ganze Zahl ab 0 sein.');return}
+  if(!Array.isArray(state.archiveFacts))state.archiveFacts=[];
+  const duplicate=state.archiveFacts.some(f=>f&&f.modelId===row.modelId&&(f.status||'aktiv')==='aktiv'&&String(f.kind||'').toLowerCase()===kind.toLowerCase()&&String(f.name||'').trim().toLowerCase()===name.toLowerCase()&&Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(row.id));
+  if(duplicate){toast('Dieses Archivwissen wurde aus diesem Research-Fall bereits übernommen.');return}
+  state.archiveFacts.push({id:`AF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,name,date,quantity,archiveState,details,linkedArchiveIds:[],sourceResearchIds:[row.id],status:'aktiv',createdAt:now,updatedAt:now});
  }else{
   const category=factPromotionValue('factBioCategory'),statement=factPromotionValue('factBioStatement'),from=factPromotionValue('factBioFrom'),to=factPromotionValue('factBioTo'),statementType=factPromotionValue('factBioStatementType')||'objective';
   if(!category||!statement){toast('Bitte Kategorie und Aussage ausfüllen.');return}
   if(!Array.isArray(state.bioFacts))state.bioFacts=[];
   state.bioFacts.push({id:`BF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,category,statement,from,to,sortDate:from||'',statementType,sourceResearchIds:[row.id],status:'aktiv',createdAt:now,updatedAt:now});
  }
- save();closeOverlay();renderResearch();toast(target==='career'?'Karrierefakt übernommen.':'Biofakt übernommen.');
+ save();closeOverlay();renderResearch();toast(target==='career'?'Karrierefakt übernommen.':target==='archive'?'Archivwissen übernommen.':'Biofakt übernommen.');
 }
 function showResearch(){hideMainViews();document.getElementById('researchView').classList.remove('hidden');renderResearch()}
 function openResearchPane(id=''){
