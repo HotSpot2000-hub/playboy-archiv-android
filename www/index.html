@@ -81,6 +81,14 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profileFactDetails{font-size:12px;line-height:1.4;margin-top:5px;white-space:pre-wrap}
 .profileFactSource{font-size:11px;color:var(--muted);margin-top:5px}
 .profileFactActions{display:flex;gap:7px;margin-top:8px}.profileFactActions button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 8px;font-size:12px}.profileFactActions .withdraw{color:#9b1c1c}
+.profileCoverageCard h2{font-size:18px;margin:0;font-weight:750}
+.profileCoverageIntro{font-size:12px;color:var(--muted);line-height:1.4;margin-top:4px}
+.profileCoverageRows{margin-top:10px}
+.profileCoverageRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.profileCoverageRow:first-child{border-top:0;padding-top:0}
+.profileCoverageLabel{font-weight:750}
+.profileCoverageValue{text-align:right;line-height:1.35}
+.profileCoverageOpen{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
 
 .researchToolbar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:10px}
 .researchToolbar .btn{margin-top:0;width:auto}
@@ -2234,6 +2242,13 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button type="button" class="profileFactsToggleHint" id="profileFactsMore">Mehr anzeigen</button>
 </div>
 
+<div class="card profileCoverageCard hidden" id="profileCoverageCard">
+ <h2>Erschließungsgrad</h2>
+ <div class="profileCoverageIntro">Bestätigtes Playboy-Wissen im Vergleich zur tatsächlich vorhandenen Archivstruktur. Keine Gesamtpunktzahl.</div>
+ <div class="profileCoverageRows" id="profileCoverageRows"></div>
+ <div class="profileCoverageOpen" id="profileCoverageOpen"></div>
+</div>
+
 <div class="profileArchiveCard">
  <div class="archiveMainNav profileArchiveNav">
   <button type="button" class="active" data-profile-archive-tab="titles">Titel</button>
@@ -4257,6 +4272,91 @@ function profileFactSourceText(f){
  const ids=Array.isArray(f?.sourceResearchIds)?f.sourceResearchIds.filter(Boolean):[];
  return ids.length?`Research-Herkunft: ${ids.join(', ')}`:'';
 }
+function profileCoverageTitleKey(t){
+ if(!t)return '';
+ return [t.titleClass||'',t.titleLevel||'',t.titleYear||'',t.titlePeriod||'',t.titleMonthWeek||'',t.titleMonthWeekMonth||''].map(x=>String(x).trim().toLocaleLowerCase('de-DE')).join('|');
+}
+function profileCoverageActualTitles(modelId){
+ const shoots=(state.archive||[]).filter(sh=>sh?.type==='shoot'&&shootingModelIds(sh).includes(modelId));
+ const ids=new Set();
+ shoots.forEach(sh=>(sh.links||[]).forEach(id=>{const t=(state.archive||[]).find(a=>a?.id===id&&a.type==='title');if(t)ids.add(t.id)}));
+ (state.archive||[]).filter(t=>t?.type==='title').forEach(t=>{
+  if((t.links||[]).some(id=>shoots.some(sh=>sh.id===id)))ids.add(t.id);
+ });
+ return [...ids].map(id=>(state.archive||[]).find(a=>a.id===id)).filter(Boolean);
+}
+function profileCoverageModelSeries(modelId,archiveFacts){
+ const ids=new Set();
+ (state.archive||[]).filter(sr=>sr?.type==='series'&&seriesShootingsAll(sr).some(sh=>shootingModelIds(sh).includes(modelId))).forEach(sr=>ids.add(sr.id));
+ (archiveFacts||[]).forEach(f=>(f.linkedArchiveIds||[]).forEach(id=>{if((state.archive||[]).some(a=>a?.id===id&&a.type==='series'))ids.add(id)}));
+ return [...ids];
+}
+function profileCoverageMedia(modelId){
+ const shoots=(state.archive||[]).filter(sh=>sh?.type==='shoot'&&shootingModelIds(sh).includes(modelId));
+ const media=[],seen=new Set();
+ shoots.forEach(sh=>shootingMedia(sh).forEach(m=>{
+  const key=m.fingerprint||m.id;
+  if(!seen.has(key)){seen.add(key);media.push(m)}
+ }));
+ return {shoots,media};
+}
+function profileCoverageFactExtra(facts){
+ let known=0,unknown=false,partial=false;
+ (facts||[]).forEach(f=>{
+  if(f.archiveState==='erschlossen')return;
+  if(f.archiveState==='teilweise')partial=true;
+  if(f.archiveState==='unerschlossen'){
+   if(f.quantity===null||f.quantity===undefined||f.quantity==='')unknown=true;
+   else if(Number.isFinite(Number(f.quantity)))known+=Math.max(0,Number(f.quantity));
+  }
+ });
+ return {known,unknown,partial};
+}
+function profileCoverageConfirmedLabel(base,extra){
+ const n=base+(extra?.known||0);
+ if(extra?.unknown||extra?.partial)return n>0?`mind. ${n} bestätigt`:'Anzahl unbekannt bestätigt';
+ return `${n} bestätigt`;
+}
+function renderProfileCoverage(modelId){
+ const card=document.getElementById('profileCoverageCard'),rows=document.getElementById('profileCoverageRows'),open=document.getElementById('profileCoverageOpen');
+ if(!card||!rows||!open)return;
+ const facts=(state.archiveFacts||[]).filter(f=>f&&f.modelId===modelId&&(f.status||'aktiv')==='aktiv');
+ const {shoots,media}=profileCoverageMedia(modelId);
+ const actualTitles=profileCoverageActualTitles(modelId);
+ const actualTitleKeys=new Set(actualTitles.map(profileCoverageTitleKey));
+ const titleFacts=facts.filter(f=>f.kind==='Titel');
+ const unmatchedTitleFacts=titleFacts.filter(f=>!actualTitleKeys.has(profileCoverageTitleKey(f)));
+ const seriesIds=profileCoverageModelSeries(modelId,facts);
+ const seriesNameKeys=new Set(seriesIds.map(id=>String((state.archive||[]).find(a=>a.id===id)?.title||'').trim().toLocaleLowerCase('de-DE')).filter(Boolean));
+ const seriesFacts=facts.filter(f=>f.kind==='Serie');
+ const unmatchedSeriesFacts=seriesFacts.filter(f=>!seriesNameKeys.has(String(f.name||'').trim().toLocaleLowerCase('de-DE')));
+ const videoMedia=media.filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/'));
+ const photoShootings=shoots.filter(sh=>shootingMedia(sh).some(m=>!String(m.mimeType||'').toLowerCase().startsWith('video/')));
+ const videoExtra=profileCoverageFactExtra(facts.filter(f=>f.kind==='Video'));
+ const pictorialExtra=profileCoverageFactExtra(facts.filter(f=>f.kind==='Pictorial'));
+ const data=[
+  ['Titel',`${actualTitles.length+unmatchedTitleFacts.length} bestätigt · ${actualTitles.length} im Archiv`],
+  ['Serien',`${seriesIds.length+unmatchedSeriesFacts.length} bestätigt · ${seriesIds.length} im Archiv`],
+  ['Pictorials',`${profileCoverageConfirmedLabel(photoShootings.length,pictorialExtra)} · ${photoShootings.length} im Archiv`],
+  ['Videos',`${profileCoverageConfirmedLabel(videoMedia.length,videoExtra)} · ${videoMedia.length} im Archiv`]
+ ];
+ const hasAnything=facts.length||actualTitles.length||seriesIds.length||shoots.length||media.length;
+ card.classList.toggle('hidden',!hasAnything);
+ if(!hasAnything){rows.innerHTML='';open.textContent='';return}
+ rows.innerHTML=data.map(([label,value])=>`<div class="profileCoverageRow"><div class="profileCoverageLabel">${esc(label)}</div><div class="profileCoverageValue">${esc(value)}</div></div>`).join('');
+ const unresolved=facts.filter(f=>{
+  if(f.archiveState!=='erschlossen')return true;
+  if(f.quantity===null||f.quantity===undefined||f.quantity==='')return true;
+  if((f.kind==='Video'||f.kind==='Pictorial')){
+   const wanted=f.kind==='Video'?'video':'image';
+   const linked=(f.linkedArchiveIds||[]).map(id=>(state.archive||[]).find(a=>a?.id===id)).filter(Boolean);
+   const hasConcrete=linked.some(a=>a.type==='media'&&(wanted==='video'?String(a.mimeType||'').toLowerCase().startsWith('video/'):!String(a.mimeType||'').toLowerCase().startsWith('video/')));
+   if(!hasConcrete)return true;
+  }
+  return false;
+ }).length;
+ open.textContent=unresolved?`Offene Zuordnungen/Details: ${unresolved}`:'Keine offenen bestätigten Archivfakten.';
+}
 function renderProfileConfirmedFacts(modelId){
  const card=document.getElementById('profileFactsCard');
  const body=document.getElementById('profileFactsBody');
@@ -4349,6 +4449,7 @@ document.getElementById('profileRatingIncomplete').textContent=
  document.getElementById('summaryWeight').textContent=formatWeightDisplay(m.weight);
  document.getElementById('summaryBirth').textContent=formatBirthWithAge(m.birthdate);
  renderProfileConfirmedFacts(m.id);
+ renderProfileCoverage(m.id);
  renderProfileArchiveOverview();
  renderArchive();
 }
