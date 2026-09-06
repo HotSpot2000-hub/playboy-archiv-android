@@ -62,14 +62,23 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .profileShortBioToggleHint{position:absolute;right:14px;bottom:10px;z-index:2;border:0;border-radius:999px;background:#fff;color:var(--ink);padding:6px 9px;font:inherit;font-size:11px;font-weight:750;box-shadow:0 1px 8px rgba(0,0,0,.08)}
 .profileShortBioCard:not(.closed) .profileShortBioToggleHint{display:none}
 #editBio{min-height:260px;line-height:1.45}
+.profileFactsCard{position:relative}
 .profileFactsCard.hidden{display:none}
-.profileFactsSection+.profileFactsSection{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
-.profileFactsSectionTitle{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px}
-.profileFactItem{border-top:1px solid var(--line);padding:10px 0}
+.profileFactsCard .collapseHead{padding:16px}
+.profileFactsCard .collapseHead h2{font-size:18px;font-weight:750}
+.profileFactsCard .collapseBody{position:relative;padding:0 16px 16px;font-size:14px}
+.profileFactsCard.closed .collapseBody{display:block!important;max-height:160px;overflow:hidden;padding-bottom:34px}
+.profileFactsCard.closed .collapseBody::after{content:"";position:absolute;left:0;right:0;bottom:0;height:76px;background:linear-gradient(to bottom,rgba(255,255,255,0),rgba(255,255,255,.88) 58%,#fff 82%);pointer-events:none}
+.profileFactsCard.closed .profileFactActions{display:none}
+.profileFactsToggleHint{position:absolute;right:14px;bottom:10px;z-index:2;border:0;border-radius:999px;background:#fff;color:var(--ink);padding:6px 9px;font:inherit;font-size:11px;font-weight:750;box-shadow:0 1px 8px rgba(0,0,0,.08)}
+.profileFactsCard:not(.closed) .profileFactsToggleHint{display:none}
+.profileFactsSection+.profileFactsSection{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.profileFactsSectionTitle{font-size:12px;font-weight:750;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.profileFactItem{border-top:1px solid var(--line);padding:9px 0}
 .profileFactItem:first-of-type{border-top:0;padding-top:0}
-.profileFactTitle{font-weight:800}
-.profileFactMeta{font-size:13px;line-height:1.45;margin-top:3px}
-.profileFactDetails{font-size:13px;line-height:1.45;margin-top:5px;white-space:pre-wrap}
+.profileFactTitle{font-size:14px;font-weight:750;line-height:1.35}
+.profileFactMeta{font-size:12px;line-height:1.4;margin-top:3px}
+.profileFactDetails{font-size:12px;line-height:1.4;margin-top:5px;white-space:pre-wrap}
 .profileFactSource{font-size:11px;color:var(--muted);margin-top:5px}
 .profileFactActions{display:flex;gap:7px;margin-top:8px}.profileFactActions button{flex:1;border:1px solid var(--line);background:#fff;border-radius:10px;padding:7px 8px;font-size:12px}.profileFactActions .withdraw{color:#9b1c1c}
 
@@ -2216,12 +2225,13 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button type="button" class="profileShortBioToggleHint" id="profileShortBioMore">Mehr anzeigen</button>
 </div>
 
-<div class="card collapseCard profileFactsCard hidden" id="profileFactsCard" data-collapse-key="profile-confirmed-facts" data-collapse-default="closed">
+<div class="card collapseCard profileFactsCard hidden" id="profileFactsCard" data-collapse-key="profile-confirmed-facts-v2" data-collapse-default="closed">
  <button type="button" class="collapseHead">
   <h2>Bestätigte Fakten <span class="small" id="profileFactsCount"></span></h2>
   <span class="collapseIcon">⌄</span>
  </button>
  <div class="collapseBody" id="profileFactsBody"></div>
+ <button type="button" class="profileFactsToggleHint" id="profileFactsMore">Mehr anzeigen</button>
 </div>
 
 <div class="profileArchiveCard">
@@ -10706,9 +10716,10 @@ function initCollapsibles(){
    const storedCollapse=localStorage.getItem(key);
    const defaultClosed=card.dataset.collapseDefault==='closed';
    const shouldClose=storedCollapse===null?defaultClosed:storedCollapse==='1';
+   const previewCollapse=card.classList.contains('profileFactsCard');
    if(shouldClose){
      card.classList.add('closed');
-     body.style.display='none';
+     body.style.display=previewCollapse?'block':'none';
    }else{
      card.classList.remove('closed');
      body.style.display='block';
@@ -10716,12 +10727,14 @@ function initCollapsibles(){
 
    if(head.dataset.bound==='1')return;
    head.dataset.bound='1';
-   head.addEventListener('click',()=>{
-     const willClose=!card.classList.contains('closed');
+   const setCollapse=(willClose)=>{
      card.classList.toggle('closed',willClose);
-     body.style.display=willClose?'none':'block';
+     body.style.display=willClose?(previewCollapse?'block':'none'):'block';
      localStorage.setItem(key,willClose?'1':'0');
-   });
+   };
+   head.addEventListener('click',()=>setCollapse(!card.classList.contains('closed')));
+   const hint=previewCollapse?card.querySelector('.profileFactsToggleHint'):null;
+   if(hint)hint.addEventListener('click',()=>setCollapse(false));
  });
 }
 const lightbox=document.getElementById('lightbox');
