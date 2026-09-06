@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-06  
-Referenz-Commit: `a6444aaf1702f6ab2be69359afbf342cd1726442`
+Referenz-Commit: `528d84c9de65fe173272cff30b5e9e3f6e939278`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,11 +20,15 @@ Referenz-Commit: `a6444aaf1702f6ab2be69359afbf342cd1726442`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf `main`: Blob `14a0702dbaa62553efd077feb9f6226136853e28`
-- Fachlich berücksichtigter Code-Stand: Commit `a6444aaf1702f6ab2be69359afbf342cd1726442`
+- `www/index.html` auf `main`: Blob `92c4c26f64fac77338411302b44a1d8abd363184`
+- Fachlich berücksichtigter Code-Stand: Commit `528d84c9de65fe173272cff30b5e9e3f6e939278`
 - Schema-6-Grundlage wurde als Update auf dem Gerät erfolgreich getestet.
+- Der erste echte Werktyp `gallery` ist in der Verwaltung verfügbar und auf dem Gerät erfolgreich getestet.
+- Fotogalerien können mit Bezeichnung und optionaler Notiz angelegt werden.
+- Eine Fotogalerie kann optional mit einem vorhandenen Shooting verknüpft werden.
+- Verknüpfte Models werden aus dem Shooting geerbt und in der Galerieansicht angezeigt.
 - Bestehende Models, Shootings und Medien blieben nutzbar.
-- Es findet keine automatische Migration vorhandener Medien in Fotogalerie-/Video-Objekte statt.
+- Es findet weiterhin keine automatische Migration vorhandener Medien in Fotogalerie-/Video-Objekte statt.
 
 ## Stabile Funktionen
 
@@ -54,6 +58,7 @@ Im Model-Profil existiert die Karte `Erschließungsgrad`.
 
 Bekanntes fachliches Problem der alten Struktur:
 - Ein Shooting mit Fotos darf langfristig nicht pauschal mit einem Pictorial/Fotogalerie gleichgesetzt werden.
+- Der Erschließungsgrad verwendet derzeit noch nicht die neuen `gallery`-Objekte als endgültige Zählgrundlage.
 
 ## Neue fachliche Zielstruktur
 
@@ -72,19 +77,20 @@ Direkte Beziehungen:
 
 ### Fotogalerie
 
-Neuer Werktyp `gallery`.
+Werktyp `gallery`.
 
-Eigene Daten künftig:
+Aktuell umgesetzt:
 - Bezeichnung/Titel
-- optional Veröffentlichungsdatum
-- Notizen
+- optionale Notiz
+- optionale Verknüpfung zu einem vorhandenen Shooting
+- Models werden bei `modelsMode = inherit` dynamisch aus dem verknüpften Shooting abgeleitet
+- keine automatische Erzeugung oder Veränderung eines Shootings
 
-Mögliche Beziehungen:
-- Shooting
-- Serie
-- Titel
-- Printausgabe
-- Individual
+Künftig:
+- optional Veröffentlichungsdatum
+- Beziehungen zu Serie, Titel, Printausgabe und Individual
+- Medienzuordnung
+- `custom`-Modus für echte Model-/Fotografen-Abweichungen
 
 Model-/Fotografenlogik:
 - Standard: vom verknüpften Shooting erben.
@@ -100,6 +106,7 @@ Neuer Werktyp `video`.
 - Beziehungen zu Shooting, Serie, Titel, Printausgabe und Individual möglich
 - Models/Fotografen standardmäßig vom Shooting erben
 - gezielte Abweichungen über `custom`
+- UI noch nicht umgesetzt
 
 ### Printausgabe
 
@@ -141,10 +148,10 @@ Wichtig:
 - keine künstlichen Daten
 - verworfene 6.3.2-Oberfläche „Vorhandenes Archivobjekt“ wurde wieder entfernt
 
-Gerätetest:
-- App startet als Update.
-- vorhandener Datenbestand bleibt nutzbar.
-- Benutzer bestätigte am 2026-09-06: „Läuft.“
+Gerätetests:
+- Schema-6-Grundlage: erfolgreich.
+- Erster Fotogalerie-Schritt: erfolgreich.
+- Benutzer bestätigte am 2026-09-06 für die Fotogalerie: „Funktioniert 👍🏻“.
 
 ## Fachliche Grundregeln
 
@@ -184,10 +191,11 @@ Gerätetest:
 
 ## Offene Punkte
 
-- Fotogalerie als erstes echtes Werkobjekt in der UI einführen.
-- Danach Video als Werkobjekt.
-- Vererbungslogik Models/Fotografen praktisch umsetzen.
-- Beziehungen Fotogalerie/Video ↔ Shooting/Serie/Titel/Printausgabe/Individual umsetzen.
+- Fotogalerie um weitere Beziehungen erweitern: Serie, Titel, Printausgabe, Individual.
+- Medienzuordnung zur Fotogalerie konzipieren und umsetzen.
+- Fotografen-Vererbung praktisch in der Galerieoberfläche umsetzen.
+- `custom`-Modus für Model-/Fotografen-Abweichungen umsetzen.
+- Video als echtes Werkobjekt in der UI einführen.
 - Printausgaben wieder in der Hauptübersicht sichtbar machen.
 - Cover-/PDF-/`im Bestand`-Logik testen.
 - Bestehende Medien später kontrolliert migrieren.
@@ -196,31 +204,31 @@ Gerätetest:
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Archivmodell – Schema-6-Grundlage**
+**Archivmodell – erste echte Fotogalerie**
 
-- neue Zielstruktur festgelegt
-- Schema 6 eingeführt
-- `gallery` und `video` vorbereitet
-- Vererbungsmodus für Models/Fotografen vorbereitet
-- vorhandene `publication` als Basis für Printausgaben vorgesehen
-- keine bestehende Archivstruktur automatisch migriert
-- verworfene 6.3.2-Zuordnungsoberfläche entfernt
+- eigener Verwaltungsreiter `Fotogalerien`
+- Fotogalerie kann manuell angelegt werden
+- Bezeichnung und optionale Notiz
+- optional vorhandenes Shooting verknüpfen
+- kein Shooting wird dadurch erzeugt oder verändert
+- Models werden aus verknüpften Shootings geerbt und angezeigt
+- Schema bleibt 6
+- keine automatische Medienmigration
 - Gerätetest erfolgreich
 
 Referenz-Commit:
-`a6444aaf1702f6ab2be69359afbf342cd1726442`
+`528d84c9de65fe173272cff30b5e9e3f6e939278`
 
 `www/index.html` Blob:
-`14a0702dbaa62553efd077feb9f6226136853e28`
+`92c4c26f64fac77338411302b44a1d8abd363184`
 
 ## Nächster sinnvoller Schritt
 
-**Fotogalerie als erstes echtes Werkobjekt einführen.**
+Als nächster kleiner Schritt die Fotogalerie weiter ausbauen, ohne bestehende Daten umzubauen.
 
-Erster Umfang:
-- Fotogalerie manuell anlegen können
-- Name/Bezeichnung und optionale Notiz
-- optional vorhandenes Shooting verknüpfen
-- noch keine automatische Medienmigration
-- noch keine Serien-/Titel-/Print-/Individual-Massenlogik
-- danach Gerätetest mit einer einzelnen Testgalerie
+Empfohlene Reihenfolge:
+1. Fotografen-Vererbung aus dem verknüpften Shooting sichtbar machen.
+2. Danach weitere fachliche Beziehungen einzeln ergänzen.
+3. Erst später Medienzuordnung und kontrollierte Migration bestehender Fotos.
+
+Keine automatische Massenmigration ohne separaten Test.
