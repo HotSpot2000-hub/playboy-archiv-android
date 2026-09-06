@@ -2336,6 +2336,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   </div>
   <div id="factArchiveGenericFields"><label>Bezeichnung</label><input id="factArchiveName" placeholder="optional, wenn Bezeichnung unbekannt"><label>Datum / Zeitraum</label><input id="factArchiveDate" placeholder="optional"></div>
   <div id="factArchiveSeriesWrap" class="hidden"><label>Bekannte Serie</label><select id="factArchiveSeriesId"><option value="">Noch nicht bekannt / keine Zuordnung</option></select><div class="small" style="margin-top:4px">Nur eine bereits bekannte Serienzuordnung festhalten. Ein Shooting oder Medienobjekt wird dadurch nicht erzeugt.</div></div>
+  <div id="factArchiveObjectWrap" class="hidden"><label>Vorhandenes Archivobjekt</label><select id="factArchiveObjectId"><option value="">Noch keine konkrete Zuordnung</option></select><div class="small" style="margin-top:4px">Nur bei der Korrektur eines bestehenden Video-/Pictorial-Fakts. Es wird kein neues Archivobjekt erzeugt.</div></div>
   <label>Anzahl</label><input id="factArchiveQuantity" type="number" min="0" step="1" placeholder="unbekannt">
   <label>Erschließung</label><select id="factArchiveState"><option value="unerschlossen">Noch nicht erschlossen</option><option value="teilweise">Teilweise erschlossen</option><option value="erschlossen">Im Archiv erschlossen</option></select>
   <label>Details</label><textarea id="factArchiveDetails" placeholder="Nur bestätigte Aussage; unbekannte Zuordnungen nicht ergänzen."></textarea>
@@ -7440,14 +7441,18 @@ document.getElementById('addResearchEvidenceBtn').onclick=addResearchEvidence;
 document.getElementById('saveResearchBtn').onclick=saveResearchItem;
 document.getElementById('cancelResearchBtn').onclick=closeOverlay;
 document.getElementById('factPromotionTarget').onchange=renderFactPromotionPreview;
-document.getElementById('factArchiveKind').onchange=refreshFactArchiveTitleFields;
+document.getElementById('factArchiveKind').onchange=()=>{
+ const f=factForReplacement(),kind=factPromotionValue('factArchiveKind');
+ if(f&&document.getElementById('factPromotionReplaceType')?.value==='archive'&&(kind==='Video'||kind==='Pictorial'))factArchiveObjectOptions(f.modelId,kind,factPromotionValue('factArchiveObjectId'));
+ refreshFactArchiveTitleFields();
+};
 document.getElementById('factArchiveTitleClass').onchange=()=>fillFactArchiveTitleLevels();
 document.getElementById('factArchiveTitleLevel').onchange=refreshFactArchiveTitleFields;
 document.getElementById('factArchiveTitleDay').onchange=refreshFactArchiveTitleFields;
 document.getElementById('factArchiveTitleMonthWeek').onchange=refreshFactArchiveTitleFields;
 document.getElementById('factArchiveTitleWeekMonth').onchange=refreshFactArchiveTitleFields;
 document.getElementById('factArchiveTitleWeekYear').oninput=refreshFactArchiveTitleFields;
-['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factArchiveKind','factArchiveName','factArchiveDate','factArchiveSeriesId','factArchiveQuantity','factArchiveState','factArchiveDetails','factArchiveTitleClass','factArchiveTitleLevel','factArchiveTitleMonthWeek','factArchiveTitleDay','factArchiveTitleWeekMonth','factArchiveTitleWeekYear','factArchiveTitleMonth','factArchiveTitleYear','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
+['factCareerKind','factCareerOrganization','factCareerWork','factCareerDate','factCareerRole','factCareerDetails','factArchiveKind','factArchiveName','factArchiveDate','factArchiveSeriesId','factArchiveObjectId','factArchiveQuantity','factArchiveState','factArchiveDetails','factArchiveTitleClass','factArchiveTitleLevel','factArchiveTitleMonthWeek','factArchiveTitleDay','factArchiveTitleWeekMonth','factArchiveTitleWeekYear','factArchiveTitleMonth','factArchiveTitleYear','factBioCategory','factBioStatement','factBioFrom','factBioTo','factBioStatementType'].forEach(id=>document.getElementById(id).oninput=renderFactPromotionPreview);
 document.getElementById('confirmFactPromotionBtn').onclick=confirmFactPromotion;
 document.getElementById('cancelFactPromotionBtn').onclick=closeOverlay;
 document.getElementById('managementBtn').onclick=showManagement; document.getElementById('profileBtn').onclick=showProfile;
@@ -8187,6 +8192,25 @@ function factArchiveSeriesLabel(id){
  const sr=(state.archive||[]).find(a=>a&&a.type==='series'&&a.id===id);
  return sr?.title||'';
 }
+function factArchiveObjectLabel(obj){
+ if(!obj)return '';
+ if(obj.type==='shoot')return `Shooting: ${obj.title||obj.name||obj.id}`;
+ if(obj.type==='media')return `Medium: ${obj.title||obj.fileName||obj.name||obj.id}`;
+ return obj.title||obj.name||obj.id||'';
+}
+function factArchiveObjectOptions(modelId,kind,selected=''){
+ const sel=document.getElementById('factArchiveObjectId');if(!sel)return;
+ const wantVideo=kind==='Video',shoots=(state.archive||[]).filter(sh=>sh&&sh.type==='shoot'&&shootingModelIds(sh).includes(modelId));
+ const rows=[],seen=new Set();
+ shoots.forEach(sh=>{
+  const matching=shootingMedia(sh).filter(m=>wantVideo?String(m.mimeType||'').toLowerCase().startsWith('video/'):!String(m.mimeType||'').toLowerCase().startsWith('video/'));
+  if(matching.length&&!seen.has(sh.id)){seen.add(sh.id);rows.push(sh)}
+  matching.forEach(m=>{if(m?.id&&!seen.has(m.id)){seen.add(m.id);rows.push(m)}});
+ });
+ rows.sort((a,b)=>factArchiveObjectLabel(a).localeCompare(factArchiveObjectLabel(b),'de',{numeric:true,sensitivity:'base'}));
+ sel.innerHTML='<option value="">Noch keine konkrete Zuordnung</option>'+rows.map(a=>`<option value="${esc(a.id)}">${esc(factArchiveObjectLabel(a))}</option>`).join('');
+ if(selected&&rows.some(a=>a.id===selected))sel.value=selected;
+}
 function fillFactArchiveTitleLevels(preferred=''){
  const cls=document.getElementById('factArchiveTitleClass')?.value||'coed',sel=document.getElementById('factArchiveTitleLevel');if(!sel)return;
  const current=preferred||sel.value;sel.innerHTML=titleLevelsForClass(cls).map(x=>`<option value="${x[0]}">${x[1]}</option>`).join('');
@@ -8195,9 +8219,11 @@ function fillFactArchiveTitleLevels(preferred=''){
 }
 function refreshFactArchiveTitleFields(){
  const kind=factPromotionValue('factArchiveKind')||'Titel',isTitle=kind==='Titel',supportsSeries=kind==='Video'||kind==='Pictorial';
+ const correction=document.getElementById('factPromotionReplaceType')?.value==='archive';
  document.getElementById('factArchiveTitleFields')?.classList.toggle('hidden',!isTitle);
  document.getElementById('factArchiveGenericFields')?.classList.toggle('hidden',isTitle);
  document.getElementById('factArchiveSeriesWrap')?.classList.toggle('hidden',!supportsSeries);
+ document.getElementById('factArchiveObjectWrap')?.classList.toggle('hidden',!(supportsSeries&&correction));
  if(!isTitle){renderFactPromotionPreview();return}
  fillTitleDateSelectors('factArchiveTitle');
  const level=document.getElementById('factArchiveTitleLevel')?.value||'';
@@ -8283,7 +8309,9 @@ function openFactPromotion(id){
 function setFactPromotionArchiveFromFact(f){
  document.getElementById('factArchiveKind').value=f.kind||'Sonstiges';
  const linkedSeriesId=(f.linkedArchiveIds||[]).find(id=>(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id))||'';
+ const linkedObjectId=(f.linkedArchiveIds||[]).find(id=>(state.archive||[]).some(a=>a&&a.id===id&&(a.type==='shoot'||a.type==='media')))||'';
  factArchiveSeriesOptions(linkedSeriesId);
+ factArchiveObjectOptions(f.modelId,f.kind,linkedObjectId);
  document.getElementById('factArchiveName').value=f.kind==='Titel'?'':(f.name||'');
  document.getElementById('factArchiveDate').value=f.kind==='Titel'?'':(f.date||'');
  if(f.kind==='Titel'){
@@ -8333,8 +8361,8 @@ function renderFactPromotionPreview(){
   const kind=factPromotionValue('factArchiveKind')||'—',q=factPromotionValue('factArchiveQuantity'),stateLabel={unerschlossen:'Noch nicht erschlossen',teilweise:'Teilweise erschlossen',erschlossen:'Im Archiv erschlossen'}[factPromotionValue('factArchiveState')]||'—';
   let name=factPromotionValue('factArchiveName')||((kind==='Video'||kind==='Pictorial')?'unbekannt':'—'),when=factPromotionValue('factArchiveDate')||'—';
   if(kind==='Titel'){const t=factArchiveTitleData();name=t.name;when=factArchiveTitleWhen(t)||'—'}
-  const seriesId=factPromotionValue('factArchiveSeriesId'),series=factArchiveSeriesLabel(seriesId);
-  const vals=[['Model',factPromotionModelName(row)],['Art',kind],['Bezeichnung',name],['Bekannte Serie',(kind==='Video'||kind==='Pictorial')?(series||'noch nicht bekannt'):'—'],['Zeitpunkt',when],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
+  const seriesId=factPromotionValue('factArchiveSeriesId'),series=factArchiveSeriesLabel(seriesId),objectId=factPromotionValue('factArchiveObjectId'),object=(state.archive||[]).find(a=>a?.id===objectId);
+  const vals=[['Model',factPromotionModelName(row)],['Art',kind],['Bezeichnung',name],['Bekannte Serie',(kind==='Video'||kind==='Pictorial')?(series||'noch nicht bekannt'):'—'],['Archivobjekt',(kind==='Video'||kind==='Pictorial')?(factArchiveObjectLabel(object)||'noch nicht zugeordnet'):'—'],['Zeitpunkt',when],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
   preview.innerHTML='<b>Vorschau: Archivwissen</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
  }else{
   const vals=[['Model',factPromotionModelName(row)],['Kategorie',factPromotionValue('factBioCategory')||'—'],['Aussage',factPromotionValue('factBioStatement')||'—'],['Von / Zeitpunkt',factPromotionValue('factBioFrom')||'—'],['Bis',factPromotionValue('factBioTo')||'—'],['Aussageart',factPromotionValue('factBioStatementType')==='self'?'Selbstaussage':'Objektive Angabe']];
@@ -8354,7 +8382,7 @@ function confirmFactPromotion(){
   if(!Array.isArray(state.careerFacts))state.careerFacts=[];
   createdFact={id:`CF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,organization,work,date,role,details,sourceResearchIds,status:'aktiv',createdAt:now,updatedAt:now};state.careerFacts.push(createdFact);
  }else if(target==='archive'){
-  const kind=factPromotionValue('factArchiveKind'),rawQuantity=factPromotionValue('factArchiveQuantity'),archiveState=factPromotionValue('factArchiveState')||'unerschlossen',details=factPromotionValue('factArchiveDetails'),selectedSeriesId=factPromotionValue('factArchiveSeriesId');
+  const kind=factPromotionValue('factArchiveKind'),rawQuantity=factPromotionValue('factArchiveQuantity'),archiveState=factPromotionValue('factArchiveState')||'unerschlossen',details=factPromotionValue('factArchiveDetails'),selectedSeriesId=factPromotionValue('factArchiveSeriesId'),selectedObjectId=factPromotionValue('factArchiveObjectId');
   let name=factPromotionValue('factArchiveName'),date=factPromotionValue('factArchiveDate'),titleData=null;
   if(kind==='Titel'){
    titleData=factArchiveTitleData();name=titleData.name;date='';
@@ -8376,8 +8404,13 @@ function confirmFactPromotion(){
    return !oldFact?(Array.isArray(f.sourceResearchIds)&&f.sourceResearchIds.includes(row.id)):true;
   });
   if(duplicate){toast(oldFact?'Ein gleiches aktives Archivwissen existiert bereits. Den alten Fakt gegebenenfalls zurückziehen.':'Dieses Archivwissen wurde aus diesem Research-Fall bereits übernommen.');return}
-  const preservedNonSeries=(oldFact?.linkedArchiveIds||[]).filter(id=>!(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id));
-  const linkedArchiveIds=[...preservedNonSeries,...(relationSeriesId?[relationSeriesId]:[])];
+  const preservedOther=(oldFact?.linkedArchiveIds||[]).filter(id=>!(state.archive||[]).some(a=>a&&a.id===id&&(a.type==='series'||a.type==='shoot'||a.type==='media')));
+  const relationObjectId=(oldFact&&(kind==='Video'||kind==='Pictorial'))?selectedObjectId:'';
+  if(relationObjectId){
+   const allowed=document.getElementById('factArchiveObjectId');
+   if(!allowed||![...allowed.options].some(o=>o.value===relationObjectId)){toast('Das gewählte Archivobjekt gehört nicht zur zulässigen Auswahl dieses Models.');return}
+  }
+  const linkedArchiveIds=[...preservedOther,...(relationSeriesId?[relationSeriesId]:[]),...(relationObjectId?[relationObjectId]:[])];
   createdFact={id:`AF-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,modelId:row.modelId,kind,name,date,quantity,archiveState,details,linkedArchiveIds,sourceResearchIds,status:'aktiv',createdAt:now,updatedAt:now};
   if(titleData)Object.assign(createdFact,{titleClass:titleData.titleClass,titleLevel:titleData.titleLevel,titlePeriod:titleData.titlePeriod,titleMonthWeek:titleData.titleMonthWeek,titleMonthWeekMonth:titleData.titleMonthWeekMonth,titleYear:titleData.titleYear});
   state.archiveFacts.push(createdFact);
