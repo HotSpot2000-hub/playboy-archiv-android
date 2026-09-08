@@ -506,7 +506,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 }
 
 @media (max-width: 700px){
-  /* Shootings: same compact card/action geometry as Serien */
+  /* Shootings: same compact card/action geometry as Rubriken */
   .shootingGridStandalone{
     grid-template-columns:repeat(2,minmax(0,1fr));
   }
@@ -938,7 +938,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 }
 
 @media (max-width:700px){
-  /* v139: Abschluss der Touch-Serie – kompakte Bedienaktionen */
+  /* v139: Abschluss der Touch-Rubrik – kompakte Bedienaktionen */
   .settingsClose,.clearSearchBtn,.lightboxClose,.videoClose,
   .recentRemoveBtn,.recentClearBtn,.savedSearchRemove,
   .pinnedRemoveBtn,.pinnedArchiveRemove,.pinnedClearBtn,
@@ -1423,7 +1423,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  [data-collapse-key="career-archive"] #archiveList>.archiveItem{padding:13px 0}
 }
 
-/* v268: Shooting-Vorschauen in der Verwaltung entsprechen exakt den Vorschauen in Serien/Titel. */
+/* v268: Shooting-Vorschauen in der Verwaltung entsprechen exakt den Vorschauen in Rubriken/Titel. */
 [data-collapse-key="career-archive"] .managementShootingsList{
   display:grid;
   grid-template-columns:1fr;
@@ -1489,7 +1489,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   display:none !important;
 }
 
-/* v273: Pins bei Titel/Serien in der Verwaltung ausblenden. */
+/* v273: Pins bei Titel/Rubriken in der Verwaltung ausblenden. */
 [data-collapse-key="career-archive"] .titleBrowseCard .archivePinBtn,
 [data-collapse-key="career-archive"] .titleBrowseCard [data-pin-archive],
 [data-collapse-key="career-archive"] .seriesBrowseCard .archivePinBtn,
@@ -1503,7 +1503,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  border-radius:12px;padding:8px 10px;margin-top:6px;background:#fff
 }
 
-/* v277: Stabilität Shooting/Serien. */
+/* v277: Stabilität Shooting/Rubriken. */
 [data-collapse-key="career-archive"] .seriesBrowseCard:has(.seriesBrowsePicker:not(.hidden)){
   overflow:visible;
   position:relative;
@@ -1521,7 +1521,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   padding:18px;
 }
 
-/* v278: Serien-Dropdown in der Verwaltung darf niemals von Karte/Container abgeschnitten werden. */
+/* v278: Rubriken-Dropdown in der Verwaltung darf niemals von Karte/Container abgeschnitten werden. */
 [data-collapse-key="career-archive"],
 [data-collapse-key="career-archive"] > .collapseBody,
 [data-collapse-key="career-archive"] #archiveList,
@@ -1856,7 +1856,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="height"> Größenfilter inklusive Unter- und Obergrenze</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="photos"> Foto-Minimum/-Maximum filtert Shootings korrekt</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="video"> Video-/Kein-Video-Filter funktioniert</label>
-   <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="areas"> Leere Titel/Serien/Individuals werden ausgeblendet</label>
+   <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="areas"> Leere Titel/Rubriken/Individuals werden ausgeblendet</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="redirect"> Leerer aktueller Bereich springt automatisch zu Models</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="back"> Shooting-Zurück funktioniert oben und unten</label>
    <div id="praxis11Status" class="small" style="margin-top:8px">0 / 8 neue 1.1-Praxistests bestätigt.</div>
@@ -2015,7 +2015,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
 </div>
 <section id="modelsView">
-<div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Serien</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+<div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
 <div class="card globalModelsCard">
  <div class="globalModelsHeader"><div><h2>Models</h2><div class="small">Alle Models im Archiv.</div></div><div class="modelOverviewTools"><button class="btn" id="modelOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addModelOverviewBtn">＋ Model</button></div></div>
  <div class="modelOverviewSortRow"><span class="small">Profilbild:</span><select id="modelOverviewPhotoFilter" aria-label="Models nach Profilbild filtern"><option value="all">Alle</option><option value="with">✓</option><option value="without">✕</option></select><span class="small">Sortierung:</span><select id="modelOverviewSort" aria-label="Models sortieren"><option value="name">A–Z</option><option value="rating-desc">% ↓</option></select></div>
@@ -2025,13 +2025,13 @@ body.archiveFilterOpen .bottom{display:none!important}
 </section>
 
 <section id="publicationsView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Serien</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
  <div class="card"><h2>Publikationen</h2><div class="small">Alle Publikationen im Archiv.</div><div id="globalPublicationsList" class="globalBrowseGrid"></div></div>
 </section>
 
 <section id="shootingsView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Serien</button><button type="button" class="active" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
- <div class="card"><div class="globalModelsHeader"><div><h2>Individuals</h2><div class="small">Shootings ohne Zuordnung zu Serie oder Titel.</div></div><div class="seriesOverviewTools"><button class="btn" id="individualOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addIndividualOverviewBtn">＋ Shooting</button></div></div><div id="individualOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="individualOverviewSearchInput" type="search" autocomplete="off" placeholder="Model oder Shooting suchen …" aria-label="Individuals suchen"><button type="button" id="individualOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Model, Shooting oder Datum eingeben.</div></div><div id="globalShootingsList"></div></div>
+ <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="active" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="card"><div class="globalModelsHeader"><div><h2>Individuals</h2><div class="small">Shootings ohne Zuordnung zu Rubrik oder Titel.</div></div><div class="seriesOverviewTools"><button class="btn" id="individualOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addIndividualOverviewBtn">＋ Shooting</button></div></div><div id="individualOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="individualOverviewSearchInput" type="search" autocomplete="off" placeholder="Model oder Shooting suchen …" aria-label="Individuals suchen"><button type="button" id="individualOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Model, Shooting oder Datum eingeben.</div></div><div id="globalShootingsList"></div></div>
 </section>
 
 <section id="archiveView" class="hidden">
@@ -2047,14 +2047,14 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button class="collapseHead" type="button"><h2>Archivsuche</h2><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
  <div class="searchInputRow">
-  <input id="globalSearchInput" type="search" placeholder="Model, Shooting, Serie, Person …">
+  <input id="globalSearchInput" type="search" placeholder="Model, Shooting, Rubrik, Person …">
   <button type="button" id="clearGlobalSearch" class="clearSearchBtn" aria-label="Suche leeren" title="Suche leeren">×</button>
  </div>
  <div id="searchTypeFilters" class="searchTypeFilters">
   <button type="button" class="searchFilter active" data-search-type="all">Alle <span class="searchCount" data-count-type="all"></span></button>
   <button type="button" class="searchFilter" data-search-type="model">Models <span class="searchCount" data-count-type="model"></span></button>
   <button type="button" class="searchFilter" data-search-type="shoot">Shootings <span class="searchCount" data-count-type="shoot"></span></button>
-  <button type="button" class="searchFilter" data-search-type="series">Serien <span class="searchCount" data-count-type="series"></span></button>
+  <button type="button" class="searchFilter" data-search-type="series">Rubriken <span class="searchCount" data-count-type="series"></span></button>
   <button type="button" class="searchFilter" data-search-type="publication">Publikationen <span class="searchCount" data-count-type="publication"></span></button>
   <button type="button" class="searchFilter" data-search-type="media">Medien <span class="searchCount" data-count-type="media"></span></button>
   <button type="button" class="searchFilter" data-search-type="person">Personen <span class="searchCount" data-count-type="person"></span></button>
@@ -2099,7 +2099,7 @@ body.archiveFilterOpen .bottom{display:none!important}
     <button type="button" class="todoFilter active" data-todo-filter="all">Alle</button>
     <button type="button" class="todoFilter" data-todo-filter="model">Models</button>
     <button type="button" class="todoFilter" data-todo-filter="shoot">Shootings</button>
-    <button type="button" class="todoFilter" data-todo-filter="series">Serien</button>
+    <button type="button" class="todoFilter" data-todo-filter="series">Rubriken</button>
    </div>
    <input id="todoSearchInput" class="todoSearch" type="search" placeholder="🔍 Ergänzungen filtern" aria-label="Noch zu ergänzen durchsuchen">
   </div>
@@ -2119,7 +2119,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <section id="managementView" class="hidden">
 <div class="card collapseCard" data-collapse-key="career-archive">
- <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Titel, Serien, Fotogalerien, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
+ <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Titel, Rubriken, Galerien, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
@@ -2127,8 +2127,8 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div class="archiveTabs managementNav">
    <button class="active" data-archive-tab="publication">Publikationen</button>
    <button data-archive-tab="title">Titel</button>
-   <button data-archive-tab="series">Serien</button>
-   <button data-archive-tab="gallery">Fotogalerien</button>
+   <button data-archive-tab="series">Rubriken</button>
+   <button data-archive-tab="gallery">Galerien</button>
    <button data-archive-tab="shoot">Shootings</button>
    <button data-archive-tab="media">Medien</button>
   </div>
@@ -2145,13 +2145,13 @@ body.archiveFilterOpen .bottom{display:none!important}
 </section>
 
 <section id="titlesView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="active" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Serien</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="active" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
  <div class="card"><div class="globalModelsHeader"><div><h2>Titel</h2><div class="small">Alle Titel im Archiv.</div></div><div class="titleOverviewTools"><button class="btn" id="titleOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addTitleOverviewBtn">＋ Titel</button></div></div><div id="titleOverviewSearchPanel" class="titleSearchPanel hidden"><div class="titleSearchRow"><input id="titleOverviewSearchInput" type="search" autocomplete="off" placeholder="Titel, Zeitraum oder Model suchen …" aria-label="Titel suchen"><button type="button" id="titleOverviewSearchClose" class="titleSearchClose" aria-label="Suche schließen">×</button></div><div id="titleOverviewSearchHint" class="titleSearchHint">Titelklasse, Titelstufe, Zeitpunkt oder Model eingeben.</div></div><div id="globalTitleList"></div></div>
 </section>
 
 <section id="seriesView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="active" data-main-area="series">Serien</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
- <div class="card"><div class="globalModelsHeader"><div><h2>Serien</h2><div class="small">Alle Serien im Archiv.</div></div><div class="seriesOverviewTools"><button class="btn" id="seriesOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addSeriesOverviewBtn">＋ Serie</button></div></div><div id="seriesOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="seriesOverviewSearchInput" type="search" autocomplete="off" placeholder="Serie, Model oder Shooting suchen …" aria-label="Serien suchen"><button type="button" id="seriesOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Serienname, Model oder Shooting eingeben.</div></div><div id="globalSeriesList"></div></div>
+ <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="active" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="card"><div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Alle Rubriken im Archiv.</div></div><div class="seriesOverviewTools"><button class="btn" id="seriesOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addSeriesOverviewBtn">＋ Rubrik</button></div></div><div id="seriesOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="seriesOverviewSearchInput" type="search" autocomplete="off" placeholder="Rubrik, Model oder Shooting suchen …" aria-label="Rubriken suchen"><button type="button" id="seriesOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Serienname, Model oder Shooting eingeben.</div></div><div id="globalSeriesList"></div></div>
 </section>
 
 <section id="peopleView" class="hidden">
@@ -2253,7 +2253,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 <div class="profileArchiveCard">
  <div class="archiveMainNav profileArchiveNav">
   <button type="button" class="active" data-profile-archive-tab="titles">Titel</button>
-  <button type="button" data-profile-archive-tab="series">Serien</button>
+  <button type="button" data-profile-archive-tab="series">Rubriken</button>
   <button type="button" data-profile-archive-tab="shootings">Individuals</button>
  </div>
  <div class="card" id="profileArchiveOverview"></div>
@@ -2264,12 +2264,12 @@ body.archiveFilterOpen .bottom{display:none!important}
 <button type="button" id="inboxSelectionFab" class="inboxSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <button type="button" id="mediaWorkSelectionFab" class="mediaWorkSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <button type="button" id="shootSelectionFab" class="shootSelectionFab" aria-expanded="false">Auswahl (0)</button>
-<div id="shootSelectionMenu" class="shootSelectionMenu"><button type="button" id="shootAssignSeriesBtn" class="primaryAction">Serie zuordnen</button><button type="button" id="shootAssignTitleBtn">Titel zuordnen</button><button type="button" id="shootSelectAllBtn">Alle auswählen</button><button type="button" id="shootClearBtn">Auswahl aufheben</button></div>
-<div id="shootSeriesPanel" class="shootSeriesPanel"><label for="shootSeriesSelect">Ausgewählte Shootings einer Serie zuordnen</label><select id="shootSeriesSelect"></select><div class="shootSeriesActions"><button type="button" id="shootSeriesCancel">Abbrechen</button><button type="button" id="shootSeriesConfirm" class="primaryAction">Zuordnen</button></div></div>
+<div id="shootSelectionMenu" class="shootSelectionMenu"><button type="button" id="shootAssignSeriesBtn" class="primaryAction">Rubrik zuordnen</button><button type="button" id="shootAssignTitleBtn">Titel zuordnen</button><button type="button" id="shootSelectAllBtn">Alle auswählen</button><button type="button" id="shootClearBtn">Auswahl aufheben</button></div>
+<div id="shootSeriesPanel" class="shootSeriesPanel"><label for="shootSeriesSelect">Ausgewählte Shootings einer Rubrik zuordnen</label><select id="shootSeriesSelect"></select><div class="shootSeriesActions"><button type="button" id="shootSeriesCancel">Abbrechen</button><button type="button" id="shootSeriesConfirm" class="primaryAction">Zuordnen</button></div></div>
 <div id="shootTitlePanel" class="shootTitlePanel"><label>Ausgewählte Shootings einem Titel zuordnen</label><div class="shootTitleFilterRow"><select id="shootTitleClassFilter" aria-label="Titelklasse"></select><select id="shootTitleLevelFilter" aria-label="Titelstufe"></select></div><select id="shootTitleSelect"></select><div class="shootTitleActions"><button type="button" id="shootTitleCancel">Abbrechen</button><button type="button" id="shootTitleConfirm" class="primaryAction">Zuordnen</button></div></div>
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
-<div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Serien einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
+<div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
 <div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignShootBtn" class="primaryAction">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
 <div id="mediaWorkShootPanel" class="mediaWorkShootPanel">
  <div class="shootFinderHead"><div><b>Shooting auswählen</b><div class="small">Ausgewählte Medien einem Shooting zuordnen</div></div><button type="button" id="mediaWorkShootCancel">Schließen</button></div>
@@ -2328,7 +2328,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
  <div id="factPromotionArchiveFields" class="hidden">
   <div class="small">Playboy-bezogenes bestätigtes Wissen festhalten, auch wenn die konkrete Archivstruktur noch nicht vollständig erschlossen ist. Externe Magazine und sonstige Arbeiten bleiben Karrierefakten. Leere Anzahl bedeutet ausdrücklich „unbekannt“.</div>
-  <label>Art</label><select id="factArchiveKind"><option>Titel</option><option>Serie</option><option>Print</option><option>Video</option><option>Pictorial</option><option>Sonstiges</option></select>
+  <label>Art</label><select id="factArchiveKind"><option>Titel</option><option>Rubrik</option><option>Print</option><option>Video</option><option>Pictorial</option><option>Sonstiges</option></select>
   <div id="factArchiveTitleFields">
    <div class="factPromotionGrid"><div><label>Titelklasse</label><select id="factArchiveTitleClass"><option value="coed">Coed</option><option value="special-edition">SE Model</option><option value="playmate">Playmate</option><option value="cyber-girl">Cyber Girl</option></select></div><div><label>Titelstufe</label><select id="factArchiveTitleLevel"></select></div></div>
    <div id="factArchiveTitleWeekWrap" class="hidden"><label>Woche im Monat</label><select id="factArchiveTitleMonthWeek"><option value="">Bitte wählen</option><option value="1">1. Woche</option><option value="2">2. Woche</option><option value="3">3. Woche</option><option value="4">4. Woche</option><option value="5">5. Woche</option></select><label>Datum</label><div class="titleDateFields"><select id="factArchiveTitleDay"></select><select id="factArchiveTitleWeekMonth"></select><input id="factArchiveTitleWeekYear" inputmode="numeric" placeholder="Jahr"></div><div id="factArchiveTitleWeekPreview" class="small" style="margin-top:6px"></div></div>
@@ -2336,7 +2336,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <div id="factArchiveTitleYearWrap" class="hidden"><label>Jahr</label><input id="factArchiveTitleYear" inputmode="numeric" placeholder="z. B. 2016"></div>
   </div>
   <div id="factArchiveGenericFields"><label>Bezeichnung</label><input id="factArchiveName" placeholder="optional, wenn Bezeichnung unbekannt"><label>Datum / Zeitraum</label><input id="factArchiveDate" placeholder="optional"></div>
-  <div id="factArchiveSeriesWrap" class="hidden"><label>Bekannte Serie</label><select id="factArchiveSeriesId"><option value="">Noch nicht bekannt / keine Zuordnung</option></select><div class="small" style="margin-top:4px">Nur eine bereits bekannte Serienzuordnung festhalten. Ein Shooting oder Medienobjekt wird dadurch nicht erzeugt.</div></div>
+  <div id="factArchiveSeriesWrap" class="hidden"><label>Bekannte Rubrik</label><select id="factArchiveSeriesId"><option value="">Noch nicht bekannt / keine Zuordnung</option></select><div class="small" style="margin-top:4px">Nur eine bereits bekannte Serienzuordnung festhalten. Ein Shooting oder Medienobjekt wird dadurch nicht erzeugt.</div></div>
   <label>Anzahl</label><input id="factArchiveQuantity" type="number" min="0" step="1" placeholder="unbekannt">
   <label>Erschließung</label><select id="factArchiveState"><option value="unerschlossen">Noch nicht erschlossen</option><option value="teilweise">Teilweise erschlossen</option><option value="erschlossen">Im Archiv erschlossen</option></select>
   <label>Details</label><textarea id="factArchiveDetails" placeholder="Nur bestätigte Aussage; unbekannte Zuordnungen nicht ergänzen."></textarea>
@@ -2367,7 +2367,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <select id="personShootingFilterType" aria-label="Shootings filtern">
    <option value="">Alle Shootings</option>
    <option value="individual">Individuals</option>
-   <option value="series">Serie</option>
+   <option value="series">Rubrik</option>
    <option value="title">Titel</option>
   </select>
   <select id="personShootingFilterValue" aria-label="Filterwert"><option value="">Alle</option></select>
@@ -2431,8 +2431,8 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Typ</label>
  <select id="archiveType">
   <option value="publication">Publikation</option>
-  <option value="series">Fotoserie / Serie</option>
-  <option value="gallery">Fotogalerie</option>
+  <option value="series">Fotoserie / Rubrik</option>
+  <option value="gallery">Galerie</option>
   <option value="shoot">Shooting</option>
   <option value="title">Titel</option>
   <option value="media">Foto / Medium</option>
@@ -2452,7 +2452,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveGalleryShootWrap" class="hidden">
   <label>Vorhandenes Shooting <span class="small">(optional)</span></label>
   <select id="archiveGalleryShoot"><option value="">Shooting noch nicht bekannt</option></select>
-  <div class="small" style="margin-top:5px">Die Fotogalerie bleibt ein eigenes Werkobjekt. Ein Shooting wird nur verknüpft, nicht erzeugt.</div>
+  <div class="small" style="margin-top:5px">Die Galerie bleibt ein eigenes Werkobjekt. Ein Shooting wird nur verknüpft, nicht erzeugt.</div>
  </div>
  <label>Notiz</label><textarea id="archiveNote"></textarea>
  <div id="archiveFileWrap" class="hidden">
@@ -2460,7 +2460,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <input id="archiveFile" type="file" accept="image/*,video/*" multiple>
  <input id="archiveFileAndroidFiles" type="file" multiple class="hidden">
  <button type="button" class="btn" id="archiveAndroidFilesBtn">Über Android-Dateien auswählen</button>
- <div class="small">Fotos und Videos können gemeinsam importiert werden. Medien können direkt mit einem Shooting oder direkt mit einer Serie verknüpft werden.</div>
+ <div class="small">Fotos und Videos können gemeinsam importiert werden. Medien können direkt mit einem Shooting oder direkt mit einer Rubrik verknüpft werden.</div>
  <div id="mediaQueue" class="small" style="margin-top:8px"></div>
  <button type="button" class="btn" id="addMoreMediaBtn">＋ Weitere Medien auswählen</button>
 </div>
@@ -3598,7 +3598,7 @@ function pinnedProfileCounts(id){
 function pinnedProfileQuickHtml(id){
  const c=pinnedProfileCounts(id),out=[];
  if(c.shoot)out.push(`<button type="button" class="pinnedProfileQuick" data-pinned-profile-tab="shoot" data-model-id="${id}">${c.shoot} Shooting${c.shoot===1?'':'s'}</button>`);
- if(c.series)out.push(`<button type="button" class="pinnedProfileQuick" data-pinned-profile-tab="series" data-model-id="${id}">${c.series} Serie${c.series===1?'':'n'}</button>`);
+ if(c.series)out.push(`<button type="button" class="pinnedProfileQuick" data-pinned-profile-tab="series" data-model-id="${id}">${c.series} Rubrik${c.series===1?'':'n'}</button>`);
  if(c.publication)out.push(`<button type="button" class="pinnedProfileQuick" data-pinned-profile-tab="publication" data-model-id="${id}">${c.publication} Publikation${c.publication===1?'':'en'}</button>`);
  return out.join('<span class="pinnedProfileContext"> · </span>');
 }
@@ -3617,7 +3617,7 @@ function pinnedProfileContext(id){
  const series=items.filter(a=>a.type==='series').length;
  const pubs=items.filter(a=>a.type==='publication').length;
  const media=items.filter(a=>a.type==='media').length;
- return [shoots?`${shoots} Shooting${shoots===1?'':'s'}`:'',series?`${series} Serie${series===1?'':'n'}`:'',pubs?`${pubs} Publikation${pubs===1?'':'en'}`:'',media?`${media} Medien`:''].filter(Boolean).join(' · ');
+ return [shoots?`${shoots} Shooting${shoots===1?'':'s'}`:'',series?`${series} Rubrik${series===1?'':'n'}`:'',pubs?`${pubs} Publikation${pubs===1?'':'en'}`:'',media?`${media} Medien`:''].filter(Boolean).join(' · ');
 }
 
 function renderPinnedProfiles(){
@@ -3676,7 +3676,7 @@ function rememberRecentProfile(id){
 function recentProfileQuickHtml(id){
  const c=pinnedProfileCounts(id),out=[];
  if(c.shoot)out.push(`<button type="button" class="recentProfileQuick" data-recent-profile-tab="shoot" data-model-id="${id}">${c.shoot} Shooting${c.shoot===1?'':'s'}</button>`);
- if(c.series)out.push(`<button type="button" class="recentProfileQuick" data-recent-profile-tab="series" data-model-id="${id}">${c.series} Serie${c.series===1?'':'n'}</button>`);
+ if(c.series)out.push(`<button type="button" class="recentProfileQuick" data-recent-profile-tab="series" data-model-id="${id}">${c.series} Rubrik${c.series===1?'':'n'}</button>`);
  if(c.publication)out.push(`<button type="button" class="recentProfileQuick" data-recent-profile-tab="publication" data-model-id="${id}">${c.publication} Publikation${c.publication===1?'':'en'}</button>`);
  return out.join('<span class="recentProfileWhen"> · </span>');
 }
@@ -3884,7 +3884,7 @@ const highestSeriesCount=Math.max(0,...seriesCounts.map(x=>x.count));
 if(highestSeriesCount){
   series=seriesCounts.filter(x=>x.count===highestSeriesCount).map(x=>x.sr);
 }
-  return `<article class="globalModelCard${rating===100?' hasFavorite':''}"><div class="globalModelOpen" role="button" tabindex="0" data-global-model-open="${esc(m.id)}"><div class="globalModelPhoto">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name||'Model')}">`:'<span class="small">Profilbild</span>'}</div><div class="globalModelBody"><div class="globalModelName">${esc(m.name||'Ohne Namen')}</div><div class="globalModelFacts"><span class="globalModelOrigin"><span class="globalModelOriginFlag">${esc(effectiveFlag(m)||'')}</span><span class="globalModelOriginText">${esc(locationParts.join(', ')||'Herkunft offen')}</span></span><span class="globalModelBodyStats"><strong>${esc(heightText)}</strong><span class="globalModelStatsGap" aria-hidden="true"></span><span>${esc(measurementsText)}</span></span></div>${titles.length?`<div class="globalModelTitles"><div class="globalModelTitlesTrophy" aria-hidden="true">🏆</div><div class="globalModelTitlesList">${titles.map(t=>`<div class="globalModelTitle"><span class="globalModelTitleName">${esc(t.name)}</span>${t.when?`<button type="button" class="globalModelTitleWhen" data-global-model-title-date="${esc(t.id)}" data-title-class="${esc(t.titleClass)}" data-title-level="${esc(t.titleLevel)}">${esc(t.when)}</button>`:''}</div>`).join('')}</div></div>`:''}${series.length?`<div class="globalModelSeries"><div class="globalModelSeriesLabel">Serien</div>${series.map(sr=>`<button type="button" class="globalModelSeriesLink" data-global-model-series="${esc(sr.id)}">${esc(sr.title||'Serie ohne Titel')}</button>`).join('')}</div>`:''}</div></div>${rating===100?`<span class="globalModelFavorite" aria-label="Favorit" title="100%">❤️</span>`:rating>=0?`<span class="globalModelRating">${rating}%</span>`:''}</article>` 
+  return `<article class="globalModelCard${rating===100?' hasFavorite':''}"><div class="globalModelOpen" role="button" tabindex="0" data-global-model-open="${esc(m.id)}"><div class="globalModelPhoto">${m.photo?`<img src="${esc(m.photo)}" alt="${esc(m.name||'Model')}">`:'<span class="small">Profilbild</span>'}</div><div class="globalModelBody"><div class="globalModelName">${esc(m.name||'Ohne Namen')}</div><div class="globalModelFacts"><span class="globalModelOrigin"><span class="globalModelOriginFlag">${esc(effectiveFlag(m)||'')}</span><span class="globalModelOriginText">${esc(locationParts.join(', ')||'Herkunft offen')}</span></span><span class="globalModelBodyStats"><strong>${esc(heightText)}</strong><span class="globalModelStatsGap" aria-hidden="true"></span><span>${esc(measurementsText)}</span></span></div>${titles.length?`<div class="globalModelTitles"><div class="globalModelTitlesTrophy" aria-hidden="true">🏆</div><div class="globalModelTitlesList">${titles.map(t=>`<div class="globalModelTitle"><span class="globalModelTitleName">${esc(t.name)}</span>${t.when?`<button type="button" class="globalModelTitleWhen" data-global-model-title-date="${esc(t.id)}" data-title-class="${esc(t.titleClass)}" data-title-level="${esc(t.titleLevel)}">${esc(t.when)}</button>`:''}</div>`).join('')}</div></div>`:''}${series.length?`<div class="globalModelSeries"><div class="globalModelSeriesLabel">Rubriken</div>${series.map(sr=>`<button type="button" class="globalModelSeriesLink" data-global-model-series="${esc(sr.id)}">${esc(sr.title||'Rubrik ohne Titel')}</button>`).join('')}</div>`:''}</div></div>${rating===100?`<span class="globalModelFavorite" aria-label="Favorit" title="100%">❤️</span>`:rating>=0?`<span class="globalModelRating">${rating}%</span>`:''}</article>` 
  }).join(''):`<div class="small">${nq?'Keine Models passend zur Suche.':'Noch keine Models angelegt.'}</div>`;
  box.querySelectorAll('[data-global-model-open]').forEach(b=>b.onclick=()=>{state.currentModelId=b.dataset.globalModelOpen;save();rememberRecentProfile(state.currentModelId);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}))});
  box.querySelectorAll('[data-global-model-favorite]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();const m=(state.models||[]).find(x=>x.id===b.dataset.globalModelFavorite);if(!m)return;m.favorite=!m.favorite;save();renderGlobalModelOverview();renderFavoritesOverview();});
@@ -3940,19 +3940,19 @@ function renderGlobalSeries(){
  const allSeries=(state.archive||[]).filter(a=>a.type==='series'&&seriesShootingsAll(a).length&&overviewFilterAllowsSeries(a.id)&&(!q||seriesSearchText(a).includes(q))).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
  if(!allSeries.some(sr=>sr.id===globalSeriesBrowseId))globalSeriesBrowseId=allSeries[0]?.id||'';
  const sr=allSeries.find(x=>x.id===globalSeriesBrowseId);
- if(!sr){box.innerHTML=q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Serie gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine zugeordneten Serien im Archiv.</div>';return}
- const picker=allSeries.map(x=>`<button type="button" class="${x.id===globalSeriesBrowseId?'active':''}" data-global-series-pick="${esc(x.id)}">${esc(x.title||'Serie ohne Titel')}</button>`).join('');
+ if(!sr){box.innerHTML=q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Rubrik gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine zugeordneten Rubriken im Archiv.</div>';return}
+ const picker=allSeries.map(x=>`<button type="button" class="${x.id===globalSeriesBrowseId?'active':''}" data-global-series-pick="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</button>`).join('');
  const shoots=seriesShootingsAll(sr).filter(sh=>overviewFilterAllowsShoot(sh.id)).slice().sort(sortShootingsNatural);
  const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id)&&overviewFilterAllowsModel(id)).sort((a,b)=>String(state.models.find(m=>m.id===a)?.name||'').localeCompare(String(state.models.find(m=>m.id===b)?.name||''),'de',{sensitivity:'base'}));
  const groups=mids.map(mid=>{const m=state.models.find(x=>x.id===mid);const ms=shoots.filter(sh=>shootingModelIds(sh).includes(mid));const cards=ms.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-global-open-series-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-global-series-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-global-unlink-series-shooting="${esc(sh.id)}" data-series-id="${esc(sr.id)}">Löschen</button></div></div>`}).join('');return `<div class="seriesBrowseModel"><button type="button" class="seriesBrowseModelName" data-global-series-open-model="${esc(mid)}">${esc(m?.name||'Model')}</button><div class="shootingGridStandalone">${cards}</div></div>`}).join('');
- box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="globalSeriesTitleButton" aria-expanded="false">${esc(sr.title||'Serie ohne Titel')} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="globalSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${groups||'<div class="small">Noch keine Shootings zugeordnet.</div>'}</div></div>`;
+ box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="globalSeriesTitleButton" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="globalSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${groups||'<div class="small">Noch keine Shootings zugeordnet.</div>'}</div></div>`;
  const titleBtn=box.querySelector('#globalSeriesTitleButton'),pickBox=box.querySelector('#globalSeriesPicker');
  if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
  box.querySelectorAll('[data-global-series-pick]').forEach(x=>x.onclick=e=>{e.stopPropagation();globalSeriesBrowseId=x.dataset.globalSeriesPick;renderGlobalSeries()});
  box.querySelectorAll('[data-global-series-open-model]').forEach(x=>x.onclick=e=>{e.stopPropagation();state.currentModelId=x.dataset.globalSeriesOpenModel;save();rememberRecentProfile(state.currentModelId);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'auto'}))});
  box.querySelectorAll('[data-global-open-series-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid){state.currentModelId=mid;save()}openShootingDetail(x.dataset.globalOpenSeriesShooting,null,{source:'global-series',seriesId:globalSeriesBrowseId,scrollY:window.scrollY})});
  box.querySelectorAll('[data-global-series-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.globalSeriesEditArchive)});
- box.querySelectorAll('[data-global-unlink-series-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.globalUnlinkSeriesShooting&&a.type==='shoot');const sr=(state.archive||[]).find(a=>a.id===x.dataset.seriesId&&a.type==='series');if(!sh||!sr||!confirm('Shooting wirklich von dieser Serie lösen? Das Shooting selbst bleibt im Archiv.'))return;sh.links=(sh.links||[]).filter(id=>id!==sr.id);sr.links=(sr.links||[]).filter(id=>id!==sh.id);if(save()){renderGlobalSeries();toast('Shooting von der Serie gelöst.')}});
+ box.querySelectorAll('[data-global-unlink-series-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.globalUnlinkSeriesShooting&&a.type==='shoot');const sr=(state.archive||[]).find(a=>a.id===x.dataset.seriesId&&a.type==='series');if(!sh||!sr||!confirm('Shooting wirklich von dieser Rubrik lösen? Das Shooting selbst bleibt im Archiv.'))return;sh.links=(sh.links||[]).filter(id=>id!==sr.id);sr.links=(sr.links||[]).filter(id=>id!==sh.id);if(save()){renderGlobalSeries();toast('Shooting von der Rubrik gelöst.')}});
  box.querySelectorAll('[data-pin-archive]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();toggleArchivePin(x.dataset.pinArchive)});hydrateShootingCovers(box);
 }
 
@@ -4297,9 +4297,9 @@ function renderProfileArchiveOverview(){
   if(q)series=series.filter(sr=>normalizeSeriesSearch([seriesSearchText(sr),sr.title].join(' ')).includes(q));
   if(!series.some(sr=>sr.id===profileSeriesBrowseId))profileSeriesBrowseId=series[0]?.id||'';
   const sr=series.find(x=>x.id===profileSeriesBrowseId);
-  const picker=series.map(x=>`<button type="button" class="${x.id===profileSeriesBrowseId?'active':''}" data-profile-series-pick="${esc(x.id)}">${esc(x.title||'Serie ohne Titel')}</button>`).join('');
-  let body='';if(sr){const shoots=seriesShootingsAll(sr).filter(sh=>shootingModelIds(sh).includes(mid)).slice().sort(sortShootingsNatural);body=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" data-profile-series-title="1" aria-expanded="false">${esc(sr.title||'Serie ohne Titel')} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="profileSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${shoots.map(sh=>profileArchiveShootingCard(sh)).join('')}</div></div></div></div>`}
-  box.innerHTML=profileArchiveHeader('Serien',`Serien mit ${modelName}.`,'Serie')+(body||(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Serie gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Serien für dieses Model.</div>'));
+  const picker=series.map(x=>`<button type="button" class="${x.id===profileSeriesBrowseId?'active':''}" data-profile-series-pick="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</button>`).join('');
+  let body='';if(sr){const shoots=seriesShootingsAll(sr).filter(sh=>shootingModelIds(sh).includes(mid)).slice().sort(sortShootingsNatural);body=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" data-profile-series-title="1" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="profileSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${shoots.map(sh=>profileArchiveShootingCard(sh)).join('')}</div></div></div></div>`}
+  box.innerHTML=profileArchiveHeader('Rubriken',`Rubriken mit ${modelName}.`,'Rubrik')+(body||(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Rubrik gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Rubriken für dieses Model.</div>'));
   const titleBtn=box.querySelector('[data-profile-series-title]'),pickBox=box.querySelector('#profileSeriesPicker');if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
   box.querySelectorAll('[data-profile-series-pick]').forEach(x=>x.onclick=e=>{e.stopPropagation();profileSeriesBrowseId=x.dataset.profileSeriesPick;renderProfileArchiveOverview()});
   bindProfileArchiveCommon(box);return;
@@ -4307,7 +4307,7 @@ function renderProfileArchiveOverview(){
  let individuals=modelShoots.filter(sh=>shootingIsIndividual(sh)).slice().sort(sortShootingsNatural);
  if(q)individuals=individuals.filter(sh=>normalizeSeriesSearch([sh.title,sh.date,m.name].join(' ')).includes(q));
  const cards=individuals.map(sh=>profileArchiveShootingCard(sh)).join('');
- box.innerHTML=profileArchiveHeader('Individuals',`Shootings von ${modelName} ohne Zuordnung zu Serie oder Titel.`,'Shooting')+(individuals.length?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${cards}</div></div></div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals für dieses Model.</div>'));
+ box.innerHTML=profileArchiveHeader('Individuals',`Shootings von ${modelName} ohne Zuordnung zu Rubrik oder Titel.`,'Shooting')+(individuals.length?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${cards}</div></div></div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals für dieses Model.</div>'));
  bindProfileArchiveCommon(box);
 }
 function profileFactSourceText(f){
@@ -4364,7 +4364,7 @@ function profileCoverageLinkedConcrete(f){
   const ids=linked.filter(a=>a.type==='title').map(a=>a.id);
   return {count:ids.length,ids};
  }
- if(f?.kind==='Serie'){
+ if(f?.kind==='Rubrik'){
   const ids=linked.filter(a=>a.type==='series').map(a=>a.id);
   return {count:ids.length,ids};
  }
@@ -4418,7 +4418,7 @@ function renderProfileCoverage(modelId){
 
  const seriesIds=profileCoverageModelSeries(modelId,facts);
  const seriesNameKeys=new Set(seriesIds.map(id=>String((state.archive||[]).find(a=>a.id===id)?.title||'').trim().toLocaleLowerCase('de-DE')).filter(Boolean));
- const seriesFacts=facts.filter(f=>f.kind==='Serie');
+ const seriesFacts=facts.filter(f=>f.kind==='Rubrik');
  const unmatchedSeriesFacts=seriesFacts.filter(f=>!profileCoverageLinkedConcrete(f).count&&!seriesNameKeys.has(String(f.name||'').trim().toLocaleLowerCase('de-DE')));
 
  const videoMedia=media.filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/'));
@@ -4455,7 +4455,7 @@ function renderProfileCoverage(modelId){
  const pictorialArchived=photoShootings.length+directLinkedPictorials;
  const data=[
   ['Titel',`${actualTitles.length+unmatchedTitleFacts.length} bestätigt · ${actualTitles.length} im Archiv`],
-  ['Serien',`${seriesIds.length+unmatchedSeriesFacts.length} bestätigt · ${seriesIds.length} im Archiv`],
+  ['Rubriken',`${seriesIds.length+unmatchedSeriesFacts.length} bestätigt · ${seriesIds.length} im Archiv`],
   ['Pictorials',`${profileCoverageConfirmedLabel(pictorialArchived,pictorialExtra)} · ${pictorialArchived} im Archiv`],
   ['Videos',`${profileCoverageConfirmedLabel(videoMedia.length,videoExtra)} · ${videoMedia.length} im Archiv`]
  ];
@@ -4488,7 +4488,7 @@ function renderProfileConfirmedFacts(modelId){
   const quantity=f.quantity===null||f.quantity===undefined||f.quantity===''?'Anzahl unbekannt':`Anzahl: ${f.quantity}`;
   const when=f.kind==='Titel'?modelTitleWhen(f):f.date;
   const seriesId=(f.linkedArchiveIds||[]).find(id=>(state.archive||[]).some(a=>a&&a.type==='series'&&a.id===id))||'',series=factArchiveSeriesLabel(seriesId);
-  const meta=[when,series?`Serie: ${series}`:'',quantity,stateLabel].filter(Boolean).map(esc).join(' · ');
+  const meta=[when,series?`Rubrik: ${series}`:'',quantity,stateLabel].filter(Boolean).map(esc).join(' · ');
   const source=profileFactSourceText(f),displayName=f.name||((f.kind==='Video'||f.kind==='Pictorial')?'Bezeichnung unbekannt':'Ohne Bezeichnung');
   return `<div class="profileFactItem"><div class="profileFactTitle">${esc(f.kind||'Archivwissen')}: ${esc(displayName)}</div>${meta?`<div class="profileFactMeta">${meta}</div>`:''}${f.details?`<div class="profileFactDetails">${esc(f.details)}</div>`:''}${source?`<div class="profileFactSource">${esc(source)}</div>`:''}<div class="profileFactActions"><button type="button" data-fact-correct="archive:${esc(f.id)}">Korrigieren</button><button type="button" class="withdraw" data-fact-withdraw="archive:${esc(f.id)}">Zurückziehen</button></div></div>`;
  }).join('');
@@ -4748,7 +4748,7 @@ async function downloadPhotoGalleryZip(ids){
   }
   if(!files.length){toast('Keine Fotos zum Herunterladen gefunden.');return}
   const zip=await makeStoreZip(files),shoot=(state.archive||[]).filter(x=>x.type==='shoot').find(sh=>ids.every(id=>shootingMedia(sh).some(m=>m.id===id)));
-  const base=safeFileName(shoot?.title||`Fotogalerie_${archiveExportDateStamp()}`,'Fotogalerie');
+  const base=safeFileName(shoot?.title||`Fotogalerie_${archiveExportDateStamp()}`,'Galerie');
   downloadBlob(zip,`${base}_${files.length}_Fotos.zip`);toast(`${files.length} Fotos als ZIP heruntergeladen.`);
  }catch(err){console.error(err);toast('Mehrfach-Download konnte nicht erstellt werden.')}finally{if(btn){btn.disabled=false;btn.textContent=oldText}}
 }
@@ -5140,13 +5140,13 @@ function setBackupStatus(text,isError=false){
 function exportMediaPathParts(media){
  const linkedShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&((media.links||[]).includes(sh.id)||(sh.links||[]).includes(media.id)));
  const sh=linkedShoots[0]||null;
- let modelName='Ohne Model',seriesName='Ohne Serie',shootName='Nicht zugeordnet';
+ let modelName='Ohne Model',seriesName='Ohne Rubrik',shootName='Nicht zugeordnet';
  if(sh){
   const mid=shootingModelIds(sh)[0],m=(state.models||[]).find(x=>x.id===mid);
   if(m)modelName=m.name||modelName;
   shootName=sh.title||'Shooting ohne Titel';
   const series=(state.archive||[]).find(sr=>sr.type==='series'&&((sh.links||[]).includes(sr.id)||(sr.links||[]).includes(sh.id)));
-  if(series)seriesName=series.title||'Serie ohne Titel';
+  if(series)seriesName=series.title||'Rubrik ohne Titel';
  }else if(media.modelId){
   const m=(state.models||[]).find(x=>x.id===media.modelId);if(m)modelName=m.name||modelName;
  }
@@ -7788,11 +7788,11 @@ function bioDraftSeriesSummary(modelId,name){
   shoots.forEach(sh=>shootMap.set(sh.id,sh));
   const media=[...shoots.flatMap(sh=>shootingMedia(sh)),...directSeriesMedia(sr)];
   media.filter(x=>(x.mimeType||'').startsWith('video/')).forEach(v=>videoMap.set(v.id,v));
-  return `„${sr.title||'Unbenannte Serie'}“`;
+  return `„${sr.title||'Unbenannte Rubrik'}“`;
  });
  const shootCount=shootMap.size,videoCount=videoMap.size;
- let text=`${name} war für Playboy mehrfach vor der Kamera aktiv. Im aktuellen Archiv ${shootCount===1?'ist ein Shooting':'sind '+shootCount+' Shootings'} mit ${name} dokumentiert, die ${series.length===1?'zur Serie':'zu den Serien'} ${bioDraftJoin(labels)} gehören.`;
- if(videoCount)text+=` Zu diesen Serien ${videoCount===1?'gehört außerdem ein Video':'gehören außerdem '+videoCount+' Videos'} mit ${name}.`;
+ let text=`${name} war für Playboy mehrfach vor der Kamera aktiv. Im aktuellen Archiv ${shootCount===1?'ist ein Shooting':'sind '+shootCount+' Shootings'} mit ${name} dokumentiert, die ${series.length===1?'zur Rubrik':'zu den Rubriken'} ${bioDraftJoin(labels)} gehören.`;
+ if(videoCount)text+=` Zu diesen Rubriken ${videoCount===1?'gehört außerdem ein Video':'gehören außerdem '+videoCount+' Videos'} mit ${name}.`;
  return {text,seriesCount:series.length,shootCount,videoCount};
 }
 function buildBioDraft(modelId){
@@ -7817,7 +7817,7 @@ function buildBioDraft(modelId){
   const statements=self.map(f=>String(f.statement||'').trim()).filter(Boolean).map(s=>/[.!?]$/.test(s)?s:`${s}.`);
   if(statements.length)sections.push(`Persönliches\n\n${name} beschrieb sich selbst folgendermaßen: ${statements.join(' ')}`);
  }
- const basis=[`${shoots.length} Archiv-Shootings`,`${seriesInfo.seriesCount} Serien`,`${seriesInfo.videoCount} verknüpfte Serien-Videos`,`${titles.length} Titelzuordnungen`,`${career.length} Karrierefakten`,`${bio.length} Biofakten`].join(' · ');
+ const basis=[`${shoots.length} Archiv-Shootings`,`${seriesInfo.seriesCount} Rubriken`,`${seriesInfo.videoCount} verknüpfte Rubriken-Videos`,`${titles.length} Titelzuordnungen`,`${career.length} Karrierefakten`,`${bio.length} Biofakten`].join(' · ');
  return {text:sections.join('\n\n'),basis};
 }
 function openBioDraft(){
@@ -8189,7 +8189,7 @@ function factPromotionArchiveSuggestion(row){
  const text=factPromotionText(row),lower=text.toLowerCase(),claim=String(row?.claim||'').trim(),result=String(row?.result||'').trim();
  let kind='Sonstiges',name='',date=factPromotionMonthDate(text),quantity='',details='',titleClass='coed',titleLevel='month',titleYear='',titleMonth='';
  if(row?.kind==='Titel/Auszeichnung'||/\b(cyber girl|playmate|playboy.*titel|title|titel)\b/i.test(text)){kind='Titel'}
- else if(/\bserie|series\b/i.test(text)){kind='Serie'}
+ else if(/\bserie|series\b/i.test(text)){kind='Rubrik'}
  else if(/\b(video|videos)\b/i.test(text)){kind='Video'}
  else if(/\b(pictorial|pictorials|fotostrecke)\b/i.test(text)){kind='Pictorial'}
  else if(/\b(print|magazin|magazine|issue|ausgabe)\b/i.test(text)){kind='Print'}
@@ -8216,7 +8216,7 @@ function factPromotionArchiveSuggestion(row){
 function factArchiveSeriesOptions(selected=''){
  const sel=document.getElementById('factArchiveSeriesId');if(!sel)return;
  const rows=(state.archive||[]).filter(a=>a&&a.type==='series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
- sel.innerHTML='<option value="">Noch nicht bekannt / keine Zuordnung</option>'+rows.map(sr=>`<option value="${esc(sr.id)}">${esc(sr.title||'Serie ohne Titel')}</option>`).join('');
+ sel.innerHTML='<option value="">Noch nicht bekannt / keine Zuordnung</option>'+rows.map(sr=>`<option value="${esc(sr.id)}">${esc(sr.title||'Rubrik ohne Titel')}</option>`).join('');
  if(selected&&rows.some(sr=>sr.id===selected))sel.value=selected;
 }
 function factArchiveSeriesIdForText(text){
@@ -8376,7 +8376,7 @@ function renderFactPromotionPreview(){
   let name=factPromotionValue('factArchiveName')||((kind==='Video'||kind==='Pictorial')?'unbekannt':'—'),when=factPromotionValue('factArchiveDate')||'—';
   if(kind==='Titel'){const t=factArchiveTitleData();name=t.name;when=factArchiveTitleWhen(t)||'—'}
   const seriesId=factPromotionValue('factArchiveSeriesId'),series=factArchiveSeriesLabel(seriesId);
-  const vals=[['Model',factPromotionModelName(row)],['Art',kind],['Bezeichnung',name],['Bekannte Serie',(kind==='Video'||kind==='Pictorial')?(series||'noch nicht bekannt'):'—'],['Zeitpunkt',when],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
+  const vals=[['Model',factPromotionModelName(row)],['Art',kind],['Bezeichnung',name],['Bekannte Rubrik',(kind==='Video'||kind==='Pictorial')?(series||'noch nicht bekannt'):'—'],['Zeitpunkt',when],['Anzahl',q===''?'unbekannt':q],['Erschließung',stateLabel],['Details',factPromotionValue('factArchiveDetails')||'—']];
   preview.innerHTML='<b>Vorschau: Archivwissen</b>'+vals.map(([k,v])=>`<div class="researchMeta"><strong>${esc(k)}:</strong> ${esc(v)}</div>`).join('');
  }else{
   const vals=[['Model',factPromotionModelName(row)],['Kategorie',factPromotionValue('factBioCategory')||'—'],['Aussage',factPromotionValue('factBioStatement')||'—'],['Von / Zeitpunkt',factPromotionValue('factBioFrom')||'—'],['Bis',factPromotionValue('factBioTo')||'—'],['Aussageart',factPromotionValue('factBioStatementType')==='self'?'Selbstaussage':'Objektive Angabe']];
@@ -8544,14 +8544,14 @@ function openPublicationDetail(id){
    <div class="publicationDetailActions">${pub.hasPdf?`<button class="btn" type="button" data-open-pdf="${pub.id}">📄 Scan / PDF öffnen</button>`:'<div class="small">Noch kein Scan / PDF hinterlegt.</div>'}</div>
   </div>
  </div>
-  <div class="relationBlock"><div class="publicationDetailSeriesHead"><h3>Enthaltene Serien</h3><span class="countPhrase">${countLabel(series.length,'Serie','Serien')}</span></div>
+  <div class="relationBlock"><div class="publicationDetailSeriesHead"><h3>Enthaltene Rubriken</h3><span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
    ${series.length?`<div class="seriesGrid">${series.map(s=>{
       const media=seriesMedia(s),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
       return `<div class="seriesCard">
        <div class="seriesCover" data-open-series="${s.id}" ${cover?`data-series-cover="${cover.id}"`:''}>${shootingCoverContent(sh)}</div>
        <div class="seriesCardBody" data-open-series="${s.id}"><b>${esc(s.title)}</b><div class="small">${media.length} Medien · Öffnen</div></div>
       </div>`;
-    }).join('')}</div>`:'<div class="small">Noch keine Serie mit dieser Publikation verknüpft.</div>'}
+    }).join('')}</div>`:'<div class="small">Noch keine Rubrik mit dieser Publikation verknüpft.</div>'}
   </div>`;
  openOverlay('publicationDetailPane');
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
@@ -8628,7 +8628,7 @@ function renderTimeline(){
  const box=document.getElementById('timelineList');if(!box||!state.currentModelId)return;
  const auto=(state.archive||[]).filter(a=>['publication','series','shoot'].includes(a.type)&&archiveBelongsToModel(a,state.currentModelId)&&String(a.date||'').trim()).map(a=>({id:'a'+a.id,date:a.date,title:a.title||'Ohne Titel',type:a.type,auto:true}));
  const manual=tlLoad().filter(e=>e.modelId===state.currentModelId);
- const labels={publication:'Publikation',series:'Serie',shoot:'Shooting',manual:'Ereignis'};
+ const labels={publication:'Publikation',series:'Rubrik',shoot:'Shooting',manual:'Ereignis'};
  const all=[...auto,...manual].sort((a,b)=>tlKey(b.date)-tlKey(a.date));
  box.innerHTML=all.length?all.map(e=>`<div class="timelineEvent"><div class="timelineDate">${esc(e.date||'Datum offen')}</div><b>${esc(e.title)}</b><br><span class="timelineType">${labels[e.type||'manual']}${e.auto?' · automatisch':''}</span>${e.auto?'':`<div><button class="btn" data-edit-tl="${e.id}">Bearbeiten</button></div>`}</div>`).join(''):'<div class="small">Noch keine Karriereereignisse.</div>';
  box.querySelectorAll('[data-edit-tl]').forEach(b=>b.onclick=()=>openTimeline(b.dataset.editTl));
@@ -8691,7 +8691,7 @@ function buildTodoRows(){
  (state.archive||[]).filter(a=>a.type==='series').forEach(sr=>{
    const missing=[];
    if(seriesShootingsAll(sr).length===0)missing.push('keine Shootings');
-   if(missing.length&&todoManagementModelMatch('series',sr))rows.push({kind:'series',obj:sr,missing,label:'Serie',title:sr.title||'Serie ohne Titel'});
+   if(missing.length&&todoManagementModelMatch('series',sr))rows.push({kind:'series',obj:sr,missing,label:'Rubrik',title:sr.title||'Rubrik ohne Titel'});
  });
  return rows;
 }
@@ -8726,7 +8726,7 @@ function archiveActivityTime(a){
 function renderRecentActivity(){
  const box=document.getElementById('recentActivityList');if(!box)return;
  const rows=(state.archive||[]).slice().sort((a,b)=>archiveActivityTime(b)-archiveActivityTime(a)).slice(0,5);
- const labels={shoot:'Shooting',series:'Serie',gallery:'Fotogalerie',publication:'Publikation',media:'Medium'};
+ const labels={shoot:'Shooting',series:'Rubrik',gallery:'Galerie',publication:'Publikation',media:'Medium'};
  box.innerHTML=rows.length?rows.slice(0,3).map((a,i)=>{
    const ids=a.type==='shoot'?shootingModelIds(a):[a.modelId].filter(Boolean);
    const names=ids.map(id=>state.models.find(m=>m.id===id)?.name).filter(Boolean);
@@ -8760,7 +8760,7 @@ function renderArchiveStats(){
  const values=[
    ['Models',models,'models',true],
    ['Shootings',shoots,'shoot',false],
-   ['Serien',series,'series',true],
+   ['Rubriken',series,'series',true],
    ['Titel',titles,'titles',true],
    ['Individuals',individuals,'individuals',true],
    ['Publikationen',publications,'publication',true],
@@ -8931,7 +8931,7 @@ function searchArchive(q){
    const names=ids.map(id=>state.models.find(m=>m.id===id)?.name).filter(Boolean);
    const modelText=names.length?`Models: ${names.join(' + ')}`:'';
    out.push({
-     kind:{shoot:'Shooting',series:'Serie',publication:'Publikation',media:(a.mimeType&&a.mimeType.startsWith('video/')?'Video':'Foto')}[a.type]||a.type,
+     kind:{shoot:'Shooting',series:'Rubrik',publication:'Publikation',media:(a.mimeType&&a.mimeType.startsWith('video/')?'Video':'Foto')}[a.type]||a.type,
      searchType:a.type,
      title:a.title||a.fileName||'Ohne Titel',
      fileName:a.fileName||'',
@@ -9485,7 +9485,7 @@ function populatePersonShootingFilterValues(){
      .sort((a,b)=>a.label.localeCompare(b.label,'de',{numeric:true,sensitivity:'base'}));
  }else if(type==='series'){
    rows=archive.filter(a=>a.type==='series'&&seriesShootingsAll(a).length)
-     .map(a=>({id:a.id,label:a.title||'Serie ohne Titel'}))
+     .map(a=>({id:a.id,label:a.title||'Rubrik ohne Titel'}))
      .sort((a,b)=>a.label.localeCompare(b.label,'de',{numeric:true,sensitivity:'base'}));
  }else if(type==='title'){
    rows=archive.filter(a=>a.type==='title')
@@ -9615,7 +9615,7 @@ if(preview&&l==='week'){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
- document.getElementById('archiveEditTitle').textContent=a.type==='series'?'Serie bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':'Archiv-Eintrag bearbeiten';
+ document.getElementById('archiveEditTitle').textContent=a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const shootDatePreview=document.getElementById('archiveEditShootDatePreview');
@@ -9939,7 +9939,7 @@ function renderPinnedArchive(){
  const rows=getPinnedArchiveIds().map(id=>(state.archive||[]).find(a=>a.id===id)).filter(Boolean);
  box.classList.toggle('visible',rows.length>0);
  box.innerHTML=rows.length?`<span class="pinnedArchiveLabel">Angeheftet:</span>${rows.map(a=>{
-   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Serie':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='media'?(a.mimeType&&a.mimeType.startsWith('video/')?'Video':'Foto'):'Archiv';
+   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Rubrik':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='media'?(a.mimeType&&a.mimeType.startsWith('video/')?'Video':'Foto'):'Archiv';
    const modelNames=pinnedArchiveModelNames(a),dateLabel=pinnedArchiveDateLabel(a);
    return `<span class="pinnedArchiveWrap"><button type="button" class="pinnedMoveBtn" data-move-pinned="${a.id}" data-dir="-1" title="Nach links">‹</button><button type="button" class="pinnedArchiveMain" data-pinned-archive="${a.id}">📌 <span class="pinnedArchiveType">${typeLabel}</span><span>${esc(a.title||a.fileName||'Ohne Titel')}</span>${dateLabel?`<span class="pinnedArchiveDate">${esc(dateLabel)}</span>`:''}</button>${modelNames.length?`<span class="pinnedArchiveModelsWrap">${pinnedArchiveModelLinks(a)}</span>`:''}<button type="button" class="pinnedMoveBtn" data-move-pinned="${a.id}" data-dir="1" title="Nach rechts">›</button><button type="button" class="pinnedArchiveRemove" data-unpin-archive="${a.id}" title="Anheftung lösen">×</button></span>`;
  }).join('')}<button type="button" class="pinnedClearBtn" data-clear-pinned-archive="1">Alle lösen</button>`:'';
@@ -10043,7 +10043,7 @@ function renderRecentArchive(){
  box.classList.toggle('visible',rows.length>0);
  let times={};try{times=JSON.parse(localStorage.getItem('spotlightRecentArchiveTimes')||'{}')}catch(e){}
  box.innerHTML=rows.length?`<span class="recentArchiveLabel">Zuletzt geöffnet:</span>${rows.map(a=>{
-   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Serie':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='media'?'Medium':'Archiv';
+   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Rubrik':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='media'?'Medium':'Archiv';
    const t=times[a.id],when=t?new Date(t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
    const modelLinks=recentArchiveModelLinks(a),objectDate=pinnedArchiveDateLabel(a);
    return `<span class="recentArchiveWrap"><button type="button" class="recentArchiveMain" data-recent-archive="${a.id}"><span class="recentArchiveType">${typeLabel}</span><span>${esc(a.title||a.fileName||'Ohne Titel')}</span>${objectDate?`<span class="recentArchiveObjectDate">${esc(objectDate)}</span>`:''}${when?`<span class="recentArchiveWhen">zuletzt ${when}</span>`:''}</button>${modelLinks?`<span class="recentArchiveModelsWrap">${modelLinks}</span>`:''}<button type="button" class="recentRemoveBtn" data-remove-recent-archive="${a.id}" title="Aus Verlauf entfernen">×</button></span>`;
@@ -10079,8 +10079,8 @@ function openRecentArchiveItem(id){
 function managementContextConfig(){
  return {
   title:{title:'Titel',add:'＋ Titel',placeholder:'Titel, Model oder Zeitraum suchen …'},
-  series:{title:'Serien',add:'＋ Serie',placeholder:'Serie, Model oder Shooting suchen …'},
-  gallery:{title:'Fotogalerien',add:'＋ Fotogalerie',placeholder:'Fotogalerie, Model oder Shooting suchen …'},
+  series:{title:'Rubriken',add:'＋ Rubrik',placeholder:'Rubrik, Model oder Shooting suchen …'},
+  gallery:{title:'Galerien',add:'＋ Galerie',placeholder:'Galerie, Model oder Shooting suchen …'},
   shoot:{title:'Shootings',add:'＋ Shooting',placeholder:'Shooting, Model oder Datum suchen …'},
   media:{title:'Medien',add:'＋ Medien',placeholder:'Dateiname, Model oder Verknüpfung suchen …'}
  }[archiveTab]||null;
@@ -10176,7 +10176,7 @@ function renderArchive(){
           </div>
           <div class="publicationBody" data-open-publication="${pub.id}">
             <b>${esc(pub.title)}</b>
-            <div class="small">${esc(pub.date||'Ausgabe offen')} · <span class="countPhrase">${countLabel(series.length,'Serie','Serien')}</span></div>
+            <div class="small">${esc(pub.date||'Ausgabe offen')} · <span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
             
             ${pub.owned?'<span class="stockBadge">✓ Im Bestand</span>':''}
             ${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}${renderCredits(pub.credits||[])}
@@ -10196,7 +10196,7 @@ function renderArchive(){
        const inheritedModelIds=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))];
        const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
        return `<div class="archiveItem">
-        <b>${esc(g.title||'Fotogalerie ohne Bezeichnung')}</b>
+        <b>${esc(g.title||'Galerie ohne Bezeichnung')}</b>
         ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
         <div class="small" style="margin-top:7px">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting ohne Titel')).join(' · ')}`
@@ -10207,21 +10207,21 @@ function renderArchive(){
         </div>
        </div>`;
       }).join('')
-    : '<div class="small" style="margin-top:10px">Noch keine passenden Fotogalerien.</div>';
+    : '<div class="small" style="margin-top:10px">Noch keine passenden Galerien.</div>';
  }else if(archiveTab==='series'){
    const mid=managementSelectedModelId(); const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
    if(!modelSeries.some(sr=>sr.id===modelSeriesBrowseId))modelSeriesBrowseId=modelSeries[0]?.id||'';
    const selectedSeries=modelSeries.find(sr=>sr.id===modelSeriesBrowseId);
-   const tabs=modelSeries.map(sr=>`<button type="button" class="${sr.id===modelSeriesBrowseId?'active':''}" data-model-series-tab="${esc(sr.id)}">${esc(sr.title||'Serie ohne Titel')}</button>`).join('');
-   if(!selectedSeries){box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Serien.</div>';seriesWorkSelected.clear()}
-else{const shoots=seriesShootingsAll(selectedSeries).filter(sh=>(!mid||shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);const shootCards=shoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-open-model-series-shooting="${esc(sh.id)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-model-series-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-model-unlink-series-shooting="${esc(sh.id)}" data-series-id="${esc(selectedSeries.id)}">Löschen</button></div></div>`}).join('');box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Serie ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" data-edit-management-series="${esc(selectedSeries.id)}">Bearbeiten</button><button type="button" class="titleDeleteX" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Serie löschen" title="Serie löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody">${shootCards?`<div class="shootingGridStandalone">${shootCards}</div>`:'<div class="seriesEmptyState small">Noch keine Shootings zugeordnet.</div>'}</div></div>`} }else if(archiveTab==='shoot'){
+   const tabs=modelSeries.map(sr=>`<button type="button" class="${sr.id===modelSeriesBrowseId?'active':''}" data-model-series-tab="${esc(sr.id)}">${esc(sr.title||'Rubrik ohne Titel')}</button>`).join('');
+   if(!selectedSeries){box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Rubriken.</div>';seriesWorkSelected.clear()}
+else{const shoots=seriesShootingsAll(selectedSeries).filter(sh=>(!mid||shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);const shootCards=shoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;return `<div class="shootingCardStandalone" data-open-model-series-shooting="${esc(sh.id)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(sh.title||'Shooting ohne Titel')}</b><div class="seriesShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-model-series-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-model-unlink-series-shooting="${esc(sh.id)}" data-series-id="${esc(selectedSeries.id)}">Löschen</button></div></div>`}).join('');box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" data-edit-management-series="${esc(selectedSeries.id)}">Bearbeiten</button><button type="button" class="titleDeleteX" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody">${shootCards?`<div class="shootingGridStandalone">${shootCards}</div>`:'<div class="seriesEmptyState small">Noch keine Shootings zugeordnet.</div>'}</div></div>`} }else if(archiveTab==='shoot'){
    box.innerHTML=items.length
     ? `<div class="shootingGridStandalone managementShootingsList">${items.slice().reverse().map(sh=>{
         const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
         const assignedSeries=linkedObjects(sh.id,'series');
         const seriesStatus=assignedSeries.length
-          ? `<div class="creditRow shootingSeriesChips relationshipRow"><span class="creditChip relationshipGroup" title="Serie"><span class="relationshipIcon">▣</span><span class="relationshipNames">${assignedSeries.map(s=>`<button type="button" class="relationshipName relationshipLink" data-open-related-series="${esc(s.id)}">${esc(s.title||'Ohne Titel')}</button>`).join('')}</span></span></div>`
-          : '<div class="small shootingSeriesStatus">Noch keiner Serie zugeordnet</div>';
+          ? `<div class="creditRow shootingSeriesChips relationshipRow"><span class="creditChip relationshipGroup" title="Rubrik"><span class="relationshipIcon">▣</span><span class="relationshipNames">${assignedSeries.map(s=>`<button type="button" class="relationshipName relationshipLink" data-open-related-series="${esc(s.id)}">${esc(s.title||'Ohne Titel')}</button>`).join('')}</span></span></div>`
+          : '<div class="small shootingSeriesStatus">Noch keiner Rubrik zugeordnet</div>';
         const assignedTitles=(sh.links||[]).map(id=>(state.archive||[]).find(a=>a.id===id&&a.type==='title')).filter(Boolean);
         const titleStatus=assignedTitles.length?`<div class="shootingTitleBlock"><div class="shootingTitleTrophy" aria-hidden="true">🏆</div><div class="shootingTitleList">${assignedTitles.map(t=>`<div class="shootingTitleItem"><span class="shootingTitleName">${esc(t.title||'Titel')}</span>${t.titlePeriod||t.titleYear?`<span class="shootingTitleWhen">${esc(modelTitleWhen(t))}</span>`:''}</div>`).join('')}</div></div>`:'';
         return `<div class="shootingCardStandalone ${shootWorkSelected.has(sh.id)?'selected':''}">
@@ -10296,11 +10296,11 @@ else{const shoots=seriesShootingsAll(selectedSeries).filter(sh=>(!mid||shootingM
  box.querySelectorAll('[data-open-title-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid&&state.models.some(m=>m.id===mid)){state.currentModelId=mid;save();}openShootingDetail(x.dataset.openTitleShooting,null,{source:'title',archiveTab:'title',titleClass:titleBrowseClass,titleLevel:titleBrowseLevel,scrollY:window.scrollY})});
  const managementSeriesTitleBtn=box.querySelector('#managementSeriesTitleButton'),managementSeriesPicker=box.querySelector('#managementSeriesPicker');
   if(managementSeriesTitleBtn&&managementSeriesPicker)managementSeriesTitleBtn.onclick=e=>{e.stopPropagation();const opening=managementSeriesPicker.classList.contains('hidden');managementSeriesPicker.classList.toggle('hidden');managementSeriesTitleBtn.setAttribute('aria-expanded',opening?'true':'false')};
-box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openArchiveEdit(x.dataset.editManagementSeries)}); box.querySelectorAll('[data-delete-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.deleteManagementSeries;const s=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!s)return;const label=s.title||'Serie';if(!window.confirm(`${label} wirklich löschen? Die zugeordneten Shootings und Medien bleiben im Archiv.`))return;state.archive=(state.archive||[]).filter(a=>a.id!==id);state.archive.forEach(a=>{a.links=(a.links||[]).filter(link=>link!==id)});if(modelSeriesBrowseId===id)modelSeriesBrowseId='';if(globalSeriesBrowseId===id)globalSeriesBrowseId='';if(save()){render();renderArchive();toast('Serie gelöscht.')}});
+box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openArchiveEdit(x.dataset.editManagementSeries)}); box.querySelectorAll('[data-delete-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.deleteManagementSeries;const s=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!s)return;const label=s.title||'Rubrik';if(!window.confirm(`${label} wirklich löschen? Die zugeordneten Shootings und Medien bleiben im Archiv.`))return;state.archive=(state.archive||[]).filter(a=>a.id!==id);state.archive.forEach(a=>{a.links=(a.links||[]).filter(link=>link!==id)});if(modelSeriesBrowseId===id)modelSeriesBrowseId='';if(globalSeriesBrowseId===id)globalSeriesBrowseId='';if(save()){render();renderArchive();toast('Rubrik gelöscht.')}});
   box.querySelectorAll('[data-model-series-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();modelSeriesBrowseId=x.dataset.modelSeriesTab;renderArchive()});
  box.querySelectorAll('[data-open-model-series-shooting]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openModelSeriesShooting,null,{source:'model-series',seriesId:modelSeriesBrowseId,scrollY:window.scrollY}));
  box.querySelectorAll('[data-model-series-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.modelSeriesEditArchive)});
- box.querySelectorAll('[data-model-unlink-series-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.modelUnlinkSeriesShooting&&a.type==='shoot');if(!sh||!confirm('Shooting wirklich von dieser Serie lösen? Das Shooting selbst bleibt im Archiv.'))return;const sr=(state.archive||[]).find(a=>a.id===x.dataset.seriesId&&a.type==='series');sh.links=(sh.links||[]).filter(id=>id!==x.dataset.seriesId);if(sr)sr.links=(sr.links||[]).filter(id=>id!==sh.id);if(save()){renderArchive();toast('Shooting von der Serie gelöst.')}});
+ box.querySelectorAll('[data-model-unlink-series-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.modelUnlinkSeriesShooting&&a.type==='shoot');if(!sh||!confirm('Shooting wirklich von dieser Rubrik lösen? Das Shooting selbst bleibt im Archiv.'))return;const sr=(state.archive||[]).find(a=>a.id===x.dataset.seriesId&&a.type==='series');sh.links=(sh.links||[]).filter(id=>id!==x.dataset.seriesId);if(sr)sr.links=(sr.links||[]).filter(id=>id!==sh.id);if(save()){renderArchive();toast('Shooting von der Rubrik gelöst.')}});
  box.querySelectorAll('[data-open-related-series]').forEach(x=>x.onclick=e=>{e.stopPropagation();openSeriesDetail(x.dataset.openRelatedSeries)});
  box.querySelectorAll('[data-open-related-publication]').forEach(x=>x.onclick=e=>{e.stopPropagation();openPublicationDetail(x.dataset.openRelatedPublication)});
  box.querySelectorAll('[data-open-shooting-standalone]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openShootingStandalone,null));
@@ -10340,7 +10340,7 @@ document.getElementById('seriesPublicationCancel').onclick=()=>document.getEleme
 document.getElementById('seriesPublicationConfirm').onclick=()=>{
  const pubId=document.getElementById('seriesPublicationSelect').value;const pub=(state.archive||[]).find(a=>a.id===pubId&&a.type==='publication');if(!pub||!seriesWorkSelected.size)return;let changed=0;
  pub.links=pub.links||[];seriesWorkSelected.forEach(id=>{const sr=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!sr)return;sr.links=sr.links||[];if(!sr.links.includes(pubId))sr.links.push(pubId);if(!pub.links.includes(id))pub.links.push(id);changed++});
- if(!save())return;seriesWorkSelected.clear();document.getElementById('seriesPublicationPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Serie der Publikation zugeordnet.':`${changed} Serien der Publikation zugeordnet.`);
+ if(!save())return;seriesWorkSelected.clear();document.getElementById('seriesPublicationPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Rubrik der Publikation zugeordnet.':`${changed} Rubriken der Publikation zugeordnet.`);
 };
 document.getElementById('shootSelectionFab').onclick=()=>{const menu=document.getElementById('shootSelectionMenu');menu.classList.toggle('mobileOpen');document.getElementById('shootSelectionFab').setAttribute('aria-expanded',menu.classList.contains('mobileOpen')?'true':'false')};
 document.getElementById('shootSelectAllBtn').onclick=()=>{modelArchive('shoot').forEach(sh=>shootWorkSelected.add(sh.id));renderArchive()};
@@ -10349,15 +10349,15 @@ document.getElementById('shootAssignSeriesBtn').onclick=()=>{
  if(!shootWorkSelected.size)return;
  // A management model filter limits the shootings being worked on, not the possible target series.
  const series=(state.archive||[]).filter(a=>a.type==='series').slice().sort((a,b)=>(a.title||'').localeCompare(b.title||''));
- if(!series.length){toast('Bitte zuerst eine Serie anlegen.');return}
- document.getElementById('shootSeriesSelect').innerHTML=series.map(x=>`<option value="${esc(x.id)}">${esc(x.title||'Serie ohne Titel')}</option>`).join('');
+ if(!series.length){toast('Bitte zuerst eine Rubrik anlegen.');return}
+ document.getElementById('shootSeriesSelect').innerHTML=series.map(x=>`<option value="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</option>`).join('');
  document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');document.getElementById('shootSeriesPanel').classList.add('mobileOpen');
 };
 document.getElementById('shootSeriesCancel').onclick=()=>document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');
 document.getElementById('shootSeriesConfirm').onclick=()=>{
  const seriesId=document.getElementById('shootSeriesSelect').value;const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');if(!series||!shootWorkSelected.size)return;let changed=0;
  series.links=series.links||[];shootWorkSelected.forEach(id=>{const sh=(state.archive||[]).find(a=>a.id===id&&a.type==='shoot');if(!sh)return;sh.links=sh.links||[];if(!sh.links.includes(seriesId))sh.links.push(seriesId);if(!series.links.includes(id))series.links.push(id);changed++});
- if(!save())return;shootWorkSelected.clear();document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Shooting der Serie zugeordnet.':`${changed} Shootings der Serie zugeordnet.`);
+ if(!save())return;shootWorkSelected.clear();document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Shooting der Rubrik zugeordnet.':`${changed} Shootings der Rubrik zugeordnet.`);
 };
 document.getElementById('shootAssignTitleBtn').onclick=()=>{
  if(!shootWorkSelected.size)return;
@@ -10508,7 +10508,7 @@ function relationOptions(type){
  if(!candidates.length)return '<div class="small">Noch keine anderen Archivobjekte zum Verknüpfen.</div>';
  return candidates.map(a=>{
    const label=a.title||a.fileName||(a.type==='media'?'Foto':'Ohne Titel');
-   const typeLabel={publication:'Publikation',series:'Serie',shoot:'Shooting',media:'Foto/Medium'}[a.type]||a.type;
+   const typeLabel={publication:'Publikation',series:'Rubrik',shoot:'Shooting',media:'Foto/Medium'}[a.type]||a.type;
    return `<label style="font-weight:400;display:block"><input type="checkbox" class="archiveLink" value="${a.id}" style="width:auto"> ${esc(label)} <span class="small">(${typeLabel})</span></label>`;
  }).join('');
 }
@@ -10538,7 +10538,7 @@ function openArchive(){
 }
 function refreshArchiveForm(){
  const type=document.getElementById('archiveType').value;
- document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='series'?'Serie hinzufügen':type==='gallery'?'Fotogalerie hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
+ document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
  const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery';
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
@@ -10661,7 +10661,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   finish();return;
  }
  const title=document.getElementById('archiveTitle').value.trim();
- if(!title){toast(type==='gallery'?'Bitte eine Bezeichnung für die Fotogalerie eingeben.':'Bitte einen Titel eingeben.');return}
+ if(!title){toast(type==='gallery'?'Bitte eine Bezeichnung für die Galerie eingeben.':'Bitte einen Titel eingeben.');return}
  if(type==='gallery'){
   const shootingId=document.getElementById('archiveGalleryShoot').value;
   if(shootingId)links.push(shootingId);
@@ -10746,7 +10746,7 @@ function seriesMedia(series){
 function openSeriesDetail(id){
  rememberRecentArchive(id);
  const s=(state.archive||[]).find(a=>a.id===id&&a.type==='series'&&seriesBelongsToModel(a,state.currentModelId));
- if(!s){toast('Serie nicht gefunden.');return}
+ if(!s){toast('Rubrik nicht gefunden.');return}
  const pubs=seriesPublications(s);
  const shoots=seriesShootings(s);
  const directMedia=directSeriesMedia(s);
@@ -10754,7 +10754,7 @@ function openSeriesDetail(id){
 
  box.innerHTML=
  `<div class="detailHero">
-   <div class="small">Serie</div>
+   <div class="small">Rubrik</div>
    <h2>${esc(s.title)}</h2>
    <div class="small">${esc(s.date||'')}</div>
    <div>${esc(s.note||'')}</div>${renderCredits(s.credits||[])}
