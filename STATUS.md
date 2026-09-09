@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-08  
-Referenz-Commit: `528d84c9de65fe173272cff30b5e9e3f6e939278`
+Stand: 2026-09-09  
+Referenz-Commit: `6d26aac09defbe3b1663eb35073f48d2915c9c7d`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,14 +20,15 @@ Referenz-Commit: `528d84c9de65fe173272cff30b5e9e3f6e939278`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `92c4c26f64fac77338411302b44a1d8abd363184`
-- Fachlich berücksichtigter Code-Stand: Commit `528d84c9de65fe173272cff30b5e9e3f6e939278`
-- `main` stand beim Sitzungsstart am 2026-09-08 auf Commit `40a4fffcc12dd4658673bc8a76a81b8664536f81`.
-- Der einzige Commit nach dem Referenz-Commit änderte nur `STATUS.md`; der Code blieb unverändert.
-- Schema-6-Grundlage wurde als Update auf dem Gerät erfolgreich getestet.
-- Der erste echte Werktyp `gallery` ist in der Verwaltung verfügbar und auf dem Gerät erfolgreich getestet.
+- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `f55b3a9eaa9865145b1d85cd7a2e605a57882519`
+- Fachlich berücksichtigter Code-Stand: Commit `6d26aac09defbe3b1663eb35073f48d2915c9c7d`
+- Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
+- Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
+- Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
+- Korrektur zu Etappe 2b: Die Shooting-Auswahl einer Galerie zeigt jetzt alle vorhandenen Shootings, nicht nur Shootings des aktuell gewählten Models; Datum und Models helfen bei der Unterscheidung.
+- Etappe 1, Etappe 2a und die korrigierte Etappe 2b wurden als App-Update auf dem Gerät erfolgreich getestet.
 - Bestehende Models, Shootings und Medien blieben nutzbar.
-- Es findet weiterhin keine automatische Migration vorhandener Medien in Galerie-/Video-Objekte statt.
+- Daten-Schema bleibt `6`; es findet weiterhin keine automatische Migration vorhandener Medien in Galerie-/Video-Objekte statt.
 
 ## Stabile Funktionen
 
@@ -35,7 +36,7 @@ Referenz-Commit: `528d84c9de65fe173272cff30b5e9e3f6e939278`
 - Permanente Android-Signierung und Update-Installation ohne Deinstallation.
 - Fotoanzeige mit Pinch-Zoom.
 - Video-Wiedergabe; nativer WebView-Fullscreen bleibt deaktiviert.
-- Models, Titel, Serien, Individuals, Shootings und Medienverwaltung funktionieren im bestehenden stabilen Stand.
+- Models, Titel, Rubriken (technisch weiterhin Legacy-`series`), Individuals, Shootings, Galerien und Medienverwaltung funktionieren im bestehenden stabilen Stand.
 - Archivfilter, freie Suche, Bewertungs- und Profilbildfilter funktionieren.
 - Research mit Status, strukturierten Belegen und kontrollierter Übernahme.
 - `careerFacts`, `bioFacts`, `archiveFacts`.
@@ -48,12 +49,13 @@ Referenz-Commit: `528d84c9de65fe173272cff30b5e9e3f6e939278`
 
 ## Wichtig: bestehender Code versus neues Soll-Modell
 
-Der aktuelle stabile Code verwendet teilweise noch die alten Begriffe und Beziehungen:
-- `Fotogalerie`
-- `Serie`
-- `Individual`
-- manuelle Galerie-Bezeichnung
-- Galerie mit optionaler Shooting-Verknüpfung
+Der aktuelle stabile Code verwendet teilweise noch alte technische Typen und Beziehungen:
+- technischer Typ `series` bleibt vorerst bestehen, sichtbar heißt er bereits `Rubrik`
+- technischer Typ `gallery` ist sichtbar bereits `Galerie`
+- `Individual` ist strukturell noch vorhanden
+- Galerie verlangt weiterhin eine manuelle Bezeichnung
+- Galerie kann beim Anlegen mit einem Shooting verknüpft werden
+- bestehende Galerien besitzen noch keine eigene Bearbeitungsmaske zum nachträglichen Ändern der Shooting-Zuordnung
 
 Diese Struktur bleibt bis zu den einzelnen kontrollierten Umbau-Schritten funktionsfähig.
 
@@ -487,7 +489,10 @@ Erfolgreich dokumentiert:
 - Schema-6-Grundlage
 - Erschließungsgrad
 - erster Galerie-Schritt
-- Benutzerbestätigung für die damalige Fotogalerie: „Funktioniert 👍🏻“
+- Etappe 1: sichtbare Begriffe `Rubriken` / `Galerien`
+- Etappe 2a: Shooting mit Datum, Ort, Models und Fotograf(en)
+- Etappe 2b: Galerie erbt Models, Fotograf(en), Datum und Ort aus dem Shooting
+- Korrektur Etappe 2b: neu angelegte Shootings erscheinen in der Galerie-Shooting-Auswahl
 
 Noch nicht separat dokumentiert:
 - Research-Löschschutz
@@ -496,36 +501,29 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Fachliche Neumodellierung des Archivs**
+**Etappe 2b -- Galerie → Shooting-Vererbung, inklusive Auswahlkorrektur**
 
-Am 2026-09-08 wurde das neue Soll-Modell gemeinsam festgelegt:
-- Archivbereiche
-- Shooting als Entstehung
-- Galerie/Video als Werke
-- Rubriken statt Serien
-- konkrete Veröffentlichung als gemeinsamer fachlicher Zusammenhang
-- individuelle Playboy-Plus-Veröffentlichungsnamen
-- `Nicht zugeordnet` innerhalb Rubriken
-- Titelhierarchien
-- Printausgaben mit Seiten
-- Nummerierung pro Veröffentlichung
-- Galerie-geführte Vorschau mit anklickbaren Videosymbolen
-
-Dieser Arbeitsblock war konzeptionell; es wurde dabei noch kein Code geändert.
+Umgesetzt:
+- Galerie kann beim Anlegen ein vorhandenes Shooting auswählen.
+- Galerie leitet Models, Fotograf(en), Datum und Ort aus dem verknüpften Shooting ab.
+- Die Galerie-Verwaltung zeigt diese geerbten Angaben an.
+- Die Shooting-Auswahl listet alle Shootings und zeigt zusätzlich Datum und Models zur besseren Unterscheidung.
+- Kein Schema-Bump, keine Medienmigration, keine Veröffentlichungsmigration und keine Nummerierungslogik.
+- Gerätetest erfolgreich.
 
 Referenz-Commit:
-`528d84c9de65fe173272cff30b5e9e3f6e939278`
+`6d26aac09defbe3b1663eb35073f48d2915c9c7d`
 
 `www/index.html` Blob:
-`92c4c26f64fac77338411302b44a1d8abd363184`
+`f55b3a9eaa9865145b1d85cd7a2e605a57882519`
 
 ## Nächster sinnvoller Schritt
 
-Etappe 1 klein beginnen:
+Etappe 2c klein und isoliert umsetzen:
 
-1. `STATUS.md` mit dem neuen Soll-Modell auf `main` festhalten.
-2. Danach `main` erneut prüfen.
-3. Anschließend die aktuelle `www/index.html` neu einlesen.
-4. Als ersten Code-Schritt nur sichtbare Begriffe/Grundnavigation vorbereiten, ohne Schema- oder Bestandsmigration.
-5. Gerätetest als Update.
-6. Erst nach erfolgreichem Test den nächsten Funktionsblock beginnen.
+1. aktuelle `www/index.html` erneut aus `main` lesen
+2. bestehende Galerie bearbeitbar machen
+3. dort Shooting nachträglich zuordnen oder ändern können
+4. noch keine Medienmigration, Veröffentlichungsstruktur oder Nummerierung einführen
+5. als App-Update auf dem Gerät testen
+6. erst nach erfolgreichem Test den nächsten Funktionsblock beginnen
