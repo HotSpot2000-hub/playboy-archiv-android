@@ -1003,6 +1003,10 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .mediaWorkflowMeta{font-size:10px;color:var(--muted);margin-top:3px}
 .mediaWorkflowCard .itemActions{padding:0 8px 8px;margin:0}
 .mediaWorkflowCard .itemActions button{font-size:10px;padding:7px 8px}
+.galleryPhotoGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:9px}
+.galleryPhotoGrid .mediaThumb{aspect-ratio:2/3;margin:0;border:1px solid var(--line);border-radius:8px;background:#eee;overflow:hidden;cursor:pointer}
+.galleryPhotoGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}
+@media(max-width:700px){.galleryPhotoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:700px){.mediaWorkflowTabs{display:grid}.mediaWorkflowTabs button{min-height:46px;-webkit-tap-highlight-color:transparent}.mediaWorkflowTabs button:active{transform:scale(.97)}}
 
 /* v162: mobile Medienauswahl nach Inbox-Prinzip */
@@ -10388,7 +10392,7 @@ function renderArchive(){
         ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
         ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
         ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
-        ${photos.length?`<div class="small" style="margin-top:4px">Fotos: ${photos.length}</div>`:''}
+        ${photos.length?`<div class="small" style="margin-top:4px">Fotos: ${photos.length}</div><div class="galleryPhotoGrid">${photos.map(photo=>`<div class="mediaThumb" data-media-id="${esc(photo.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small" style="padding:8px">Lade …</div></div>`).join('')}</div>`:''}
         <div class="itemActions">
          <button type="button" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
          <button type="button" class="deleteBtn" data-delete-archive="${esc(g.id)}">Löschen</button>
