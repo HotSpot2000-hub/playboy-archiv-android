@@ -2133,6 +2133,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <button data-archive-tab="title">Titel</button>
    <button data-archive-tab="series">Rubriken</button>
    <button data-archive-tab="gallery">Galerien</button>
+   <button data-archive-tab="video">Videos</button>
    <button data-archive-tab="shoot">Shootings</button>
    <button data-archive-tab="media">Medien</button>
   </div>
@@ -2468,6 +2469,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <option value="publication">Publikation</option>
   <option value="series">Fotoserie / Rubrik</option>
   <option value="gallery">Galerie</option>
+  <option value="video">Video</option>
   <option value="shoot">Shooting</option>
   <option value="title">Titel</option>
   <option value="media">Foto / Medium</option>
@@ -2496,6 +2498,11 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Vorhandenes Shooting <span class="small">(optional)</span></label>
   <select id="archiveGalleryShoot"><option value="">Shooting noch nicht bekannt</option></select>
   <div class="small" style="margin-top:5px">Die Galerie bleibt ein eigenes Werkobjekt. Ein Shooting wird nur verknüpft, nicht erzeugt.</div>
+ </div>
+ <div id="archiveVideoShootWrap" class="hidden">
+  <label>Vorhandenes Shooting <span class="small">(optional)</span></label>
+  <select id="archiveVideoShoot"><option value="">Shooting noch nicht bekannt</option></select>
+  <div class="small" style="margin-top:5px">Das Video bleibt ein eigenes Werkobjekt. Ein Shooting wird nur verknüpft, nicht erzeugt.</div>
  </div>
  <div id="archiveNoteWrap"><label>Notiz</label><textarea id="archiveNote"></textarea></div>
  <div id="archiveFileWrap" class="hidden">
@@ -9914,6 +9921,27 @@ function galleryCreationContext(gallery){
 function galleryPhotoMedia(gallery){
  return relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/'));
 }
+function videoShootings(video){
+ return (video?.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id&&x.type==='shoot')).filter(Boolean);
+}
+function videoInheritedModelIds(video){
+ const inherited=[...new Set(videoShootings(video).flatMap(sh=>shootingModelIds(sh)))];
+ const excluded=new Set(video?.excludedModelIds||[]);
+ return inherited.filter(id=>!excluded.has(id));
+}
+function videoInheritedCredits(video){
+ const inherited=[...new Set(videoShootings(video).flatMap(sh=>sh.credits||[]))];
+ const excludedPhotographers=new Set(video?.excludedPhotographerIds||[]);
+ return inherited.filter(id=>!excludedPhotographers.has(id));
+}
+function videoCreationContext(video){
+ const shoots=videoShootings(video);
+ return {
+  shoots,
+  date:shoots.map(sh=>sh.date||'').find(Boolean)||'',
+  location:shoots.map(sh=>sh.location||'').find(Boolean)||''
+ };
+}
 function archiveBelongsToModel(a,modelId){
  if(a.type==='shoot')return shootingBelongsToModel(a,modelId);
  if(a.type==='series')return seriesBelongsToModel(a,modelId);
@@ -9921,6 +9949,10 @@ function archiveBelongsToModel(a,modelId){
  if(a.type==='gallery'){
    if(a.modelsMode==='custom')return (a.modelIds||[]).includes(modelId);
    return galleryInheritedModelIds(a).includes(modelId);
+ }
+ if(a.type==='video'){
+   if(a.modelsMode==='custom')return (a.modelIds||[]).includes(modelId);
+   return videoInheritedModelIds(a).includes(modelId);
  }
  if(a.type==='media'){
    if(a.modelId===modelId)return true;
@@ -10400,6 +10432,30 @@ function renderArchive(){
        </div>`;
       }).join('')
     : '<div class="small" style="margin-top:10px">Noch keine passenden Galerien.</div>';
+ }else if(archiveTab==='video'){
+   box.innerHTML=items.length
+    ? items.slice().reverse().map(v=>{
+       const context=videoCreationContext(v);
+       const shoots=context.shoots;
+       const inheritedModelIds=v.modelsMode==='custom'?(v.modelIds||[]):videoInheritedModelIds(v);
+       const inheritedCreditIds=v.creditsMode==='custom'?(v.credits||[]):videoInheritedCredits(v);
+       const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+       const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
+       return `<div class="archiveItem">
+        <b>${esc(v.title||'Video')}</b>
+        <div class="small" style="margin-top:7px">${shoots.length
+          ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
+          :'Shooting noch nicht bekannt'}</div>
+        ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
+        ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
+        ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        <div class="itemActions">
+         <button type="button" class="deleteBtn" data-delete-archive="${esc(v.id)}">Löschen</button>
+        </div>
+       </div>`;
+      }).join('')
+    : '<div class="small" style="margin-top:10px">Noch keine passenden Videos.</div>';
  }else if(archiveTab==='series'){
    const mid=managementSelectedModelId(); const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
    if(!modelSeries.some(sr=>sr.id===modelSeriesBrowseId))modelSeriesBrowseId=modelSeries[0]?.id||'';
@@ -10788,24 +10844,25 @@ function openArchive(){
 }
 function refreshArchiveForm(){
  const type=document.getElementById('archiveType').value;
- document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
- const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isShoot=type==='shoot';
+ document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
+ const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot';
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
  document.getElementById('archiveGalleryShootWrap').classList.toggle('hidden',!isGallery);
+ document.getElementById('archiveVideoShootWrap').classList.toggle('hidden',!isVideo);
  document.getElementById('archiveShootFieldsWrap').classList.toggle('hidden',!isShoot);
  document.getElementById('titleFieldsWrap').classList.toggle('hidden',!isTitle);
- document.getElementById('archiveTitleWrap').classList.toggle('hidden',isMedia||isTitle||isShoot||isGallery);
- document.getElementById('archiveNoteWrap').classList.toggle('hidden',isShoot||isGallery);
- document.getElementById('archiveDateWrap').classList.toggle('hidden',isMedia||isTitle||isGallery);
+ document.getElementById('archiveTitleWrap').classList.toggle('hidden',isMedia||isTitle||isShoot||isGallery||isVideo);
+ document.getElementById('archiveNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo);
+ document.getElementById('archiveDateWrap').classList.toggle('hidden',isMedia||isTitle||isGallery||isVideo);
  document.getElementById('archiveDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveDate').placeholder=isShoot?'YYYY-MM-DD':'z. B. März 2010';
  if(isShoot){
   document.getElementById('archiveShootModels').innerHTML=modelSelector([],false);
   document.getElementById('archiveShootPhotographers').innerHTML=shootingPhotographerSelector([],false);
  }
- if(isGallery){
-  const sel=document.getElementById('archiveGalleryShoot');
+ if(isGallery||isVideo){
+  const sel=document.getElementById(isGallery?'archiveGalleryShoot':'archiveVideoShoot');
   const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot').slice().sort(sortShootingsNatural);
   sel.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
    const modelNames=shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
@@ -10922,7 +10979,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   titleBrowseLevel=level;
   finish();return;
  }
- const title=type==='shoot'?'Shooting':type==='gallery'?'Galerie':document.getElementById('archiveTitle').value.trim();
+ const title=type==='shoot'?'Shooting':type==='gallery'?'Galerie':type==='video'?'Video':document.getElementById('archiveTitle').value.trim();
  if(!title){toast('Bitte einen Titel eingeben.');return}
  if(type==='gallery'){
   const shootingId=document.getElementById('archiveGalleryShoot').value;
@@ -10933,6 +10990,29 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    title,
    date:'',
    note,
+   links:[...links],
+   credits:[],
+   tags:[],
+   modelIds:[],
+   modelsMode:'inherit',
+   excludedModelIds:[],
+   creditsMode:'inherit',
+   excludedPhotographerIds:[],
+   at:new Date().toISOString()
+  };
+  linkItem(item);
+  finish();
+  return;
+ }
+ if(type==='video'){
+  const shootingId=document.getElementById('archiveVideoShoot').value;
+  if(shootingId)links.push(shootingId);
+  const item={
+   id:'A-'+Date.now(),
+   type:'video',
+   title,
+   date:'',
+   note:'',
    links:[...links],
    credits:[],
    tags:[],
