@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-09  
-Referenz-Commit: `faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
+Referenz-Commit: `591a871447eae116a8e2dc3daf0d7103de2f0fb3`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,8 +20,8 @@ Referenz-Commit: `faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `c5faf5ded596763254ee00a3d803f653dff4ee4f`
-- Fachlich berücksichtigter Code-Stand: Commit `faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
+- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `508a79766aac9eb631f5af738d601e408a375bd6`
+- Fachlich berücksichtigter Code-Stand: Commit `591a871447eae116a8e2dc3daf0d7103de2f0fb3`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
@@ -53,7 +53,7 @@ Der aktuelle stabile Code verwendet teilweise noch alte technische Typen und Bez
 - technischer Typ `series` bleibt vorerst bestehen, sichtbar heißt er bereits `Rubrik`
 - technischer Typ `gallery` ist sichtbar bereits `Galerie`
 - `Individual` ist strukturell noch vorhanden
-- Galerie verlangt weiterhin eine manuelle Bezeichnung
+- neue Galerien benötigen keine manuelle Bezeichnung und keine Notiz mehr; intern erhalten sie derzeit automatisch `Galerie`
 - Galerie kann beim Anlegen mit einem Shooting verknüpft werden
 - bestehende Galerien besitzen jetzt eine Bearbeitungsmaske; die Shooting-Zuordnung kann nachträglich gesetzt, geändert oder entfernt werden
 
@@ -494,6 +494,7 @@ Erfolgreich dokumentiert:
 - Etappe 2b: Galerie erbt Models, Fotograf(en), Datum und Ort aus dem Shooting
 - Korrektur Etappe 2b: neu angelegte Shootings erscheinen in der Galerie-Shooting-Auswahl
 - Etappe 2c: bestehende Galerie bearbeiten und Shooting nachträglich zuordnen, ändern oder entfernen
+- Etappe 2d: neue Galerie ohne manuelle Bezeichnung/Notiz; bestehende Legacy-Werte bleiben unangetastet
 
 Noch nicht separat dokumentiert:
 - Research-Löschschutz
@@ -502,26 +503,29 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 2c -- bestehende Galerie bearbeiten**
+**Etappe 2d -- Galerie ohne manuelle Bezeichnung**
 
 Umgesetzt:
-- In `Verwaltung → Galerien` können bestehende Galerien bearbeitet werden.
-- Das verknüpfte Shooting kann nachträglich zugeordnet, gewechselt oder wieder entfernt werden.
-- Beim Wechsel werden die Beziehungen zwischen Galerie und Shooting auf beiden Seiten aktualisiert.
-- Die bestehende Vererbung von Models, Fotograf(en), Datum und Ort folgt anschließend dem neu gewählten Shooting.
+- Neue Galerien benötigen keine manuelle Bezeichnung mehr.
+- Neue Galerien benötigen keine Notiz mehr.
+- Intern erhalten neue Galerien derzeit automatisch den Titel `Galerie`.
+- In der Galerie-Bearbeitung sind Name und Notiz ausgeblendet.
+- Bereits vorhandene Legacy-Bezeichnungen und Notizen werden nicht gelöscht oder migriert und bleiben unangetastet.
+- Die bestehende Shooting-Zuordnung und Vererbung bleiben unverändert.
 - Kein Schema-Bump, keine Medienmigration, keine Veröffentlichungsmigration und keine Nummerierungslogik.
 - Gerätetest erfolgreich.
 
 Referenz-Commit:
-`faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
+`591a871447eae116a8e2dc3daf0d7103de2f0fb3`
 
 `www/index.html` Blob:
-`c5faf5ded596763254ee00a3d803f653dff4ee4f`
+`508a79766aac9eb631f5af738d601e408a375bd6`
 
 ## Nächster sinnvoller Schritt
 
-Vor dem nächsten Code-Schritt das nächste kleine Teilziel festlegen. Weiterhin:
-- nur einen Funktionsblock gleichzeitig ändern
-- keine Medien- oder Bestandsmigration nebenbei
-- Schema nur erhöhen, wenn eine echte strukturelle Migration erforderlich wird
-- anschließend wieder als App-Update auf dem Gerät testen
+Als nächster kleiner Kandidat bietet sich die bereits fachlich vorgesehene Model-Ausnahme für Galerien an:
+- Gallery erbt zunächst alle Models aus dem Shooting.
+- Einzelne Models könnten für eine konkrete Galerie ausgeschlossen werden.
+- Technisch möglichst als Vererbung plus Ausschlussliste statt vollständiger Kopie.
+- Noch keine Medienmigration, Veröffentlichungsstruktur oder Nummerierung.
+- Vor Umsetzung erneut aktuelle `www/index.html` aus `main` lesen und danach als App-Update testen.
