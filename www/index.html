@@ -2270,7 +2270,13 @@ body.archiveFilterOpen .bottom{display:none!important}
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
 <div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
-<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignShootBtn" class="primaryAction">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
+<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
+<div id="mediaWorkGalleryPanel" class="mediaWorkShootPanel hidden">
+ <div class="shootFinderHead"><div><b>Galerie auswählen</b><div class="small">Ausgewählte Fotos direkt einer Galerie zuordnen</div></div><button type="button" id="mediaWorkGalleryCancel">Schließen</button></div>
+ <label for="mediaWorkGallerySelect">Galerie</label>
+ <select id="mediaWorkGallerySelect"></select>
+ <div class="shootPanelActions"><button type="button" id="mediaWorkGalleryCancelBottom">Abbrechen</button><button type="button" id="mediaWorkGalleryConfirm" class="primaryAction">Zuordnen</button></div>
+</div>
 <div id="mediaWorkShootPanel" class="mediaWorkShootPanel">
  <div class="shootFinderHead"><div><b>Shooting auswählen</b><div class="small">Ausgewählte Medien einem Shooting zuordnen</div></div><button type="button" id="mediaWorkShootCancel">Schließen</button></div>
  <input id="mediaWorkShootSearch" type="search" placeholder="Model, Shooting, Datum oder Publikation suchen">
@@ -9901,6 +9907,9 @@ function galleryCreationContext(gallery){
   location:shoots.map(sh=>sh.location||'').find(Boolean)||''
  };
 }
+function galleryPhotoMedia(gallery){
+ return relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/'));
+}
 function archiveBelongsToModel(a,modelId){
  if(a.type==='shoot')return shootingBelongsToModel(a,modelId);
  if(a.type==='series')return seriesBelongsToModel(a,modelId);
@@ -9914,7 +9923,8 @@ function archiveBelongsToModel(a,modelId){
    const linked=(a.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id)).filter(Boolean);
    return linked.some(x=>
      (x.type==='shoot'&&shootingBelongsToModel(x,modelId)) ||
-     (x.type==='series'&&seriesBelongsToModel(x,modelId))
+     (x.type==='series'&&seriesBelongsToModel(x,modelId)) ||
+     (x.type==='gallery'&&archiveBelongsToModel(x,modelId))
    );
  }
  return a.modelId===modelId;
@@ -10323,7 +10333,7 @@ function renderArchive(){
  const mediaTypeFilters=document.getElementById('archiveMediaTypeFilters');
  if(mediaTypeFilters)mediaTypeFilters.classList.toggle('hidden',archiveTab!=='media');
  if(archiveTab==='media'){
-   const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&x.type==='shoot';})?'assigned':'new';
+   const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&(x.type==='shoot'||x.type==='gallery');})?'assigned':'new';
    const kindOf=a=>{const mt=String(a.mimeType||'').toLowerCase();return mt.startsWith('image/')?'Foto':mt.startsWith('video/')?'Video':mt.includes('pdf')?'PDF':'Datei'};
    const counts={new:0,keep:0,assigned:0};items.forEach(a=>counts[statusOf(a)]++);
    document.querySelectorAll('[data-media-work-count]').forEach(el=>el.textContent=counts[el.dataset.mediaWorkCount]||0);
@@ -10367,6 +10377,7 @@ function renderArchive(){
        const inheritedCreditIds=g.creditsMode==='custom'?(g.credits||[]):galleryInheritedCredits(g);
        const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
        const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
+       const photos=galleryPhotoMedia(g);
        return `<div class="archiveItem">
         <b>${esc(g.title||'Galerie ohne Bezeichnung')}</b>
         ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
@@ -10377,6 +10388,7 @@ function renderArchive(){
         ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
         ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
         ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        ${photos.length?`<div class="small" style="margin-top:4px">Fotos: ${photos.length}</div>`:''}
         <div class="itemActions">
          <button type="button" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
          <button type="button" class="deleteBtn" data-delete-archive="${esc(g.id)}">Löschen</button>
@@ -10446,7 +10458,7 @@ else{const shoots=seriesShootingsAll(selectedSeries).filter(sh=>(!mid||shootingM
      return `<div class="titleBrowseCard"><div class="titleBrowseHead"><button type="button" class="titleTrophy" data-edit-title="${esc(t.id)}" aria-label="Titel bearbeiten" title="Titel bearbeiten">🏆</button><div><div class="titleBrowseName">${periodHtml}</div>${modelHtml}<div class="titleBrowseActions"><button type="button" data-edit-title="${esc(t.id)}">Bearbeiten</button><button type="button" class="titleDeleteX" data-delete-title="${esc(t.id)}" aria-label="Titel löschen" title="Titel löschen">×</button></div></div></div>${shootHtml}</div>`;   }).join('');
    box.innerHTML=classes.length?`<div class="titleManagementScope"><div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards||'<div class="small">Keine Einträge in dieser Stufe.</div>'}</div></div>`:'<div class="small" style="margin-top:10px">Noch keine Titel im Archiv.</div>';
  }else{
-   const emptyLabel=mediaWorkTab==='new'?'Keine neuen Medien zu prüfen.':mediaWorkTab==='keep'?'Noch keine Medien bewusst nur beim Model behalten.':'Noch keine Medien einem Shooting zugeordnet.';
+   const emptyLabel=mediaWorkTab==='new'?'Keine neuen Medien zu prüfen.':mediaWorkTab==='keep'?'Noch keine Medien bewusst nur beim Model behalten.':'Noch keine Medien einer Galerie oder einem Shooting zugeordnet.';
    box.innerHTML=items.length?`<div class="mediaWorkflowGrid">${items.slice().reverse().map(a=>{
      const rel=(a.links||[]).map(id=>archiveName(id)).filter(Boolean);
      const label=a.title||a.fileName||'Medium';
@@ -10630,6 +10642,63 @@ function assignSelectedMediaToShoot(shootId){
  shoot.links=shoot.links||[];mediaWorkSelected.forEach(id=>{if(!shoot.links.includes(id))shoot.links.push(id)});
  if(!save())return;rememberMediaShoot(shootId);mediaWorkSelected.clear();document.getElementById('mediaWorkShootPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Medium dem Shooting zugeordnet.':`${changed} Medien dem Shooting zugeordnet.`);
 }
+function mediaGalleryOptionLabel(gallery){
+ const context=galleryCreationContext(gallery);
+ const modelNames=galleryInheritedModelIds(gallery).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const details=[context.date||'',modelNames.join(' + ')].filter(Boolean).join(' · ');
+ return `${gallery.title||'Galerie'}${details?` · ${details}`:''}`;
+}
+function closeMediaGalleryPanel(){
+ const panel=document.getElementById('mediaWorkGalleryPanel');
+ panel.classList.add('hidden');
+ panel.classList.remove('mobileOpen');
+}
+function assignSelectedMediaToGallery(galleryId){
+ const gallery=(state.archive||[]).find(a=>a.id===galleryId&&a.type==='gallery');
+ if(!gallery||!mediaWorkSelected.size)return;
+ const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(!selected.length)return;
+ if(selected.some(a=>!String(a.mimeType||'').toLowerCase().startsWith('image/'))){
+  toast('Einer Galerie können in diesem Schritt nur Fotos zugeordnet werden.');
+  return;
+ }
+ const label=mediaGalleryOptionLabel(gallery);
+ if(!confirm(`${selected.length} ${selected.length===1?'Foto':'Fotos'} „${label}“ zuordnen?`))return;
+ let changed=0;
+ selected.forEach(a=>{
+  a.links=a.links||[];
+  if(!a.links.includes(galleryId))a.links.push(galleryId);
+  delete a.workflowStatus;
+  changed++;
+ });
+ gallery.links=gallery.links||[];
+ selected.forEach(a=>{if(!gallery.links.includes(a.id))gallery.links.push(a.id)});
+ if(!save())return;
+ mediaWorkSelected.clear();
+ closeMediaGalleryPanel();
+ renderArchive();
+ toast(changed===1?'Foto der Galerie zugeordnet.':`${changed} Fotos der Galerie zugeordnet.`);
+}
+document.getElementById('mediaWorkAssignGalleryBtn').onclick=()=>{
+ if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
+ const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(selected.some(a=>!String(a.mimeType||'').toLowerCase().startsWith('image/'))){
+  toast('Bitte für die Galerie-Zuordnung nur Fotos auswählen.');
+  return;
+ }
+ const galleries=(state.archive||[]).filter(a=>a.type==='gallery').slice().reverse();
+ if(!galleries.length){toast('Noch keine Galerie im Archiv vorhanden.');return}
+ const sel=document.getElementById('mediaWorkGallerySelect');
+ sel.innerHTML=galleries.map(g=>`<option value="${esc(g.id)}">${esc(mediaGalleryOptionLabel(g))}</option>`).join('');
+ document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');
+ const panel=document.getElementById('mediaWorkGalleryPanel');
+ panel.classList.remove('hidden');
+ panel.classList.add('mobileOpen');
+};
+document.getElementById('mediaWorkGalleryConfirm').onclick=()=>assignSelectedMediaToGallery(document.getElementById('mediaWorkGallerySelect').value);
+document.getElementById('mediaWorkGalleryCancel').onclick=closeMediaGalleryPanel;
+document.getElementById('mediaWorkGalleryCancelBottom').onclick=closeMediaGalleryPanel;
+
 document.getElementById('mediaWorkAssignShootBtn').onclick=()=>{
  if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
  const shoots=(state.archive||[]).filter(a=>a.type==='shoot');
