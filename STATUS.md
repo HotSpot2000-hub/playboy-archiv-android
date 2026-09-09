@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-09  
-Referenz-Commit: `6d26aac09defbe3b1663eb35073f48d2915c9c7d`
+Referenz-Commit: `faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,8 +20,8 @@ Referenz-Commit: `6d26aac09defbe3b1663eb35073f48d2915c9c7d`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `f55b3a9eaa9865145b1d85cd7a2e605a57882519`
-- Fachlich berücksichtigter Code-Stand: Commit `6d26aac09defbe3b1663eb35073f48d2915c9c7d`
+- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `c5faf5ded596763254ee00a3d803f653dff4ee4f`
+- Fachlich berücksichtigter Code-Stand: Commit `faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
@@ -55,7 +55,7 @@ Der aktuelle stabile Code verwendet teilweise noch alte technische Typen und Bez
 - `Individual` ist strukturell noch vorhanden
 - Galerie verlangt weiterhin eine manuelle Bezeichnung
 - Galerie kann beim Anlegen mit einem Shooting verknüpft werden
-- bestehende Galerien besitzen noch keine eigene Bearbeitungsmaske zum nachträglichen Ändern der Shooting-Zuordnung
+- bestehende Galerien besitzen jetzt eine Bearbeitungsmaske; die Shooting-Zuordnung kann nachträglich gesetzt, geändert oder entfernt werden
 
 Diese Struktur bleibt bis zu den einzelnen kontrollierten Umbau-Schritten funktionsfähig.
 
@@ -493,6 +493,7 @@ Erfolgreich dokumentiert:
 - Etappe 2a: Shooting mit Datum, Ort, Models und Fotograf(en)
 - Etappe 2b: Galerie erbt Models, Fotograf(en), Datum und Ort aus dem Shooting
 - Korrektur Etappe 2b: neu angelegte Shootings erscheinen in der Galerie-Shooting-Auswahl
+- Etappe 2c: bestehende Galerie bearbeiten und Shooting nachträglich zuordnen, ändern oder entfernen
 
 Noch nicht separat dokumentiert:
 - Research-Löschschutz
@@ -501,29 +502,26 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 2b -- Galerie → Shooting-Vererbung, inklusive Auswahlkorrektur**
+**Etappe 2c -- bestehende Galerie bearbeiten**
 
 Umgesetzt:
-- Galerie kann beim Anlegen ein vorhandenes Shooting auswählen.
-- Galerie leitet Models, Fotograf(en), Datum und Ort aus dem verknüpften Shooting ab.
-- Die Galerie-Verwaltung zeigt diese geerbten Angaben an.
-- Die Shooting-Auswahl listet alle Shootings und zeigt zusätzlich Datum und Models zur besseren Unterscheidung.
+- In `Verwaltung → Galerien` können bestehende Galerien bearbeitet werden.
+- Das verknüpfte Shooting kann nachträglich zugeordnet, gewechselt oder wieder entfernt werden.
+- Beim Wechsel werden die Beziehungen zwischen Galerie und Shooting auf beiden Seiten aktualisiert.
+- Die bestehende Vererbung von Models, Fotograf(en), Datum und Ort folgt anschließend dem neu gewählten Shooting.
 - Kein Schema-Bump, keine Medienmigration, keine Veröffentlichungsmigration und keine Nummerierungslogik.
 - Gerätetest erfolgreich.
 
 Referenz-Commit:
-`6d26aac09defbe3b1663eb35073f48d2915c9c7d`
+`faed43efe9a4a3eb88c8f62f095acdd1c5fdae2f`
 
 `www/index.html` Blob:
-`f55b3a9eaa9865145b1d85cd7a2e605a57882519`
+`c5faf5ded596763254ee00a3d803f653dff4ee4f`
 
 ## Nächster sinnvoller Schritt
 
-Etappe 2c klein und isoliert umsetzen:
-
-1. aktuelle `www/index.html` erneut aus `main` lesen
-2. bestehende Galerie bearbeitbar machen
-3. dort Shooting nachträglich zuordnen oder ändern können
-4. noch keine Medienmigration, Veröffentlichungsstruktur oder Nummerierung einführen
-5. als App-Update auf dem Gerät testen
-6. erst nach erfolgreichem Test den nächsten Funktionsblock beginnen
+Vor dem nächsten Code-Schritt das nächste kleine Teilziel festlegen. Weiterhin:
+- nur einen Funktionsblock gleichzeitig ändern
+- keine Medien- oder Bestandsmigration nebenbei
+- Schema nur erhöhen, wenn eine echte strukturelle Migration erforderlich wird
+- anschließend wieder als App-Update auf dem Gerät testen
