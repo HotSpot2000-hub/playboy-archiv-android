@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-09  
-Referenz-Commit: `591a871447eae116a8e2dc3daf0d7103de2f0fb3`
+Referenz-Commit: `7388243eb09be6c280c718e5b24bc36fc15d74a4`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,14 +20,17 @@ Referenz-Commit: `591a871447eae116a8e2dc3daf0d7103de2f0fb3`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `508a79766aac9eb631f5af738d601e408a375bd6`
-- Fachlich berücksichtigter Code-Stand: Commit `591a871447eae116a8e2dc3daf0d7103de2f0fb3`
+- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `a398304a7be6e8490f8d72e70300ab11341c31d0`
+- Fachlich berücksichtigter Code-Stand: Commit `7388243eb09be6c280c718e5b24bc36fc15d74a4`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
 - Korrektur zu Etappe 2b: Die Shooting-Auswahl einer Galerie zeigt jetzt alle vorhandenen Shootings, nicht nur Shootings des aktuell gewählten Models; Datum und Models helfen bei der Unterscheidung.
 - Etappe 1, Etappe 2a und die korrigierte Etappe 2b wurden als App-Update auf dem Gerät erfolgreich getestet.
 - Bestehende Models, Shootings und Medien blieben nutzbar.
+- Etappe 2 Galerie-Grundlogik ist auf dem Gerät funktionsfähig: bestehende Galerien können bearbeitet und Shootings nachträglich gesetzt/geändert/entfernt werden; Models und Fotograf(en) werden geerbt und können galeriebezogen ausgeschlossen werden; Fotos können direkt einer Galerie zugeordnet und dort angezeigt/geöffnet werden.
+- Video-Grundmodell begonnen und auf dem Gerät getestet: eigener Verwaltungs-Tab `Videos`, `＋ Video`, Video als eigenständiges Werkobjekt, optionale Shooting-Zuordnung bei Erstellung sowie Anzeige der geerbten Models/Fotograf(en)/Datum/Ort.
+- Beim ersten Video-Schritt fehlte der Verwaltungs-Kontext für `＋ Video`; dieser Anschlussfehler ist im aktuellen Stand korrigiert und auf dem Gerät erfolgreich getestet.
 - Daten-Schema bleibt `6`; es findet weiterhin keine automatische Migration vorhandener Medien in Galerie-/Video-Objekte statt.
 
 ## Stabile Funktionen
@@ -503,29 +506,44 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 2d -- Galerie ohne manuelle Bezeichnung**
+**Etappe 2 -- neue Werklogik, aktueller stabiler Zwischenstand**
 
-Umgesetzt:
-- Neue Galerien benötigen keine manuelle Bezeichnung mehr.
-- Neue Galerien benötigen keine Notiz mehr.
-- Intern erhalten neue Galerien derzeit automatisch den Titel `Galerie`.
-- In der Galerie-Bearbeitung sind Name und Notiz ausgeblendet.
-- Bereits vorhandene Legacy-Bezeichnungen und Notizen werden nicht gelöscht oder migriert und bleiben unangetastet.
-- Die bestehende Shooting-Zuordnung und Vererbung bleiben unverändert.
-- Kein Schema-Bump, keine Medienmigration, keine Veröffentlichungsmigration und keine Nummerierungslogik.
-- Gerätetest erfolgreich.
+Auf dem Gerät erfolgreich getestet:
+- Shooting als Entstehungsbasis mit Datum, Ort, Models und Fotograf(en).
+- Galerie als eigenständiges Foto-Werk ohne manuell erforderliche Bezeichnung/Notiz.
+- Galerie → Shooting-Verknüpfung inklusive nachträglicher Bearbeitung.
+- Vererbung von Models und Fotograf(en) aus dem Shooting.
+- Galeriebezogene Ausschlüsse einzelner Models und Fotograf(en).
+- Direkte Foto → Galerie-Zuordnung.
+- Anzeige und Öffnung der direkt zugeordneten Fotos innerhalb der Galerie.
+- Video als eigenständiges Werkobjekt mit eigenem Verwaltungs-Tab und `＋ Video`.
+- Video kann bei Erstellung einem vorhandenen Shooting zugeordnet werden.
+- Video zeigt daraus geerbte Models, Fotograf(en), Datum und Ort.
+- Der zunächst fehlende `＋ Video`-Anschluss wurde korrigiert und anschließend erfolgreich auf dem Gerät getestet.
+
+Noch nicht umgesetzt bzw. bewusst zurückgestellt:
+- Video nachträglich bearbeiten / Shooting ändern oder entfernen.
+- Model-/Fotografen-Ausnahmen für Video.
+- Direkte Videodatei → Video-Zuordnung.
+- Veröffentlichungsstruktur (Rubrik/Titel/Printausgabe/Nicht zugeordnet).
+- endgültige Nummerierungslogik.
+- optischer und praktischer Feinschliff.
+- automatische Migration vorhandener Medien.
+
+Daten-Schema bleibt `6`.
 
 Referenz-Commit:
-`591a871447eae116a8e2dc3daf0d7103de2f0fb3`
+`7388243eb09be6c280c718e5b24bc36fc15d74a4`
 
 `www/index.html` Blob:
-`508a79766aac9eb631f5af738d601e408a375bd6`
+`a398304a7be6e8490f8d72e70300ab11341c31d0`
 
 ## Nächster sinnvoller Schritt
 
-Als nächster kleiner Kandidat bietet sich die bereits fachlich vorgesehene Model-Ausnahme für Galerien an:
-- Gallery erbt zunächst alle Models aus dem Shooting.
-- Einzelne Models könnten für eine konkrete Galerie ausgeschlossen werden.
-- Technisch möglichst als Vererbung plus Ausschlussliste statt vollständiger Kopie.
-- Noch keine Medienmigration, Veröffentlichungsstruktur oder Nummerierung.
-- Vor Umsetzung erneut aktuelle `www/index.html` aus `main` lesen und danach als App-Update testen.
+Etappe 2 beim Video-Grundmodell fortsetzen:
+1. Vor neuer Bearbeitung aktuellen `main`-Stand und `www/index.html` erneut prüfen.
+2. Bestehendes Video bearbeitbar machen; Shooting nachträglich setzen, ändern oder entfernen.
+3. Danach Video-Vererbung um Model-/Fotografen-Ausnahmen ergänzen.
+4. Anschließend Videodateien direkt dem Video-Werk zuordnen.
+5. Grundlogik vor Optik und Komfort priorisieren.
+6. Keine automatische Medienmigration und kein unnötiger Schema-Bump.
