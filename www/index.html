@@ -2390,6 +2390,13 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Fotograf(en)</label>
  <div id="archiveEditShootPhotographers"></div>
 </div>
+<div id="archiveEditGalleryShootWrap" class="hidden">
+ <label>Shooting</label>
+ <select id="archiveEditGalleryShoot">
+  <option value="">Shooting noch nicht bekannt</option>
+ </select>
+ <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
+</div>
 <div id="archiveEditTitleFields" class="hidden">
   <label>Klasse</label><select id="archiveEditTitleClass"><option value="coed">Coed</option><option value="cyber-girl">Cyber Girl</option><option value="playmate">Playmate</option><option value="special-edition">SE Model</option></select>
   <label>Stufe</label><select id="archiveEditTitleLevel"></select>
@@ -9645,14 +9652,30 @@ if(preview&&l==='week'){
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
+ const isGallery=a.type==='gallery';
  document.getElementById('archiveEditNameWrap').classList.toggle('hidden',isShoot);
  document.getElementById('archiveEditNoteWrap').classList.toggle('hidden',isShoot);
+ document.getElementById('archiveEditDateWrap').classList.toggle('hidden',isGallery);
  document.getElementById('archiveEditDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveEditDate').placeholder=isShoot?'YYYY-MM-DD':'';
  document.getElementById('archiveEditShootLocationWrap').classList.toggle('hidden',!isShoot);
  document.getElementById('archiveEditShootPhotographersWrap').classList.toggle('hidden',!isShoot);
  document.getElementById('archiveEditShootLocation').value=isShoot?(a.location||''):'';
  document.getElementById('archiveEditShootPhotographers').innerHTML=isShoot?shootingPhotographerSelector(a.credits||[],true):'';
+ const galleryShootWrap=document.getElementById('archiveEditGalleryShootWrap');
+ const galleryShootSelect=document.getElementById('archiveEditGalleryShoot');
+ galleryShootWrap.classList.toggle('hidden',!isGallery);
+ if(isGallery){
+  const currentShootId=galleryShootings(a)[0]?.id||'';
+  const shoots=(state.archive||[]).filter(x=>x&&x.type==='shoot').slice().sort(sortShootingsNatural);
+  galleryShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
+   const modelNames=shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+   const details=[sh.date||'',modelNames.join(' + ')].filter(Boolean).join(' · ');
+   return `<option value="${esc(sh.id)}" ${sh.id===currentShootId?'selected':''}>${esc(sh.title||'Shooting')}${details?` · ${esc(details)}`:''}</option>`;
+  }).join('');
+ }else{
+  galleryShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
+ }
  const shootDatePreview=document.getElementById('archiveEditShootDatePreview');
 if(shootDatePreview){
  shootDatePreview.textContent=a.type==='shoot'&&/^\d{4}-\d{2}-\d{2}$/.test(a.date||'')
@@ -9703,6 +9726,27 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.modelId=selected[0]||null;
    a.location=document.getElementById('archiveEditShootLocation').value.trim();
    a.credits=[...new Set([...nonPhotographerCredits,...selectedPhotographers])];
+ }
+ if(a.type==='gallery'){
+   const selectedShootId=document.getElementById('archiveEditGalleryShoot').value;
+   const oldShootIds=galleryShootings(a).map(sh=>sh.id);
+   oldShootIds.forEach(shootId=>{
+    const sh=(state.archive||[]).find(x=>x.id===shootId&&x.type==='shoot');
+    if(sh)sh.links=(sh.links||[]).filter(linkId=>linkId!==a.id);
+   });
+   const nonShootLinks=(a.links||[]).filter(linkId=>{
+    const linked=(state.archive||[]).find(x=>x.id===linkId);
+    return !linked||linked.type!=='shoot';
+   });
+   a.links=[...nonShootLinks];
+   if(selectedShootId){
+    a.links.push(selectedShootId);
+    const sh=(state.archive||[]).find(x=>x.id===selectedShootId&&x.type==='shoot');
+    if(sh){
+     sh.links=sh.links||[];
+     if(!sh.links.includes(a.id))sh.links.push(a.id);
+    }
+   }
  }
  if(a.type==='title'){
    a.titleClass=document.getElementById('archiveEditTitleClass').value;a.titleLevel=document.getElementById('archiveEditTitleLevel').value;const exactWeekDate=a.titleLevel==='week'?titleWeekDate('archiveEditTitle'):'';a.titlePeriod=a.titleLevel==='week'?exactWeekDate:a.titleLevel==='month'?document.getElementById('archiveEditTitleMonth').value:'';if(a.titleLevel==='week'){if(exactWeekDate){const parts=exactWeekDate.split('-').map(Number);a.titleMonthWeek=String(Math.ceil(parts[2]/7));a.titleMonthWeekMonth=String(parts[1]);}else{a.titleMonthWeek=document.getElementById('archiveEditTitleMonthWeek').value;a.titleMonthWeekMonth=document.getElementById('archiveEditTitleWeekMonth').value;}}a.titleYear=(a.titleLevel==='week'?document.getElementById('archiveEditTitleWeekYear').value:document.getElementById('archiveEditTitleYear').value).trim();a.title=titleNameFor(a.titleClass,a.titleLevel);document.getElementById('archiveEditName').value=a.title;   
@@ -10264,6 +10308,7 @@ function renderArchive(){
         ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
         ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
         <div class="itemActions">
+         <button type="button" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
          <button type="button" class="deleteBtn" data-delete-archive="${esc(g.id)}">Löschen</button>
         </div>
        </div>`;
