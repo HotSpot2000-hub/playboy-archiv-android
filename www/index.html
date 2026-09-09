@@ -9770,14 +9770,30 @@ function publicationBelongsToModel(pub,modelId){
  const linkedSeries=linkedObjects(pub.id,'series');
  return linkedSeries.some(s=>seriesBelongsToModel(s,modelId));
 }
+function galleryShootings(gallery){
+ return (gallery?.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id&&x.type==='shoot')).filter(Boolean);
+}
+function galleryInheritedModelIds(gallery){
+ return [...new Set(galleryShootings(gallery).flatMap(sh=>shootingModelIds(sh)))];
+}
+function galleryInheritedCredits(gallery){
+ return [...new Set(galleryShootings(gallery).flatMap(sh=>sh.credits||[]))];
+}
+function galleryCreationContext(gallery){
+ const shoots=galleryShootings(gallery);
+ return {
+  shoots,
+  date:shoots.map(sh=>sh.date||'').find(Boolean)||'',
+  location:shoots.map(sh=>sh.location||'').find(Boolean)||''
+ };
+}
 function archiveBelongsToModel(a,modelId){
  if(a.type==='shoot')return shootingBelongsToModel(a,modelId);
  if(a.type==='series')return seriesBelongsToModel(a,modelId);
  if(a.type==='publication')return publicationBelongsToModel(a,modelId);
  if(a.type==='gallery'){
-   if(a.modelsMode==='custom'&&(a.modelIds||[]).includes(modelId))return true;
-   const linked=(a.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id)).filter(Boolean);
-   return linked.some(x=>x.type==='shoot'&&shootingBelongsToModel(x,modelId));
+   if(a.modelsMode==='custom')return (a.modelIds||[]).includes(modelId);
+   return galleryInheritedModelIds(a).includes(modelId);
  }
  if(a.type==='media'){
    if(a.modelId===modelId)return true;
@@ -10231,16 +10247,22 @@ function renderArchive(){
  }else if(archiveTab==='gallery'){
    box.innerHTML=items.length
     ? items.slice().reverse().map(g=>{
-       const shoots=relatedObjects(g.id,'shoot');
-       const inheritedModelIds=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))];
+       const context=galleryCreationContext(g);
+       const shoots=context.shoots;
+       const inheritedModelIds=g.modelsMode==='custom'?(g.modelIds||[]):galleryInheritedModelIds(g);
+       const inheritedCreditIds=g.creditsMode==='custom'?(g.credits||[]):galleryInheritedCredits(g);
        const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+       const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        return `<div class="archiveItem">
         <b>${esc(g.title||'Galerie ohne Bezeichnung')}</b>
         ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
         <div class="small" style="margin-top:7px">${shoots.length
-          ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting ohne Titel')).join(' · ')}`
+          ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
           :'Shooting noch nicht bekannt'}</div>
-        ${modelNames.length?`<div class="small" style="margin-top:4px">Models geerbt: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
+        ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
+        ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
         <div class="itemActions">
          <button type="button" class="deleteBtn" data-delete-archive="${esc(g.id)}">Löschen</button>
         </div>
