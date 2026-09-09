@@ -10618,9 +10618,12 @@ function refreshArchiveForm(){
  }
  if(isGallery){
   const sel=document.getElementById('archiveGalleryShoot');
-  const currentModelId=state.currentModelId;
-  const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot'&&(!currentModelId||shootingBelongsToModel(a,currentModelId))).slice().sort(sortShootingsNatural);
-  sel.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>`<option value="${esc(sh.id)}">${esc(sh.title||'Shooting ohne Titel')}${sh.date?` · ${esc(sh.date)}`:''}</option>`).join('');
+  const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot').slice().sort(sortShootingsNatural);
+  sel.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
+   const modelNames=shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+   const details=[sh.date||'',modelNames.join(' + ')].filter(Boolean).join(' · ');
+   return `<option value="${esc(sh.id)}">${esc(sh.title||'Shooting')}${details?` · ${esc(details)}`:''}</option>`;
+  }).join('');
  }
  if(isTitle){
   document.getElementById('titleClass').value='coed';
