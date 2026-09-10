@@ -2425,6 +2425,16 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="small">Standardmäßig werden alle Fotograf(en) des Shootings übernommen. Fotograf(en) abwählen, die für diese Galerie nicht gelten.</div>
  <div id="archiveEditGalleryPhotographers" class="shootModelSelector"></div>
 </div>
+<div id="archiveEditVideoModelsWrap" class="hidden">
+ <label>Models in diesem Video</label>
+ <div class="small">Standardmäßig werden alle Models des Shootings übernommen. Models abwählen, die in diesem Video nicht vorkommen.</div>
+ <div id="archiveEditVideoModels" class="shootModelSelector"></div>
+</div>
+<div id="archiveEditVideoPhotographersWrap" class="hidden">
+ <label>Fotograf(en) dieses Videos</label>
+ <div class="small">Standardmäßig werden alle Fotograf(en) des Shootings übernommen. Fotograf(en) abwählen, die für dieses Video nicht gelten.</div>
+ <div id="archiveEditVideoPhotographers" class="shootModelSelector"></div>
+</div>
 <div id="archiveEditTitleFields" class="hidden">
   <label>Klasse</label><select id="archiveEditTitleClass"><option value="coed">Coed</option><option value="cyber-girl">Cyber Girl</option><option value="playmate">Playmate</option><option value="special-edition">SE Model</option></select>
   <label>Stufe</label><select id="archiveEditTitleLevel"></select>
@@ -9683,6 +9693,32 @@ function renderArchiveEditGalleryPhotographers(gallery){
   return `<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="editGalleryPhotographerIncludeCheck" value="${esc(id)}" style="width:auto" ${excluded.has(id)?'':'checked'}> ${esc(p.name)}</label>`;
  }).join(''):'<div class="small">Dem gewählten Shooting sind keine Fotograf(en) zugeordnet.</div>';
 }
+function renderArchiveEditVideoModels(video){
+ const box=document.getElementById('archiveEditVideoModels');
+ if(!box)return;
+ const shootId=document.getElementById('archiveEditVideoShoot')?.value||'';
+ const shoot=(state.archive||[]).find(x=>x.id===shootId&&x.type==='shoot');
+ const ids=shoot?shootingModelIds(shoot):[];
+ const excluded=new Set(video?.excludedModelIds||[]);
+ box.innerHTML=ids.length?ids.map(id=>{
+  const m=(state.models||[]).find(x=>x.id===id);
+  if(!m)return '';
+  return `<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="editVideoModelIncludeCheck" value="${esc(id)}" style="width:auto" ${excluded.has(id)?'':'checked'}> ${esc(m.name)}</label>`;
+ }).join(''):'<div class="small">Dem gewählten Shooting sind keine Models zugeordnet.</div>';
+}
+function renderArchiveEditVideoPhotographers(video){
+ const box=document.getElementById('archiveEditVideoPhotographers');
+ if(!box)return;
+ const shootId=document.getElementById('archiveEditVideoShoot')?.value||'';
+ const shoot=(state.archive||[]).find(x=>x.id===shootId&&x.type==='shoot');
+ const ids=shoot?(shoot.credits||[]).filter(id=>isPhotographerPerson(personById(id))):[];
+ const excluded=new Set(video?.excludedPhotographerIds||[]);
+ box.innerHTML=ids.length?ids.map(id=>{
+  const p=personById(id);
+  if(!p)return '';
+  return `<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="editVideoPhotographerIncludeCheck" value="${esc(id)}" style="width:auto" ${excluded.has(id)?'':'checked'}> ${esc(p.name)}</label>`;
+ }).join(''):'<div class="small">Dem gewählten Shooting sind keine Fotograf(en) zugeordnet.</div>';
+}
 function refreshEditTitlePeriod(){
  fillTitleDateSelectors('archiveEditTitle');
  const l=document.getElementById('archiveEditTitleLevel').value;
@@ -9745,8 +9781,12 @@ if(preview&&l==='week'){
  }
  const galleryModelsWrap=document.getElementById('archiveEditGalleryModelsWrap');
  const galleryPhotographersWrap=document.getElementById('archiveEditGalleryPhotographersWrap');
+ const videoModelsWrap=document.getElementById('archiveEditVideoModelsWrap');
+ const videoPhotographersWrap=document.getElementById('archiveEditVideoPhotographersWrap');
  galleryModelsWrap.classList.toggle('hidden',!isGallery);
  galleryPhotographersWrap.classList.toggle('hidden',!isGallery);
+ videoModelsWrap.classList.toggle('hidden',!isVideo);
+ videoPhotographersWrap.classList.toggle('hidden',!isVideo);
  if(isGallery){
   const refreshGalleryInheritanceControls=()=>{
    renderArchiveEditGalleryModels(a);
@@ -9758,6 +9798,18 @@ if(preview&&l==='week'){
   galleryShootSelect.onchange=null;
   document.getElementById('archiveEditGalleryModels').innerHTML='';
   document.getElementById('archiveEditGalleryPhotographers').innerHTML='';
+ }
+ if(isVideo){
+  const refreshVideoInheritanceControls=()=>{
+   renderArchiveEditVideoModels(a);
+   renderArchiveEditVideoPhotographers(a);
+  };
+  refreshVideoInheritanceControls();
+  videoShootSelect.onchange=refreshVideoInheritanceControls;
+ }else{
+  videoShootSelect.onchange=null;
+  document.getElementById('archiveEditVideoModels').innerHTML='';
+  document.getElementById('archiveEditVideoPhotographers').innerHTML='';
  }
  const shootDatePreview=document.getElementById('archiveEditShootDatePreview');
 if(shootDatePreview){
@@ -9864,6 +9916,20 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
      sh.links=sh.links||[];
      if(!sh.links.includes(a.id))sh.links.push(a.id);
     }
+   }
+   if(a.modelsMode!=='custom'){
+    const sh=(state.archive||[]).find(x=>x.id===selectedShootId&&x.type==='shoot');
+    const inheritedIds=sh?shootingModelIds(sh):[];
+    const included=new Set([...document.querySelectorAll('#archiveEditVideoModels .editVideoModelIncludeCheck:checked')].map(x=>x.value));
+    a.excludedModelIds=inheritedIds.filter(id=>!included.has(id));
+    a.modelsMode='inherit';
+   }
+   if(a.creditsMode!=='custom'){
+    const sh=(state.archive||[]).find(x=>x.id===selectedShootId&&x.type==='shoot');
+    const inheritedPhotographerIds=sh?(sh.credits||[]).filter(id=>isPhotographerPerson(personById(id))):[];
+    const includedPhotographers=new Set([...document.querySelectorAll('#archiveEditVideoPhotographers .editVideoPhotographerIncludeCheck:checked')].map(x=>x.value));
+    a.excludedPhotographerIds=inheritedPhotographerIds.filter(id=>!includedPhotographers.has(id));
+    a.creditsMode='inherit';
    }
  }
  if(a.type==='title'){
