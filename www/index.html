@@ -2408,6 +2408,13 @@ body.archiveFilterOpen .bottom{display:none!important}
  </select>
  <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
 </div>
+<div id="archiveEditVideoShootWrap" class="hidden">
+ <label>Shooting</label>
+ <select id="archiveEditVideoShoot">
+  <option value="">Shooting noch nicht bekannt</option>
+ </select>
+ <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
+</div>
 <div id="archiveEditGalleryModelsWrap" class="hidden">
  <label>Models in dieser Galerie</label>
  <div class="small">Standardmäßig werden alle Models des Shootings übernommen. Models abwählen, die in dieser Galerie nicht vorkommen.</div>
@@ -9706,9 +9713,10 @@ if(preview&&l==='week'){
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
  const isGallery=a.type==='gallery';
- document.getElementById('archiveEditNameWrap').classList.toggle('hidden',isShoot||isGallery);
- document.getElementById('archiveEditNoteWrap').classList.toggle('hidden',isShoot||isGallery);
- document.getElementById('archiveEditDateWrap').classList.toggle('hidden',isGallery);
+ const isVideo=a.type==='video';
+ document.getElementById('archiveEditNameWrap').classList.toggle('hidden',isShoot||isGallery||isVideo);
+ document.getElementById('archiveEditNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo);
+ document.getElementById('archiveEditDateWrap').classList.toggle('hidden',isGallery||isVideo);
  document.getElementById('archiveEditDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveEditDate').placeholder=isShoot?'YYYY-MM-DD':'';
  document.getElementById('archiveEditShootLocationWrap').classList.toggle('hidden',!isShoot);
@@ -9717,17 +9725,23 @@ if(preview&&l==='week'){
  document.getElementById('archiveEditShootPhotographers').innerHTML=isShoot?shootingPhotographerSelector(a.credits||[],true):'';
  const galleryShootWrap=document.getElementById('archiveEditGalleryShootWrap');
  const galleryShootSelect=document.getElementById('archiveEditGalleryShoot');
+ const videoShootWrap=document.getElementById('archiveEditVideoShootWrap');
+ const videoShootSelect=document.getElementById('archiveEditVideoShoot');
  galleryShootWrap.classList.toggle('hidden',!isGallery);
- if(isGallery){
-  const currentShootId=galleryShootings(a)[0]?.id||'';
+ videoShootWrap.classList.toggle('hidden',!isVideo);
+ if(isGallery||isVideo){
+  const currentShootId=(isGallery?galleryShootings(a):videoShootings(a))[0]?.id||'';
   const shoots=(state.archive||[]).filter(x=>x&&x.type==='shoot').slice().sort(sortShootingsNatural);
-  galleryShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
+  const options='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
    const modelNames=shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
    const details=[sh.date||'',modelNames.join(' + ')].filter(Boolean).join(' · ');
    return `<option value="${esc(sh.id)}" ${sh.id===currentShootId?'selected':''}>${esc(sh.title||'Shooting')}${details?` · ${esc(details)}`:''}</option>`;
   }).join('');
+  if(isGallery)galleryShootSelect.innerHTML=options;
+  if(isVideo)videoShootSelect.innerHTML=options;
  }else{
   galleryShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
+  videoShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
  }
  const galleryModelsWrap=document.getElementById('archiveEditGalleryModelsWrap');
  const galleryPhotographersWrap=document.getElementById('archiveEditGalleryPhotographersWrap');
@@ -9779,10 +9793,10 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
  const id=document.getElementById('archiveEditId').value;
  const a=(state.archive||[]).find(x=>x.id===id);if(!a)return;
  const name=document.getElementById('archiveEditName').value.trim();
- if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&!name){toast('Bitte einen Namen eingeben.');return}
- if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery')a.title=name;
- a.date=document.getElementById('archiveEditDate').value.trim();
- if(a.type!=='shoot'&&a.type!=='gallery')a.note=document.getElementById('archiveEditNote').value.trim();
+ if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&!name){toast('Bitte einen Namen eingeben.');return}
+ if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video')a.title=name;
+ if(a.type!=='video')a.date=document.getElementById('archiveEditDate').value.trim();
+ if(a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video')a.note=document.getElementById('archiveEditNote').value.trim();
  a.updatedAt=new Date().toISOString();
  if(a.type==='publication'){
    a.owned=document.getElementById('archiveEditOwned').checked;
@@ -9829,6 +9843,27 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
     const includedPhotographers=new Set([...document.querySelectorAll('#archiveEditGalleryPhotographers .editGalleryPhotographerIncludeCheck:checked')].map(x=>x.value));
     a.excludedPhotographerIds=inheritedPhotographerIds.filter(id=>!includedPhotographers.has(id));
     a.creditsMode='inherit';
+   }
+ }
+ if(a.type==='video'){
+   const selectedShootId=document.getElementById('archiveEditVideoShoot').value;
+   const oldShootIds=videoShootings(a).map(sh=>sh.id);
+   oldShootIds.forEach(shootId=>{
+    const sh=(state.archive||[]).find(x=>x.id===shootId&&x.type==='shoot');
+    if(sh)sh.links=(sh.links||[]).filter(linkId=>linkId!==a.id);
+   });
+   const nonShootLinks=(a.links||[]).filter(linkId=>{
+    const linked=(state.archive||[]).find(x=>x.id===linkId);
+    return !linked||linked.type!=='shoot';
+   });
+   a.links=[...nonShootLinks];
+   if(selectedShootId){
+    a.links.push(selectedShootId);
+    const sh=(state.archive||[]).find(x=>x.id===selectedShootId&&x.type==='shoot');
+    if(sh){
+     sh.links=sh.links||[];
+     if(!sh.links.includes(a.id))sh.links.push(a.id);
+    }
    }
  }
  if(a.type==='title'){
@@ -10452,6 +10487,7 @@ function renderArchive(){
         ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
         ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
         <div class="itemActions">
+         <button type="button" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
          <button type="button" class="deleteBtn" data-delete-archive="${esc(v.id)}">Löschen</button>
         </div>
        </div>`;
