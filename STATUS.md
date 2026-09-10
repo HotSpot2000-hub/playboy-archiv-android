@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-10  
-Referenz-Commit: `9f11ac59524338a70d075afe2b89598a609a4687`
+Referenz-Commit: `c857837113c045a78b87db5ed094640901a8c9a7`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,21 +20,19 @@ Referenz-Commit: `9f11ac59524338a70d075afe2b89598a609a4687`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `3626c23d5bde806d445c426846ce6b08ae9e0aca`
-- Fachlich berücksichtigter Code-Stand: Commit `9f11ac59524338a70d075afe2b89598a609a4687`
+- Fachlich berücksichtigter Code-Stand: Commit `c857837113c045a78b87db5ed094640901a8c9a7`
+- `www/index.html` auf diesem Stand: Blob `bd2ad4f0c6877a1b190dd4953fd9e928b06580c1`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
-- Korrektur zu Etappe 2b: Die Shooting-Auswahl einer Galerie zeigt jetzt alle vorhandenen Shootings, nicht nur Shootings des aktuell gewählten Models; Datum und Models helfen bei der Unterscheidung.
-- Etappe 1, Etappe 2a und die korrigierte Etappe 2b wurden als App-Update auf dem Gerät erfolgreich getestet.
-- Bestehende Models, Shootings und Medien blieben nutzbar.
-- Etappe 2 Galerie-Grundlogik ist auf dem Gerät funktionsfähig: bestehende Galerien können bearbeitet und Shootings nachträglich gesetzt/geändert/entfernt werden; Models und Fotograf(en) werden geerbt und können galeriebezogen ausgeschlossen werden; Fotos können direkt einer Galerie zugeordnet und dort angezeigt/geöffnet werden.
-- Video-Grundmodell ist auf dem Gerät funktional: eigener Verwaltungs-Tab `Videos`, `＋ Video`, Video als eigenständiges Werkobjekt, optionale Shooting-Zuordnung bei Erstellung und Bearbeitung sowie Anzeige der geerbten Models/Fotograf(en)/Datum/Ort.
-- Bestehende Videos können nachträglich einem Shooting zugeordnet, auf ein anderes Shooting umgestellt oder vom Shooting gelöst werden.
-- Geerbte Models und Fotograf(en) können video-bezogen einzeln ausgeschlossen werden.
-- Videodateien können direkt einem Video-Werk zugeordnet werden; die direkte Wiedergabe nutzt die bestehende Medienlogik.
-- Beim ersten Video-Schritt fehlte der Verwaltungs-Kontext für `＋ Video`; dieser Anschlussfehler ist korrigiert und auf dem Gerät erfolgreich getestet.
-- Daten-Schema bleibt `6`; es findet weiterhin keine automatische Migration vorhandener Medien in Galerie-/Video-Objekte statt.
+- Korrektur zu Etappe 2b: Die Shooting-Auswahl einer Galerie zeigt alle vorhandenen Shootings; Datum und Models helfen bei der Unterscheidung.
+- Galerie-Grundlogik funktioniert auf dem Gerät: Shooting setzen/ändern/entfernen, Models/Fotograf(en) erben und einzeln ausschließen, Fotos direkt zuordnen und öffnen.
+- Video-Grundmodell funktioniert auf dem Gerät: eigener Verwaltungs-Tab `Videos`, optionales Shooting bei Erstellung/Bearbeitung, geerbte Models/Fotograf(en)/Datum/Ort, Ausschlüsse, direkte Videodatei-Zuordnung und Wiedergabe.
+- Etappe 3a ist umgesetzt und auf dem Gerät erfolgreich getestet: neuer separater technischer Typ `release` für die kleinste konkrete Veröffentlichung.
+- `release` wird sichtbar als `Veröffentlichung` geführt und kann angelegt, bearbeitet und gelöscht werden.
+- Eine konkrete Veröffentlichung kann einer Rubrik (`series`), einem Titel (`title`) oder beiden zugeordnet werden.
+- Der bestehende technische Typ `publication` bleibt unverändert und steht weiterhin für die bisherige Printpublikations-/Printausgabenlogik; er wurde nicht umgedeutet.
+- Es gibt weiterhin keine automatische Legacy-Migration und keinen Schema-Bump.
 
 ## Stabile Funktionen
 
@@ -42,7 +40,7 @@ Referenz-Commit: `9f11ac59524338a70d075afe2b89598a609a4687`
 - Permanente Android-Signierung und Update-Installation ohne Deinstallation.
 - Fotoanzeige mit Pinch-Zoom.
 - Video-Wiedergabe; nativer WebView-Fullscreen bleibt deaktiviert.
-- Models, Titel, Rubriken (technisch weiterhin Legacy-`series`), Individuals, Shootings, Galerien und Medienverwaltung funktionieren im bestehenden stabilen Stand.
+- Models, Titel, Rubriken (technisch weiterhin Legacy-`series`), Individuals, Shootings, Galerien, Videos, Veröffentlichungen (`release`) und Medienverwaltung funktionieren im bestehenden stabilen Stand.
 - Archivfilter, freie Suche, Bewertungs- und Profilbildfilter funktionieren.
 - Research mit Status, strukturierten Belegen und kontrollierter Übernahme.
 - `careerFacts`, `bioFacts`, `archiveFacts`.
@@ -56,16 +54,17 @@ Referenz-Commit: `9f11ac59524338a70d075afe2b89598a609a4687`
 ## Wichtig: bestehender Code versus neues Soll-Modell
 
 Der aktuelle stabile Code verwendet teilweise noch alte technische Typen und Beziehungen:
-- technischer Typ `series` bleibt vorerst bestehen, sichtbar heißt er bereits `Rubrik`
-- technischer Typ `gallery` ist sichtbar bereits `Galerie`
+- technischer Typ `series` bleibt vorerst bestehen, sichtbar heißt er `Rubrik`
+- technischer Typ `gallery` ist sichtbar `Galerie`
+- technischer Typ `video` ist das eigenständige Video-Werk
+- technischer Typ `release` ist seit Etappe 3a die konkrete Veröffentlichung
+- technischer Typ `publication` bleibt die bisherige Printpublikations-/Printausgabenstruktur und darf nicht mit `release` gleichgesetzt werden
 - `Individual` ist strukturell noch vorhanden
-- neue Galerien benötigen keine manuelle Bezeichnung und keine Notiz mehr; intern erhalten sie derzeit automatisch `Galerie`
-- Galerie kann beim Anlegen mit einem Shooting verknüpft werden
-- bestehende Galerien besitzen jetzt eine Bearbeitungsmaske; die Shooting-Zuordnung kann nachträglich gesetzt, geändert oder entfernt werden
+- neue Galerien benötigen keine manuelle Bezeichnung und keine Notiz; bestehende Legacy-Werte bleiben unangetastet
+- Galerie und Video können mit einem Shooting verknüpft werden
+- Galerie/Video sind noch nicht mit `release` verknüpft
 
 Diese Struktur bleibt bis zu den einzelnen kontrollierten Umbau-Schritten funktionsfähig.
-
-Die folgenden Abschnitte beschreiben das am 2026-09-08 gemeinsam festgelegte fachliche **Soll-Modell**. Es ist noch nicht vollständig im Code umgesetzt.
 
 ## Neues fachliches Soll-Modell
 
@@ -74,6 +73,7 @@ Die folgenden Abschnitte beschreiben das am 2026-09-08 gemeinsam festgelegte fac
 - `Shooting = Entstehung`
 - `Galerie/Video = Werk`
 - `Rubrik/Titel/Printausgabe = Veröffentlichungskontext`
+- `release = kleinste konkrete Veröffentlichung`
 - `Seiten = konkrete Fundstelle innerhalb einer Printausgabe`
 - Unklare Beziehungen dürfen unklar bleiben.
 - Keine künstlichen Shootings, Medien oder Veröffentlichungszuordnungen.
@@ -81,14 +81,12 @@ Die folgenden Abschnitte beschreiben das am 2026-09-08 gemeinsam festgelegte fac
 ### Archivbereiche
 
 Über der Archivverwaltung soll ein kompakter Archivbereich gewählt werden:
-
 - Playboy
 - Special Editions
 - Cyber Club
 - Playboy Plus
 
 Darunter bleiben die Hauptbereiche:
-
 - Models
 - Titel
 - Rubriken
@@ -121,7 +119,7 @@ Galerie und Video können aus einem Shooting hervorgehen und übernehmen daraus 
 
 ### Galerie
 
-Sichtbarer Begriff: **Galerie** statt `Fotogalerie`.
+Sichtbarer Begriff: **Galerie**.
 
 Rolle:
 - Foto-Werk/Container
@@ -129,7 +127,7 @@ Rolle:
 
 Beziehungen:
 - Verweis auf das zugehörige Shooting
-- direkte Zuordnung zu Veröffentlichungskontexten
+- künftig direkte Zuordnung zu einer konkreten Veröffentlichung (`release`)
 
 Geerbte Angaben aus dem Shooting:
 - Models
@@ -140,11 +138,11 @@ Geerbte Angaben aus dem Shooting:
 Model-Abweichungen:
 - Standardmäßig alle Models des Shootings übernehmen.
 - Bei Bedarf einzelne Models für eine Galerie ausschließen.
-- Zielmodell eher über Ausschlüsse als über vollständige `custom`-Kopien.
+- Ausschlüsse statt unnötiger Vollkopien bevorzugen.
 
 Eigene fachliche Angaben:
-- zunächst keine manuell erforderliche Bezeichnung
-- zunächst keine eigene Notiz
+- keine manuell erforderliche Bezeichnung
+- keine eigene Notiz erforderlich
 - kein eigenes Veröffentlichungsdatum erforderlich
 
 ### Video
@@ -158,12 +156,8 @@ Rolle:
 Beziehungen und Vererbung:
 - Verweis auf Shooting
 - Models, Fotograf(en), Datum und Ort aus Shooting
-- bei Bedarf einzelne Models ausschließen
-- direkte Zuordnung zu Veröffentlichungskontexten
-
-Eigene fachliche Angaben:
-- zunächst keine manuell erforderliche Bezeichnung
-- zunächst keine eigene Notiz
+- bei Bedarf einzelne Models/Fotograf(en) ausschließen
+- künftig direkte Zuordnung zu einer konkreten Veröffentlichung (`release`)
 
 Galerie und Video bleiben technisch getrennte Werke, auch wenn sie zur selben Veröffentlichung gehören.
 
@@ -175,9 +169,23 @@ Beispiele:
 - `Busty Babes • Tiffany Ryan`
 - `Cyber Girl of the Year 2007 • Breann McGregor`
 
-Galerie und Video werden innerhalb dieses Zusammenhangs zusammengeführt.
+Seit Etappe 3a existiert dafür der technische Typ `release`.
 
-Der Veröffentlichungszusammenhang gibt die Identität; Galerie-/Video-Nummern dienen nur zur Unterscheidung mehrerer gleichartiger Werke darin.
+Aktuell umgesetzt:
+- `release` anlegen
+- `release` bearbeiten
+- `release` löschen
+- optionale Zuordnung zu einer Rubrik
+- optionale Zuordnung zu einem Titel
+- Rubrik und Titel können kombiniert werden
+- mindestens Rubrik oder Titel ist für den normalen Fall nötig
+
+Noch nicht umgesetzt:
+- neutraler Fall `Nicht zugeordnet`
+- Galerie-/Video-Zuordnung zu `release`
+- individueller Veröffentlichungsname
+- Nummerierung pro Veröffentlichung
+- endgültige Vorschau-/Darstellungslogik
 
 ### Nummerierungslogik
 
@@ -195,15 +203,14 @@ Regeln:
 
 ### Vorschau einer Veröffentlichung
 
-Bewährte Darstellungslogik soll erhalten bleiben:
-
+Ziel:
 - Wenn mindestens eine Galerie vorhanden ist, führt die Galerie die Vorschau.
-- Als Vorschau wird nach Möglichkeit das erste geeignete hochformatige Foto der führenden Galerie verwendet.
+- Nach Möglichkeit erstes geeignetes hochformatiges Foto der führenden Galerie verwenden.
 - Videos werden nicht innerhalb der Galerie angezeigt.
-- Gehören Videos zur selben Veröffentlichung, erscheinen anklickbare Videosymbole in der Veröffentlichungsvorschau.
-- Bei mehreren Videos erscheinen mehrere anklickbare Videosymbole.
-- Enthält die Veröffentlichung nur Video und keine Galerie, dient die Video-Darstellung als Vorschau.
-- Bei mehreren Galerien führt zunächst die erste/führende Galerie die Veröffentlichungsvorschau.
+- Videos derselben Veröffentlichung erscheinen als anklickbare Videosymbole in der Veröffentlichungsvorschau.
+- Bei mehreren Videos erscheinen mehrere Symbole.
+- Video-only-Veröffentlichungen verwenden eine Video-Darstellung.
+- Bei mehreren Galerien führt zunächst die erste/führende Galerie.
 
 ### Rubriken
 
@@ -223,8 +230,9 @@ Es gibt fachlich zwei Ebenen:
 1. Rubrikdefinition, z. B. `Girls with Girls`
 2. konkrete Rubrik-Veröffentlichung, z. B. `Girls with Girls • Brandie Moses, Breann McGregor`
 
-Galerie(n) und Video(s) hängen an der konkreten Veröffentlichung.
+Seit Etappe 3a kann eine konkrete Veröffentlichung (`release`) einer Rubrikdefinition (`series`) zugeordnet werden.
 
+Galerie(n) und Video(s) sollen künftig an der konkreten Veröffentlichung hängen.
 Models, Fotograf(en), Datum und Ort werden soweit möglich über Galerie/Video → Shooting abgeleitet.
 
 ### Playboy Plus und individuelle Veröffentlichungsnamen
@@ -233,12 +241,12 @@ Bei Playboy Plus gibt es häufig individuelle Veröffentlichungsnamen, z. B.:
 - `Divine Morning`
 - `Rustic Charmer`
 
-Diese Namen sind wichtige fachliche Bezeichnungen und haben in der Oberfläche Vorrang vor technischen Werkbezeichnungen wie `Galerie • Nr. 10`.
-
 Regeln:
 - Der individuelle Name gehört zur konkreten Veröffentlichung, nicht zur Galerie oder zum Video.
 - Wenn Galerie und Video zusammengehören, führt die Galerie die Darstellung.
 - Der frühere Begriff `Individual` wird nicht als eigener fachlicher Haupttyp fortgeführt.
+
+Noch nicht umgesetzt: eigenes Namensfeld am `release`.
 
 ### Nicht zugeordnet
 
@@ -251,15 +259,15 @@ Zweck:
 Wichtig:
 - Ein bekannter individueller Veröffentlichungsname muss gespeichert werden können.
 - Wird die richtige Rubrik später bekannt, wird nur die Zuordnung ergänzt/geändert; die Veröffentlichung bleibt bestehen.
+- Bestehende Legacy-Individuals werden erst in einem späteren kontrollierten Migrationsschritt behandelt.
 
-Bestehende Legacy-Individuals werden erst in einem späteren kontrollierten Migrationsschritt behandelt.
+Dieser Punkt ist der nächste Umsetzungsblock (Etappe 3b).
 
 ### Titel
 
 Titel sind Rubriken strukturell ähnlich, besitzen aber Stufen/Hierarchien.
 
 Bekannte Zielstruktur:
-
 - Coed: `of the Week → of the Month`
 - Cyber Girl: `of the Week → of the Month → of the Year`
 - Special Editions Model: `of the Year`
@@ -274,6 +282,8 @@ Bereichslogik:
 - Archivbereich und Titel dürfen nicht gleichgesetzt werden.
 - Kein automatisches `Cyber Girl = Cyber Club`.
 - Keine automatische Bereichszuordnung ausschließlich anhand eines Datums.
+
+Seit Etappe 3a kann `release` bereits optional einem bestehenden Titel zugeordnet werden. Titelhierarchien sind noch nicht umgesetzt.
 
 ### Printausgaben
 
@@ -290,6 +300,8 @@ Regeln:
 - PDF und physischer Bestand sind unabhängig.
 - Eine Ausgabe kann dokumentiert werden, auch wenn weder PDF noch physisches Exemplar vorhanden sind.
 - Bereits vorhandene Galerie-/Video-Werke werden bei Print-Wiederverwendung nicht dupliziert.
+
+Der bestehende technische Typ `publication` bleibt bis zum späteren kontrollierten Printausgaben-Umbau bestehen.
 
 ### Seiten
 
@@ -310,11 +322,9 @@ An einer Seiten-Fundstelle können hängen:
 
 Dadurch können Print-Credits erfasst werden, auch wenn das entsprechende Werk/Medium noch nicht digital im Archiv vorhanden ist.
 
-Das Cover kann als besondere Seiten-Fundstelle behandelt werden und zugleich als Vorschau der Printausgabe dienen.
+## Historische/taxonomische Arbeitsannahmen
 
-## Historische/taxonomische Arbeitsannahmen aus der aktuellen Erschließung
-
-Diese Punkte sind fachliche Beobachtungen aus dem vorhandenen Material und dürfen nicht ungeprüft zu automatischen Regeln werden:
+Diese Punkte sind fachliche Beobachtungen und dürfen nicht ungeprüft zu automatischen Regeln werden.
 
 ### Cyber Club
 Beobachtete Titelfamilien:
@@ -337,7 +347,6 @@ Beobachtete Cyber-Girl-Titel:
 - Year
 
 Playboy Plus verwendet häufig individuelle Veröffentlichungsnamen.
-
 Die mögliche Entwicklung `Amateur → Cyber Girl` ist noch keine gesicherte automatische Regel.
 
 ### Special Editions
@@ -352,7 +361,7 @@ Beobachtete Rubriken u. a.:
 
 ### Übergang Cyber Club → Playboy Plus
 - Coeds und Cyber Girls sind im vorhandenen Material noch bis Februar 2012 dokumentiert.
-- Der genaue Plattform-/Strukturwechsel bleibt trotzdem nicht vollständig gesichert.
+- Der genaue Plattform-/Strukturwechsel bleibt nicht vollständig gesichert.
 - Cyber-Girl-Titel existieren auch deutlich später.
 - Daher keine automatische Bereichsumschaltung anhand eines festen Datums.
 
@@ -401,7 +410,7 @@ Aktueller stabiler Stand:
 - reale `linkedArchiveIds` reduzieren offene Restmengen und vermeiden Doppelzählungen
 
 Bekanntes Übergangsproblem:
-- der Erschließungsgrad verwendet derzeit noch nicht die neuen Galerie-/Video-Werke als endgültige Zählgrundlage
+- der Erschließungsgrad verwendet noch nicht die neuen Galerie-/Video-/Veröffentlichungsobjekte als endgültige Zählgrundlage
 - ein Shooting mit Fotos darf langfristig nicht pauschal mit einer Galerie/Pictorial gleichgesetzt werden
 
 Erst nach stabiler Werk-/Veröffentlichungsmigration umstellen.
@@ -412,6 +421,7 @@ Erst nach stabiler Werk-/Veröffentlichungsmigration umstellen.
 - `shoot.credits`
 - `shoot.location`
 - Werktypen `gallery` und `video`
+- konkreter Veröffentlichungstyp `release` ohne Schema-Bump
 - `modelsMode = inherit | custom`
 - `creditsMode = inherit | custom`
 - `publication.owned`
@@ -419,7 +429,7 @@ Erst nach stabiler Werk-/Veröffentlichungsmigration umstellen.
 
 Wichtig:
 - `DATA_SCHEMA_VERSION` niemals zurücksetzen.
-- Keine automatische Erzeugung von `gallery`/`video`.
+- Keine automatische Erzeugung von `gallery`/`video`/`release` aus Legacy-Daten.
 - Keine automatische Änderung bestehender Shooting-/Medienbeziehungen.
 - Keine künstlichen Daten.
 - Verworfene 6.3.2-Oberfläche „Vorhandenes Archivobjekt“ bleibt entfernt.
@@ -436,31 +446,30 @@ Wichtig:
 - keine automatische Massenmigration ohne separaten Test
 - `Individual` nicht als neuen fachlichen Haupttyp verfestigen
 - Archivbereich nicht allein aus Datum oder Titel ableiten
+- bestehenden technischen Typ `publication` nicht als neue konkrete Veröffentlichung (`release`) umdeuten
 
 ## Offene Umsetzungsblöcke
 
 Die Migration soll klein, kontrolliert und gerätetestbar erfolgen.
 
-Geplante Reihenfolge:
-
-1. **Begriffe und Grundnavigation**
+1. **Begriffe und Grundnavigation** — umgesetzt/getestet
    - sichtbares `Fotogalerie` → `Galerie`
    - sichtbares `Serien` → `Rubriken`
-   - Archivbereich-Auswahl vorbereiten
    - keine Bestandsmigration
 
-2. **Shooting / Galerie / Video**
-   - neues schlankes Werkmodell
+2. **Shooting / Galerie / Video** — Grundlogik umgesetzt/getestet
+   - schlankes Werkmodell
    - automatische Werkbezeichnung
    - Vererbung aus Shooting
-   - Model-Ausschlüsse statt unnötiger Vollkopien
-   - Medien später kontrolliert zuordnen
+   - Model-/Fotografen-Ausschlüsse
+   - direkte Medienzuordnung
 
-3. **Konkrete Veröffentlichung**
-   - Rubrik/Titel/individueller Name als gemeinsamer Veröffentlichungszusammenhang
-   - Galerie/Video gemeinsam darstellen
-   - Nummerierung pro Veröffentlichung
-   - Vorschau- und Video-Symbol-Logik
+3. **Konkrete Veröffentlichung** — in Arbeit
+   - 3a: technischer Typ `release`, CRUD, Rubrik-/Titel-Zuordnung — umgesetzt/getestet
+   - 3b: `Nicht zugeordnet` innerhalb Rubriken — als Nächstes
+   - danach Galerie/Video an konkrete Veröffentlichung hängen
+   - danach individueller Veröffentlichungsname
+   - danach Nummerierung, Vorschau- und Video-Symbol-Logik
 
 4. **Titel**
    - Titelfamilien und Stufen
@@ -483,18 +492,19 @@ Geplante Reihenfolge:
 ## Noch nicht endgültig entschieden
 
 Vor den jeweiligen Umsetzungsblöcken bei Bedarf konkret festlegen:
-- genaue technische IDs/Typnamen für Rubrikdefinition versus konkrete Veröffentlichung
 - genaue Printausgaben-Identitätsfelder
 - technische Darstellung/Sortierung von Seitenbereichen
 - Umgang mit Werk ohne bekanntes Shooting (`shootingId = null` zulassen oder später entscheiden)
 - endgültige technische Ablage der permanenten Werknummern
+- endgültige sichtbare Benennung/Sortierung konkreter Veröffentlichungen ohne individuellen Namen
+
+Die technische ID der konkreten Veröffentlichung ist seit Etappe 3a entschieden: `release`.
 
 ## Gerätetests
 
 Erfolgreich dokumentiert:
 - Schema-6-Grundlage
 - Erschließungsgrad
-- erster Galerie-Schritt
 - Etappe 1: sichtbare Begriffe `Rubriken` / `Galerien`
 - Etappe 2a: Shooting mit Datum, Ort, Models und Fotograf(en)
 - Etappe 2b: Galerie erbt Models, Fotograf(en), Datum und Ort aus dem Shooting
@@ -505,6 +515,8 @@ Erfolgreich dokumentiert:
 - Video: nachträgliche Shooting-Bearbeitung
 - Video: Model-/Fotografen-Ausnahmen
 - Video: direkte Videodatei-Zuordnung und Wiedergabe über die bestehende Medienlogik
+- Etappe 3a: `Veröffentlichungen` (`release`) als eigener Verwaltungstyp; Anlegen, Bearbeiten, Löschen sowie Zuordnung nur Rubrik, nur Titel oder Rubrik + Titel erfolgreich getestet
+- bestehende Models, Shootings, Galerien, Videos und Printpublikationen blieben dabei funktionsfähig
 
 Noch nicht separat dokumentiert:
 - Research-Löschschutz
@@ -513,47 +525,44 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 2 -- Shooting / Galerie / Video-Grundlogik abgeschlossen**
+**Etappe 3a -- konkrete Veröffentlichung als eigener Zusammenhang**
 
 Auf dem Gerät erfolgreich getestet:
-- Shooting als Entstehungsbasis mit Datum, Ort, Models und Fotograf(en).
-- Galerie als eigenständiges Foto-Werk ohne manuell erforderliche Bezeichnung/Notiz.
-- Galerie → Shooting-Verknüpfung inklusive nachträglicher Bearbeitung.
-- Vererbung von Models und Fotograf(en) aus dem Shooting.
-- Galeriebezogene Ausschlüsse einzelner Models und Fotograf(en).
-- Direkte Foto → Galerie-Zuordnung.
-- Anzeige und Öffnung der direkt zugeordneten Fotos innerhalb der Galerie.
-- Video als eigenständiges Werkobjekt mit eigenem Verwaltungs-Tab und `＋ Video`.
-- Video kann bei Erstellung einem vorhandenen Shooting zugeordnet werden.
-- Bestehendes Video kann nachträglich bearbeitet werden; Shooting kann gesetzt, geändert oder entfernt werden.
-- Video erbt Models und Fotograf(en) aus dem Shooting; einzelne Models/Fotograf(en) können video-bezogen ausgeschlossen werden.
-- Videodateien können direkt einem Video-Werk zugeordnet werden.
-- Direkt zugeordnete Videodateien werden beim Video-Werk angezeigt und über die bestehende Medienlogik wiedergegeben.
-- Der zunächst fehlende `＋ Video`-Anschluss wurde korrigiert und auf dem Gerät erfolgreich getestet.
+- eigener Verwaltungs-Tab `Veröffentlichungen`
+- `＋ Veröffentlichung`
+- neuer technischer Typ `release`
+- Veröffentlichung nur einer Rubrik zuordnen
+- Veröffentlichung nur einem Titel zuordnen
+- Veröffentlichung gleichzeitig Rubrik + Titel zuordnen
+- bestehende Veröffentlichung bearbeiten und Zuordnung ändern
+- Veröffentlichung löschen
+- bestehender Typ `publication` blieb unangetastet
+- keine automatische Migration
+- Daten-Schema bleibt `6`
 
 Bewusst noch nicht umgesetzt:
-- Veröffentlichungsstruktur (Rubrik/Titel/Printausgabe/Nicht zugeordnet).
-- endgültige Nummerierungslogik.
-- optischer und praktischer Feinschliff.
-- automatische Migration vorhandener Medien oder Legacy-Objekte.
-
-Daten-Schema bleibt `6`.
+- `Nicht zugeordnet`
+- Galerie-/Video-Zuordnung zu einer konkreten Veröffentlichung
+- individueller Veröffentlichungsname
+- Nummerierungslogik
+- endgültige Veröffentlichungsvorschau
+- optischer und praktischer Feinschliff
 
 Referenz-Commit:
-`9f11ac59524338a70d075afe2b89598a609a4687`
+`c857837113c045a78b87db5ed094640901a8c9a7`
 
 `www/index.html` Blob:
-`3626c23d5bde806d445c426846ce6b08ae9e0aca`
+`bd2ad4f0c6877a1b190dd4953fd9e928b06580c1`
 
 ## Nächster sinnvoller Schritt
 
-Mit dem Veröffentlichungskontext beginnen.
+**Etappe 3b: `Nicht zugeordnet` innerhalb der Rubriken.**
 
-Fachliche Reihenfolge:
-1. Kleinste konkrete Veröffentlichung als eigener Zusammenhang zwischen Werk und Rubrik/Titel etablieren.
-2. `Nicht zugeordnet` innerhalb der Rubriken als neutralen Veröffentlichungsfall ermöglichen.
-3. Galerie(n)/Video(s) einer konkreten Veröffentlichung zuordnen.
-4. Individuellen Veröffentlichungsnamen als Eigenschaft der konkreten Veröffentlichung vorsehen.
-5. Erst danach Rubrik-/Titel-spezifische Hierarchien, Nummerierung und Darstellung weiter ausbauen.
-6. Grundlogik vor Optik und Komfort priorisieren.
-7. Keine automatische Legacy-Migration und kein unnötiger Schema-Bump.
+Ziel:
+1. Für eine konkrete Veröffentlichung (`release`) einen neutralen Fall erlauben, wenn die korrekte Rubrik noch unbekannt ist.
+2. `Nicht zugeordnet` sichtbar innerhalb des Rubrik-Kontexts führen, nicht als eigenen Haupttab und nicht als echte historische Rubrik speichern.
+3. Bestehende `release`-Objekte müssen später von `Nicht zugeordnet` auf eine reale Rubrik umgestellt werden können, ohne neu angelegt zu werden.
+4. Titel-Zuordnung darf davon unabhängig bleiben.
+5. Noch keine Galerie-/Video-Zuordnung in diesem Schritt.
+6. Keine Legacy-Migration und kein unnötiger Schema-Bump.
+7. Grundlogik zuerst; Optik und Komfort später.
