@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-09  
-Referenz-Commit: `7388243eb09be6c280c718e5b24bc36fc15d74a4`
+Stand: 2026-09-10  
+Referenz-Commit: `9f11ac59524338a70d075afe2b89598a609a4687`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,8 +20,8 @@ Referenz-Commit: `7388243eb09be6c280c718e5b24bc36fc15d74a4`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `a398304a7be6e8490f8d72e70300ab11341c31d0`
-- Fachlich berücksichtigter Code-Stand: Commit `7388243eb09be6c280c718e5b24bc36fc15d74a4`
+- `www/index.html` auf dem fachlich berücksichtigten Code-Stand: Blob `3626c23d5bde806d445c426846ce6b08ae9e0aca`
+- Fachlich berücksichtigter Code-Stand: Commit `9f11ac59524338a70d075afe2b89598a609a4687`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
@@ -29,8 +29,11 @@ Referenz-Commit: `7388243eb09be6c280c718e5b24bc36fc15d74a4`
 - Etappe 1, Etappe 2a und die korrigierte Etappe 2b wurden als App-Update auf dem Gerät erfolgreich getestet.
 - Bestehende Models, Shootings und Medien blieben nutzbar.
 - Etappe 2 Galerie-Grundlogik ist auf dem Gerät funktionsfähig: bestehende Galerien können bearbeitet und Shootings nachträglich gesetzt/geändert/entfernt werden; Models und Fotograf(en) werden geerbt und können galeriebezogen ausgeschlossen werden; Fotos können direkt einer Galerie zugeordnet und dort angezeigt/geöffnet werden.
-- Video-Grundmodell begonnen und auf dem Gerät getestet: eigener Verwaltungs-Tab `Videos`, `＋ Video`, Video als eigenständiges Werkobjekt, optionale Shooting-Zuordnung bei Erstellung sowie Anzeige der geerbten Models/Fotograf(en)/Datum/Ort.
-- Beim ersten Video-Schritt fehlte der Verwaltungs-Kontext für `＋ Video`; dieser Anschlussfehler ist im aktuellen Stand korrigiert und auf dem Gerät erfolgreich getestet.
+- Video-Grundmodell ist auf dem Gerät funktional: eigener Verwaltungs-Tab `Videos`, `＋ Video`, Video als eigenständiges Werkobjekt, optionale Shooting-Zuordnung bei Erstellung und Bearbeitung sowie Anzeige der geerbten Models/Fotograf(en)/Datum/Ort.
+- Bestehende Videos können nachträglich einem Shooting zugeordnet, auf ein anderes Shooting umgestellt oder vom Shooting gelöst werden.
+- Geerbte Models und Fotograf(en) können video-bezogen einzeln ausgeschlossen werden.
+- Videodateien können direkt einem Video-Werk zugeordnet werden; die direkte Wiedergabe nutzt die bestehende Medienlogik.
+- Beim ersten Video-Schritt fehlte der Verwaltungs-Kontext für `＋ Video`; dieser Anschlussfehler ist korrigiert und auf dem Gerät erfolgreich getestet.
 - Daten-Schema bleibt `6`; es findet weiterhin keine automatische Migration vorhandener Medien in Galerie-/Video-Objekte statt.
 
 ## Stabile Funktionen
@@ -498,6 +501,10 @@ Erfolgreich dokumentiert:
 - Korrektur Etappe 2b: neu angelegte Shootings erscheinen in der Galerie-Shooting-Auswahl
 - Etappe 2c: bestehende Galerie bearbeiten und Shooting nachträglich zuordnen, ändern oder entfernen
 - Etappe 2d: neue Galerie ohne manuelle Bezeichnung/Notiz; bestehende Legacy-Werte bleiben unangetastet
+- Galerie: Model-/Fotografen-Ausnahmen, direkte Foto-Zuordnung sowie Anzeige/Öffnung direkt zugeordneter Fotos
+- Video: nachträgliche Shooting-Bearbeitung
+- Video: Model-/Fotografen-Ausnahmen
+- Video: direkte Videodatei-Zuordnung und Wiedergabe über die bestehende Medienlogik
 
 Noch nicht separat dokumentiert:
 - Research-Löschschutz
@@ -506,7 +513,7 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 2 -- neue Werklogik, aktueller stabiler Zwischenstand**
+**Etappe 2 -- Shooting / Galerie / Video-Grundlogik abgeschlossen**
 
 Auf dem Gerät erfolgreich getestet:
 - Shooting als Entstehungsbasis mit Datum, Ort, Models und Fotograf(en).
@@ -518,32 +525,35 @@ Auf dem Gerät erfolgreich getestet:
 - Anzeige und Öffnung der direkt zugeordneten Fotos innerhalb der Galerie.
 - Video als eigenständiges Werkobjekt mit eigenem Verwaltungs-Tab und `＋ Video`.
 - Video kann bei Erstellung einem vorhandenen Shooting zugeordnet werden.
-- Video zeigt daraus geerbte Models, Fotograf(en), Datum und Ort.
-- Der zunächst fehlende `＋ Video`-Anschluss wurde korrigiert und anschließend erfolgreich auf dem Gerät getestet.
+- Bestehendes Video kann nachträglich bearbeitet werden; Shooting kann gesetzt, geändert oder entfernt werden.
+- Video erbt Models und Fotograf(en) aus dem Shooting; einzelne Models/Fotograf(en) können video-bezogen ausgeschlossen werden.
+- Videodateien können direkt einem Video-Werk zugeordnet werden.
+- Direkt zugeordnete Videodateien werden beim Video-Werk angezeigt und über die bestehende Medienlogik wiedergegeben.
+- Der zunächst fehlende `＋ Video`-Anschluss wurde korrigiert und auf dem Gerät erfolgreich getestet.
 
-Noch nicht umgesetzt bzw. bewusst zurückgestellt:
-- Video nachträglich bearbeiten / Shooting ändern oder entfernen.
-- Model-/Fotografen-Ausnahmen für Video.
-- Direkte Videodatei → Video-Zuordnung.
+Bewusst noch nicht umgesetzt:
 - Veröffentlichungsstruktur (Rubrik/Titel/Printausgabe/Nicht zugeordnet).
 - endgültige Nummerierungslogik.
 - optischer und praktischer Feinschliff.
-- automatische Migration vorhandener Medien.
+- automatische Migration vorhandener Medien oder Legacy-Objekte.
 
 Daten-Schema bleibt `6`.
 
 Referenz-Commit:
-`7388243eb09be6c280c718e5b24bc36fc15d74a4`
+`9f11ac59524338a70d075afe2b89598a609a4687`
 
 `www/index.html` Blob:
-`a398304a7be6e8490f8d72e70300ab11341c31d0`
+`3626c23d5bde806d445c426846ce6b08ae9e0aca`
 
 ## Nächster sinnvoller Schritt
 
-Etappe 2 beim Video-Grundmodell fortsetzen:
-1. Vor neuer Bearbeitung aktuellen `main`-Stand und `www/index.html` erneut prüfen.
-2. Bestehendes Video bearbeitbar machen; Shooting nachträglich setzen, ändern oder entfernen.
-3. Danach Video-Vererbung um Model-/Fotografen-Ausnahmen ergänzen.
-4. Anschließend Videodateien direkt dem Video-Werk zuordnen.
-5. Grundlogik vor Optik und Komfort priorisieren.
-6. Keine automatische Medienmigration und kein unnötiger Schema-Bump.
+Mit dem Veröffentlichungskontext beginnen.
+
+Fachliche Reihenfolge:
+1. Kleinste konkrete Veröffentlichung als eigener Zusammenhang zwischen Werk und Rubrik/Titel etablieren.
+2. `Nicht zugeordnet` innerhalb der Rubriken als neutralen Veröffentlichungsfall ermöglichen.
+3. Galerie(n)/Video(s) einer konkreten Veröffentlichung zuordnen.
+4. Individuellen Veröffentlichungsnamen als Eigenschaft der konkreten Veröffentlichung vorsehen.
+5. Erst danach Rubrik-/Titel-spezifische Hierarchien, Nummerierung und Darstellung weiter ausbauen.
+6. Grundlogik vor Optik und Komfort priorisieren.
+7. Keine automatische Legacy-Migration und kein unnötiger Schema-Bump.
