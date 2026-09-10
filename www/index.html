@@ -2275,12 +2275,18 @@ body.archiveFilterOpen .bottom{display:none!important}
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
 <div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
-<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
+<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
 <div id="mediaWorkGalleryPanel" class="mediaWorkShootPanel hidden">
  <div class="shootFinderHead"><div><b>Galerie auswählen</b><div class="small">Ausgewählte Fotos direkt einer Galerie zuordnen</div></div><button type="button" id="mediaWorkGalleryCancel">Schließen</button></div>
  <label for="mediaWorkGallerySelect">Galerie</label>
  <select id="mediaWorkGallerySelect"></select>
  <div class="shootPanelActions"><button type="button" id="mediaWorkGalleryCancelBottom">Abbrechen</button><button type="button" id="mediaWorkGalleryConfirm" class="primaryAction">Zuordnen</button></div>
+</div>
+<div id="mediaWorkVideoPanel" class="mediaWorkShootPanel hidden">
+ <div class="shootFinderHead"><div><b>Video auswählen</b><div class="small">Ausgewählte Videodatei direkt einem Video zuordnen</div></div><button type="button" id="mediaWorkVideoCancel">Schließen</button></div>
+ <label for="mediaWorkVideoSelect">Video</label>
+ <select id="mediaWorkVideoSelect"></select>
+ <div class="shootPanelActions"><button type="button" id="mediaWorkVideoCancelBottom">Abbrechen</button><button type="button" id="mediaWorkVideoConfirm" class="primaryAction">Zuordnen</button></div>
 </div>
 <div id="mediaWorkShootPanel" class="mediaWorkShootPanel">
  <div class="shootFinderHead"><div><b>Shooting auswählen</b><div class="small">Ausgewählte Medien einem Shooting zuordnen</div></div><button type="button" id="mediaWorkShootCancel">Schließen</button></div>
@@ -10022,6 +10028,9 @@ function galleryCreationContext(gallery){
 function galleryPhotoMedia(gallery){
  return relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/'));
 }
+function videoMedia(video){
+ return relatedObjects(video.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/'));
+}
 function videoShootings(video){
  return (video?.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id&&x.type==='shoot')).filter(Boolean);
 }
@@ -10061,7 +10070,8 @@ function archiveBelongsToModel(a,modelId){
    return linked.some(x=>
      (x.type==='shoot'&&shootingBelongsToModel(x,modelId)) ||
      (x.type==='series'&&seriesBelongsToModel(x,modelId)) ||
-     (x.type==='gallery'&&archiveBelongsToModel(x,modelId))
+     (x.type==='gallery'&&archiveBelongsToModel(x,modelId)) ||
+     (x.type==='video'&&archiveBelongsToModel(x,modelId))
    );
  }
  return a.modelId===modelId;
@@ -10543,6 +10553,7 @@ function renderArchive(){
        const inheritedCreditIds=v.creditsMode==='custom'?(v.credits||[]):videoInheritedCredits(v);
        const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
        const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
+       const media=videoMedia(v);
        return `<div class="archiveItem">
         <b>${esc(v.title||'Video')}</b>
         <div class="small" style="margin-top:7px">${shoots.length
@@ -10552,6 +10563,7 @@ function renderArchive(){
         ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
         ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
         ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        ${media.length?`<div class="small" style="margin-top:4px">Videodatei: ${media.length}</div><div class="galleryPhotoGrid">${media.map(m=>`<div class="mediaThumb" data-media-id="${esc(m.id)}"><div class="small" style="padding:8px">Lade …</div></div>`).join('')}</div>`:''}
         <div class="itemActions">
          <button type="button" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
          <button type="button" class="deleteBtn" data-delete-archive="${esc(v.id)}">Löschen</button>
@@ -10861,6 +10873,59 @@ document.getElementById('mediaWorkAssignGalleryBtn').onclick=()=>{
 document.getElementById('mediaWorkGalleryConfirm').onclick=()=>assignSelectedMediaToGallery(document.getElementById('mediaWorkGallerySelect').value);
 document.getElementById('mediaWorkGalleryCancel').onclick=closeMediaGalleryPanel;
 document.getElementById('mediaWorkGalleryCancelBottom').onclick=closeMediaGalleryPanel;
+
+function mediaVideoOptionLabel(video){
+ const context=videoCreationContext(video);
+ const modelNames=videoInheritedModelIds(video).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const details=[context.date||'',modelNames.join(' + ')].filter(Boolean).join(' · ');
+ return `${video.title||'Video'}${details?` · ${details}`:''}`;
+}
+function closeMediaVideoPanel(){
+ const panel=document.getElementById('mediaWorkVideoPanel');
+ panel.classList.add('hidden');
+ panel.classList.remove('mobileOpen');
+}
+function assignSelectedMediaToVideo(videoId){
+ const video=(state.archive||[]).find(a=>a.id===videoId&&a.type==='video');
+ if(!video||!mediaWorkSelected.size)return;
+ const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(selected.length!==1||!String(selected[0].mimeType||'').toLowerCase().startsWith('video/')){
+  toast('Bitte genau eine Videodatei auswählen.');
+  return;
+ }
+ const media=selected[0];
+ const label=mediaVideoOptionLabel(video);
+ if(!confirm(`Videodatei „${label}“ zuordnen?`))return;
+ media.links=media.links||[];
+ if(!media.links.includes(videoId))media.links.push(videoId);
+ delete media.workflowStatus;
+ video.links=video.links||[];
+ if(!video.links.includes(media.id))video.links.push(media.id);
+ if(!save())return;
+ mediaWorkSelected.clear();
+ closeMediaVideoPanel();
+ renderArchive();
+ toast('Videodatei dem Video zugeordnet.');
+}
+document.getElementById('mediaWorkAssignVideoBtn').onclick=()=>{
+ if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
+ const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(selected.length!==1||!String(selected[0].mimeType||'').toLowerCase().startsWith('video/')){
+  toast('Bitte genau eine Videodatei auswählen.');
+  return;
+ }
+ const videos=(state.archive||[]).filter(a=>a.type==='video').slice().reverse();
+ if(!videos.length){toast('Noch kein Video im Archiv vorhanden.');return}
+ const sel=document.getElementById('mediaWorkVideoSelect');
+ sel.innerHTML=videos.map(v=>`<option value="${esc(v.id)}">${esc(mediaVideoOptionLabel(v))}</option>`).join('');
+ document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');
+ const panel=document.getElementById('mediaWorkVideoPanel');
+ panel.classList.remove('hidden');
+ panel.classList.add('mobileOpen');
+};
+document.getElementById('mediaWorkVideoConfirm').onclick=()=>assignSelectedMediaToVideo(document.getElementById('mediaWorkVideoSelect').value);
+document.getElementById('mediaWorkVideoCancel').onclick=closeMediaVideoPanel;
+document.getElementById('mediaWorkVideoCancelBottom').onclick=closeMediaVideoPanel;
 
 document.getElementById('mediaWorkAssignShootBtn').onclick=()=>{
  if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
