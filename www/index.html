@@ -10106,7 +10106,9 @@ function archiveBelongsToModel(a,modelId){
    const releaseSeries=linkedObjects(a.id,'series');
    if(releaseSeries.some(s=>seriesBelongsToModel(s,modelId)))return true;
    const releaseTitles=linkedObjects(a.id,'title');
-   return releaseTitles.some(t=>(state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&shootingBelongsToModel(sh,modelId)));
+   if(releaseTitles.some(t=>(state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&shootingBelongsToModel(sh,modelId))))return true;
+   const releaseWorksLinked=[...linkedObjects(a.id,'gallery'),...linkedObjects(a.id,'video')];
+   return releaseWorksLinked.some(work=>archiveBelongsToModel(work,modelId));
  }
  if(a.type==='gallery'){
    if(a.modelsMode==='custom')return (a.modelIds||[]).includes(modelId);
