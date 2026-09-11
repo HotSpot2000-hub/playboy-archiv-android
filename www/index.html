@@ -10675,7 +10675,7 @@ function renderArchive(){
     const releaseCards=unassignedReleases.map(release=>{
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
-     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Rubrik: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div></div>`;
+     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Rubrik: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Bearbeiten</button></div></div>`;
     }).join('');
     box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedReleases.length} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Arbeitsliste für Veröffentlichungen, deren Rubrik noch ungeklärt ist.</div>${releaseCards||'<div class="seriesEmptyState small">Aktuell keine Veröffentlichung ohne Rubrik-Zuordnung.</div>'}</div></div>`;
    }else if(!selectedSeries){
