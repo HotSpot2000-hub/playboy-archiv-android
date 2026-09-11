@@ -2467,6 +2467,11 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveEditOwnershipWrap" class="hidden">
  <label style="font-weight:400"><input id="archiveEditOwned" type="checkbox" style="width:auto"> Printausgabe im eigenen Bestand</label>
 </div>
+<div id="archiveEditWorkReleaseWrap" class="hidden">
+ <label>Veröffentlichung <span class="small">(optional)</span></label>
+ <select id="archiveEditWorkRelease"><option value="">Noch keiner Veröffentlichung zugeordnet</option></select>
+ <div class="small" style="margin-top:6px">Das Werk bleibt eigenständig. Die Veröffentlichung kann später gesetzt, geändert oder entfernt werden.</div>
+</div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Rubrik <span class="small">(optional)</span></label>
  <select id="archiveEditReleaseSeries"><option value="">Nicht zugeordnet</option></select>
@@ -2532,6 +2537,11 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Titel <span class="small">(optional)</span></label>
   <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
   <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, „Nicht zugeordnet“ wählen. Ein Titel ist optional. Galerie und Video werden erst im nächsten Schritt zugeordnet.</div>
+ </div>
+ <div id="archiveWorkReleaseWrap" class="hidden">
+  <label>Veröffentlichung <span class="small">(optional)</span></label>
+  <select id="archiveWorkRelease"><option value="">Noch keiner Veröffentlichung zugeordnet</option></select>
+  <div class="small" style="margin-top:5px">Galerie und Video bleiben eigenständige Werke. Die Veröffentlichung wird nur verknüpft.</div>
  </div>
  <div id="archiveGalleryShootWrap" class="hidden">
   <label>Vorhandenes Shooting <span class="small">(optional)</span></label>
@@ -9855,6 +9865,9 @@ document.getElementById('archiveEditDate').oninput=()=>{
  document.getElementById('archiveEditNote').value=a.note||'';
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',a.type!=='publication');
  document.getElementById('archiveEditReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
+ const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
+ workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
+ if(isGallery||isVideo)fillWorkReleaseSelector('archiveEditWorkRelease',a);
  if(isRelease)fillReleaseSelectors('archiveEditReleaseSeries','archiveEditReleaseTitle',a);
  document.getElementById('archiveEditTitleFields').classList.toggle('hidden',a.type!=='title');
  const shootModelsWrap=document.getElementById('archiveEditShootModelsWrap');
@@ -9893,6 +9906,7 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.credits=[...new Set([...nonPhotographerCredits,...selectedPhotographers])];
  }
  if(a.type==='gallery'){
+   setWorkReleaseRelation(a,document.getElementById('archiveEditWorkRelease').value);
    const selectedShootId=document.getElementById('archiveEditGalleryShoot').value;
    const oldShootIds=galleryShootings(a).map(sh=>sh.id);
    oldShootIds.forEach(shootId=>{
@@ -9928,6 +9942,7 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    }
  }
  if(a.type==='video'){
+   setWorkReleaseRelation(a,document.getElementById('archiveEditWorkRelease').value);
    const selectedShootId=document.getElementById('archiveEditVideoShoot').value;
    const oldShootIds=videoShootings(a).map(sh=>sh.id);
    oldShootIds.forEach(shootId=>{
@@ -10575,6 +10590,7 @@ function renderArchive(){
        const photos=galleryPhotoMedia(g);
        return `<div class="archiveItem">
         <b>${esc(g.title||'Galerie ohne Bezeichnung')}</b>
+        <div class="small" style="margin-top:7px">Veröffentlichung: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
         ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
         <div class="small" style="margin-top:7px">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
@@ -10603,7 +10619,8 @@ function renderArchive(){
        const media=videoMedia(v);
        return `<div class="archiveItem">
         <b>${esc(v.title||'Video')}</b>
-        <div class="small" style="margin-top:7px">${shoots.length
+        <div class="small" style="margin-top:7px">Veröffentlichung: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
+        <div class="small" style="margin-top:4px">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
           :'Shooting noch nicht bekannt'}</div>
         ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
@@ -11047,6 +11064,25 @@ function addPickedFiles(fileList){
  renderMediaQueue();
 }
 
+function workRelease(work){
+ return linkedObjects(work.id,'release')[0]||null;
+}
+function fillWorkReleaseSelector(selectId,work){
+ const sel=document.getElementById(selectId);if(!sel)return;
+ const current=work?workRelease(work)?.id||'':'';
+ const releases=(state.archive||[]).filter(a=>a&&a.type==='release').slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}));
+ sel.innerHTML='<option value="">Noch keiner Veröffentlichung zugeordnet</option>'+releases.map(r=>`<option value="${esc(r.id)}">${esc(releaseDisplayTitle(r))}</option>`).join('');
+ sel.value=current;
+}
+function setWorkReleaseRelation(work,releaseId){
+ const oldReleaseIds=linkedObjects(work.id,'release').map(r=>r.id);
+ oldReleaseIds.forEach(id=>{const r=(state.archive||[]).find(a=>a.id===id&&a.type==='release');if(r)r.links=(r.links||[]).filter(x=>x!==work.id)});
+ work.links=(work.links||[]).filter(id=>{const x=(state.archive||[]).find(a=>a.id===id);return !x||x.type!=='release'});
+ if(releaseId){
+  work.links.push(releaseId);
+  const r=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');if(r){r.links=r.links||[];if(!r.links.includes(work.id))r.links.push(work.id)}
+ }
+}
 function releaseRelationLabel(obj){
  if(!obj)return '';
  if(obj.type==='series')return obj.title||'Rubrik ohne Titel';
@@ -11101,6 +11137,7 @@ function refreshArchiveForm(){
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
  document.getElementById('archiveReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
+ document.getElementById('archiveWorkReleaseWrap').classList.toggle('hidden',!(isGallery||isVideo));
  document.getElementById('archiveGalleryShootWrap').classList.toggle('hidden',!isGallery);
  document.getElementById('archiveVideoShootWrap').classList.toggle('hidden',!isVideo);
  document.getElementById('archiveShootFieldsWrap').classList.toggle('hidden',!isShoot);
@@ -11111,6 +11148,7 @@ function refreshArchiveForm(){
  document.getElementById('archiveDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveDate').placeholder=isShoot?'YYYY-MM-DD':'z. B. März 2010';
  if(isRelease)fillReleaseSelectors('archiveReleaseSeries','archiveReleaseTitle',null);
+ if(isGallery||isVideo)fillWorkReleaseSelector('archiveWorkRelease',null);
  if(isShoot){
   document.getElementById('archiveShootModels').innerHTML=modelSelector([],false);
   document.getElementById('archiveShootPhotographers').innerHTML=shootingPhotographerSelector([],false);
@@ -11245,7 +11283,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  if(!title){toast('Bitte einen Titel eingeben.');return}
  if(type==='gallery'){
   const shootingId=document.getElementById('archiveGalleryShoot').value;
+  const releaseId=document.getElementById('archiveWorkRelease').value;
   if(shootingId)links.push(shootingId);
+  if(releaseId)links.push(releaseId);
   const item={
    id:'A-'+Date.now(),
    type:'gallery',
@@ -11268,7 +11308,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  }
  if(type==='video'){
   const shootingId=document.getElementById('archiveVideoShoot').value;
+  const releaseId=document.getElementById('archiveWorkRelease').value;
   if(shootingId)links.push(shootingId);
+  if(releaseId)links.push(releaseId);
   const item={
    id:'A-'+Date.now(),
    type:'video',
