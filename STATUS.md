@@ -40,6 +40,11 @@ Referenz-Commit: `2bd09f0df41a5258581db2054adbf97079f533c7`
 - Der bestehende technische Typ `publication` bleibt unverändert und steht weiterhin für die bisherige Printpublikations-/Printausgabenlogik; er wurde nicht umgedeutet.
 - Es gibt weiterhin keine automatische Legacy-Migration und keinen Schema-Bump.
 
+Hinweis zum aktuellen `main` nach der fachlichen Klärung vom 2026-09-11:
+- Nach dem stabilen 3g-Referenzstand wurde ein erster, **nicht gerätetesteter und inzwischen fachlich verworfener 4a-Entwurf** von `www/index.html` hochgeladen (Commit `7d17fc8f0c6ca8faa022431068c3623e383bb76e`, Blob `6f959ec768b6092462b3bb209bd7e774b717bc28`).
+- Dieser Entwurf machte `Veröffentlichung` zu stark als zusätzliche sichtbare Bedienebene. Er gilt **nicht** als neuer stabiler Stand und darf nicht als Grundlage für weitere Änderungen übernommen werden.
+- Stabiler Referenz-Code bleibt bis zur nächsten kontrollierten Ersatzdatei Commit `2bd09f0df41a5258581db2054adbf97079f533c7` mit `www/index.html` Blob `2995b85c80ad2ea74592afb6950565651fd55b09`.
+
 ## Stabile Funktionen
 
 - Archiv-Restore über SAF.
@@ -79,8 +84,8 @@ Diese Struktur bleibt bis zu den einzelnen kontrollierten Umbau-Schritten funkti
 
 - `Shooting = Entstehung`
 - `Galerie/Video = Werk`
-- `Rubrik/Titel/Printausgabe = Veröffentlichungskontext`
-- `release = kleinste konkrete Veröffentlichung`
+- `Rubrik/Titel/Printausgabe = Arten bzw. Kontexte der Veröffentlichung`
+- `release = einzelner konkreter veröffentlichter Beitrag innerhalb eines solchen Kontexts; technisch nützlich zur Bündelung zusammengehöriger Galerie/Video, aber nicht als konkurrierender Hauptbereich gedacht`
 - `Seiten = konkrete Fundstelle innerhalb einer Printausgabe`
 - Unklare Beziehungen dürfen unklar bleiben.
 - Keine künstlichen Shootings, Medien oder Veröffentlichungszuordnungen.
@@ -178,6 +183,15 @@ Beispiele:
 
 Seit Etappe 3a existiert dafür der technische Typ `release`.
 
+Fachlich neu geklärt am 2026-09-11:
+- Für den Benutzer sind Rubrik, Titel und Printausgabe die eigentlichen Veröffentlichungskontexte. Sie bleiben fachlich unterscheidbar und sollen in der Archivübersicht getrennt erscheinen.
+- In der Verwaltung können Rubrik, Titel und perspektivisch Printausgabe wegen ihrer ähnlichen Bedienlogik stärker zusammengeführt werden; Printausgaben behalten ihre zusätzlichen ausgabenspezifischen Felder.
+- `release` bleibt als konkrete einzelne Veröffentlichung bzw. als Gruppierung zusammengehöriger Medien sinnvoll, soll aber **nicht** als zusätzlicher gleichrangiger Hauptbereich zwischen Kontext und Medien verstanden werden.
+- Eine konkrete Veröffentlichung kann einen echten individuellen Originalnamen besitzen, besonders bei Playboy Plus, z. B. `Divine Morning`, `High Time` oder `Hot Sands`.
+- Ist ein solcher Originalname vorhanden, hat er in der sichtbaren Bezeichnung Vorrang.
+- Fehlt ein individueller Name, wird die Veröffentlichung generisch aus Veröffentlichungskontext + Model + Veröffentlichungsnummer bezeichnet, z. B. `Cyber Girl of the Year • Breann McGregor • Nr. 1` oder `Busty Babes • Tiffany Ryan • Nr. 1`.
+- Galerie und Video sind die Medien/Werke dieser konkreten Veröffentlichung; Shooting bleibt ihr Entstehungskontext.
+
 Aktuell umgesetzt:
 - `release` anlegen
 - `release` bearbeiten
@@ -194,7 +208,9 @@ Aktueller Stand:
 
 ### Nummerierungslogik
 
-Nummern laufen **pro konkreter Veröffentlichung** und getrennt nach Werktyp.
+Aktuell implementierter 3e-Stand: Werknummern laufen **pro konkreter Veröffentlichung** und getrennt nach Werktyp.
+
+Fachlich neu zu prüfen/umzustellen: Nach der Klärung vom 2026-09-11 soll die sichtbare `Nr. 1`, `Nr. 2`, ... primär **konkrete Veröffentlichungen desselben Kontexts/Models** unterscheiden, nicht Galerie und Video innerhalb derselben Veröffentlichung. Galerie und Video derselben Veröffentlichung bleiben zusammengehörige Medien dieses einen Beitrags. Die bestehende 3e-Implementierung wird deshalb nicht ungeprüft als endgültiges Zielmodell fortgeschrieben.
 
 Regeln:
 - Bei genau einer Galerie sichtbar nur `Galerie`.
@@ -559,30 +575,43 @@ Hinweis zum Gerätetest:
 - Während der 3g-Eingrenzung blockierte Google Play Protect einen Zwischenbuild. Kontrollierte Diagnosebuilds und der abschließende 3g-Stand ließen sich anschließend als UPDATE installieren. Daraus wird keine eindeutige Quellcode-Ursache für die Play-Protect-Klassifizierung abgeleitet. Play Protect bleibt aktiviert; Warnungen werden nicht blind übergangen.
 
 Bewusst offen:
-- Detailprobleme aus 3f sowie die Verständlichkeit und visuelle Hierarchie der Verwaltung werden jetzt gebündelt konsolidiert.
-- Die aktuelle Übergangsoberfläche ist funktional, die Zusammenhänge Rubrik → Veröffentlichung → Galerie/Video und Shooting = Entstehung sind für den Benutzer noch nicht ausreichend selbsterklärend.
+- Detailprobleme aus 3f sowie die Verständlichkeit und visuelle Hierarchie der Verwaltung werden gebündelt konsolidiert.
+- Die bisherige Annahme `Rubrik → sichtbare Veröffentlichung → Galerie/Video` als zwingende zusätzliche Bedienebene wurde nach gemeinsamer fachlicher Klärung verworfen.
+- Die bestehende 3e-Werknummerierung ist funktional stabil, entspricht aber möglicherweise nicht mehr dem endgültigen sichtbaren Nummerierungsziel und wird kontrolliert neu bewertet.
 - kontrollierte Legacy-Migration
 
-Fachliche Klarstellung bleibt verbindlich:
-- `noch keiner Veröffentlichung zugeordnet` bedeutet: Galerie/Video besitzt noch keinen konkreten Veröffentlichungskontext.
-- `Nicht zugeordnet` bedeutet: eine konkrete Veröffentlichung existiert bereits, ihre Rubrik ist aber noch offen/ungeklärt.
-- `Nicht zugeordnet` ist eine Arbeits-/Rechercheliste innerhalb der Rubriken, keine behauptete historische Playboy-Rubrik und kein künstliches `series`-Objekt.
-- `Individual` wird nicht wieder als eigener fachlicher Hauptbereich verwendet; individuelle Namen gehören zur konkreten Veröffentlichung.
+Fachliche Klarstellung vom 2026-09-11:
+- Rubrik, Titel und Printausgabe sind für den Benutzer Veröffentlichungskontexte bzw. Arten der Veröffentlichung.
+- Sie können in der **Verwaltung** wegen ähnlicher Abläufe stärker zusammengeführt werden, sollen in der **Archivübersicht** aber getrennt erkennbar bleiben.
+- `release` bezeichnet den einzelnen konkreten veröffentlichten Beitrag und kann technisch die zusammengehörigen Galerien/Videos bündeln; es ist kein zusätzlicher konkurrierender Hauptbereich.
+- Hat der Beitrag einen echten individuellen Namen, wird dieser verwendet, z. B. `Divine Morning`, `High Time` oder `Hot Sands`.
+- Fehlt ein individueller Name, wird eine generische sichtbare Bezeichnung aus Kontext + Model + Veröffentlichungsnummer gebildet, z. B. `Cyber Girl of the Year • Breann McGregor • Nr. 1` oder `Busty Babes • Tiffany Ryan • Nr. 1`.
+- Galerie und Video sind Medien/Werke des Beitrags; Shooting = Entstehung.
+- Medien, die noch nicht eindeutig einem Veröffentlichungskontext zugeordnet werden können, sollen als Arbeitsbestand unter `Rubriken → Nicht zugeordnet` auffindbar sein. Die genaue technische Abbildung dieses vereinfachten Bedienmodells wird vor Umsetzung gegen die vorhandenen 3b/3c-Beziehungen geprüft.
+- `Individual` wird nicht wieder als eigener fachlicher Hauptbereich verwendet.
 
-Referenz-Commit:
+Referenz-Commit des letzten **stabilen und gerätetesteten** Codes:
 `2bd09f0df41a5258581db2054adbf97079f533c7`
 
-`www/index.html` Blob:
+Stabiles `www/index.html` Blob:
 `2995b85c80ad2ea74592afb6950565651fd55b09`
+
+Aktueller `main` enthält zusätzlich den **nicht gerätetesteten, fachlich verworfenen 4a-Entwurf**:
+- Commit `7d17fc8f0c6ca8faa022431068c3623e383bb76e`
+- `www/index.html` Blob `6f959ec768b6092462b3bb209bd7e774b717bc28`
+- Dieser Code ist vor der nächsten funktionalen Arbeit durch eine kontrollierte Ersatzdatei zu ersetzen; er ist nicht der stabile Referenzstand.
 
 ## Nächster sinnvoller Schritt
 
-**Konsolidierung der Verwaltung nach Etappe 3g -- Verständlichkeit vor weiterer Strukturerweiterung.**
+**Konsolidierung 4a neu planen -- zuerst das gemeinsam geklärte sichtbare Modell, dann Code.**
 
 Ziel:
-1. Die fachliche Hierarchie muss aus der Oberfläche selbst verständlich werden: Rubrik → konkrete Veröffentlichung → Galerie/Video; Shooting = Entstehungskontext.
-2. `Nicht zugeordnet` muss ohne Vorwissen eindeutig als Arbeitsliste für Veröffentlichungen mit noch ungeklärter Rubrik erkennbar sein.
-3. Die Verwaltung soll klar unterscheiden zwischen einer Veröffentlichung ohne Rubrik und einem Werk, das noch keiner Veröffentlichung zugeordnet ist.
-4. Bestehende Detail-/Darstellungsprobleme aus 3f werden gemeinsam mit der Navigations- und Hierarchieklärung geprüft.
-5. Vor jeder Änderung wird zuerst das konkrete Bedienziel in einfachen Worten festgelegt; Gerätetests werden danach mit erwartbarem Soll-Verhalten beschrieben.
-6. Keine Legacy-Migration und kein Schema-Bump in diesem Konsolidierungsschritt, sofern nicht separat beschlossen und getestet.
+1. Keine zusätzliche sichtbare Hauptsparte `Veröffentlichungen` etablieren.
+2. Verwaltungskonzept für Rubrik, Titel und Printausgabe gemeinsam entwerfen; ähnliche Bedienung zusammenführen, fachliche Unterschiede erhalten.
+3. Archivübersicht weiterhin getrennt nach Rubriken, Titeln und Printausgaben darstellen.
+4. `release` als einzelnen Beitrag/Mediengruppe verwenden: optionaler Originalname; sonst generische Bezeichnung Kontext + Model + Nr.
+5. Prüfen und anschließend separat testen, wie die Veröffentlichungsnummer die bisherigen Galerie-/Video-Werknummern sichtbar ablöst, ohne bestehende Daten zu beschädigen.
+6. `Nicht zugeordnet` so vereinfachen, dass der Benutzer dort noch nicht eindeutig zuordenbare Medien/Beiträge findet, ohne zwischen technischen Zwischenzuständen unterscheiden zu müssen.
+7. Den bereits hochgeladenen, aber verworfenen 4a-Entwurf nicht weiterentwickeln; nächste `index.html` wieder vollständig aus dem dann aktuellen `main` ableiten und den verworfenen Ansatz gezielt ersetzen.
+8. Vor jedem Gerätetest zuerst in einfachen Worten erklären: Was soll fachlich passieren? Was wurde geändert? Wo ist es sichtbar? Woran erkennt man das korrekte Verhalten?
+9. Keine Legacy-Migration und kein Schema-Bump, solange dies nicht separat beschlossen und getestet wird.
