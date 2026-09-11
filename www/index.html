@@ -10549,10 +10549,27 @@ function renderArchive(){
     ? items.slice().reverse().map(release=>{
        const series=linkedObjects(release.id,'series')[0]||null;
        const title=linkedObjects(release.id,'title')[0]||null;
+       const galleries=releaseWorks(release,'gallery');
+       const videos=releaseWorks(release,'video');
+       const leadGallery=galleries[0]||null;
+       const leadPhotos=leadGallery?galleryPhotoMedia(leadGallery):[];
+       const videoEntries=videos.map(video=>({video,media:videoMedia(video)}));
+       const firstVideoMedia=videoEntries.flatMap(x=>x.media)[0]||null;
+       const preview=leadGallery
+        ? (leadPhotos.length
+          ? `<div class="galleryPhotoGrid" style="grid-template-columns:minmax(0,150px);max-width:150px"><div class="mediaThumb" data-release-gallery-cover="${esc(leadGallery.id)}"><div class="small" style="padding:8px">Lade Vorschau …</div></div></div>`
+          : '<div class="small" style="margin-top:9px">Führende Galerie hat noch kein Foto.</div>')
+        : (firstVideoMedia
+          ? `<div class="galleryPhotoGrid" style="grid-template-columns:minmax(0,150px);max-width:150px"><div class="mediaThumb" data-media-id="${esc(firstVideoMedia.id)}"><div class="small" style="padding:8px">Lade Video …</div></div></div>`
+          : (videos.length?'<div class="small" style="margin-top:9px">Video vorhanden, aber noch keine Videodatei zugeordnet.</div>':'<div class="small" style="margin-top:9px">Noch kein Werk zugeordnet.</div>'));
+       const galleryAccess=galleries.map(g=>`<button type="button" data-open-release-work="${esc(g.id)}">${esc(workDisplayLabel(g))}</button>`).join('');
+       const videoAccess=videoEntries.map(({video,media})=>`<button type="button" data-open-release-work="${esc(video.id)}">${esc(workDisplayLabel(video))}</button>${media.map((m,i)=>`<button type="button" data-release-video-quick="${esc(m.id)}" aria-label="${esc(workDisplayLabel(video))} ${i+1} abspielen" title="${esc(workDisplayLabel(video))} ${i+1} abspielen">▶︎</button>`).join('')}`).join('');
        return `<div class="archiveItem">
         <b>${esc(releaseDisplayTitle(release))}</b>
         <div class="small" style="margin-top:7px">Rubrik: ${esc(series?releaseRelationLabel(series):'Nicht zugeordnet')}</div>
         <div class="small" style="margin-top:4px">Titel: ${esc(title?releaseRelationLabel(title):'nicht zugeordnet')}</div>
+        ${preview}
+        ${(galleryAccess||videoAccess)?`<div class="itemActions" style="margin-top:9px">${galleryAccess}${videoAccess}</div>`:''}
         <div class="itemActions">
          <button type="button" data-edit-archive="${esc(release.id)}">Bearbeiten</button>
          <button type="button" class="deleteBtn" data-delete-archive="${esc(release.id)}">Löschen</button>
@@ -10737,6 +10754,8 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  box.querySelectorAll('[data-open-related-series]').forEach(x=>x.onclick=e=>{e.stopPropagation();openSeriesDetail(x.dataset.openRelatedSeries)});
  box.querySelectorAll('[data-open-related-publication]').forEach(x=>x.onclick=e=>{e.stopPropagation();openPublicationDetail(x.dataset.openRelatedPublication)});
  box.querySelectorAll('[data-open-shooting-standalone]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openShootingStandalone,null));
+ box.querySelectorAll('[data-open-release-work]').forEach(x=>x.onclick=e=>{e.stopPropagation();const work=(state.archive||[]).find(a=>a.id===x.dataset.openReleaseWork&&(a.type==='gallery'||a.type==='video'));if(!work)return;archiveTab=work.type;managementSearch='';managementSearchOpen=false;renderArchive();setTimeout(()=>{const btn=[...document.querySelectorAll('[data-edit-archive]')].find(b=>b.dataset.editArchive===work.id);btn?.closest('.archiveItem')?.scrollIntoView({behavior:'smooth',block:'center'})},0)});
+ box.querySelectorAll('[data-release-video-quick]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingVideoQuick(x.dataset.releaseVideoQuick)});
  box.querySelectorAll('[data-shoot-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.shootWorkSelect;if(shootWorkSelected.has(id))shootWorkSelected.delete(id);else shootWorkSelected.add(id);renderArchive()});
  const swFab=document.getElementById('shootSelectionFab'),swMenu=document.getElementById('shootSelectionMenu');
  if(swFab){swFab.classList.toggle('visible',archiveTab==='shoot'&&shootWorkSelected.size>0);swFab.textContent=`Auswahl (${shootWorkSelected.size})`;if(!shootWorkSelected.size){swFab.setAttribute('aria-expanded','false');swMenu&&swMenu.classList.remove('mobileOpen')}}
@@ -10755,6 +10774,7 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  hydrateSeriesCovers(box);
  hydratePublicationCovers(box);
  hydrateShootingCovers(box);
+ hydrateReleaseGalleryCovers(box);
  if(typeof renderTimeline==='function')renderTimeline();
 }
 document.querySelectorAll('[data-archive-tab]').forEach(b=>b.onclick=()=>{archiveTab=b.dataset.archiveTab;managementSearch='';managementSearchOpen=false;renderArchive()});
@@ -11581,6 +11601,25 @@ async function hydrateShootingCovers(root=document){
   }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
  }
  bindShootingVideoQuick(root);
+}
+async function hydrateReleaseGalleryCovers(root=document){
+ const nodes=[...root.querySelectorAll('[data-release-gallery-cover]')];
+ for(const node of nodes){
+  try{
+   const gallery=(state.archive||[]).find(a=>a.id===node.dataset.releaseGalleryCover&&a.type==='gallery');
+   const photos=gallery?galleryPhotoMedia(gallery):[];
+   if(!photos.length){node.innerHTML='<div class="small" style="padding:8px">Kein Foto</div>';continue}
+   let chosen=photos[0];
+   for(const photo of photos){if(await mediaIsPortrait(photo.id)){chosen=photo;break}}
+   const blob=await getMedia(chosen.id);
+   if(blob&&blob.type&&blob.type.startsWith('image/')){
+    node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Veröffentlichungsvorschau">`;
+    node.dataset.mediaId=chosen.id;
+    node.dataset.galleryIds=photos.map(x=>x.id).join(',');
+   }else node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>';
+  }catch(e){console.error(e);node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>'}
+ }
+ bindInteractiveMedia(root);
 }
 let returnSeriesId=null;
 let returnShootingContext=null;
