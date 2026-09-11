@@ -2473,6 +2473,8 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="small" style="margin-top:6px">Das Werk bleibt eigenständig. Die Veröffentlichung kann später gesetzt, geändert oder entfernt werden.</div>
 </div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
+ <label>Individueller Name <span class="small">(optional)</span></label>
+ <input id="archiveEditReleaseName" placeholder="z. B. Divine Morning">
  <label>Rubrik <span class="small">(optional)</span></label>
  <select id="archiveEditReleaseSeries"><option value="">Nicht zugeordnet</option></select>
  <label>Titel <span class="small">(optional)</span></label>
@@ -2532,11 +2534,13 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label style="font-weight:400"><input id="publicationOwned" type="checkbox" style="width:auto"> Printausgabe im eigenen Bestand</label>
  </div>
  <div id="archiveReleaseFieldsWrap" class="hidden">
+  <label>Individueller Name <span class="small">(optional)</span></label>
+  <input id="archiveReleaseName" placeholder="z. B. Divine Morning">
   <label>Rubrik <span class="small">(optional)</span></label>
   <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
   <label>Titel <span class="small">(optional)</span></label>
   <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
-  <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, „Nicht zugeordnet“ wählen. Ein Titel ist optional. Galerie und Video werden erst im nächsten Schritt zugeordnet.</div>
+  <div class="small" style="margin-top:6px">Der individuelle Name gehört zur Veröffentlichung. Rubrik und Titel bleiben davon unabhängig.</div>
  </div>
  <div id="archiveWorkReleaseWrap" class="hidden">
   <label>Veröffentlichung <span class="small">(optional)</span></label>
@@ -9865,6 +9869,7 @@ document.getElementById('archiveEditDate').oninput=()=>{
  document.getElementById('archiveEditNote').value=a.note||'';
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',a.type!=='publication');
  document.getElementById('archiveEditReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
+ if(isRelease)document.getElementById('archiveEditReleaseName').value=a.name||'';
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
  workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
  if(isGallery||isVideo)fillWorkReleaseSelector('archiveEditWorkRelease',a);
@@ -9892,6 +9897,7 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.owned=document.getElementById('archiveEditOwned').checked;
  }
  if(a.type==='release'){
+   a.name=document.getElementById('archiveEditReleaseName').value.trim();
    const seriesId=document.getElementById('archiveEditReleaseSeries').value;
    const titleId=document.getElementById('archiveEditReleaseTitle').value;
    setReleaseRelations(a,seriesId,titleId);
@@ -11095,7 +11101,9 @@ function releaseRelationLabel(obj){
 function releaseDisplayTitle(release){
  const series=linkedObjects(release.id,'series')[0];
  const title=linkedObjects(release.id,'title')[0];
- return [series?releaseRelationLabel(series):'',title?releaseRelationLabel(title):''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
+ const context=[series?releaseRelationLabel(series):'',title?releaseRelationLabel(title):''].filter(Boolean).join(' • ');
+ const name=String(release?.name||'').trim();
+ return [context,name].filter(Boolean).join(' • ')||'Nicht zugeordnet';
 }
 function fillReleaseSelectors(seriesSelectId,titleSelectId,release){
  const seriesSelect=document.getElementById(seriesSelectId),titleSelect=document.getElementById(titleSelectId);
@@ -11118,7 +11126,7 @@ function setReleaseRelations(release,seriesId,titleId){
   if(!release.links.includes(id))release.links.push(id);
   const x=(state.archive||[]).find(a=>a.id===id);if(x){x.links=x.links||[];if(!x.links.includes(release.id))x.links.push(release.id)}
  });
- release.title=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
+ release.title=releaseDisplayTitle(release);
 }
 function openArchive(){
  pendingMediaFiles=[];
@@ -11126,6 +11134,7 @@ function openArchive(){
  document.getElementById('archiveTitle').value='';
  document.getElementById('archiveDate').value='';
  document.getElementById('archiveNote').value='';
+ document.getElementById('archiveReleaseName').value='';
  document.getElementById('archiveShootLocation').value='';
  document.getElementById('archiveFile').value='';
  refreshArchiveForm();openOverlay('archivePane');
@@ -11244,11 +11253,13 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    return;
  }
  if(type==='release'){
+  const name=document.getElementById('archiveReleaseName').value.trim();
   const seriesId=document.getElementById('archiveReleaseSeries').value;
   const titleId=document.getElementById('archiveReleaseTitle').value;
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
-  const releaseTitle=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
-  const item={id:'A-'+Date.now(),type:'release',title:releaseTitle,date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
+  const context=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ');
+  const releaseTitle=[context,name].filter(Boolean).join(' • ')||'Nicht zugeordnet';
+  const item={id:'A-'+Date.now(),type:'release',name,title:releaseTitle,date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
   linkItem(item);finish();return;
  }
  if(type==='title'){
