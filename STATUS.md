@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-11  
-Referenz-Commit: `e316c2d7948995fa657d14a40703caa6949a2ad2`
+Referenz-Commit: `2bd09f0df41a5258581db2054adbf97079f533c7`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,8 +20,8 @@ Referenz-Commit: `e316c2d7948995fa657d14a40703caa6949a2ad2`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- Fachlich berücksichtigter Code-Stand: Commit `e316c2d7948995fa657d14a40703caa6949a2ad2`
-- `www/index.html` auf diesem Stand: Blob `0533561b84a5b11da91fa19a340b69b5557ce5c5`
+- Fachlich berücksichtigter Code-Stand: Commit `2bd09f0df41a5258581db2054adbf97079f533c7`
+- `www/index.html` auf diesem Stand: Blob `2995b85c80ad2ea74592afb6950565651fd55b09`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
@@ -34,6 +34,7 @@ Referenz-Commit: `e316c2d7948995fa657d14a40703caa6949a2ad2`
 - Etappe 3d ist umgesetzt und auf dem Gerät erfolgreich getestet: `release` besitzt ein optionales individuelles Namensfeld; der Name kann gesetzt, geändert und entfernt werden, ohne Rubrik-/Titel- oder Werkbeziehungen zu verändern.
 - Etappe 3e ist umgesetzt und auf dem Gerät erfolgreich getestet: Galerien und Videos erhalten pro konkreter Veröffentlichung getrennte permanente interne Werknummern; sichtbare Nummern erscheinen erst ab zwei Werken desselben Typs und gelöschte Nummern werden nicht wiederverwendet.
 - Etappe 3f ist funktional umgesetzt und auf dem Gerät erfolgreich getestet: Veröffentlichungen zeigen eine galeriegeführte Vorschau, Werkzugriffe und separate Video-Schnellzugriffe; Video-only-Veröffentlichungen erhalten eine Video-Darstellung. Detail-/Darstellungsprobleme werden bewusst später gebündelt behandelt.
+- Etappe 3g ist umgesetzt und auf dem Gerät erfolgreich getestet: `Nicht zugeordnet` erscheint innerhalb der Rubriken wie ein aufrufbarer Arbeitslisten-Eintrag mit Anzahl offener Veröffentlichungen, ohne künstliches `series`-Objekt; Veröffentlichungen ohne Rubrik werden dort gelistet und verschwinden nach Zuordnung zu einer echten Rubrik automatisch. Die Veröffentlichung kann aus der Arbeitsliste über den bestehenden Bearbeiten-Mechanismus geöffnet werden.
 - `release` wird sichtbar als `Veröffentlichung` geführt und kann angelegt, bearbeitet und gelöscht werden.
 - Eine konkrete Veröffentlichung kann einer Rubrik (`series`), einem Titel (`title`) oder beiden zugeordnet werden.
 - Der bestehende technische Typ `publication` bleibt unverändert und steht weiterhin für die bisherige Printpublikations-/Printausgabenlogik; er wurde nicht umgedeutet.
@@ -470,13 +471,14 @@ Die Migration soll klein, kontrolliert und gerätetestbar erfolgen.
    - Model-/Fotografen-Ausschlüsse
    - direkte Medienzuordnung
 
-3. **Konkrete Veröffentlichung** — in Arbeit
+3. **Konkrete Veröffentlichung** — Grundblock 3a–3g umgesetzt/getestet
    - 3a: technischer Typ `release`, CRUD, Rubrik-/Titel-Zuordnung — umgesetzt/getestet
    - 3b: `Nicht zugeordnet` innerhalb Rubriken — umgesetzt/getestet
    - 3c: Galerie/Video an konkrete Veröffentlichung hängen — umgesetzt/getestet
    - 3d: individueller Veröffentlichungsname — umgesetzt/getestet
-   - 3e: permanente Werknummern pro Veröffentlichung — als Nächstes
-   - danach Vorschau- und Video-Symbol-Logik
+   - 3e: permanente Werknummern pro Veröffentlichung — umgesetzt/getestet
+   - 3f: Vorschau- und Video-Symbol-/Werkzugriffslogik — umgesetzt/getestet
+   - 3g: `Nicht zugeordnet` als sichtbare Arbeitsliste innerhalb Rubriken — umgesetzt/getestet
 
 4. **Titel**
    - Titelfamilien und Stufen
@@ -528,6 +530,7 @@ Erfolgreich dokumentiert:
 - Etappe 3d: optionalen individuellen Veröffentlichungsnamen setzen, ändern und entfernen; Rubrik-/Titel-Zuordnung sowie Galerie-/Video-Verknüpfungen bleiben erhalten
 - Etappe 3e: permanente Werknummern pro konkreter Veröffentlichung; Galerie und Video getrennt nummeriert, sichtbare Nummerierung erst ab zwei Werken desselben Typs, gelöschte Nummern nicht wiederverwendet und sichtbare Nummer bei nur einem verbleibenden Werk wieder ausgeblendet
 - Etappe 3f: Veröffentlichungsvorschau und Werkzugriff; Galerie führt bei vorhandener Galerie die Vorschau, hochformatiges Foto wird nach Möglichkeit bevorzugt, Galerie-/Video-Werke bleiben separat erreichbar und Video-only-Veröffentlichungen erhalten eine Video-Darstellung
+- Etappe 3g: `Nicht zugeordnet` innerhalb Rubriken; sichtbarer Eintrag mit Zähler, Liste der `release`-Objekte ohne Rubrik, Bearbeiten-Zugriff und automatisches Verschwinden nach Zuordnung zu einer echten Rubrik; kein künstliches `series`-Objekt
 - bestehende Models, Shootings, Galerien, Videos und Printpublikationen blieben dabei funktionsfähig
 
 Noch nicht separat dokumentiert:
@@ -537,46 +540,49 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 3f -- Veröffentlichungsvorschau und Werkzugriff**
+**Etappe 3g -- `Nicht zugeordnet` als nutzbarer Eintrag innerhalb der Rubriken**
 
-Auf dem Gerät funktional erfolgreich getestet:
-- eine Veröffentlichung mit Galerie und Foto zeigt eine Galerie-Vorschau
-- nach Möglichkeit wird ein geeignetes hochformatiges Foto der führenden Galerie bevorzugt
-- Galerie und Video bleiben getrennte Werke; Videos werden nicht in die Galerie hineingemischt
-- Galerie-/Video-Werke einer Veröffentlichung sind aus der Veröffentlichungsansicht erreichbar
-- Videos besitzen separate Schnellzugriffe zur Wiedergabe; mehrere Videos bleiben getrennt erreichbar
-- Video-only-Veröffentlichungen erhalten eine Video-Darstellung
-- die Werknummerierung aus Etappe 3e bleibt erhalten
-- keine automatische Legacy-Migration
-- Daten-Schema bleibt `6`
+Auf dem Gerät erfolgreich getestet:
+- `Nicht zugeordnet` erscheint innerhalb der Rubriken auf derselben Auswahlebene wie echte Rubriken.
+- Der Eintrag zeigt die Anzahl konkreter Veröffentlichungen (`release`) ohne Rubrik-Zuordnung.
+- Beim Öffnen werden genau diese noch ungeklärten Veröffentlichungen als Arbeitsliste gezeigt.
+- Dafür wird kein künstliches `series`-Objekt angelegt; fehlende Rubrik-Zuordnung bleibt der fachliche Zustand.
+- Eine Veröffentlichung kann aus der Arbeitsliste über den bestehenden `Bearbeiten`-Mechanismus geöffnet werden.
+- Wird eine echte Rubrik zugeordnet und gespeichert, verschwindet die Veröffentlichung automatisch aus `Nicht zugeordnet` und der Zähler passt sich an.
+- Individuelle Veröffentlichungsnamen bleiben Eigenschaften des `release`; `Individual` wird nicht als fachlicher Hauptbereich wieder eingeführt.
+- Die Modellzugehörigkeit einer Veröffentlichung kann über verknüpfte Galerie/Video → Shooting abgeleitet werden, wenn sie nicht bereits über Rubrik/Titel bestimmt ist.
+- Galerie-/Video-, Shooting-, Werknummerierungs- und Vorschau-Logik aus 3c–3f bleiben erhalten.
+- Keine automatische Legacy-Migration.
+- Daten-Schema bleibt `6`.
+
+Hinweis zum Gerätetest:
+- Während der 3g-Eingrenzung blockierte Google Play Protect einen Zwischenbuild. Kontrollierte Diagnosebuilds und der abschließende 3g-Stand ließen sich anschließend als UPDATE installieren. Daraus wird keine eindeutige Quellcode-Ursache für die Play-Protect-Klassifizierung abgeleitet. Play Protect bleibt aktiviert; Warnungen werden nicht blind übergangen.
 
 Bewusst offen:
-- Detailprobleme der Vorschau, Darstellung und Bedienung werden später gebündelt bereinigt
-- sichtbarer aufrufbarer `Nicht zugeordnet`-Eintrag in der Rubriken-Oberfläche
+- Detailprobleme aus 3f sowie die Verständlichkeit und visuelle Hierarchie der Verwaltung werden jetzt gebündelt konsolidiert.
+- Die aktuelle Übergangsoberfläche ist funktional, die Zusammenhänge Rubrik → Veröffentlichung → Galerie/Video und Shooting = Entstehung sind für den Benutzer noch nicht ausreichend selbsterklärend.
 - kontrollierte Legacy-Migration
 
 Fachliche Klarstellung bleibt verbindlich:
-- `noch keiner Veröffentlichung zugeordnet` bedeutet: Galerie/Video besitzt noch keinen konkreten Veröffentlichungskontext
-- `Nicht zugeordnet` bedeutet: eine konkrete Veröffentlichung existiert bereits, ihre Rubrik ist aber noch offen/ungeklärt
-- `Nicht zugeordnet` soll innerhalb der Rubriken wie ein aufrufbarer Rubrik-Eintrag nutzbar sein, ohne künstliches `series`-Objekt
-- `Individual` wird nicht wieder als eigener fachlicher Hauptbereich verwendet; individuelle Namen gehören zur konkreten Veröffentlichung
+- `noch keiner Veröffentlichung zugeordnet` bedeutet: Galerie/Video besitzt noch keinen konkreten Veröffentlichungskontext.
+- `Nicht zugeordnet` bedeutet: eine konkrete Veröffentlichung existiert bereits, ihre Rubrik ist aber noch offen/ungeklärt.
+- `Nicht zugeordnet` ist eine Arbeits-/Rechercheliste innerhalb der Rubriken, keine behauptete historische Playboy-Rubrik und kein künstliches `series`-Objekt.
+- `Individual` wird nicht wieder als eigener fachlicher Hauptbereich verwendet; individuelle Namen gehören zur konkreten Veröffentlichung.
 
 Referenz-Commit:
-`e316c2d7948995fa657d14a40703caa6949a2ad2`
+`2bd09f0df41a5258581db2054adbf97079f533c7`
 
 `www/index.html` Blob:
-`0533561b84a5b11da91fa19a340b69b5557ce5c5`
+`2995b85c80ad2ea74592afb6950565651fd55b09`
 
 ## Nächster sinnvoller Schritt
 
-**Etappe 3g: `Nicht zugeordnet` als nutzbarer Eintrag innerhalb der Rubriken.**
+**Konsolidierung der Verwaltung nach Etappe 3g -- Verständlichkeit vor weiterer Strukturerweiterung.**
 
 Ziel:
-1. In der Rubriken-Oberfläche erscheint `Nicht zugeordnet` sichtbar neben den echten Rubriken.
-2. Dafür wird ausdrücklich kein künstliches `series`-Objekt angelegt.
-3. Beim Öffnen werden genau die konkreten Veröffentlichungen (`release`) gezeigt, die keine Rubrik-Zuordnung besitzen.
-4. Der Eintrag dient als Arbeits-/Rechercheliste für noch ungeklärte Rubrik-Zuordnungen und soll die Anzahl offener Veröffentlichungen erkennbar machen.
-5. Individuelle Veröffentlichungsnamen bleiben Eigenschaften der Veröffentlichung; `Individual` wird nicht als fachlicher Hauptbereich wieder eingeführt.
-6. Veröffentlichungen können weiterhin später einer echten Rubrik zugeordnet werden und verschwinden dann automatisch aus `Nicht zugeordnet`.
-7. Galerie-/Video-, Shooting-, Werknummerierungs- und Vorschau-Logik aus 3c–3f bleiben unverändert.
-8. Keine Legacy-Migration und kein Schema-Bump.
+1. Die fachliche Hierarchie muss aus der Oberfläche selbst verständlich werden: Rubrik → konkrete Veröffentlichung → Galerie/Video; Shooting = Entstehungskontext.
+2. `Nicht zugeordnet` muss ohne Vorwissen eindeutig als Arbeitsliste für Veröffentlichungen mit noch ungeklärter Rubrik erkennbar sein.
+3. Die Verwaltung soll klar unterscheiden zwischen einer Veröffentlichung ohne Rubrik und einem Werk, das noch keiner Veröffentlichung zugeordnet ist.
+4. Bestehende Detail-/Darstellungsprobleme aus 3f werden gemeinsam mit der Navigations- und Hierarchieklärung geprüft.
+5. Vor jeder Änderung wird zuerst das konkrete Bedienziel in einfachen Worten festgelegt; Gerätetests werden danach mit erwartbarem Soll-Verhalten beschrieben.
+6. Keine Legacy-Migration und kein Schema-Bump in diesem Konsolidierungsschritt, sofern nicht separat beschlossen und getestet.
