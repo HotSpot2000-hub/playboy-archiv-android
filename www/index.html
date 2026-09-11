@@ -2469,10 +2469,10 @@ body.archiveFilterOpen .bottom{display:none!important}
 </div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Rubrik <span class="small">(optional)</span></label>
- <select id="archiveEditReleaseSeries"><option value="">Keine Rubrik zugeordnet</option></select>
+ <select id="archiveEditReleaseSeries"><option value="">Nicht zugeordnet</option></select>
  <label>Titel <span class="small">(optional)</span></label>
  <select id="archiveEditReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
- <div class="small" style="margin-top:6px">Mindestens eine Rubrik oder ein Titel ist nötig.</div>
+ <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, bleibt die Veröffentlichung neutral unter „Nicht zugeordnet“. Ein Titel kann unabhängig davon gesetzt werden.</div>
 </div>
  <button class="btn primary" id="saveArchiveEditBtn">Änderungen speichern</button>
  <button class="btn" id="cancelArchiveEditBtn">Abbrechen</button>
@@ -2528,10 +2528,10 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
  <div id="archiveReleaseFieldsWrap" class="hidden">
   <label>Rubrik <span class="small">(optional)</span></label>
-  <select id="archiveReleaseSeries"><option value="">Keine Rubrik zugeordnet</option></select>
+  <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
   <label>Titel <span class="small">(optional)</span></label>
   <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
-  <div class="small" style="margin-top:6px">Mindestens eine Rubrik oder ein Titel ist nötig. Galerie und Video werden erst im nächsten Schritt zugeordnet.</div>
+  <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, „Nicht zugeordnet“ wählen. Ein Titel ist optional. Galerie und Video werden erst im nächsten Schritt zugeordnet.</div>
  </div>
  <div id="archiveGalleryShootWrap" class="hidden">
   <label>Vorhandenes Shooting <span class="small">(optional)</span></label>
@@ -9881,7 +9881,6 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
  if(a.type==='release'){
    const seriesId=document.getElementById('archiveEditReleaseSeries').value;
    const titleId=document.getElementById('archiveEditReleaseTitle').value;
-   if(!seriesId&&!titleId){toast('Bitte mindestens eine Rubrik oder einen Titel zuordnen.');return}
    setReleaseRelations(a,seriesId,titleId);
  }
  if(a.type==='shoot'){
@@ -10531,7 +10530,7 @@ function renderArchive(){
        const title=linkedObjects(release.id,'title')[0]||null;
        return `<div class="archiveItem">
         <b>${esc(releaseDisplayTitle(release))}</b>
-        <div class="small" style="margin-top:7px">Rubrik: ${esc(series?releaseRelationLabel(series):'nicht zugeordnet')}</div>
+        <div class="small" style="margin-top:7px">Rubrik: ${esc(series?releaseRelationLabel(series):'Nicht zugeordnet')}</div>
         <div class="small" style="margin-top:4px">Titel: ${esc(title?releaseRelationLabel(title):'nicht zugeordnet')}</div>
         <div class="itemActions">
          <button type="button" data-edit-archive="${esc(release.id)}">Bearbeiten</button>
@@ -11060,7 +11059,7 @@ function releaseRelationLabel(obj){
 function releaseDisplayTitle(release){
  const series=linkedObjects(release.id,'series')[0];
  const title=linkedObjects(release.id,'title')[0];
- return [series?releaseRelationLabel(series):'',title?releaseRelationLabel(title):''].filter(Boolean).join(' • ')||release.title||'Veröffentlichung';
+ return [series?releaseRelationLabel(series):'',title?releaseRelationLabel(title):''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
 }
 function fillReleaseSelectors(seriesSelectId,titleSelectId,release){
  const seriesSelect=document.getElementById(seriesSelectId),titleSelect=document.getElementById(titleSelectId);
@@ -11069,7 +11068,7 @@ function fillReleaseSelectors(seriesSelectId,titleSelectId,release){
  const selectedTitleId=release?linkedObjects(release.id,'title')[0]?.id||'':'';
  const series=(state.archive||[]).filter(a=>a&&a.type==='series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
  const titles=(state.archive||[]).filter(a=>a&&a.type==='title').slice().sort(sortTitlesChronological);
- seriesSelect.innerHTML='<option value="">Keine Rubrik zugeordnet</option>'+series.map(x=>`<option value="${esc(x.id)}">${esc(releaseRelationLabel(x))}</option>`).join('');
+ seriesSelect.innerHTML='<option value="">Nicht zugeordnet</option>'+series.map(x=>`<option value="${esc(x.id)}">${esc(releaseRelationLabel(x))}</option>`).join('');
  titleSelect.innerHTML='<option value="">Kein Titel zugeordnet</option>'+titles.map(x=>`<option value="${esc(x.id)}">${esc(releaseRelationLabel(x))}</option>`).join('');
  seriesSelect.value=selectedSeriesId;
  titleSelect.value=selectedTitleId;
@@ -11083,7 +11082,7 @@ function setReleaseRelations(release,seriesId,titleId){
   if(!release.links.includes(id))release.links.push(id);
   const x=(state.archive||[]).find(a=>a.id===id);if(x){x.links=x.links||[];if(!x.links.includes(release.id))x.links.push(release.id)}
  });
- release.title=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ')||'Veröffentlichung';
+ release.title=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
 }
 function openArchive(){
  pendingMediaFiles=[];
@@ -11209,9 +11208,8 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  if(type==='release'){
   const seriesId=document.getElementById('archiveReleaseSeries').value;
   const titleId=document.getElementById('archiveReleaseTitle').value;
-  if(!seriesId&&!titleId){toast('Bitte mindestens eine Rubrik oder einen Titel zuordnen.');return}
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
-  const releaseTitle=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ')||'Veröffentlichung';
+  const releaseTitle=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
   const item={id:'A-'+Date.now(),type:'release',title:releaseTitle,date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
   linkItem(item);finish();return;
  }
