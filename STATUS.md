@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-10  
-Referenz-Commit: `c857837113c045a78b87db5ed094640901a8c9a7`
+Stand: 2026-09-11  
+Referenz-Commit: `1599a681f7a7fe8671065b4953608e5858b10bd0`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,8 +20,8 @@ Referenz-Commit: `c857837113c045a78b87db5ed094640901a8c9a7`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- Fachlich berücksichtigter Code-Stand: Commit `c857837113c045a78b87db5ed094640901a8c9a7`
-- `www/index.html` auf diesem Stand: Blob `bd2ad4f0c6877a1b190dd4953fd9e928b06580c1`
+- Fachlich berücksichtigter Code-Stand: Commit `1599a681f7a7fe8671065b4953608e5858b10bd0`
+- `www/index.html` auf diesem Stand: Blob `ccaacfcbc6f738b34fcafac0ff942b5bf8056f89`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
@@ -29,6 +29,7 @@ Referenz-Commit: `c857837113c045a78b87db5ed094640901a8c9a7`
 - Galerie-Grundlogik funktioniert auf dem Gerät: Shooting setzen/ändern/entfernen, Models/Fotograf(en) erben und einzeln ausschließen, Fotos direkt zuordnen und öffnen.
 - Video-Grundmodell funktioniert auf dem Gerät: eigener Verwaltungs-Tab `Videos`, optionales Shooting bei Erstellung/Bearbeitung, geerbte Models/Fotograf(en)/Datum/Ort, Ausschlüsse, direkte Videodatei-Zuordnung und Wiedergabe.
 - Etappe 3a ist umgesetzt und auf dem Gerät erfolgreich getestet: neuer separater technischer Typ `release` für die kleinste konkrete Veröffentlichung.
+- Etappe 3b ist umgesetzt und auf dem Gerät erfolgreich getestet: `release` kann ohne Rubrik/Titel neutral als `Nicht zugeordnet` bestehen und später derselben Veröffentlichung real zugeordnet werden.
 - `release` wird sichtbar als `Veröffentlichung` geführt und kann angelegt, bearbeitet und gelöscht werden.
 - Eine konkrete Veröffentlichung kann einer Rubrik (`series`), einem Titel (`title`) oder beiden zugeordnet werden.
 - Der bestehende technische Typ `publication` bleibt unverändert und steht weiterhin für die bisherige Printpublikations-/Printausgabenlogik; er wurde nicht umgedeutet.
@@ -466,8 +467,8 @@ Die Migration soll klein, kontrolliert und gerätetestbar erfolgen.
 
 3. **Konkrete Veröffentlichung** — in Arbeit
    - 3a: technischer Typ `release`, CRUD, Rubrik-/Titel-Zuordnung — umgesetzt/getestet
-   - 3b: `Nicht zugeordnet` innerhalb Rubriken — als Nächstes
-   - danach Galerie/Video an konkrete Veröffentlichung hängen
+   - 3b: `Nicht zugeordnet` innerhalb Rubriken — umgesetzt/getestet
+   - 3c: Galerie/Video an konkrete Veröffentlichung hängen — als Nächstes
    - danach individueller Veröffentlichungsname
    - danach Nummerierung, Vorschau- und Video-Symbol-Logik
 
@@ -516,6 +517,7 @@ Erfolgreich dokumentiert:
 - Video: Model-/Fotografen-Ausnahmen
 - Video: direkte Videodatei-Zuordnung und Wiedergabe über die bestehende Medienlogik
 - Etappe 3a: `Veröffentlichungen` (`release`) als eigener Verwaltungstyp; Anlegen, Bearbeiten, Löschen sowie Zuordnung nur Rubrik, nur Titel oder Rubrik + Titel erfolgreich getestet
+- Etappe 3b: `Nicht zugeordnet` als neutraler Rubrik-Fall; ohne künstliches Rubrikobjekt, mit späterer Umstellung derselben Veröffentlichung auf reale Rubrik und zurück erfolgreich getestet
 - bestehende Models, Shootings, Galerien, Videos und Printpublikationen blieben dabei funktionsfähig
 
 Noch nicht separat dokumentiert:
@@ -525,23 +527,20 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 3a -- konkrete Veröffentlichung als eigener Zusammenhang**
+**Etappe 3b -- `Nicht zugeordnet` innerhalb der Rubriken**
 
 Auf dem Gerät erfolgreich getestet:
-- eigener Verwaltungs-Tab `Veröffentlichungen`
-- `＋ Veröffentlichung`
-- neuer technischer Typ `release`
-- Veröffentlichung nur einer Rubrik zuordnen
-- Veröffentlichung nur einem Titel zuordnen
-- Veröffentlichung gleichzeitig Rubrik + Titel zuordnen
-- bestehende Veröffentlichung bearbeiten und Zuordnung ändern
-- Veröffentlichung löschen
-- bestehender Typ `publication` blieb unangetastet
+- konkrete Veröffentlichung (`release`) kann ohne Rubrik und ohne Titel gespeichert werden
+- sichtbare Darstellung lautet `Nicht zugeordnet`
+- `Nicht zugeordnet` ist kein eigenes `series`-/Rubrikobjekt und kein eigener Haupttab
+- dieselbe Veröffentlichung kann später einer realen Rubrik zugeordnet werden
+- dieselbe Veröffentlichung kann wieder auf `Nicht zugeordnet` zurückgesetzt werden
+- Titel-Zuordnung bleibt davon unabhängig
+- keine Galerie-/Video-Zuordnung in diesem Schritt
 - keine automatische Migration
 - Daten-Schema bleibt `6`
 
 Bewusst noch nicht umgesetzt:
-- `Nicht zugeordnet`
 - Galerie-/Video-Zuordnung zu einer konkreten Veröffentlichung
 - individueller Veröffentlichungsname
 - Nummerierungslogik
@@ -549,20 +548,20 @@ Bewusst noch nicht umgesetzt:
 - optischer und praktischer Feinschliff
 
 Referenz-Commit:
-`c857837113c045a78b87db5ed094640901a8c9a7`
+`1599a681f7a7fe8671065b4953608e5858b10bd0`
 
 `www/index.html` Blob:
-`bd2ad4f0c6877a1b190dd4953fd9e928b06580c1`
+`ccaacfcbc6f738b34fcafac0ff942b5bf8056f89`
 
 ## Nächster sinnvoller Schritt
 
-**Etappe 3b: `Nicht zugeordnet` innerhalb der Rubriken.**
+**Etappe 3c: Galerie(n) und Video(s) einer konkreten Veröffentlichung (`release`) zuordnen.**
 
 Ziel:
-1. Für eine konkrete Veröffentlichung (`release`) einen neutralen Fall erlauben, wenn die korrekte Rubrik noch unbekannt ist.
-2. `Nicht zugeordnet` sichtbar innerhalb des Rubrik-Kontexts führen, nicht als eigenen Haupttab und nicht als echte historische Rubrik speichern.
-3. Bestehende `release`-Objekte müssen später von `Nicht zugeordnet` auf eine reale Rubrik umgestellt werden können, ohne neu angelegt zu werden.
-4. Titel-Zuordnung darf davon unabhängig bleiben.
-5. Noch keine Galerie-/Video-Zuordnung in diesem Schritt.
-6. Keine Legacy-Migration und kein unnötiger Schema-Bump.
-7. Grundlogik zuerst; Optik und Komfort später.
+1. Galerie und Video erhalten eine optionale direkte Beziehung zu genau einer konkreten Veröffentlichung.
+2. Vorhandene Veröffentlichungen werden in den Galerie-/Video-Masken auswählbar.
+3. Zuordnung muss bei bestehenden Galerie-/Video-Werken gesetzt, geändert und entfernt werden können.
+4. Die bestehende Shooting-Beziehung und deren Vererbung bleiben unangetastet.
+5. `release` bleibt der Veröffentlichungszusammenhang; Galerie/Video bleiben getrennte Werke.
+6. Noch keine Nummerierung, kein individueller Veröffentlichungsname und keine endgültige Vorschau-Hierarchie.
+7. Keine Legacy-Migration und kein Schema-Bump.
