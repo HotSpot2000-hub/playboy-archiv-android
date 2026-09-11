@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-11  
-Referenz-Commit: `52b0c292ffb56d6f0fc3926ea232d1c442a88e46`
+Referenz-Commit: `d027a2a4341adebebe65a083debebc05df75a96c`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -20,8 +20,8 @@ Referenz-Commit: `52b0c292ffb56d6f0fc3926ea232d1c442a88e46`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- Fachlich berücksichtigter Code-Stand: Commit `52b0c292ffb56d6f0fc3926ea232d1c442a88e46`
-- `www/index.html` auf diesem Stand: Blob `4cf24084943878d37ec1f63520bfe9312ce32e7b`
+- Fachlich berücksichtigter Code-Stand: Commit `d027a2a4341adebebe65a083debebc05df75a96c`
+- `www/index.html` auf diesem Stand: Blob `08d85eede82834746bd65e66ab70b9abaac07355`
 - Sichtbare Begriffe wurden in Etappe 1 auf `Rubriken` und `Galerien` umgestellt; technische Legacy-IDs bleiben vorerst unverändert.
 - Etappe 2a: Shooting-Erfassung ist auf Datum, Ort, Models und Fotograf(en) ausgerichtet; neue Shootings benötigen keinen manuellen fachlichen Titel und keine Notiz.
 - Etappe 2b: Galerien können beim Anlegen mit einem Shooting verknüpft werden und leiten Models, Fotograf(en), Datum und Ort daraus ab.
@@ -31,6 +31,7 @@ Referenz-Commit: `52b0c292ffb56d6f0fc3926ea232d1c442a88e46`
 - Etappe 3a ist umgesetzt und auf dem Gerät erfolgreich getestet: neuer separater technischer Typ `release` für die kleinste konkrete Veröffentlichung.
 - Etappe 3b ist umgesetzt und auf dem Gerät erfolgreich getestet: `release` kann ohne Rubrik/Titel neutral als `Nicht zugeordnet` bestehen und später derselben Veröffentlichung real zugeordnet werden.
 - Etappe 3c ist umgesetzt und auf dem Gerät erfolgreich getestet: Galerien und Videos können optional genau einer konkreten Veröffentlichung (`release`) zugeordnet, umgehängt oder wieder gelöst werden; die Shooting-Beziehung bleibt unabhängig bestehen.
+- Etappe 3d ist umgesetzt und auf dem Gerät erfolgreich getestet: `release` besitzt ein optionales individuelles Namensfeld; der Name kann gesetzt, geändert und entfernt werden, ohne Rubrik-/Titel- oder Werkbeziehungen zu verändern.
 - `release` wird sichtbar als `Veröffentlichung` geführt und kann angelegt, bearbeitet und gelöscht werden.
 - Eine konkrete Veröffentlichung kann einer Rubrik (`series`), einem Titel (`title`) oder beiden zugeordnet werden.
 - Der bestehende technische Typ `publication` bleibt unverändert und steht weiterhin für die bisherige Printpublikations-/Printausgabenlogik; er wurde nicht umgedeutet.
@@ -62,6 +63,7 @@ Der aktuelle stabile Code verwendet teilweise noch alte technische Typen und Bez
 - technischer Typ `release` ist seit Etappe 3a die konkrete Veröffentlichung
 - technischer Typ `publication` bleibt die bisherige Printpublikations-/Printausgabenstruktur und darf nicht mit `release` gleichgesetzt werden
 - `Individual` ist strukturell noch vorhanden
+- konkrete Veröffentlichungen (`release`) können einen optionalen individuellen Namen besitzen
 - neue Galerien benötigen keine manuelle Bezeichnung und keine Notiz; bestehende Legacy-Werte bleiben unangetastet
 - Galerie und Video können mit einem Shooting verknüpft werden
 - Galerie und Video können optional direkt mit genau einer konkreten Veröffentlichung (`release`) verknüpft werden
@@ -182,9 +184,9 @@ Aktuell umgesetzt:
 - Rubrik und Titel können kombiniert werden
 - neutraler Fall `Nicht zugeordnet` ohne künstliches Rubrikobjekt
 - optionale Zuordnung von Galerie und Video zu `release`; Zuordnung kann gesetzt, gewechselt und entfernt werden
+- optionaler individueller Veröffentlichungsname; kann gesetzt, geändert und entfernt werden
 
 Noch nicht umgesetzt:
-- individueller Veröffentlichungsname
 - Nummerierung pro Veröffentlichung
 - endgültige Vorschau-/Darstellungslogik
 
@@ -247,7 +249,7 @@ Regeln:
 - Wenn Galerie und Video zusammengehören, führt die Galerie die Darstellung.
 - Der frühere Begriff `Individual` wird nicht als eigener fachlicher Haupttyp fortgeführt.
 
-Noch nicht umgesetzt: eigenes Namensfeld am `release`.
+Seit Etappe 3d umgesetzt: optionales eigenes Namensfeld am `release`; der Name gehört ausschließlich zur konkreten Veröffentlichung und kann unabhängig von Rubrik/Titel geändert oder entfernt werden.
 
 ### Nicht zugeordnet
 
@@ -469,8 +471,9 @@ Die Migration soll klein, kontrolliert und gerätetestbar erfolgen.
    - 3a: technischer Typ `release`, CRUD, Rubrik-/Titel-Zuordnung — umgesetzt/getestet
    - 3b: `Nicht zugeordnet` innerhalb Rubriken — umgesetzt/getestet
    - 3c: Galerie/Video an konkrete Veröffentlichung hängen — umgesetzt/getestet
-   - 3d: individueller Veröffentlichungsname — als Nächstes
-   - danach Nummerierung, Vorschau- und Video-Symbol-Logik
+   - 3d: individueller Veröffentlichungsname — umgesetzt/getestet
+   - 3e: permanente Werknummern pro Veröffentlichung — als Nächstes
+   - danach Vorschau- und Video-Symbol-Logik
 
 4. **Titel**
    - Titelfamilien und Stufen
@@ -519,6 +522,7 @@ Erfolgreich dokumentiert:
 - Etappe 3a: `Veröffentlichungen` (`release`) als eigener Verwaltungstyp; Anlegen, Bearbeiten, Löschen sowie Zuordnung nur Rubrik, nur Titel oder Rubrik + Titel erfolgreich getestet
 - Etappe 3b: `Nicht zugeordnet` als neutraler Rubrik-Fall; ohne künstliches Rubrikobjekt, mit späterer Umstellung derselben Veröffentlichung auf reale Rubrik und zurück erfolgreich getestet
 - Etappe 3c: Galerie und Video optional einer konkreten Veröffentlichung zuordnen, Zuordnung wechseln und entfernen; vorhandene Shooting-Zuordnung bleibt dabei erhalten
+- Etappe 3d: optionalen individuellen Veröffentlichungsnamen setzen, ändern und entfernen; Rubrik-/Titel-Zuordnung sowie Galerie-/Video-Verknüpfungen bleiben erhalten
 - bestehende Models, Shootings, Galerien, Videos und Printpublikationen blieben dabei funktionsfähig
 
 Noch nicht separat dokumentiert:
@@ -528,41 +532,42 @@ Alle kommenden Umbau-Schritte müssen einzeln als App-Update getestet werden. Ap
 
 ## Zuletzt abgeschlossener Arbeitsblock
 
-**Etappe 3c -- Galerie und Video einer konkreten Veröffentlichung zuordnen**
+**Etappe 3d -- individueller Veröffentlichungsname an `release`**
 
 Auf dem Gerät erfolgreich getestet:
-- Galerie kann optional einer vorhandenen konkreten Veröffentlichung (`release`) zugeordnet werden
-- Video kann optional einer vorhandenen konkreten Veröffentlichung (`release`) zugeordnet werden
-- Zuordnung kann bei bestehenden Galerie-/Video-Werken gesetzt werden
-- Zuordnung kann auf eine andere Veröffentlichung gewechselt werden
-- Zuordnung kann wieder entfernt werden
-- die bestehende Shooting-Beziehung bleibt dabei erhalten und unabhängig
-- Galerie und Video bleiben getrennte Werkobjekte
+- konkrete Veröffentlichung (`release`) besitzt ein optionales eigenes Namensfeld
+- individueller Name kann bei einer neuen Veröffentlichung gesetzt werden
+- individueller Name kann bei einer bestehenden Veröffentlichung geändert werden
+- individueller Name kann wieder entfernt werden
+- Rubrik- und Titel-Zuordnung bleiben davon unabhängig bestehen
+- Galerie-/Video-Zuordnungen bleiben davon unabhängig bestehen
+- der individuelle Name gehört ausschließlich zur Veröffentlichung, nicht zu Galerie oder Video
+- sichtbare Veröffentlichungsbezeichnung ergänzt Rubrik/Titel um den individuellen Namen
 - keine automatische Legacy-Migration
 - Daten-Schema bleibt `6`
 
 Bewusst noch nicht umgesetzt:
-- individueller Veröffentlichungsname
-- Nummerierungslogik pro Veröffentlichung
+- permanente Nummerierungslogik pro Veröffentlichung
 - endgültige Veröffentlichungsvorschau / Video-Symbol-Logik
 - kontrollierte Legacy-Migration
 - optischer und praktischer Feinschliff
 
 Referenz-Commit:
-`52b0c292ffb56d6f0fc3926ea232d1c442a88e46`
+`d027a2a4341adebebe65a083debebc05df75a96c`
 
 `www/index.html` Blob:
-`4cf24084943878d37ec1f63520bfe9312ce32e7b`
+`08d85eede82834746bd65e66ab70b9abaac07355`
 
 ## Nächster sinnvoller Schritt
 
-**Etappe 3d: individueller Veröffentlichungsname an `release`.**
+**Etappe 3e: permanente Werknummern pro konkreter Veröffentlichung.**
 
 Ziel:
-1. Eine konkrete Veröffentlichung erhält ein optionales eigenes Namensfeld, z. B. `Divine Morning` oder `Rustic Charmer`.
-2. Der Name gehört ausschließlich zur Veröffentlichung (`release`), nicht zu Galerie oder Video.
-3. Der Name muss bei bestehenden Veröffentlichungen gesetzt, geändert und entfernt werden können.
-4. Rubrik- und Titel-Zuordnung bleiben unabhängig davon bestehen.
-5. Bei vorhandenem individuellen Namen soll dieser die fachliche Identität der Veröffentlichung sichtbar ergänzen, ohne Rubrik/Titel zu verlieren.
-6. Noch keine Nummerierung und keine endgültige Vorschau-Hierarchie.
-7. Keine Legacy-Migration und kein Schema-Bump.
+1. Galerie und Video erhalten innerhalb einer konkreten Veröffentlichung getrennte, permanente interne Nummern.
+2. Die Nummern werden bei der Zuordnung/Erstellung stabil vergeben und nach Löschen nicht wiederverwendet.
+3. Bei genau einer Galerie bleibt sichtbar nur `Galerie`; ab zwei Galerien `Galerie • Nr. 1`, `Galerie • Nr. 2`, ...
+4. Für Videos gilt dieselbe Regel getrennt: genau ein Video nur `Video`, ab zwei `Video • Nr. 1`, `Video • Nr. 2`, ...
+5. Wird später wieder nur ein Werk dieses Typs angezeigt, darf die sichtbare Nummer entfallen; die interne Nummer bleibt dennoch erhalten.
+6. Veröffentlichungsname, Rubrik/Titel, Shooting-Beziehungen und bestehende Medienlogik bleiben unverändert.
+7. Noch keine endgültige Vorschau-Hierarchie oder Video-Symbol-Logik.
+8. Keine Legacy-Migration und kein Schema-Bump.
