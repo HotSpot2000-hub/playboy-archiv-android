@@ -10595,7 +10595,7 @@ function renderArchive(){
        const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const photos=galleryPhotoMedia(g);
        return `<div class="archiveItem">
-        <b>${esc(g.title||'Galerie ohne Bezeichnung')}</b>
+        <b>${esc(workDisplayLabel(g))}</b>
         <div class="small" style="margin-top:7px">Veröffentlichung: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
         ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
         <div class="small" style="margin-top:7px">${shoots.length
@@ -10624,7 +10624,7 @@ function renderArchive(){
        const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const media=videoMedia(v);
        return `<div class="archiveItem">
-        <b>${esc(v.title||'Video')}</b>
+        <b>${esc(workDisplayLabel(v))}</b>
         <div class="small" style="margin-top:7px">Veröffentlichung: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
         <div class="small" style="margin-top:4px">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
@@ -11073,6 +11073,38 @@ function addPickedFiles(fileList){
 function workRelease(work){
  return linkedObjects(work.id,'release')[0]||null;
 }
+function releaseWorkNumberKey(type){return type==='gallery'?'nextGalleryNumber':type==='video'?'nextVideoNumber':''}
+function releaseWorks(release,type){
+ return linkedObjects(release.id,type).filter(w=>w&&w.type===type);
+}
+function assignWorkReleaseNumber(work,release){
+ if(!work||!release||(work.type!=='gallery'&&work.type!=='video'))return;
+ const key=releaseWorkNumberKey(work.type);
+ const peers=releaseWorks(release,work.type);
+ const used=peers.map(w=>w.releaseNumberReleaseId===release.id?Number(w.releaseNumber)||0:0);
+ let next=Math.max(Number(release[key])||1,(used.length?Math.max(...used)+1:1));
+ peers.forEach(peer=>{
+  if(peer.id===work.id)return;
+  if(peer.releaseNumberReleaseId!==release.id||!(Number(peer.releaseNumber)>0)){
+   peer.releaseNumber=next++;
+   peer.releaseNumberReleaseId=release.id;
+  }
+ });
+ if(work.releaseNumberReleaseId!==release.id||!(Number(work.releaseNumber)>0)){
+  work.releaseNumber=next++;
+  work.releaseNumberReleaseId=release.id;
+ }
+ release[key]=Math.max(Number(release[key])||1,next);
+}
+function workDisplayLabel(work){
+ const release=workRelease(work);
+ if(!release)return work.type==='gallery'?'Galerie':'Video';
+ const peers=releaseWorks(release,work.type);
+ if(peers.length<2)return work.type==='gallery'?'Galerie':'Video';
+ const stored=work.releaseNumberReleaseId===release.id?Number(work.releaseNumber)||0:0;
+ const n=stored||peers.indexOf(work)+1;
+ return `${work.type==='gallery'?'Galerie':'Video'} • Nr. ${n}`;
+}
 function fillWorkReleaseSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
  const current=work?workRelease(work)?.id||'':'';
@@ -11086,7 +11118,8 @@ function setWorkReleaseRelation(work,releaseId){
  work.links=(work.links||[]).filter(id=>{const x=(state.archive||[]).find(a=>a.id===id);return !x||x.type!=='release'});
  if(releaseId){
   work.links.push(releaseId);
-  const r=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');if(r){r.links=r.links||[];if(!r.links.includes(work.id))r.links.push(work.id)}
+  const r=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');
+  if(r){r.links=r.links||[];if(!r.links.includes(work.id))r.links.push(work.id);assignWorkReleaseNumber(work,r)}
  }
 }
 function releaseRelationLabel(obj){
@@ -11314,6 +11347,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    at:new Date().toISOString()
   };
   linkItem(item);
+  if(releaseId){const release=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');if(release)assignWorkReleaseNumber(item,release)}
   finish();
   return;
  }
@@ -11339,6 +11373,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    at:new Date().toISOString()
   };
   linkItem(item);
+  if(releaseId){const release=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');if(release)assignWorkReleaseNumber(item,release)}
   finish();
   return;
  }
