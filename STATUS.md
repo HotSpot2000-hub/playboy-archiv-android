@@ -1,598 +1,221 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-12  
-Referenz-Commit: `a1dbf90a5374165336c48419cd140453db3796ce`
+Stand: 2026-09-12\
+Referenz-Commit: `125333060f3aa043e150a0e66c84c4418f7bc4c4`
 
-> Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
+> Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig
+> lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen
+> ist.
 
 ## Verbindlicher Arbeitsablauf
 
-- Vor jeder inhaltlichen oder technischen Änderung `STATUS.md` vollständig lesen.
-- Referenz-Commit mit aktuellem `main` vergleichen.
-- Wenn `main` weitergelaufen ist, Änderungen zuerst rekonstruieren.
-- Vor jeder Bearbeitung die aktuelle betroffene Datei aus `main` lesen.
-- Nur auf Basis dieser Version arbeiten.
-- Änderungen klein und gezielt halten.
-- Fertige Dateien als vollständige Ersatzdateien mit exakt dem Repository-Dateinamen bereitstellen.
-- Benutzer ersetzt die Datei selbst in GitHub.
-- Nach Upload und vor weiterer Änderung `main` erneut prüfen.
-- Android-APKs immer als UPDATE installieren; App nicht deinstallieren.
-- Vor jedem Gerätetest zuerst erklären:
-  1. Was soll fachlich passieren?
-  2. Was wurde geändert?
-  3. Wo ist es sichtbar?
-  4. Woran erkennt man das korrekte Verhalten?
+-   Vor jeder Änderung `STATUS.md` vollständig lesen, Referenz-Commit
+    mit `main` vergleichen und Änderungen seitdem rekonstruieren.
+-   Vor Bearbeitung aktuelle Datei aus `main` lesen; nur darauf
+    arbeiten; Änderung klein halten.
+-   Vollständige Ersatzdatei mit exaktem Repository-Dateinamen liefern.
+    Benutzer lädt selbst hoch; danach `main` erneut prüfen.
+-   Android-APK immer als UPDATE installieren, niemals deinstallieren.
+-   Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und
+    Erfolgskriterium erklären.
 
 ## Aktueller stabiler Code-Stand
 
-- App-Paket: `de.playboy.archiv`
-- Daten-Schema-Version: `6`
-- Fachlich berücksichtigter und auf dem Gerät getesteter Code-Stand: Commit `a1dbf90a5374165336c48419cd140453db3796ce`
-- `www/index.html` auf diesem Stand: Blob `5456edd2532431953ee57b7fa8bb1f7abd1997fb`
-- Etappe 4c inklusive Folgekorrektur ist funktional auf dem Gerät getestet.
-- Shooting-Identifikation über Model/Model-Kombination + Shootingnummer ist funktional getestet.
-- Visuelle Medienzuordnung zu Galerie und Video ist funktional getestet.
-- Keine automatische Legacy-Migration.
-- Kein Schema-Bump.
-
-## Aktuell wichtigster Hinweis zur Testqualität
-
-Die Funktionalität der aktuellen Rubrik-/Beitragslogik wurde bestätigt. Die Bedienbarkeit war zunächst nur eingeschränkt bewertbar, weil Testobjekte kaum eindeutig unterscheidbar waren.
-
-Im kontrollierten Referenztest wurden daraus zwei konkrete UX-Probleme sichtbar:
-- mehrere Shootings desselben Models waren ohne künstliches Datum kaum sicher unterscheidbar.
-- Galerie-/Video-Ziele in der Medienverwaltung waren in der reinen Textauswahl zu wenig visuell unterscheidbar.
-
-Beides wurde inzwischen verbessert und auf dem Gerät bestätigt:
-- Shootings werden über Model bzw. exakte Model-Kombination + Shootingnummer identifiziert.
-- Galerie-/Video-Ziele werden bei der Medienzuordnung als visuelle Karten mit Vorschau und Shootingbezug angezeigt.
-
-Konsequenz:
-- den kontrollierten Referenztest jetzt fortsetzen.
-- keine künstlichen Produktivdaten dauerhaft etablieren.
-- keine erfundenen Datums-/Ortsangaben nur zur Unterscheidung von Shootings verwenden.
-
-## Stabile Funktionen
-
-- Archiv-Restore über SAF.
-- Permanente Android-Signierung und Update-Installation ohne Deinstallation.
-- Fotoanzeige mit Pinch-Zoom.
-- Video-Wiedergabe; nativer WebView-Fullscreen bleibt deaktiviert.
-- Models, Titel, Rubriken, Individuals, Shootings, Galerien, Videos, Beiträge (`release`) und Medienverwaltung.
-- Archivfilter, freie Suche, Bewertungs- und Profilbildfilter.
-- Research mit Status, strukturierten Belegen und kontrollierter Übernahme.
-- `careerFacts`, `bioFacts`, `archiveFacts`.
-- Korrektur-/Rückzugslogik für bestätigte Fakten.
-- Bestätigte Fakten im Model-Profil.
-- Bio-Entwurfsgenerator.
-- Research-Import.
-- Erschließungsgrad.
-- Research-Löschschutz ist implementiert; separater Gerätetest weiterhin nicht dokumentiert.
-- Shootingnummerierung/Identifikation ist getestet.
-- Visuelle Galerie-/Video-Zielauswahl in der Medienverwaltung ist getestet.
+-   App-Paket: `de.playboy.archiv`
+-   Schema: `6`
+-   Getesteter Referenz-Code: `125333060f3aa043e150a0e66c84c4418f7bc4c4`
+-   Etappe 4c samt Folgekorrekturen getestet.
+-   Shooting-Identifikation über Model/Model-Kombination +
+    Shootingnummer getestet.
+-   Visuelle Medienzuordnung zu Galerie/Video getestet.
+-   Visuelle Beitragsauswahl in Galerie/Video getestet.
+-   `Nicht zugeordnet` als Rubriken-Arbeitsbereich getestet; er zeigt
+    Beiträge ohne Rubrik und Galerien/Videos ohne Beitrag.
+-   Keine automatische Legacy-Migration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
 
-### Grundsatz
+-   `Shooting = Entstehung`
+-   `Galerie/Video = Werk bzw. Medium`
+-   `Rubrik/Titel/Printausgabe = Veröffentlichungskontexte`
+-   `release = einzelner konkreter Beitrag innerhalb eines Veröffentlichungskontexts`
+-   `Seiten = konkrete Fundstelle innerhalb einer Printausgabe`
 
-- `Shooting = Entstehung`
-- `Galerie/Video = Werk bzw. Medium`
-- `Rubrik/Titel/Printausgabe = Veröffentlichungskontexte`
-- `release = einzelner konkreter Beitrag innerhalb eines Veröffentlichungskontexts`
-- `Seiten = konkrete Fundstelle innerhalb einer Printausgabe`
+`release` bleibt technisch zur Bündelung von Galerie/Video wichtig, ist
+aber kein sichtbarer konkurrierender Hauptbereich. Rubrik, Titel und
+Printausgabe bleiben getrennte Verwaltungs- und Übersichtsbereiche.
 
-`release` bleibt technisch wichtig zur Bündelung zusammengehöriger Galerie/Video, soll aber kein eigener konkurrierender Hauptbereich für den Benutzer sein.
-
-### Verwaltung und Archivübersicht
-
-Rubrik, Titel und Printausgabe bleiben getrennt.
-
-Verwaltung:
-- Rubriken
-- Titel
-- Printausgaben
-- Galerien
-- Videos
-- Shootings
-
-Archivübersicht:
-- Rubriken
-- Titel
-- Printausgaben
-
-Ähnliche technische Bedienmuster dürfen intern wiederverwendet werden, ohne diese Bereiche sichtbar zusammenzuführen.
-
-### Archivbereiche
-
-Ziel:
-- Playboy
-- Special Editions
-- Cyber Club
-- Playboy Plus
-
-Regeln:
-- Ein Model kann in mehreren Archivbereichen vorkommen.
-- Keine automatische Bereichszuordnung allein anhand eines Datums.
-- Cyber Club und Playboy Plus bleiben getrennt.
-- Titelidentität kann bereichsübergreifend sein, insbesondere `Cyber Girl`.
+Archivbereiche als Ziel: Playboy, Special Editions, Cyber Club, Playboy
+Plus. Keine Bereichszuordnung allein anhand Datum; Cyber Club und
+Playboy Plus bleiben getrennt.
 
 ### Shooting
 
-Rolle:
-- Entstehungskontext
+Entstehungskontext mit Datum/Ort sowie Model(s)/Fotograf(en). Kein
+fachlicher Shootingtitel und keine künstlichen Platzhalter.
 
-Eigene Daten:
-- Datum
-- Ort
+Identifikation: - überall bei Auswahl/Unterscheidung Model bzw. exakte
+Model-Kombination + Shootingnummer; - Muster
+`April Katherine • Shooting • Nr. 1`; - Nummernreihe pro exakter
+Model-Kombination; - Nummer ist stabile Identifikation, kein Titel; -
+Datum/Ort nur Zusatz, nicht erforderlich; - neue Shootings erhalten
+feste Nummer; bestehende können ohne Migration sichtbar nummeriert und
+beim Bearbeiten fest gespeichert werden; - Löschen soll feste
+verbleibende Nummern nicht automatisch umnummerieren.
 
-Direkte Beziehungen:
-- Model(s)
-- Fotograf(en)
+Gerätetest bestätigt.
 
-Nicht vorgesehen:
-- eigener fachlicher Titel
-- eigene Notiz ohne konkreten Bedarf
-- künstliche Platzhalter
+### Galerie / Video
 
-### Shooting-Identifikation
+Galerie = Foto-Werk/Container; Video fachlich parallel. Beide optional
+mit Shooting und Beitrag (`release`). Models, Fotograf(en), Datum und
+Ort werden aus Shooting geerbt; Ausschlüsse möglich.
 
-Seit Etappe 4c.1 gilt für die Bedienoberfläche:
-- Shootings werden überall, wo sie unterschieden oder ausgewählt werden müssen, zusammen mit dem Model bzw. der exakten Model-Kombination angezeigt.
-- Sichtbares Muster: `April Katherine • Shooting • Nr. 1`.
-- Bei mehreren Models entsprechend z. B. `TEST Anna + TEST Bella • Shooting • Nr. 1`.
-- Die Nummernreihe läuft pro exakter Model-Kombination.
-- Die Shootingnummer dient der stabilen Identifikation, nicht als fachlicher Titel.
-- Datum und Ort dürfen zusätzlich angezeigt werden, sind aber nicht zur Identifikation erforderlich.
-- Keine erfundenen Datums-/Ortsangaben zur Unterscheidung.
-- Neue Shootings erhalten eine dauerhaft gespeicherte Nummer.
-- Bestehende Shootings können ohne Datenmigration anhand der vorhandenen Reihenfolge sichtbar nummeriert werden und beim späteren Bearbeiten eine feste Nummer erhalten.
-- Löschen eines Shootings soll verbleibende fest gespeicherte Nummern nicht automatisch umnummerieren.
+Zielmodell Medien: Foto → Galerie → Shooting; Videodatei → Video →
+Shooting. Direkte Medien→Shooting-Zuordnung ist noch vorhanden und erst
+nach Abhängigkeitsprüfung zu entfernen.
 
-Gerätetest:
-- bestätigt.
-- Shootings desselben Models lassen sich ohne künstliches Datum sicher unterscheiden.
-- die eindeutige Bezeichnung erscheint auch in relevanten Shooting-Auswahlfeldern.
+Visuelle Galerie-/Video-Zielkarten in der Medienverwaltung mit Vorschau
+und eindeutiger Shooting-Bezeichnung sind getestet.
 
-### Galerie
+### Beitrag (`release`)
 
-Rolle:
-- Foto-Werk/Container
-- Fotos direkt zugeordnet
+Kleinster fachlich sinnvoller Veröffentlichungszusammenhang: - innerhalb
+des Veröffentlichungskontexts anlegen, nicht als Haupttyp; -
+Galerie/Video sind Medien des Beitrags; - Shooting ist Entstehung; -
+Beitrag kann Rubrik, Titel oder beides haben; - individueller
+Originalname gehört zum Beitrag; - in geöffneter Rubrik Rubrikname nicht
+im Beitragslabel wiederholen; - Model immer sichtbar; - ohne
+individuellen Namen: Model + ggf. Nummer; - mit individuellem Namen:
+Model + Originalname.
 
-Beziehungen:
-- optionales Shooting
-- optionaler Beitrag (`release`)
+Beispiele: `Tiffany Ryan`, `Tiffany Ryan • Nr. 1`,
+`Tiffany Ryan • Nr. 2`, `Tahlia Paris • High Time`,
+`Tahlia Paris • Hot Sands`.
 
-Geerbt aus Shooting:
-- Models
-- Fotograf(en)
-- Datum
-- Ort
+Models eines Beitrags werden aus Galerie/Video und deren Shootings
+abgeleitet. Der Model-Filter ist nur Filter und keine fachliche Quelle.
 
-Bei Bedarf:
-- einzelne Models/Fotograf(en) ausschließen
+Beitragsnummerierung: - einzelner Beitrag derselben
+Rubrik/Model-Kombination: keine `Nr. 1`; - ab mindestens zwei Beiträgen
+derselben Rubrik und exakt derselben Model-Kombination: `Nr. 1`,
+`Nr. 2`, ...; - andere Model-Kombination = eigene Reihe; - individueller
+Name wird sichtbar bevorzugt; keine zusätzliche sichtbare Nummer
+erforderlich; - interne Nummer darf stabil gespeichert bleiben. - ältere
+3e-Werknummerierung bleibt technisch bestehen, ist aber nicht das
+endgültige sichtbare Identitätsmodell.
 
-### Video
+## Rubriken -- stabiler Stand
 
-Fachlich parallel zur Galerie.
+Hierarchie: Rubrik → Beitrag → Galerie/Video.
 
-Rolle:
-- Video-Werk/Container
-- Videodatei(en) direkt zugeordnet
-
-Beziehungen:
-- optionales Shooting
-- optionaler Beitrag (`release`)
-
-Geerbte Daten und Ausschlüsse analog Galerie.
-
-### Medienzuordnung
-
-Fachliches Zielmodell:
-- Foto → Galerie → Shooting
-- Videodatei → Video → Shooting
-
-Die direkte Medien→Shooting-Zuordnung ist noch technisch/bedienseitig vorhanden und wird noch nicht entfernt, solange geprüft wird, ob ältere Funktionen davon abhängen.
-
-Seit Commit `a1dbf90a5374165336c48419cd140453db3796ce`:
-- `Galerie zuordnen` in der Medienverwaltung zeigt keine reine Textauswahl mehr.
-- mögliche Galerien werden als Karten angezeigt.
-- Galerie-Karten zeigen nach Möglichkeit ein vorhandenes Galeriefoto als Vorschau, Hochformat bevorzugt.
-- zusätzlich wird die zugehörige eindeutige Shooting-Bezeichnung angezeigt.
-- die aktuell ausgewählte Karte wird sichtbar markiert.
-- `Video zuordnen` verwendet dasselbe Prinzip.
-- vorhandene Videodateien können als visuelle Vorschau des Video-Ziels verwendet werden.
-- die eigentliche Datenzuordnung bleibt unverändert.
-
-Gerätetest:
-- Foto → Galerie: funktioniert.
-- Videodatei → Video: funktioniert.
-- Zielwerk lässt sich anhand Vorschau + Shootingidentifikation sicherer erkennen.
-
-### Konkreter Beitrag (`release`)
-
-Der Beitrag ist der kleinste fachlich sinnvolle Veröffentlichungszusammenhang.
-
-Regeln:
-- Beitrag wird innerhalb seines Veröffentlichungskontexts angelegt, nicht als eigener sichtbarer Haupttyp.
-- Galerie und Video sind Medien dieses Beitrags.
-- Shooting ist Entstehung, nicht Veröffentlichung.
-- Ein Beitrag kann Rubrik, Titel oder beides zugeordnet sein.
-- Ein individueller Originalname gehört zum Beitrag, nicht zu Galerie oder Video.
-- In einer Rubrik wird die Rubrik im Beitragslabel nicht wiederholt.
-- Das Model wird auf der Beitragskarte immer sichtbar geführt.
-- Ohne individuellen Namen ist die sichtbare Bezeichnung Model + ggf. Nummer.
-- Mit individuellem Namen ist die sichtbare Bezeichnung Model + Originalname.
-
-Beispiele innerhalb einer bereits geöffneten Rubrik:
-- `Tiffany Ryan`
-- `Tiffany Ryan • Nr. 1`
-- `Tiffany Ryan • Nr. 2`
-- `Tahlia Paris • High Time`
-- `Tahlia Paris • Hot Sands`
-
-### Modelableitung am Beitrag
-
-Seit Etappe 4c-Folgekorrektur gilt:
-- Der übergeordnete Model-Filter ist nur Filter, nicht Quelle der fachlichen Zuordnung.
-- Models eines Beitrags werden aus den zugeordneten Galerie-/Video-Werken und deren Shootings abgeleitet.
-- Der Benutzer muss für `Beitrag hinzufügen` kein Model im übergeordneten Filter auswählen.
-- Solange noch kein Werk/Shooting zugeordnet ist, kann noch kein fachlich belastbares Model angezeigt werden.
-- Mehrere Models werden als gemeinsame Model-Kombination betrachtet.
-
-### Beitragsnummerierung
-
-Aktueller stabiler sichtbarer Stand:
-- Beitragsnummer identifiziert mehrere Beiträge derselben Rubrik mit exakt derselben Model-Kombination.
-- Ein einzelner solcher Beitrag zeigt keine `Nr. 1`.
-- Erst ab mindestens zwei Beiträgen derselben Rubrik und derselben Model-Kombination werden Nummern sichtbar.
-- Dann erscheinen `Nr. 1`, `Nr. 2`, ...
-- Eine andere Model-Kombination bildet eine eigene Reihe.
-- Hat ein Beitrag einen individuellen Namen, wird dieser sichtbar bevorzugt; die Nummer wird dort nicht zusätzlich angezeigt.
-- Interne Nummer kann stabil gespeichert bleiben, auch wenn sie nicht sichtbar ist.
-- Galerie und Video erhalten dadurch keine eigene Veröffentlichungsidentität.
-
-Die ältere 3e-Werknummerierung für Galerie/Video bleibt technisch bestehen, ist aber nicht das endgültige sichtbare Identitätsmodell.
-
-## Rubriken -- aktueller stabiler Stand
-
-Sichtbarer Begriff: **Rubriken**.
-
-Hierarchie:
-- Rubrik
-- Beitrag
-- Galerie / Video
-
-Seit Etappe 4c:
-- sichtbarer Haupttab `Veröffentlichungen` ist entfernt.
-- `release` ist im normalen Hinzufügen-Dialog nicht mehr als auswählbarer Typ sichtbar.
-- Eine echte Rubrik bietet `＋ Beitrag hinzufügen`.
-- Der Beitrag wird direkt innerhalb der Rubrik erzeugt; intern entsteht weiterhin ein `release`.
-- Rubrik muss im Beitragsdialog nicht noch einmal ausgewählt werden.
-- Beitragskarten haben links eine 2:3-Vorschau.
-- Galerie-Vorschau hat Vorrang; bevorzugt wird ein geeignetes Hochformatfoto.
-- Rechts steht das Model fett und horizontal zentriert.
-- Darunter steht entweder der individuelle Name oder die nur bei Bedarf sichtbare Beitragsnummer.
-- Galerie-/Video-Zugriffe bleiben direkt am Beitrag erreichbar.
-- `Beitrag bearbeiten` bleibt verfügbar.
+-   sichtbarer Haupttab `Veröffentlichungen` entfernt;
+-   `release` im normalen Hinzufügen nicht sichtbar;
+-   echte Rubrik bietet `＋ Beitrag hinzufügen`; intern entsteht
+    `release`;
+-   Beitragskarten: links 2:3-Vorschau, rechts Model fett/zentriert,
+    darunter individueller Name oder nur bei Bedarf Nummer;
+-   Galerie-/Video-Zugriff und `Beitrag bearbeiten` bleiben verfügbar;
+-   Galerie/Video → Beitrag zuordnen verwendet visuelle Karten mit
+    Vorschau, Model, ggf. Nummer/Name, Rubrik und Werkanzahl; Gerätetest
+    bestätigt.
 
 ### Nicht zugeordnet
 
-`Nicht zugeordnet` bleibt innerhalb **Rubriken**, nicht als eigener Haupttab.
+Bleibt innerhalb Rubriken; kein künstliches `series`-Objekt und keine
+normale bearbeitbare Rubrik.
 
-Zweck:
-- Arbeitsbestand für Beiträge/Medien, deren korrekter Veröffentlichungskontext noch nicht eindeutig geklärt ist.
-- kein historischer Rubrikname
-- kein künstliches `series`-Objekt
+Seit Commit `125333060f3aa043e150a0e66c84c4418f7bc4c4` getestet: -
+sichtbar als `ARBEITSBEREICH`; - Beiträge ohne Rubrik erscheinen dort; -
+Galerien/Videos ohne Beitrag erscheinen dort ebenfalls; - Zähler umfasst
+beide Arten; - unzugeordnete Werke als Karten mit Vorschau,
+Shooting-Bezeichnung und Werktyp; - kein künstlicher Beitrag und keine
+künstliche Rubrik werden erzeugt.
 
-Aktuell getestet:
-- `release` ohne Rubrik erscheint dort.
-- Zuordnung zu echter Rubrik entfernt den Beitrag aus der Liste.
-
-Noch offen:
-- Medien ohne eindeutigen `release` so einbinden, dass der Benutzer keine technischen Zwischenzustände verstehen muss.
+Damit ist der frühere offene Punkt geschlossen, unzugeordnete Medien
+auffindbar zu machen, ohne dass der Benutzer technische Zwischenzustände
+verstehen muss.
 
 ## Titel
 
-Titel bleiben eigener Verwaltungs- und Übersichtsbereich.
+Bleiben eigener Bereich. Zielhierarchien: - Coed:
+`of the Week → of the Month` - Cyber Girl:
+`of the Week → of the Month → of the Year` - Special Editions Model:
+`of the Year`
 
-Bekannte Zielstruktur:
-- Coed: `of the Week → of the Month`
-- Cyber Girl: `of the Week → of the Month → of the Year`
-- Special Editions Model: `of the Year`
-
-Regeln:
-- Cyber Girl kann bereichsübergreifend dieselbe Titelfamilie sein.
-- Kein automatisches `Cyber Girl = Cyber Club`.
-- Keine automatische Bereichszuordnung ausschließlich anhand eines Datums.
-- `release` kann bereits optional einem Titel zugeordnet werden.
-- Titelhierarchien sind noch nicht umgesetzt.
+Kein automatisches `Cyber Girl = Cyber Club`; keine Bereichszuordnung
+nur anhand Datum. `release` kann optional Titel haben. Titelhierarchien
+noch nicht umgesetzt.
 
 ## Printausgaben
 
-Printausgabe = konkreter physischer/digitaler Veröffentlichungskontext.
+Konkreter Veröffentlichungskontext mit Ausgabe/Identität, Datum, Cover,
+optional PDF und `im Bestand`. PDF und physischer Bestand unabhängig.
+Werke bei Print-Wiederverwendung nicht duplizieren. Technischer Typ
+`publication` bleibt bis kontrolliertem Umbau.
 
-Eigene Angaben:
-- Ausgabe/Identität
-- Datum
-- Cover-Vorschau
-- optional PDF
-- `im Bestand`
+Unterhalb: Cover, Seite, Seitenbereich. Fundstellen können Models,
+Fotograf(en), Rubrik, ggf. Titel, Galerie und Video referenzieren.
 
-Regeln:
-- PDF und physischer Bestand sind unabhängig.
-- Ausgabe kann dokumentiert werden, auch wenn weder PDF noch physisches Exemplar vorhanden ist.
-- Bereits vorhandene Galerie-/Video-Werke werden bei Print-Wiederverwendung nicht dupliziert.
-- technischer Typ `publication` bleibt bis zum kontrollierten Umbau bestehen.
+## Weitere stabile Funktionen
 
-### Seiten
+SAF-Restore; permanente Signierung/Update-Installation; Foto-Pinch-Zoom;
+Video-Wiedergabe; Models, Titel, Rubriken, Individuals, Shootings,
+Galerien, Videos, Beiträge, Medienverwaltung;
+Archivfilter/Suche/Bewertung/Profilbildfilter; Research mit
+`careerFacts`, `bioFacts`, `archiveFacts`, Korrekturlogik, Profilfakten,
+Bio-Generator, Import und Erschließungsgrad. Research-Löschschutz
+implementiert, separater Gerätetest noch nicht dokumentiert.
 
-Unterhalb einer Printausgabe:
-- Cover
-- Seite
-- Seitenbereich
+## Testqualität / Referenzbasis
 
-An einer Fundstelle können hängen:
-- Model(s)
-- Fotograf(en)
-- Rubrik
-- ggf. Titel
-- ggf. Galerie
-- ggf. Video
+Kontrollierter Referenztest: - `TEST Anna`, `TEST Bella`; - mehrere
+unterscheidbare Shootings; - Galerien mit unterschiedlichen
+Vorschauen; - `TEST Rubrik A` mit zwei Beiträgen derselben
+Model-Kombination; `Nr. 1` / `Nr. 2` bestätigt.
 
-## Reale Referenzfälle
+Dabei gefundene und behobene UX-Probleme: - Shooting-Unterscheidung ohne
+künstliches Datum; - visuelle Galerie-/Video-Zielauswahl; - visuelle
+Beitragsauswahl; - `Nicht zugeordnet` nicht mehr als scheinbar defekte
+normale Rubrik; - Galerie/Video ohne Beitrag verschwindet nicht mehr aus
+dem Rubriken-Arbeitsfluss.
 
-### Tiffany Ryan
+Keine erfundenen Datums-/Ortsangaben oder dauerhaften Fake-Beziehungen
+in echten Archivdaten.
 
-Bekannter Bestand:
-- `Busty Babes`: 3 Shootings, 2 Galerien, 1 Video
-- `Women of Playboy`: 3 Shootings, 2 Galerien, 1 Video
-- 4 benannte Pictorials/Galerien bereits im Archiv
-- 2 Videos bestätigt, je eines für Busty Babes und Women of Playboy
-- konkrete Shooting-Zuordnung der beiden Videos derzeit nicht sicher
+## Risiken / offene Punkte
 
-Regel:
-- kein Platzhalter-Shooting
-- kein künstliches Videoobjekt nur zur Darstellung bestätigten Wissens
+-   Direkte Medien→Shooting-Zuordnung vor Entfernung auf Abhängigkeiten
+    prüfen.
+-   Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
+-   Titelhierarchien offen.
+-   Printausgaben/Seiten noch nicht auf neues Beitragsmuster umgebaut.
+-   ältere 3e-Werknummerierung technisch vorhanden.
+-   Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität
+    behaupten. Play Protect nicht deaktivieren; APK nur als Update.
 
-### Tahlia Paris
+## Verworfene Ansätze
 
-Bestätigte Titel:
-- Cyber Girl of the Month — Januar 2016
-- Cyber Girl of the Year — 2017
+Nicht ohne neuen ausdrücklichen Plan wieder einführen: -
+`Veröffentlichung` als sichtbarer Hauptbereich; - 4b mit separat zu
+erstellender Veröffentlichung; - sichtbares Zusammenführen von
+Rubrik/Titel/Printausgabe; - `Individual` als separater fachlicher
+Haupttyp; - synthetische Rubrik `Nicht zugeordnet`; - künstliche
+Datums-/Ortsangaben zur Shooting-Unterscheidung; - Model-Filter als
+Beitragsidentität; - Galerie-/Video-Nummer als sichtbare
+Veröffentlichungsidentität.
 
-Beobachteter Archivbestand:
-- 18 Galerien
-- 18 Videos
-- 18 Shootings
-- in den beobachteten Fällen jeweils `1 Galerie = 1 Video = 1 Shooting`
+## Nächster Schritt
 
-Individuelle Namen u. a.:
-- `High Time`
-- `Hot Sands`
+Kontrollierten Referenztest fortsetzen; **noch keine Ausweitung auf
+Titel oder Printausgaben**.
 
-Die beobachtete 1:1-Struktur darf nicht als globale Regel erzwungen werden.
-
-## Bereits abgeschlossene Umbau-Etappen
-
-### Etappe 1
-- sichtbares `Fotogalerie` → `Galerie`
-- sichtbares `Serien` → `Rubriken`
-- getestet
-
-### Etappe 2
-- Shooting auf Datum, Ort, Models und Fotograf(en) ausgerichtet
-- Galerie/Video mit optionalem Shooting
-- Vererbung von Models/Fotograf(en)/Datum/Ort
-- Ausschlüsse
-- direkte Medienzuordnung
-- getestet
-
-### Etappe 3a–3g
-- technischer Typ `release`
-- neutraler Fall `Nicht zugeordnet`
-- Galerie/Video optional einem `release` zugeordnet
-- individueller Veröffentlichungsname
-- interne Werknummern
-- galeriegeführte Vorschau
-- `Nicht zugeordnet` innerhalb Rubriken
-- getestet
-
-### Etappe 4a
-- Rubriken zeigen Beiträge statt Shootings als nächste Ebene
-- sichtbarer Begriff `Beitrag`
-- Galerie/Video direkt am Beitrag
-- getestet
-
-### Etappe 4c
-- sichtbarer Hauptbereich `Veröffentlichungen` entfernt
-- Beitrag wird direkt innerhalb einer Rubrik angelegt
-- `release` läuft als technische Hintergrundstruktur weiter
-- 2:3-Vorschau links
-- Model fett und zentriert rechts
-- individueller Name bzw. Nummer darunter
-- Galerie-/Video-Zugriffe erhalten
-- getestet
-
-### Etappe 4c -- Folgekorrektur
-- Modelauswahl im übergeordneten Filter ist keine Voraussetzung mehr für `Beitrag hinzufügen`
-- Models werden aus Galerie/Video → Shooting abgeleitet
-- Nummer wird erst sichtbar, wenn mindestens zwei Beiträge derselben Rubrik mit derselben Model-Kombination existieren
-- individueller Name hat sichtbar Vorrang
-- andere Model-Kombination = eigene Nummernreihe
-- getestet
-- Commit `be0ae5fe61ca12a8cb53e4f578a2bbe5de993d1f`
-- `www/index.html` Blob `431ce5b95ef5b1817a131f97b6b24bd8f88774b9`
-
-### Etappe 4c.1 -- Shooting-Identifikation
-- UX-Problem im Referenztest erkannt: gleichartige Shootings ohne Datum nicht sicher unterscheidbar
-- Model/Model-Kombination + Shootingnummer als sichtbare Identifikation eingeführt
-- Nummernreihe pro exakter Model-Kombination
-- keine künstlichen Shootingtitel
-- kein Schema-Bump
-- keine automatische Massenmigration
-- Gerätetest erfolgreich
-- Code-Stand nach diesem Schritt: Commit `fc8d528f19ceb3d55c190ab08d14f58b0b5d49ba`
-
-### Etappe 4c.1 -- visuelle Medienziel-Auswahl
-- reine Galerie-/Video-Dropdowns in der Medienverwaltung durch visuelle Zielkarten ersetzt
-- Galerie-Vorschau aus vorhandenem Galeriefoto, Hochformat bevorzugt
-- Video-Ziel kann vorhandenes Video visuell darstellen
-- Shootingbezeichnung wird am Zielwerk angezeigt
-- ausgewähltes Ziel wird klar markiert
-- Datenmodell und Zuordnungslogik unverändert
-- direkte Medien→Shooting-Zuordnung noch nicht entfernt
-- Gerätetest Foto→Galerie erfolgreich
-- Gerätetest Videodatei→Video erfolgreich
-- Commit `a1dbf90a5374165336c48419cd140453db3796ce`
-- `www/index.html` Blob `5456edd2532431953ee57b7fa8bb1f7abd1997fb`
-
-## Historischer Hinweis zum verworfenen 4b-Zwischenstand
-
-Zwischenstand `b397e99dbd391e62f2e4b29dc514bb87084ea743` war fachlich nicht endgültig:
-- Benutzer musste weiterhin technisch eine Veröffentlichung anlegen.
-- Das widersprach dem Ziel, `release` in den Hintergrund zu verlagern.
-
-Nicht wieder einführen:
-- separates sichtbares Anlegen einer `Veröffentlichung`
-- sichtbarer Haupttab `Veröffentlichungen`
-- Modelidentität eines Beitrags aus dem übergeordneten Filter ableiten
-- sichtbare `Nr. 1` bei nur einem Beitrag derselben Rubrik/Model-Kombination
-
-## Erschließungsgrad
-
-Im Model-Profil existiert die Karte `Erschließungsgrad`.
-
-Aktueller stabiler Stand:
-- keine subjektive Gesamtpunktzahl
-- Titel, Serien, Pictorials und Videos getrennt
-- `unbekannt` wird nicht als `0` behandelt
-- reale `linkedArchiveIds` reduzieren offene Restmengen und vermeiden Doppelzählungen
-
-Bekanntes Übergangsproblem:
-- verwendet noch nicht Galerie/Video/Beitrag als endgültige Zählgrundlage
-- ein Shooting mit Fotos darf langfristig nicht pauschal mit einer Galerie gleichgesetzt werden
-
-Erst nach stabiler Werk-/Beitragsmigration umstellen.
-
-## Schema 6 -- wichtige Regeln
-
-Bereits umgesetzt:
-- `shoot.modelIds`
-- `shoot.credits`
-- `shoot.location`
-- Werktypen `gallery` und `video`
-- technischer Beitragstyp `release`
-- `modelsMode = inherit | custom`
-- `creditsMode = inherit | custom`
-- `publication.owned`
-- `publication.hasPdf`
-
-Nicht tun:
-- `DATA_SCHEMA_VERSION` zurücksetzen
-- automatische Erzeugung von `gallery`/`video`/`release` aus Legacy-Daten
-- automatische Änderung bestehender Shooting-/Medienbeziehungen
-- künstliche Daten erzeugen
-
-## Nicht wieder einführen
-
-- kein nativer Video-Fullscreen
-- kein globaler Ein-Finger-`touchmove` mit `preventDefault()`
-- kein `main`-Scrollcontainer mit `height:100vh`
-- keine künstlichen Shootings/Medien
-- keine dauerhafte Gleichsetzung Shooting mit Galerie
-- keine automatische Massenmigration ohne separaten Test
-- `Individual` nicht als neuen fachlichen Haupttyp verfestigen
-- Archivbereich nicht allein aus Datum oder Titel ableiten
-- `publication` nicht als `release` umdeuten
-- Rubrik, Titel und Printausgabe nicht in einer gemeinsamen Verwaltungsansicht vermischen
-- `release` nicht wieder als konkurrierenden sichtbaren Hauptbereich etablieren
-
-## Play-Protect-Hinweis
-
-Während der 3g-Eingrenzung blockierte Google Play Protect einen Zwischenbuild.
-
-Gesichert:
-- kontrollierte Diagnosebuilds und der abschließende 3g-Stand ließen sich als UPDATE installieren
-- daraus wird keine eindeutige Quellcode-Ursache abgeleitet
-
-Regel:
-- Play Protect bleibt aktiviert.
-- Warnungen werden nicht blind übergangen.
-- App bei Tests nicht deinstallieren.
-
-## Gerätetests
-
-Erfolgreich dokumentiert:
-- Schema-6-Grundlage
-- Erschließungsgrad
-- Etappe 1
-- Etappe 2a–2d und Galerie-/Video-Grundfunktionen
-- Etappe 3a–3g
-- Etappe 4a
-- Etappe 4c
-- Etappe 4c-Folgekorrektur
-- Shooting-Identifikation
-- visuelle Galerie-/Video-Zielauswahl in der Medienverwaltung
-
-Aktuell konkret bestätigt:
-- kein sichtbarer Haupttab `Veröffentlichungen`
-- Beitrag direkt innerhalb Rubrik anlegbar
-- Model-Filter nicht mehr Voraussetzung
-- Modelableitung aus Shooting über zugeordnete Werke
-- einzelne Rubrik/Model-Kombination ohne sichtbare `Nr. 1`
-- Nummerierung ab mehreren gleichartigen Beiträgen
-- individueller Name sichtbar statt Nummer
-- 2:3-Beitragsvorschau links
-- Galerie-/Video-Zugriff funktioniert
-- Shootings desselben Models sind über Model + Shootingnummer sicher unterscheidbar
-- Shooting-Auswahl ist auch ohne künstliches Datum verständlich
-- Galerie-Ziele in der Medienverwaltung sind visuell auswählbar
-- Video-Ziele in der Medienverwaltung sind visuell auswählbar
-- Zielwerk kann über Vorschau + Shootingbezeichnung erkannt werden
-
-Einschränkung:
-- der kontrollierte Referenzfluss ist noch nicht vollständig abgeschlossen; weitere Bedienbarkeit wird jetzt mit den besser identifizierbaren Testobjekten geprüft.
-
-Noch nicht separat dokumentiert:
-- Research-Löschschutz
-
-## Nächster sinnvoller Schritt
-
-**Etappe 4c.1 -- kontrollierte Referenz-Testbasis fortsetzen.**
-
-Der Referenztest ist jetzt aussagekräftiger, weil Shootings und Medienziele klarer identifizierbar sind.
-
-Bereits angelegt:
-- Model `TEST Anna`
-- Model `TEST Bella`
-- mehrere TEST-Shootings für Anna sowie Anna + Bella
-- mehrere Test-Galerien
-
-Als nächster Arbeitsfluss:
-- die vorhandenen Test-Galerien und Shootings für klar verständliche Rubrik-Beiträge verwenden
-- eine Rubrik mit zwei Beiträgen derselben Model-Kombination testen, damit sichtbare Beitragsnummerierung geprüft wird
-- eine Rubrik mit nur einem Beitrag derselben Model-Kombination testen, damit keine `Nr. 1` erscheint
-- einen Beitrag mit individuellem Namen nach dem Muster `High Time` testen
-- mindestens ein Video in denselben verständlichen Referenzfluss einbinden
-- dabei Bedienbarkeit ausdrücklich bewerten, nicht nur technische Funktion
-
-Wichtig:
-- Testszenario, keine automatische Datenmigration.
-- keine künstlichen Beziehungen in echte Archivdaten übernehmen.
-- keine erfundenen Datums-/Ortsangaben mehr nur zur Identifikation.
-
-Erst wenn dieser Referenzfluss verständlich bedienbar ist:
-- denselben Beitrag-im-Kontext-Ansatz auf **Titel** übertragen.
-- danach **Printausgaben**.
-
-## Noch offen
-
-- direkte Medien→Shooting-Zuordnung fachlich/technisch prüfen und erst entfernen, wenn klar ist, dass keine notwendige ältere Funktion davon abhängt
-- Titelhierarchien und Beitragserstellung innerhalb Titel
-- Printausgaben inkl. Cover/PDF/Bestand/Seiten
-- vereinfachte Darstellung von Medien ohne `release` in `Nicht zugeordnet`
-- genaue Behandlung bestehender 3e-Werknummern langfristig
-- Legacy-Migration
-- Erschließungsgrad auf endgültige Werk-/Beitragsstruktur umstellen
-- kontrollierten Referenzfluss vollständig abschließen
+1.  In einer anderen Rubrik einen einzelnen Beitrag mit einer anderen
+    Model-Kombination anlegen/zuordnen.
+2.  Erwartung: Solange dort für exakt diese Model-Kombination nur ein
+    Beitrag existiert, darf **keine `Nr. 1`** sichtbar sein.
+3.  Danach einen Beitrag mit individuellem Namen nach Muster
+    `TEST Anna • High Time` prüfen; Name sichtbar, keine zusätzliche
+    Beitragsnummer nötig.
+4.  Erst nach verständlichem Referenztest das Beitrag-im-Kontext-Muster
+    auf Titel und danach Printausgaben übertragen.
