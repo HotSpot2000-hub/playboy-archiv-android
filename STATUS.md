@@ -185,7 +185,7 @@ Seit Etappe 3a existiert dafür der technische Typ `release`.
 
 Fachlich neu geklärt am 2026-09-11:
 - Für den Benutzer sind Rubrik, Titel und Printausgabe die eigentlichen Veröffentlichungskontexte. Sie bleiben fachlich unterscheidbar und sollen in der Archivübersicht getrennt erscheinen.
-- In der Verwaltung können Rubrik, Titel und perspektivisch Printausgabe wegen ihrer ähnlichen Bedienlogik stärker zusammengeführt werden; Printausgaben behalten ihre zusätzlichen ausgabenspezifischen Felder.
+- Rubrik, Titel und Printausgabe bleiben auch in der Verwaltung getrennte Bereiche. Ähnliche Bedienmuster dürfen technisch wiederverwendet werden, ohne die fachlichen Bereiche in einer gemeinsamen Verwaltungsansicht zu vermischen.
 - `release` bleibt als konkrete einzelne Veröffentlichung bzw. als Gruppierung zusammengehöriger Medien sinnvoll, soll aber **nicht** als zusätzlicher gleichrangiger Hauptbereich zwischen Kontext und Medien verstanden werden.
 - Eine konkrete Veröffentlichung kann einen echten individuellen Originalnamen besitzen, besonders bei Playboy Plus, z. B. `Divine Morning`, `High Time` oder `Hot Sands`.
 - Ist ein solcher Originalname vorhanden, hat er in der sichtbaren Bezeichnung Vorrang.
@@ -582,7 +582,8 @@ Bewusst offen:
 
 Fachliche Klarstellung vom 2026-09-11:
 - Rubrik, Titel und Printausgabe sind für den Benutzer Veröffentlichungskontexte bzw. Arten der Veröffentlichung.
-- Sie können in der **Verwaltung** wegen ähnlicher Abläufe stärker zusammengeführt werden, sollen in der **Archivübersicht** aber getrennt erkennbar bleiben.
+- Entscheidung vom 2026-09-12: Rubrik und Titel bleiben in der Verwaltung ausdrücklich getrennt; eine gemeinsame Verwaltungsansicht wurde wegen drohender Unübersichtlichkeit verworfen. Dasselbe Grundprinzip gilt für Printausgaben.
+- Sie bleiben sowohl in der **Verwaltung** als auch in der **Archivübersicht** getrennte Bereiche. Gemeinsame technische Bedienmuster sind möglich, aber keine zusammengeführte fachliche Verwaltungsansicht.
 - `release` bezeichnet den einzelnen konkreten veröffentlichten Beitrag und kann technisch die zusammengehörigen Galerien/Videos bündeln; es ist kein zusätzlicher konkurrierender Hauptbereich.
 - Hat der Beitrag einen echten individuellen Namen, wird dieser verwendet, z. B. `Divine Morning`, `High Time` oder `Hot Sands`.
 - Fehlt ein individueller Name, wird eine generische sichtbare Bezeichnung aus Kontext + Model + Veröffentlichungsnummer gebildet, z. B. `Cyber Girl of the Year • Breann McGregor • Nr. 1` oder `Busty Babes • Tiffany Ryan • Nr. 1`.
@@ -607,8 +608,8 @@ Aktueller `main` enthält zusätzlich den **nicht gerätetesteten, fachlich verw
 
 Ziel:
 1. Keine zusätzliche sichtbare Hauptsparte `Veröffentlichungen` etablieren.
-2. Verwaltungskonzept für Rubrik, Titel und Printausgabe gemeinsam entwerfen; ähnliche Bedienung zusammenführen, fachliche Unterschiede erhalten.
-3. Archivübersicht weiterhin getrennt nach Rubriken, Titeln und Printausgaben darstellen.
+2. Rubrik, Titel und Printausgabe in der Verwaltung als getrennte Bereiche weiterführen; ähnliche technische Bedienmuster dürfen wiederverwendet werden, ohne die Bereiche sichtbar zusammenzuführen.
+3. Archivübersicht ebenfalls weiterhin getrennt nach Rubriken, Titeln und Printausgaben darstellen.
 4. `release` als einzelnen Beitrag/Mediengruppe verwenden: optionaler Originalname; sonst generische Bezeichnung Kontext + Model + Nr.
 5. Prüfen und anschließend separat testen, wie die Veröffentlichungsnummer die bisherigen Galerie-/Video-Werknummern sichtbar ablöst, ohne bestehende Daten zu beschädigen.
 6. `Nicht zugeordnet` so vereinfachen, dass der Benutzer dort noch nicht eindeutig zuordenbare Medien/Beiträge findet, ohne zwischen technischen Zwischenzuständen unterscheiden zu müssen.
