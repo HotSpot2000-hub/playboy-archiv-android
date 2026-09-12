@@ -2475,6 +2475,9 @@ body.archiveFilterOpen .bottom{display:none!important}
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Individueller Name <span class="small">(optional)</span></label>
  <input id="archiveEditReleaseName" placeholder="z. B. Divine Morning">
+ <label>Beitragsnummer <span class="small">(optional)</span></label>
+ <input id="archiveEditContributionNumber" type="number" min="1" step="1" inputmode="numeric" placeholder="z. B. 1">
+ <div class="small" style="margin-top:6px">Die Nummer gehört zum Beitrag, nicht zu Galerie oder Video. Bestehende Beiträge werden nicht automatisch umnummeriert.</div>
  <label>Rubrik <span class="small">(optional)</span></label>
  <select id="archiveEditReleaseSeries"><option value="">Nicht zugeordnet</option></select>
  <label>Titel <span class="small">(optional)</span></label>
@@ -2536,6 +2539,9 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveReleaseFieldsWrap" class="hidden">
   <label>Individueller Name <span class="small">(optional)</span></label>
   <input id="archiveReleaseName" placeholder="z. B. Divine Morning">
+  <label>Beitragsnummer <span class="small">(optional)</span></label>
+  <input id="archiveContributionNumber" type="number" min="1" step="1" inputmode="numeric" placeholder="wird bei neuen Beiträgen automatisch vergeben">
+  <div class="small" style="margin-top:6px">Die Nummer identifiziert den konkreten Beitrag. Galerie und Video teilen sich diese Beitragsidentität.</div>
   <label>Rubrik <span class="small">(optional)</span></label>
   <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
   <label>Titel <span class="small">(optional)</span></label>
@@ -9869,7 +9875,7 @@ document.getElementById('archiveEditDate').oninput=()=>{
  document.getElementById('archiveEditNote').value=a.note||'';
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',a.type!=='publication');
  document.getElementById('archiveEditReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
- if(isRelease)document.getElementById('archiveEditReleaseName').value=a.name||'';
+ if(isRelease){document.getElementById('archiveEditReleaseName').value=a.name||'';document.getElementById('archiveEditContributionNumber').value=Number(a.contributionNumber)>0?String(Number(a.contributionNumber)):'';}
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
  workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
  if(isGallery||isVideo)fillWorkReleaseSelector('archiveEditWorkRelease',a);
@@ -9898,6 +9904,9 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
  }
  if(a.type==='release'){
    a.name=document.getElementById('archiveEditReleaseName').value.trim();
+   const contributionNumber=Number(document.getElementById('archiveEditContributionNumber').value)||0;
+   if(contributionNumber>0)a.contributionNumber=contributionNumber;else delete a.contributionNumber;
+   if(!a.modelId&&state.currentModelId)a.modelId=state.currentModelId;
    const seriesId=document.getElementById('archiveEditReleaseSeries').value;
    const titleId=document.getElementById('archiveEditReleaseTitle').value;
    setReleaseRelations(a,seriesId,titleId);
@@ -11179,12 +11188,39 @@ function releaseRelationLabel(obj){
  }
  return obj.title||'';
 }
+function releaseModelIds(release){
+ if(!release)return [];
+ const ids=[];
+ if(release.modelId)ids.push(release.modelId);
+ linkedObjects(release.id,'gallery').forEach(g=>ids.push(...(g.modelsMode==='custom'?(g.modelIds||[]):galleryInheritedModelIds(g))));
+ linkedObjects(release.id,'video').forEach(v=>ids.push(...(v.modelsMode==='custom'?(v.modelIds||[]):videoInheritedModelIds(v))));
+ return [...new Set(ids.filter(id=>(state.models||[]).some(m=>m.id===id)))];
+}
+function releaseContextIds(release){
+ return {
+  seriesId:linkedObjects(release.id,'series')[0]?.id||'',
+  titleId:linkedObjects(release.id,'title')[0]?.id||''
+ };
+}
+function nextContributionNumber(seriesId,titleId,modelId,excludeReleaseId=''){
+ const peers=(state.archive||[]).filter(r=>{
+  if(!r||r.type!=='release'||r.id===excludeReleaseId)return false;
+  const ctx=releaseContextIds(r);
+  if(ctx.seriesId!==(seriesId||'')||ctx.titleId!==(titleId||''))return false;
+  return modelId?releaseModelIds(r).includes(modelId):false;
+ });
+ const stored=peers.map(r=>Number(r.contributionNumber)||0);
+ return Math.max(peers.length,stored.length?Math.max(...stored):0)+1;
+}
 function releaseDisplayTitle(release){
+ const name=String(release?.name||'').trim();
+ if(name)return name;
  const series=linkedObjects(release.id,'series')[0];
  const title=linkedObjects(release.id,'title')[0];
  const context=[series?releaseRelationLabel(series):'',title?releaseRelationLabel(title):''].filter(Boolean).join(' • ');
- const name=String(release?.name||'').trim();
- return [context,name].filter(Boolean).join(' • ')||'Nicht zugeordnet';
+ const modelNames=releaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const number=Number(release?.contributionNumber)||0;
+ return [context,modelNames.join(' + '),number>0?`Nr. ${number}`:''].filter(Boolean).join(' • ')||'Nicht zugeordnet';
 }
 function fillReleaseSelectors(seriesSelectId,titleSelectId,release){
  const seriesSelect=document.getElementById(seriesSelectId),titleSelect=document.getElementById(titleSelectId);
@@ -11216,6 +11252,7 @@ function openArchive(){
  document.getElementById('archiveDate').value='';
  document.getElementById('archiveNote').value='';
  document.getElementById('archiveReleaseName').value='';
+ document.getElementById('archiveContributionNumber').value='';
  document.getElementById('archiveShootLocation').value='';
  document.getElementById('archiveFile').value='';
  refreshArchiveForm();openOverlay('archivePane');
@@ -11338,10 +11375,12 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   const seriesId=document.getElementById('archiveReleaseSeries').value;
   const titleId=document.getElementById('archiveReleaseTitle').value;
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
-  const context=[seriesId?releaseRelationLabel((state.archive||[]).find(a=>a.id===seriesId)):'',titleId?releaseRelationLabel((state.archive||[]).find(a=>a.id===titleId)):''].filter(Boolean).join(' • ');
-  const releaseTitle=[context,name].filter(Boolean).join(' • ')||'Nicht zugeordnet';
-  const item={id:'A-'+Date.now(),type:'release',name,title:releaseTitle,date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
-  linkItem(item);finish();return;
+  const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
+  const contributionNumber=enteredNumber>0?enteredNumber:nextContributionNumber(seriesId,titleId,state.currentModelId);
+  const item={id:'A-'+Date.now(),modelId:state.currentModelId,type:'release',name,contributionNumber,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
+  linkItem(item);
+  item.title=releaseDisplayTitle(item);
+  finish();return;
  }
  if(type==='title'){
   const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
