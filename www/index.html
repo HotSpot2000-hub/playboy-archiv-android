@@ -1215,6 +1215,16 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesBrowseCardHead{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid var(--line);position:relative;background:#baa6bd}
 .seriesBrowseCardHead .seriesBrowseIcon{font-size:20px}.seriesBrowseCardHead .seriesBrowseTitle{font-weight:700;flex:1;min-width:0}.seriesBrowseTitleButton{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:0;background:transparent;padding:2px 0;font:inherit;font-weight:700;color:inherit;text-align:left;cursor:pointer}.seriesBrowseTitleButton .chev{font-size:11px;color:var(--muted)}.seriesBrowsePicker{position:absolute;left:42px;right:12px;top:calc(100% - 4px);z-index:24;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.14);padding:6px;display:grid;gap:2px;max-height:260px;overflow:auto}.seriesBrowsePicker.hidden{display:none}.seriesBrowsePicker button{width:100%;border:0;background:transparent;border-radius:8px;padding:9px 10px;font:inherit;text-align:left}.seriesBrowsePicker button.active{background:#171717;color:#fff}
 .seriesBrowseCardBody{padding:10px;background:var(--bg)}
+.seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;margin-top:9px;min-height:168px}
+.seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border-right:1px solid var(--line);overflow:hidden;align-self:stretch;display:grid;place-items:center}
+.seriesContributionPreview img{width:100%;height:100%;object-fit:cover;display:block}
+.seriesContributionBody{grid-column:2;grid-row:1;padding:12px;display:flex;flex-direction:column;justify-content:center;min-width:0;text-align:center}
+.seriesContributionModel{font-weight:800;font-size:16px;line-height:1.25}
+.seriesContributionLabel{margin-top:5px;font-size:14px;line-height:1.3}
+.seriesContributionMeta{margin-top:8px;font-size:12px;color:var(--muted)}
+.seriesContributionBody .itemActions{justify-content:center;flex-wrap:wrap}
+.seriesContributionBody .itemActions button{flex:1 1 88px}
+
 .seriesBrowseCardBody .seriesBrowseModel{padding:0 0 12px;border-top:0}
 .seriesBrowseCardBody .seriesBrowseModel+.seriesBrowseModel{padding-top:12px;border-top:1px solid var(--line)}
 .seriesBrowseCardBody .shootingGridStandalone{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
@@ -2123,14 +2133,13 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <section id="managementView" class="hidden">
 <div class="card collapseCard" data-collapse-key="career-archive">
- <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Veröffentlichungen, Titel, Rubriken, Galerien, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
+ <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Titel, Rubriken, Galerien, Videos, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
 <div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
   <div class="archiveTabs managementNav">
    <button class="active" data-archive-tab="publication">Publikationen</button>
-   <button data-archive-tab="release">Veröffentlichungen</button>
    <button data-archive-tab="title">Titel</button>
    <button data-archive-tab="series">Rubriken</button>
    <button data-archive-tab="gallery">Galerien</button>
@@ -2468,9 +2477,9 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label style="font-weight:400"><input id="archiveEditOwned" type="checkbox" style="width:auto"> Printausgabe im eigenen Bestand</label>
 </div>
 <div id="archiveEditWorkReleaseWrap" class="hidden">
- <label>Veröffentlichung <span class="small">(optional)</span></label>
- <select id="archiveEditWorkRelease"><option value="">Noch keiner Veröffentlichung zugeordnet</option></select>
- <div class="small" style="margin-top:6px">Das Werk bleibt eigenständig. Die Veröffentlichung kann später gesetzt, geändert oder entfernt werden.</div>
+ <label>Beitrag <span class="small">(optional)</span></label>
+ <select id="archiveEditWorkRelease"><option value="">Noch keinem Beitrag zugeordnet</option></select>
+ <div class="small" style="margin-top:6px">Das Werk bleibt eigenständig. Der Beitrag kann später gesetzt, geändert oder entfernt werden.</div>
 </div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Individueller Name <span class="small">(optional)</span></label>
@@ -2482,7 +2491,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <select id="archiveEditReleaseSeries"><option value="">Nicht zugeordnet</option></select>
  <label>Titel <span class="small">(optional)</span></label>
  <select id="archiveEditReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
- <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, bleibt die Veröffentlichung neutral unter „Nicht zugeordnet“. Ein Titel kann unabhängig davon gesetzt werden.</div>
+ <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, bleibt der Beitrag neutral unter „Nicht zugeordnet“. Ein Titel kann unabhängig davon gesetzt werden.</div>
 </div>
  <button class="btn primary" id="saveArchiveEditBtn">Änderungen speichern</button>
  <button class="btn" id="cancelArchiveEditBtn">Abbrechen</button>
@@ -2505,10 +2514,11 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <div id="archivePane" class="hidden">
  <h2 id="archivePaneTitle">Archiv-Eintrag</h2>
+ <div id="archiveTypeWrap">
  <label>Typ</label>
  <select id="archiveType">
   <option value="publication">Publikation</option>
-  <option value="release">Veröffentlichung</option>
+  <option value="release" hidden>Beitrag</option>
   <option value="series">Fotoserie / Rubrik</option>
   <option value="gallery">Galerie</option>
   <option value="video">Video</option>
@@ -2516,6 +2526,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <option value="title">Titel</option>
   <option value="media">Foto / Medium</option>
  </select>
+ </div>
  <div id="archiveTitleWrap"><label>Titel</label><input id="archiveTitle"></div>
  <div id="archiveDateWrap"><label id="archiveDateLabel">Datum / Ausgabe</label><input id="archiveDate" placeholder="z. B. März 2010"></div>
  <div id="archiveShootFieldsWrap" class="hidden">
@@ -2537,21 +2548,24 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label style="font-weight:400"><input id="publicationOwned" type="checkbox" style="width:auto"> Printausgabe im eigenen Bestand</label>
  </div>
  <div id="archiveReleaseFieldsWrap" class="hidden">
+  <div id="archiveContributionModelHint" class="small hidden" style="margin-bottom:8px"></div>
   <label>Individueller Name <span class="small">(optional)</span></label>
   <input id="archiveReleaseName" placeholder="z. B. Divine Morning">
   <label>Beitragsnummer <span class="small">(optional)</span></label>
   <input id="archiveContributionNumber" type="number" min="1" step="1" inputmode="numeric" placeholder="wird bei neuen Beiträgen automatisch vergeben">
   <div class="small" style="margin-top:6px">Die Nummer identifiziert den konkreten Beitrag. Galerie und Video teilen sich diese Beitragsidentität.</div>
-  <label>Rubrik <span class="small">(optional)</span></label>
-  <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
-  <label>Titel <span class="small">(optional)</span></label>
-  <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
-  <div class="small" style="margin-top:6px">Der individuelle Name gehört zur Veröffentlichung. Rubrik und Titel bleiben davon unabhängig.</div>
+  <div id="archiveReleaseContextWrap">
+   <label>Rubrik <span class="small">(optional)</span></label>
+   <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
+   <label>Titel <span class="small">(optional)</span></label>
+   <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
+   <div class="small" style="margin-top:6px">Rubrik und Titel sind die Veröffentlichungskontexte des Beitrags.</div>
+  </div>
  </div>
  <div id="archiveWorkReleaseWrap" class="hidden">
-  <label>Veröffentlichung <span class="small">(optional)</span></label>
-  <select id="archiveWorkRelease"><option value="">Noch keiner Veröffentlichung zugeordnet</option></select>
-  <div class="small" style="margin-top:5px">Galerie und Video bleiben eigenständige Werke. Die Veröffentlichung wird nur verknüpft.</div>
+  <label>Beitrag <span class="small">(optional)</span></label>
+  <select id="archiveWorkRelease"><option value="">Noch keinem Beitrag zugeordnet</option></select>
+  <div class="small" style="margin-top:5px">Galerie und Video bleiben eigenständige Werke. Der Beitrag wird nur verknüpft.</div>
  </div>
  <div id="archiveGalleryShootWrap" class="hidden">
   <label>Vorhandenes Shooting <span class="small">(optional)</span></label>
@@ -8835,7 +8849,7 @@ function archiveActivityTime(a){
 function renderRecentActivity(){
  const box=document.getElementById('recentActivityList');if(!box)return;
  const rows=(state.archive||[]).slice().sort((a,b)=>archiveActivityTime(b)-archiveActivityTime(a)).slice(0,5);
- const labels={shoot:'Shooting',series:'Rubrik',gallery:'Galerie',video:'Video',release:'Veröffentlichung',publication:'Publikation',title:'Titel',media:'Medium'};
+ const labels={shoot:'Shooting',series:'Rubrik',gallery:'Galerie',video:'Video',release:'Beitrag',publication:'Publikation',title:'Titel',media:'Medium'};
  box.innerHTML=rows.length?rows.slice(0,3).map((a,i)=>{
    const ids=a.type==='shoot'?shootingModelIds(a):[a.modelId].filter(Boolean);
    const names=ids.map(id=>state.models.find(m=>m.id===id)?.name).filter(Boolean);
@@ -9786,7 +9800,7 @@ if(preview&&l==='week'){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
- document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Veröffentlichung bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':'Archiv-Eintrag bearbeiten';
+ document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
@@ -10328,7 +10342,7 @@ function renderPinnedArchive(){
  const rows=getPinnedArchiveIds().map(id=>(state.archive||[]).find(a=>a.id===id)).filter(Boolean);
  box.classList.toggle('visible',rows.length>0);
  box.innerHTML=rows.length?`<span class="pinnedArchiveLabel">Angeheftet:</span>${rows.map(a=>{
-   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Rubrik':a.type==='release'?'Veröffentlichung':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='gallery'?'Galerie':a.type==='video'?'Video':a.type==='media'?(a.mimeType&&a.mimeType.startsWith('video/')?'Video':'Foto'):'Archiv';
+   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Rubrik':a.type==='release'?'Beitrag':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='gallery'?'Galerie':a.type==='video'?'Video':a.type==='media'?(a.mimeType&&a.mimeType.startsWith('video/')?'Video':'Foto'):'Archiv';
    const modelNames=pinnedArchiveModelNames(a),dateLabel=pinnedArchiveDateLabel(a);
    return `<span class="pinnedArchiveWrap"><button type="button" class="pinnedMoveBtn" data-move-pinned="${a.id}" data-dir="-1" title="Nach links">‹</button><button type="button" class="pinnedArchiveMain" data-pinned-archive="${a.id}">📌 <span class="pinnedArchiveType">${typeLabel}</span><span>${esc(a.title||a.fileName||'Ohne Titel')}</span>${dateLabel?`<span class="pinnedArchiveDate">${esc(dateLabel)}</span>`:''}</button>${modelNames.length?`<span class="pinnedArchiveModelsWrap">${pinnedArchiveModelLinks(a)}</span>`:''}<button type="button" class="pinnedMoveBtn" data-move-pinned="${a.id}" data-dir="1" title="Nach rechts">›</button><button type="button" class="pinnedArchiveRemove" data-unpin-archive="${a.id}" title="Anheftung lösen">×</button></span>`;
  }).join('')}<button type="button" class="pinnedClearBtn" data-clear-pinned-archive="1">Alle lösen</button>`:'';
@@ -10432,7 +10446,7 @@ function renderRecentArchive(){
  box.classList.toggle('visible',rows.length>0);
  let times={};try{times=JSON.parse(localStorage.getItem('spotlightRecentArchiveTimes')||'{}')}catch(e){}
  box.innerHTML=rows.length?`<span class="recentArchiveLabel">Zuletzt geöffnet:</span>${rows.map(a=>{
-   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Rubrik':a.type==='release'?'Veröffentlichung':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='gallery'?'Galerie':a.type==='video'?'Video':a.type==='media'?'Medium':'Archiv';
+   const typeLabel=a.type==='shoot'?'Shooting':a.type==='series'?'Rubrik':a.type==='release'?'Beitrag':a.type==='publication'?'Publikation':a.type==='title'?'Titel':a.type==='gallery'?'Galerie':a.type==='video'?'Video':a.type==='media'?'Medium':'Archiv';
    const t=times[a.id],when=t?new Date(t).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'}):'';
    const modelLinks=recentArchiveModelLinks(a),objectDate=pinnedArchiveDateLabel(a);
    return `<span class="recentArchiveWrap"><button type="button" class="recentArchiveMain" data-recent-archive="${a.id}"><span class="recentArchiveType">${typeLabel}</span><span>${esc(a.title||a.fileName||'Ohne Titel')}</span>${objectDate?`<span class="recentArchiveObjectDate">${esc(objectDate)}</span>`:''}${when?`<span class="recentArchiveWhen">zuletzt ${when}</span>`:''}</button>${modelLinks?`<span class="recentArchiveModelsWrap">${modelLinks}</span>`:''}<button type="button" class="recentRemoveBtn" data-remove-recent-archive="${a.id}" title="Aus Verlauf entfernen">×</button></span>`;
@@ -10467,7 +10481,7 @@ function openRecentArchiveItem(id){
 
 function managementContextConfig(){
  return {
-  release:{title:'Veröffentlichungen',add:'＋ Veröffentlichung',placeholder:'Veröffentlichung, Rubrik oder Titel suchen …'},
+  release:{title:'Beiträge',add:'＋ Beitrag',placeholder:'Beitrag, Rubrik oder Titel suchen …'},
   title:{title:'Titel',add:'＋ Titel',placeholder:'Titel, Model oder Zeitraum suchen …'},
   series:{title:'Rubriken',add:'＋ Rubrik',placeholder:'Rubrik, Model oder Shooting suchen …'},
   gallery:{title:'Galerien',add:'＋ Galerie',placeholder:'Galerie, Model oder Shooting suchen …'},
@@ -10517,6 +10531,7 @@ function renderManagementContextTools(){
  };
 }
 function renderArchive(){
+ if(archiveTab==='release')archiveTab='series';
  renderPinnedArchive();
  renderRecentArchive();
  renderManagementTools();
@@ -10625,7 +10640,7 @@ function renderArchive(){
        const photos=galleryPhotoMedia(g);
        return `<div class="archiveItem">
         <b>${esc(workDisplayLabel(g))}</b>
-        <div class="small" style="margin-top:7px">Veröffentlichung: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
+        <div class="small" style="margin-top:7px">Beitrag: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
         ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
         <div class="small" style="margin-top:7px">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
@@ -10654,7 +10669,7 @@ function renderArchive(){
        const media=videoMedia(v);
        return `<div class="archiveItem">
         <b>${esc(workDisplayLabel(v))}</b>
-        <div class="small" style="margin-top:7px">Veröffentlichung: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
+        <div class="small" style="margin-top:7px">Beitrag: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
         <div class="small" style="margin-top:4px">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(sh.title||'Shooting')).join(' · ')}`
           :'Shooting noch nicht bekannt'}</div>
@@ -10697,9 +10712,10 @@ function renderArchive(){
      const videos=releaseWorks(release,'video');
      const galleryAccess=galleries.map(g=>`<button type="button" data-open-release-work="${esc(g.id)}">${esc(workDisplayLabel(g))}</button>`).join('');
      const videoAccess=videos.map(v=>`<button type="button" data-open-release-work="${esc(v.id)}">${esc(workDisplayLabel(v))}</button>`).join('');
-     return `<div class="archiveItem"><div class="small">Beitrag</div><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Enthält: ${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${galleryAccess||videoAccess?`<div class="itemActions" style="margin-top:9px">${galleryAccess}${videoAccess}</div>`:''}<div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button></div></div>`;
+     const parts=seriesContributionDisplayParts(release);
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${galleryAccess||videoAccess?`<div class="itemActions" style="margin-top:9px">${galleryAccess}${videoAccess}</div>`:''}<div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button></div></div></div>`;
     }).join('');
-    box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" data-edit-management-series="${esc(selectedSeries.id)}">Rubrik bearbeiten</button><button type="button" class="titleDeleteX" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Beiträge in dieser Rubrik. Galerien und Videos gehören jeweils zu ihrem Beitrag.</div>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
+    box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" data-edit-management-series="${esc(selectedSeries.id)}">Rubrik bearbeiten</button><button type="button" class="titleDeleteX" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Beiträge in dieser Rubrik. Galerien und Videos gehören jeweils zu ihrem Beitrag.</div><button type="button" class="btn primary" data-add-series-contribution="${esc(selectedSeries.id)}" style="margin:0 0 10px">＋ Beitrag hinzufügen</button>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
    }
  }else if(archiveTab==='shoot'){
    box.innerHTML=items.length
@@ -10783,6 +10799,7 @@ function renderArchive(){
  box.querySelectorAll('[data-open-title-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid&&state.models.some(m=>m.id===mid)){state.currentModelId=mid;save();}openShootingDetail(x.dataset.openTitleShooting,null,{source:'title',archiveTab:'title',titleClass:titleBrowseClass,titleLevel:titleBrowseLevel,scrollY:window.scrollY})});
  const managementSeriesTitleBtn=box.querySelector('#managementSeriesTitleButton'),managementSeriesPicker=box.querySelector('#managementSeriesPicker');
   if(managementSeriesTitleBtn&&managementSeriesPicker)managementSeriesTitleBtn.onclick=e=>{e.stopPropagation();const opening=managementSeriesPicker.classList.contains('hidden');managementSeriesPicker.classList.toggle('hidden');managementSeriesTitleBtn.setAttribute('aria-expanded',opening?'true':'false')};
+box.querySelectorAll('[data-add-series-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openSeriesContribution(x.dataset.addSeriesContribution)});
 box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openArchiveEdit(x.dataset.editManagementSeries)}); box.querySelectorAll('[data-delete-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.deleteManagementSeries;const s=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!s)return;const label=s.title||'Rubrik';if(!window.confirm(`${label} wirklich löschen? Die zugeordneten Shootings und Medien bleiben im Archiv.`))return;state.archive=(state.archive||[]).filter(a=>a.id!==id);state.archive.forEach(a=>{a.links=(a.links||[]).filter(link=>link!==id)});if(modelSeriesBrowseId===id)modelSeriesBrowseId='';if(globalSeriesBrowseId===id)globalSeriesBrowseId='';if(save()){render();renderArchive();toast('Rubrik gelöscht.')}});
   box.querySelectorAll('[data-model-series-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();modelSeriesBrowseId=x.dataset.modelSeriesTab;renderArchive()});
  box.querySelectorAll('[data-open-model-series-shooting]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openModelSeriesShooting,null,{source:'model-series',seriesId:modelSeriesBrowseId,scrollY:window.scrollY}));
@@ -11166,7 +11183,7 @@ function fillWorkReleaseSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
  const current=work?workRelease(work)?.id||'':'';
  const releases=(state.archive||[]).filter(a=>a&&a.type==='release').slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}));
- sel.innerHTML='<option value="">Noch keiner Veröffentlichung zugeordnet</option>'+releases.map(r=>`<option value="${esc(r.id)}">${esc(releaseDisplayTitle(r))}</option>`).join('');
+ sel.innerHTML='<option value="">Noch keinem Beitrag zugeordnet</option>'+releases.map(r=>`<option value="${esc(r.id)}">${esc(releaseDisplayTitle(r))}</option>`).join('');
  sel.value=current;
 }
 function setWorkReleaseRelation(work,releaseId){
@@ -11212,6 +11229,60 @@ function nextContributionNumber(seriesId,titleId,modelId,excludeReleaseId=''){
  const stored=peers.map(r=>Number(r.contributionNumber)||0);
  return Math.max(peers.length,stored.length?Math.max(...stored):0)+1;
 }
+function seriesContributionDisplayParts(release){
+ const modelNames=releaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const name=String(release?.name||'').trim();
+ const number=Number(release?.contributionNumber)||0;
+ return {model:modelNames.join(' + ')||'Model nicht zugeordnet',label:name||(number>0?`Nr. ${number}`:'Beitrag ohne Bezeichnung')};
+}
+function seriesContributionDisplayTitle(release){
+ const parts=seriesContributionDisplayParts(release);
+ return `${parts.model} • ${parts.label}`;
+}
+function seriesContributionPreviewHtml(release,galleries,videos){
+ const leadGallery=galleries[0]||null;
+ const leadPhotos=leadGallery?galleryPhotoMedia(leadGallery):[];
+ const firstVideo=videos.flatMap(video=>videoMedia(video))[0]||null;
+ if(leadGallery&&leadPhotos.length)return `<div class="seriesContributionPreview" data-release-gallery-cover="${esc(leadGallery.id)}"><div class="small" style="padding:8px">Lade Vorschau …</div></div>`;
+ if(firstVideo)return `<div class="seriesContributionPreview mediaThumb" data-media-id="${esc(firstVideo.id)}"><div class="small" style="padding:8px">Lade Video …</div></div>`;
+ return `<div class="seriesContributionPreview"><div class="small" style="padding:8px">Noch keine Vorschau</div></div>`;
+}
+function nextSeriesContributionNumber(seriesId,modelId,excludeReleaseId=''){
+ const peers=(state.archive||[]).filter(r=>{
+  if(!r||r.type!=='release'||r.id===excludeReleaseId)return false;
+  if(!linkedObjects(r.id,'series').some(sr=>sr.id===seriesId))return false;
+  return modelId?releaseModelIds(r).includes(modelId):false;
+ });
+ const stored=peers.map(r=>Number(r.contributionNumber)||0);
+ return Math.max(peers.length,stored.length?Math.max(...stored):0)+1;
+}
+let seriesContributionCreateId='';
+function openSeriesContribution(seriesId){
+ const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');
+ if(!series)return;
+ const modelId=managementSelectedModelId();
+ if(!modelId){toast('Bitte zuerst oben ein Model auswählen.');return}
+ state.currentModelId=modelId;
+ seriesContributionCreateId=seriesId;
+ pendingMediaFiles=[];
+ document.getElementById('archiveType').value='release';
+ document.getElementById('archiveTitle').value='';
+ document.getElementById('archiveDate').value='';
+ document.getElementById('archiveNote').value='';
+ document.getElementById('archiveReleaseName').value='';
+ document.getElementById('archiveContributionNumber').value=String(nextSeriesContributionNumber(seriesId,modelId));
+ document.getElementById('archiveShootLocation').value='';
+ document.getElementById('archiveFile').value='';
+ refreshArchiveForm();
+ document.getElementById('archivePaneTitle').textContent='Beitrag hinzufügen';
+ const model=(state.models||[]).find(m=>m.id===modelId);
+ const modelHint=document.getElementById('archiveContributionModelHint');
+ modelHint.textContent=`Model: ${model?.name||'Unbekannt'}`;
+ modelHint.classList.remove('hidden');
+ document.getElementById('archiveTypeWrap').classList.add('hidden');
+ document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
+ openOverlay('archivePane');
+}
 function releaseDisplayTitle(release){
  const name=String(release?.name||'').trim();
  if(name)return name;
@@ -11246,7 +11317,11 @@ function setReleaseRelations(release,seriesId,titleId){
  release.title=releaseDisplayTitle(release);
 }
 function openArchive(){
+ seriesContributionCreateId='';
  pendingMediaFiles=[];
+ document.getElementById('archiveTypeWrap').classList.remove('hidden');
+ document.getElementById('archiveReleaseContextWrap').classList.remove('hidden');
+ document.getElementById('archiveContributionModelHint').classList.add('hidden');
  document.getElementById('archiveType').value=archiveTab;
  document.getElementById('archiveTitle').value='';
  document.getElementById('archiveDate').value='';
@@ -11259,7 +11334,7 @@ function openArchive(){
 }
 function refreshArchiveForm(){
  const type=document.getElementById('archiveType').value;
- document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='release'?'Veröffentlichung hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
+ document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='release'?'Beitrag hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
  const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot', isRelease=type==='release';
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
@@ -11320,7 +11395,7 @@ document.getElementById('archiveFile').onchange=e=>{
 };
 document.getElementById('addMoreMediaBtn').onclick=()=>document.getElementById('archiveFile').click();
 
-document.getElementById('cancelArchiveBtn').onclick=closeOverlay;
+document.getElementById('cancelArchiveBtn').onclick=()=>{seriesContributionCreateId='';closeOverlay()};
 document.getElementById('saveArchiveBtn').onclick=async()=>{
  const type=document.getElementById('archiveType').value;
  const links=[];
@@ -11333,8 +11408,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    state.archive.push(item);
    links.forEach(id=>{const x=state.archive.find(a=>a.id===id);if(x){x.links=x.links||[];if(!x.links.includes(item.id))x.links.push(item.id)}});
  }
- function finish(count=1){
-   if(!save())return;archiveTab=type;document.getElementById('archiveFile').value='';pendingMediaFiles=[];
+ function finish(count=1,targetTab=type){
+   if(!save())return;archiveTab=targetTab;document.getElementById('archiveFile').value='';pendingMediaFiles=[];
+   seriesContributionCreateId='';
    closeOverlay();render();renderArchive();
    toast(count>1?`${count} Medien importiert.`:'Archiv-Eintrag gespeichert.');
  }
@@ -11372,15 +11448,15 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  }
  if(type==='release'){
   const name=document.getElementById('archiveReleaseName').value.trim();
-  const seriesId=document.getElementById('archiveReleaseSeries').value;
-  const titleId=document.getElementById('archiveReleaseTitle').value;
+  const seriesId=seriesContributionCreateId||document.getElementById('archiveReleaseSeries').value;
+  const titleId=seriesContributionCreateId?'':document.getElementById('archiveReleaseTitle').value;
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
   const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
-  const contributionNumber=enteredNumber>0?enteredNumber:nextContributionNumber(seriesId,titleId,state.currentModelId);
+  const contributionNumber=enteredNumber>0?enteredNumber:(seriesContributionCreateId?nextSeriesContributionNumber(seriesId,state.currentModelId):nextContributionNumber(seriesId,titleId,state.currentModelId));
   const item={id:'A-'+Date.now(),modelId:state.currentModelId,type:'release',name,contributionNumber,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
   linkItem(item);
   item.title=releaseDisplayTitle(item);
-  finish();return;
+  finish(1,seriesContributionCreateId?'series':type);return;
  }
  if(type==='title'){
   const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
@@ -11680,7 +11756,7 @@ async function hydrateReleaseGalleryCovers(root=document){
    for(const photo of photos){if(await mediaIsPortrait(photo.id)){chosen=photo;break}}
    const blob=await getMedia(chosen.id);
    if(blob&&blob.type&&blob.type.startsWith('image/')){
-    node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Veröffentlichungsvorschau">`;
+    node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Beitragsvorschau">`;
     node.dataset.mediaId=chosen.id;
     node.dataset.galleryIds=photos.map(x=>x.id).join(',');
    }else node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>';
