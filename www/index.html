@@ -2551,9 +2551,11 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="archiveContributionModelHint" class="small hidden" style="margin-bottom:8px"></div>
   <label>Individueller Name <span class="small">(optional)</span></label>
   <input id="archiveReleaseName" placeholder="z. B. Divine Morning">
-  <label>Beitragsnummer <span class="small">(optional)</span></label>
-  <input id="archiveContributionNumber" type="number" min="1" step="1" inputmode="numeric" placeholder="wird bei neuen Beiträgen automatisch vergeben">
-  <div class="small" style="margin-top:6px">Die Nummer identifiziert den konkreten Beitrag. Galerie und Video teilen sich diese Beitragsidentität.</div>
+  <div id="archiveContributionNumberWrap">
+   <label>Beitragsnummer <span class="small">(optional)</span></label>
+   <input id="archiveContributionNumber" type="number" min="1" step="1" inputmode="numeric">
+   <div class="small" style="margin-top:6px">Die Nummer wird nur benötigt, wenn mehrere Beiträge derselben Rubrik dieselbe Model-Kombination haben.</div>
+  </div>
   <div id="archiveReleaseContextWrap">
    <label>Rubrik <span class="small">(optional)</span></label>
    <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
@@ -11208,10 +11210,25 @@ function releaseRelationLabel(obj){
 function releaseModelIds(release){
  if(!release)return [];
  const ids=[];
- if(release.modelId)ids.push(release.modelId);
  linkedObjects(release.id,'gallery').forEach(g=>ids.push(...(g.modelsMode==='custom'?(g.modelIds||[]):galleryInheritedModelIds(g))));
  linkedObjects(release.id,'video').forEach(v=>ids.push(...(v.modelsMode==='custom'?(v.modelIds||[]):videoInheritedModelIds(v))));
  return [...new Set(ids.filter(id=>(state.models||[]).some(m=>m.id===id)))];
+}
+function releaseModelKey(release){
+ return releaseModelIds(release).slice().sort().join('|');
+}
+function seriesContributionPeers(release){
+ const seriesId=linkedObjects(release.id,'series')[0]?.id||'';
+ const key=releaseModelKey(release);
+ if(!seriesId||!key)return [];
+ return (state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(sr=>sr.id===seriesId)&&releaseModelKey(r)===key).sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
+}
+function visibleSeriesContributionNumber(release){
+ const peers=seriesContributionPeers(release);
+ if(peers.length<2)return 0;
+ const stored=Number(release?.contributionNumber)||0;
+ if(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored))return stored;
+ return peers.findIndex(r=>r.id===release.id)+1;
 }
 function releaseContextIds(release){
  return {
@@ -11232,8 +11249,8 @@ function nextContributionNumber(seriesId,titleId,modelId,excludeReleaseId=''){
 function seriesContributionDisplayParts(release){
  const modelNames=releaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
  const name=String(release?.name||'').trim();
- const number=Number(release?.contributionNumber)||0;
- return {model:modelNames.join(' + ')||'Model nicht zugeordnet',label:name||(number>0?`Nr. ${number}`:'Beitrag ohne Bezeichnung')};
+ const number=visibleSeriesContributionNumber(release);
+ return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
 }
 function seriesContributionDisplayTitle(release){
  const parts=seriesContributionDisplayParts(release);
@@ -11260,9 +11277,6 @@ let seriesContributionCreateId='';
 function openSeriesContribution(seriesId){
  const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');
  if(!series)return;
- const modelId=managementSelectedModelId();
- if(!modelId){toast('Bitte zuerst oben ein Model auswählen.');return}
- state.currentModelId=modelId;
  seriesContributionCreateId=seriesId;
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
@@ -11270,17 +11284,17 @@ function openSeriesContribution(seriesId){
  document.getElementById('archiveDate').value='';
  document.getElementById('archiveNote').value='';
  document.getElementById('archiveReleaseName').value='';
- document.getElementById('archiveContributionNumber').value=String(nextSeriesContributionNumber(seriesId,modelId));
+ document.getElementById('archiveContributionNumber').value='';
  document.getElementById('archiveShootLocation').value='';
  document.getElementById('archiveFile').value='';
  refreshArchiveForm();
  document.getElementById('archivePaneTitle').textContent='Beitrag hinzufügen';
- const model=(state.models||[]).find(m=>m.id===modelId);
  const modelHint=document.getElementById('archiveContributionModelHint');
- modelHint.textContent=`Model: ${model?.name||'Unbekannt'}`;
+ modelHint.textContent='Models werden automatisch aus den Shootings der zugeordneten Galerien und Videos übernommen.';
  modelHint.classList.remove('hidden');
  document.getElementById('archiveTypeWrap').classList.add('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
+ document.getElementById('archiveContributionNumberWrap').classList.add('hidden');
  openOverlay('archivePane');
 }
 function releaseDisplayTitle(release){
@@ -11321,6 +11335,7 @@ function openArchive(){
  pendingMediaFiles=[];
  document.getElementById('archiveTypeWrap').classList.remove('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.remove('hidden');
+ document.getElementById('archiveContributionNumberWrap').classList.remove('hidden');
  document.getElementById('archiveContributionModelHint').classList.add('hidden');
  document.getElementById('archiveType').value=archiveTab;
  document.getElementById('archiveTitle').value='';
@@ -11452,8 +11467,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   const titleId=seriesContributionCreateId?'':document.getElementById('archiveReleaseTitle').value;
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
   const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
-  const contributionNumber=enteredNumber>0?enteredNumber:(seriesContributionCreateId?nextSeriesContributionNumber(seriesId,state.currentModelId):nextContributionNumber(seriesId,titleId,state.currentModelId));
-  const item={id:'A-'+Date.now(),modelId:state.currentModelId,type:'release',name,contributionNumber,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
+  const contributionNumber=enteredNumber>0?enteredNumber:0;
+  const item={id:'A-'+Date.now(),type:'release',name,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
+  if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
   item.title=releaseDisplayTitle(item);
   finish(1,seriesContributionCreateId?'series':type);return;
