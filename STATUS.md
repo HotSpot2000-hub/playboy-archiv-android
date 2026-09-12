@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-12  
-Referenz-Commit: `be0ae5fe61ca12a8cb53e4f578a2bbe5de993d1f`
+Referenz-Commit: `a1dbf90a5374165336c48419cd140453db3796ce`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -27,26 +27,30 @@ Referenz-Commit: `be0ae5fe61ca12a8cb53e4f578a2bbe5de993d1f`
 
 - App-Paket: `de.playboy.archiv`
 - Daten-Schema-Version: `6`
-- Fachlich berücksichtigter und auf dem Gerät getesteter Code-Stand: Commit `be0ae5fe61ca12a8cb53e4f578a2bbe5de993d1f`
-- `www/index.html` auf diesem Stand: Blob `431ce5b95ef5b1817a131f97b6b24bd8f88774b9`
+- Fachlich berücksichtigter und auf dem Gerät getesteter Code-Stand: Commit `a1dbf90a5374165336c48419cd140453db3796ce`
+- `www/index.html` auf diesem Stand: Blob `5456edd2532431953ee57b7fa8bb1f7abd1997fb`
 - Etappe 4c inklusive Folgekorrektur ist funktional auf dem Gerät getestet.
+- Shooting-Identifikation über Model/Model-Kombination + Shootingnummer ist funktional getestet.
+- Visuelle Medienzuordnung zu Galerie und Video ist funktional getestet.
 - Keine automatische Legacy-Migration.
 - Kein Schema-Bump.
 
 ## Aktuell wichtigster Hinweis zur Testqualität
 
-Die Funktionalität der aktuellen Rubrik-/Beitragslogik wurde bestätigt. Die Bedienbarkeit ist jedoch noch nicht verlässlich bewertet.
+Die Funktionalität der aktuellen Rubrik-/Beitragslogik wurde bestätigt. Die Bedienbarkeit war zunächst nur eingeschränkt bewertbar, weil Testobjekte kaum eindeutig unterscheidbar waren.
 
-Grund:
-- Der aktuelle Datenbestand besteht überwiegend aus beliebigen Testobjekten.
-- Beziehungen und Objekte sind dadurch für den Benutzer nicht eindeutig wiedererkennbar.
-- Bei Auswahlfeldern wird teilweise eher blind gewählt.
-- Deshalb können Logik, Übersichtlichkeit und Bedienfluss nur eingeschränkt sinnvoll beurteilt werden.
+Im kontrollierten Referenztest wurden daraus zwei konkrete UX-Probleme sichtbar:
+- mehrere Shootings desselben Models waren ohne künstliches Datum kaum sicher unterscheidbar.
+- Galerie-/Video-Ziele in der Medienverwaltung waren in der reinen Textauswahl zu wenig visuell unterscheidbar.
+
+Beides wurde inzwischen verbessert und auf dem Gerät bestätigt:
+- Shootings werden über Model bzw. exakte Model-Kombination + Shootingnummer identifiziert.
+- Galerie-/Video-Ziele werden bei der Medienzuordnung als visuelle Karten mit Vorschau und Shootingbezug angezeigt.
 
 Konsequenz:
-- Vor weiteren größeren Bedienumbauten soll zunächst ein kleines, verständliches Referenzszenario mit eindeutig identifizierbaren Models, Shootings, Rubriken, Beiträgen, Galerien und Videos verwendet werden.
-- Keine künstlichen Produktivdaten dauerhaft etablieren.
-- Ziel ist eine kontrollierte Testbasis, nicht eine neue Datenmigration.
+- den kontrollierten Referenztest jetzt fortsetzen.
+- keine künstlichen Produktivdaten dauerhaft etablieren.
+- keine erfundenen Datums-/Ortsangaben nur zur Unterscheidung von Shootings verwenden.
 
 ## Stabile Funktionen
 
@@ -64,6 +68,8 @@ Konsequenz:
 - Research-Import.
 - Erschließungsgrad.
 - Research-Löschschutz ist implementiert; separater Gerätetest weiterhin nicht dokumentiert.
+- Shootingnummerierung/Identifikation ist getestet.
+- Visuelle Galerie-/Video-Zielauswahl in der Medienverwaltung ist getestet.
 
 ## Fachliches Soll-Modell
 
@@ -128,6 +134,25 @@ Nicht vorgesehen:
 - eigene Notiz ohne konkreten Bedarf
 - künstliche Platzhalter
 
+### Shooting-Identifikation
+
+Seit Etappe 4c.1 gilt für die Bedienoberfläche:
+- Shootings werden überall, wo sie unterschieden oder ausgewählt werden müssen, zusammen mit dem Model bzw. der exakten Model-Kombination angezeigt.
+- Sichtbares Muster: `April Katherine • Shooting • Nr. 1`.
+- Bei mehreren Models entsprechend z. B. `TEST Anna + TEST Bella • Shooting • Nr. 1`.
+- Die Nummernreihe läuft pro exakter Model-Kombination.
+- Die Shootingnummer dient der stabilen Identifikation, nicht als fachlicher Titel.
+- Datum und Ort dürfen zusätzlich angezeigt werden, sind aber nicht zur Identifikation erforderlich.
+- Keine erfundenen Datums-/Ortsangaben zur Unterscheidung.
+- Neue Shootings erhalten eine dauerhaft gespeicherte Nummer.
+- Bestehende Shootings können ohne Datenmigration anhand der vorhandenen Reihenfolge sichtbar nummeriert werden und beim späteren Bearbeiten eine feste Nummer erhalten.
+- Löschen eines Shootings soll verbleibende fest gespeicherte Nummern nicht automatisch umnummerieren.
+
+Gerätetest:
+- bestätigt.
+- Shootings desselben Models lassen sich ohne künstliches Datum sicher unterscheiden.
+- die eindeutige Bezeichnung erscheint auch in relevanten Shooting-Auswahlfeldern.
+
 ### Galerie
 
 Rolle:
@@ -160,6 +185,29 @@ Beziehungen:
 - optionaler Beitrag (`release`)
 
 Geerbte Daten und Ausschlüsse analog Galerie.
+
+### Medienzuordnung
+
+Fachliches Zielmodell:
+- Foto → Galerie → Shooting
+- Videodatei → Video → Shooting
+
+Die direkte Medien→Shooting-Zuordnung ist noch technisch/bedienseitig vorhanden und wird noch nicht entfernt, solange geprüft wird, ob ältere Funktionen davon abhängen.
+
+Seit Commit `a1dbf90a5374165336c48419cd140453db3796ce`:
+- `Galerie zuordnen` in der Medienverwaltung zeigt keine reine Textauswahl mehr.
+- mögliche Galerien werden als Karten angezeigt.
+- Galerie-Karten zeigen nach Möglichkeit ein vorhandenes Galeriefoto als Vorschau, Hochformat bevorzugt.
+- zusätzlich wird die zugehörige eindeutige Shooting-Bezeichnung angezeigt.
+- die aktuell ausgewählte Karte wird sichtbar markiert.
+- `Video zuordnen` verwendet dasselbe Prinzip.
+- vorhandene Videodateien können als visuelle Vorschau des Video-Ziels verwendet werden.
+- die eigentliche Datenzuordnung bleibt unverändert.
+
+Gerätetest:
+- Foto → Galerie: funktioniert.
+- Videodatei → Video: funktioniert.
+- Zielwerk lässt sich anhand Vorschau + Shootingidentifikation sicherer erkennen.
 
 ### Konkreter Beitrag (`release`)
 
@@ -376,6 +424,29 @@ Die beobachtete 1:1-Struktur darf nicht als globale Regel erzwungen werden.
 - Commit `be0ae5fe61ca12a8cb53e4f578a2bbe5de993d1f`
 - `www/index.html` Blob `431ce5b95ef5b1817a131f97b6b24bd8f88774b9`
 
+### Etappe 4c.1 -- Shooting-Identifikation
+- UX-Problem im Referenztest erkannt: gleichartige Shootings ohne Datum nicht sicher unterscheidbar
+- Model/Model-Kombination + Shootingnummer als sichtbare Identifikation eingeführt
+- Nummernreihe pro exakter Model-Kombination
+- keine künstlichen Shootingtitel
+- kein Schema-Bump
+- keine automatische Massenmigration
+- Gerätetest erfolgreich
+- Code-Stand nach diesem Schritt: Commit `fc8d528f19ceb3d55c190ab08d14f58b0b5d49ba`
+
+### Etappe 4c.1 -- visuelle Medienziel-Auswahl
+- reine Galerie-/Video-Dropdowns in der Medienverwaltung durch visuelle Zielkarten ersetzt
+- Galerie-Vorschau aus vorhandenem Galeriefoto, Hochformat bevorzugt
+- Video-Ziel kann vorhandenes Video visuell darstellen
+- Shootingbezeichnung wird am Zielwerk angezeigt
+- ausgewähltes Ziel wird klar markiert
+- Datenmodell und Zuordnungslogik unverändert
+- direkte Medien→Shooting-Zuordnung noch nicht entfernt
+- Gerätetest Foto→Galerie erfolgreich
+- Gerätetest Videodatei→Video erfolgreich
+- Commit `a1dbf90a5374165336c48419cd140453db3796ce`
+- `www/index.html` Blob `5456edd2532431953ee57b7fa8bb1f7abd1997fb`
+
 ## Historischer Hinweis zum verworfenen 4b-Zwischenstand
 
 Zwischenstand `b397e99dbd391e62f2e4b29dc514bb87084ea743` war fachlich nicht endgültig:
@@ -461,6 +532,8 @@ Erfolgreich dokumentiert:
 - Etappe 4a
 - Etappe 4c
 - Etappe 4c-Folgekorrektur
+- Shooting-Identifikation
+- visuelle Galerie-/Video-Zielauswahl in der Medienverwaltung
 
 Aktuell konkret bestätigt:
 - kein sichtbarer Haupttab `Veröffentlichungen`
@@ -472,39 +545,42 @@ Aktuell konkret bestätigt:
 - individueller Name sichtbar statt Nummer
 - 2:3-Beitragsvorschau links
 - Galerie-/Video-Zugriff funktioniert
+- Shootings desselben Models sind über Model + Shootingnummer sicher unterscheidbar
+- Shooting-Auswahl ist auch ohne künstliches Datum verständlich
+- Galerie-Ziele in der Medienverwaltung sind visuell auswählbar
+- Video-Ziele in der Medienverwaltung sind visuell auswählbar
+- Zielwerk kann über Vorschau + Shootingbezeichnung erkannt werden
 
 Einschränkung:
-- Bedienbarkeit/Übersichtlichkeit noch nicht belastbar getestet, weil aktuelle Testobjekte kaum eindeutig identifizierbar sind.
+- der kontrollierte Referenzfluss ist noch nicht vollständig abgeschlossen; weitere Bedienbarkeit wird jetzt mit den besser identifizierbaren Testobjekten geprüft.
 
 Noch nicht separat dokumentiert:
 - Research-Löschschutz
 
 ## Nächster sinnvoller Schritt
 
-**Keine direkte Erweiterung auf Titel/Printausgaben, bevor die Bedienlogik mit einer verständlichen Testbasis überprüft wurde.**
+**Etappe 4c.1 -- kontrollierte Referenz-Testbasis fortsetzen.**
 
-Als nächster Arbeitsblock:
+Der Referenztest ist jetzt aussagekräftiger, weil Shootings und Medienziele klarer identifizierbar sind.
 
-### Etappe 4c.1 -- kontrollierte Referenz-Testbasis
+Bereits angelegt:
+- Model `TEST Anna`
+- Model `TEST Bella`
+- mehrere TEST-Shootings für Anna sowie Anna + Bella
+- mehrere Test-Galerien
 
-Ziel:
-- wenige eindeutig erkennbare Objekte verwenden
-- Beziehungen bewusst und nachvollziehbar aufbauen
-- Bedienfluss nicht mehr mit anonymen Zufallsobjekten beurteilen
-
-Empfohlenes kleines Szenario:
-- 2 klar benannte Models
-- 1 Rubrik mit zwei Beiträgen derselben Model-Kombination, damit Nummerierung sichtbar geprüft werden kann
-- 1 Rubrik mit nur einem Beitrag, damit fehlende `Nr. 1` geprüft werden kann
-- 1 Beitrag mit individuellem Namen (`High Time`-Muster)
-- je klar benannte/erkennbare Shootings
-- je eine Galerie mit eindeutigem Vorschaubild
-- mindestens ein Video
-- optional eine zweite Model-Kombination zur Prüfung einer unabhängigen Nummernreihe
+Als nächster Arbeitsfluss:
+- die vorhandenen Test-Galerien und Shootings für klar verständliche Rubrik-Beiträge verwenden
+- eine Rubrik mit zwei Beiträgen derselben Model-Kombination testen, damit sichtbare Beitragsnummerierung geprüft wird
+- eine Rubrik mit nur einem Beitrag derselben Model-Kombination testen, damit keine `Nr. 1` erscheint
+- einen Beitrag mit individuellem Namen nach dem Muster `High Time` testen
+- mindestens ein Video in denselben verständlichen Referenzfluss einbinden
+- dabei Bedienbarkeit ausdrücklich bewerten, nicht nur technische Funktion
 
 Wichtig:
-- Dies ist ein Testszenario, keine automatische Datenmigration.
-- Keine künstlichen Beziehungen in echte Archivdaten übernehmen.
+- Testszenario, keine automatische Datenmigration.
+- keine künstlichen Beziehungen in echte Archivdaten übernehmen.
+- keine erfundenen Datums-/Ortsangaben mehr nur zur Identifikation.
 
 Erst wenn dieser Referenzfluss verständlich bedienbar ist:
 - denselben Beitrag-im-Kontext-Ansatz auf **Titel** übertragen.
@@ -512,10 +588,11 @@ Erst wenn dieser Referenzfluss verständlich bedienbar ist:
 
 ## Noch offen
 
+- direkte Medien→Shooting-Zuordnung fachlich/technisch prüfen und erst entfernen, wenn klar ist, dass keine notwendige ältere Funktion davon abhängt
 - Titelhierarchien und Beitragserstellung innerhalb Titel
 - Printausgaben inkl. Cover/PDF/Bestand/Seiten
 - vereinfachte Darstellung von Medien ohne `release` in `Nicht zugeordnet`
 - genaue Behandlung bestehender 3e-Werknummern langfristig
 - Legacy-Migration
 - Erschließungsgrad auf endgültige Werk-/Beitragsstruktur umstellen
-- Bedienbarkeit mit realistisch identifizierbaren Referenzdaten prüfen
+- kontrollierten Referenzfluss vollständig abschließen
