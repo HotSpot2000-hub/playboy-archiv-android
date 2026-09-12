@@ -10739,19 +10739,30 @@ function renderArchive(){
    const mid=managementSelectedModelId();
    const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
    const unassignedReleases=managementArchive('release').filter(release=>!linkedObjects(release.id,'series').length).slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}));
+   const unassignedWorks=[...managementArchive('gallery'),...managementArchive('video')].filter(work=>!workRelease(work)).sort((a,b)=>workDisplayLabel(a).localeCompare(workDisplayLabel(b),'de',{sensitivity:'base'}));
+   const unassignedCount=unassignedReleases.length+unassignedWorks.length;
    const validBrowse=modelSeries.some(sr=>sr.id===modelSeriesBrowseId)||modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID;
    if(!validBrowse)modelSeriesBrowseId=modelSeries[0]?.id||UNASSIGNED_SERIES_BROWSE_ID;
    const selectedSeries=modelSeries.find(sr=>sr.id===modelSeriesBrowseId);
-   const unassignedTab=`<button type="button" class="${modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID?'active':''}" data-model-series-tab="${UNASSIGNED_SERIES_BROWSE_ID}">Nicht zugeordnet · ${unassignedReleases.length}</button>`;
+   const unassignedTab=`<button type="button" class="${modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID?'active':''}" data-model-series-tab="${UNASSIGNED_SERIES_BROWSE_ID}">Nicht zugeordnet · ${unassignedCount}</button>`;
    const tabs=unassignedTab+modelSeries.map(sr=>`<button type="button" class="${sr.id===modelSeriesBrowseId?'active':''}" data-model-series-tab="${esc(sr.id)}">${esc(sr.title||'Rubrik ohne Titel')}</button>`).join('');
    if(modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID){
     seriesWorkSelected.clear();
     const releaseCards=unassignedReleases.map(release=>{
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
-     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Rubrik: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Bearbeiten</button></div></div>`;
+     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Rubrik: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button></div></div>`;
     }).join('');
-    box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedReleases.length} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:${unassignedReleases.length?'10':'0'}px">Beiträge, deren Rubrik noch ungeklärt ist. Dieser Arbeitsbereich ist keine bearbeitbare Rubrik.</div>${releaseCards||'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge.</div>'}</div></div>`;
+    const workCards=unassignedWorks.map(work=>{
+     const sh=linkedObjects(work.id,'shoot')[0]||null;
+     const preview=work.type==='gallery'
+      ?`<div class="seriesContributionPreview" data-release-gallery-cover="${esc(work.id)}"><div class="small">${galleryPhotoMedia(work).length?'Lade Vorschau …':'Noch kein Foto'}</div></div>`
+      :(()=>{const media=videoMedia(work)[0]||null;return `<div class="seriesContributionPreview"${media?` data-media-id="${esc(media.id)}"`:''}><div class="small">${media?'Lade Video …':'Noch kein Video'}</div></div>`})();
+     return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(sh?shootingDisplayLabel(sh):'Shooting noch nicht bekannt')}</div><div class="seriesContributionLabel">${work.type==='gallery'?'Galerie':'Video'}</div><div class="seriesContributionMeta">Noch keinem Beitrag zugeordnet</div><div class="itemActions"><button type="button" data-edit-archive="${esc(work.id)}">${work.type==='gallery'?'Galerie':'Video'} bearbeiten</button></div></div></div>`;
+    }).join('');
+    const releaseSection=unassignedReleases.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Beiträge ohne Rubrik</div>${releaseCards}`:'';
+    const workSection=unassignedWorks.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Galerien / Videos ohne Beitrag</div>${workCards}`:'';
+    box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedCount} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small">Beiträge ohne Rubrik sowie Galerien und Videos, die noch keinem Beitrag zugeordnet sind. Dieser Arbeitsbereich ist keine bearbeitbare Rubrik.</div>${releaseSection}${workSection}${unassignedCount?'':'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge oder Werke.</div>'}</div></div>`;
    }else if(!selectedSeries){
     box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Rubriken.</div>';seriesWorkSelected.clear();
    }else{
