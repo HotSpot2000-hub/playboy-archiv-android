@@ -1225,6 +1225,26 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesContributionBody .itemActions{justify-content:center;flex-wrap:wrap}
 .seriesContributionBody .itemActions button{flex:1 1 88px}
 
+.workReleasePicker{display:grid;gap:9px;margin-top:8px;max-height:48vh;overflow:auto;padding:2px}
+.workReleaseChoice{position:relative;display:grid;grid-template-columns:86px minmax(0,1fr);min-height:128px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;text-align:left;padding:0;width:100%;font:inherit}
+.workReleaseChoice.selected{border:2px solid #178f82}
+.workReleaseChoicePreview{width:86px;aspect-ratio:2/3;background:#eee;border-right:1px solid var(--line);overflow:hidden;display:grid;place-items:center;align-self:stretch}
+.workReleaseChoicePreview img{width:100%;height:100%;object-fit:cover;display:block}
+.workReleaseChoiceBody{padding:10px 42px 10px 11px;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.workReleaseChoiceModel{font-weight:800;line-height:1.25}
+.workReleaseChoiceLabel{margin-top:4px;font-size:14px}
+.workReleaseChoiceContext{margin-top:7px;font-size:12px;color:var(--muted)}
+.workReleaseChoiceMeta{margin-top:3px;font-size:11px;color:var(--muted)}
+.workReleaseChoiceMark{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:24px;height:24px;border:2px solid #777;border-radius:50%;display:grid;place-items:center;background:#fff}
+.workReleaseChoice.selected .workReleaseChoiceMark{border-color:#178f82}
+.workReleaseChoice.selected .workReleaseChoiceMark::after{content:"";width:12px;height:12px;border-radius:50%;background:#178f82}
+.workReleaseChoice.none{grid-template-columns:1fr;min-height:70px}
+.workReleaseChoice.none .workReleaseChoiceBody{padding-left:14px}
+.unassignedSeriesWorkArea{border:1px dashed #a995ad;border-radius:14px;background:#f6f0f7;overflow:hidden}
+.unassignedSeriesWorkArea .seriesBrowseCardHead{background:#f0e6f2}
+.unassignedSeriesWorkArea .seriesBrowseCardBody{padding:12px}
+.unassignedSeriesBadge{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+
 .seriesBrowseCardBody .seriesBrowseModel{padding:0 0 12px;border-top:0}
 .seriesBrowseCardBody .seriesBrowseModel+.seriesBrowseModel{padding-top:12px;border-top:1px solid var(--line)}
 .seriesBrowseCardBody .shootingGridStandalone{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
@@ -2479,8 +2499,9 @@ body.archiveFilterOpen .bottom{display:none!important}
 </div>
 <div id="archiveEditWorkReleaseWrap" class="hidden">
  <label>Beitrag <span class="small">(optional)</span></label>
- <select id="archiveEditWorkRelease"><option value="">Noch keinem Beitrag zugeordnet</option></select>
- <div class="small" style="margin-top:6px">Das Werk bleibt eigenständig. Der Beitrag kann später gesetzt, geändert oder entfernt werden.</div>
+ <select id="archiveEditWorkRelease" class="hidden" aria-hidden="true"><option value="">Noch keinem Beitrag zugeordnet</option></select>
+ <div id="archiveEditWorkReleasePicker" class="workReleasePicker"></div>
+ <div class="small" style="margin-top:6px">Vorschau, Model und Rubrik helfen bei der eindeutigen Auswahl. Das Werk bleibt eigenständig; der Beitrag kann später geändert oder entfernt werden.</div>
 </div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Individueller Name <span class="small">(optional)</span></label>
@@ -10730,7 +10751,7 @@ function renderArchive(){
      const videos=releaseWorks(release,'video');
      return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Rubrik: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Bearbeiten</button></div></div>`;
     }).join('');
-    box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedReleases.length} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Arbeitsliste für Beiträge, deren Rubrik noch ungeklärt ist.</div>${releaseCards||'<div class="seriesEmptyState small">Aktuell kein Beitrag ohne Rubrik-Zuordnung.</div>'}</div></div>`;
+    box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedReleases.length} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:${unassignedReleases.length?'10':'0'}px">Beiträge, deren Rubrik noch ungeklärt ist. Dieser Arbeitsbereich ist keine bearbeitbare Rubrik.</div>${releaseCards||'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge.</div>'}</div></div>`;
    }else if(!selectedSeries){
     box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Rubriken.</div>';seriesWorkSelected.clear();
    }else{
@@ -11260,13 +11281,33 @@ function workDisplayLabel(work){
  const n=stored||peers.indexOf(work)+1;
  return `${work.type==='gallery'?'Galerie':'Video'} • Nr. ${n}`;
 }
+function releaseSeriesContextLabel(release){
+ const series=linkedObjects(release.id,'series')[0]||null;
+ return series?releaseRelationLabel(series):'Nicht zugeordnet';
+}
+function workReleaseChoiceHtml(release,current){
+ const galleries=releaseWorks(release,'gallery');
+ const videos=releaseWorks(release,'video');
+ const parts=seriesContributionDisplayParts(release);
+ return `<button type="button" class="workReleaseChoice ${release.id===current?'selected':''}" data-work-release-choice="${esc(release.id)}">${seriesContributionPreviewHtml(release,galleries,videos).replace('seriesContributionPreview','workReleaseChoicePreview')}<span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(parts.model)}</span>${parts.label?`<span class="workReleaseChoiceLabel">${esc(parts.label)}</span>`:''}<span class="workReleaseChoiceContext">Rubrik: ${esc(releaseSeriesContextLabel(release))}</span><span class="workReleaseChoiceMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+}
 function fillWorkReleaseSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
  const current=work?workRelease(work)?.id||'':'';
  const releases=(state.archive||[]).filter(a=>a&&a.type==='release').slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}));
  sel.innerHTML='<option value="">Noch keinem Beitrag zugeordnet</option>'+releases.map(r=>`<option value="${esc(r.id)}">${esc(releaseDisplayTitle(r))}</option>`).join('');
  sel.value=current;
+ const picker=document.getElementById('archiveEditWorkReleasePicker');if(!picker)return;
+ const none=`<button type="button" class="workReleaseChoice none ${current?'':'selected'}" data-work-release-choice=""><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">Noch keinem Beitrag zugeordnet</span><span class="workReleaseChoiceContext">Werk ohne Beitragszuordnung belassen</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+ picker.innerHTML=none+releases.map(r=>workReleaseChoiceHtml(r,current)).join('');
+ picker.querySelectorAll('[data-work-release-choice]').forEach(btn=>btn.onclick=()=>{
+  sel.value=btn.dataset.workReleaseChoice||'';
+  picker.querySelectorAll('.workReleaseChoice').forEach(x=>x.classList.toggle('selected',x===btn));
+ });
+ hydrateReleaseGalleryCovers(picker);
+ hydrateMediaThumbs(picker);
 }
+
 function setWorkReleaseRelation(work,releaseId){
  const oldReleaseIds=linkedObjects(work.id,'release').map(r=>r.id);
  oldReleaseIds.forEach(id=>{const r=(state.archive||[]).find(a=>a.id===id&&a.type==='release');if(r)r.links=(r.links||[]).filter(x=>x!==work.id)});
