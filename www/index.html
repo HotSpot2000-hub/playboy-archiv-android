@@ -177,6 +177,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageIcon{width:30px;height:30px;display:grid;place-items:center;font-size:20px}
 .publicationSeriesHeading{min-width:0;text-align:center;font-size:17px;font-weight:800;line-height:1.25}
 .publicationSeriesAdd{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;font:inherit;font-size:12px;white-space:nowrap}
+.publicationSeriesActions{display:flex;align-items:center;gap:7px}
+.publicationSeriesActions .titleDeleteX{width:38px;height:38px;flex:0 0 38px}
 .publicationSeriesBody{display:grid;gap:10px;padding:10px;background:var(--bg)}
 .publicationIssueCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;min-width:0}
 .publicationManageCover{width:100%;aspect-ratio:2/3;border:0;border-radius:12px;background:#eee;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--muted)}
@@ -2354,7 +2356,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
 <div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
-<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
+<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignPublicationCoverBtn">Als Cover zuordnen</button><button type="button" id="mediaWorkAssignPublicationPdfBtn">Als PDF zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
 <div id="mediaWorkGalleryPanel" class="mediaWorkShootPanel hidden">
  <div class="shootFinderHead"><div><b>Galerie auswählen</b><div class="small">Ausgewählte Fotos direkt einer Galerie zuordnen</div></div><button type="button" id="mediaWorkGalleryCancel">Schließen</button></div>
  <div id="mediaWorkGalleryResults" class="mediaWorkTargetResults"></div>
@@ -2366,6 +2368,12 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="mediaWorkVideoResults" class="mediaWorkTargetResults"></div>
  <select id="mediaWorkVideoSelect" class="hidden" aria-label="Video"></select>
  <div class="shootPanelActions"><button type="button" id="mediaWorkVideoCancelBottom">Abbrechen</button><button type="button" id="mediaWorkVideoConfirm" class="primaryAction">Zuordnen</button></div>
+</div>
+<div id="mediaWorkPublicationPanel" class="mediaWorkShootPanel hidden">
+ <div class="shootFinderHead"><div><b id="mediaWorkPublicationPanelTitle">Ausgabe auswählen</b><div id="mediaWorkPublicationPanelHint" class="small">Medium einer Ausgabe zuordnen</div></div><button type="button" id="mediaWorkPublicationCancel">Schließen</button></div>
+ <label for="mediaWorkPublicationSelect">Ausgabe</label>
+ <select id="mediaWorkPublicationSelect"></select>
+ <div class="shootPanelActions"><button type="button" id="mediaWorkPublicationCancelBottom">Abbrechen</button><button type="button" id="mediaWorkPublicationConfirm" class="primaryAction">Zuordnen</button></div>
 </div>
 <div id="mediaWorkShootPanel" class="mediaWorkShootPanel">
  <div class="shootFinderHead"><div><b>Shooting auswählen</b><div class="small">Ausgewählte Medien einem Shooting zuordnen</div></div><button type="button" id="mediaWorkShootCancel">Schließen</button></div>
@@ -3228,7 +3236,9 @@ function normalizeArchiveObjectV6(a){
   const validStock=new Set(['none','ordered','owned']);
   a.stockStatus=validStock.has(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
   a.owned=a.stockStatus==='owned';
-  a.hasPdf=!!a.hasPdf;
+  a.coverMediaId=String(a.coverMediaId||'');
+  a.pdfMediaId=String(a.pdfMediaId||'');
+  a.hasPdf=!!(a.pdfMediaId||a.hasPdf);
  }
  if(archiveAreaSupportsType(a.type)){
   a.archiveArea=ARCHIVE_AREA_IDS.has(a.archiveArea)?a.archiveArea:'';
@@ -8792,7 +8802,9 @@ async function hydratePublicationCovers(root=document){
  const nodes=[...root.querySelectorAll('[data-publication-cover]')];
  for(const node of nodes){
   try{
-   const blob=await getMedia('cover:'+node.dataset.publicationCover);
+   const pub=(state.archive||[]).find(a=>a.id===node.dataset.publicationCover&&a.type==='publication');
+   let blob=pub?.coverMediaId?await getMedia(pub.coverMediaId):null;
+   if(!blob)blob=await getMedia('cover:'+node.dataset.publicationCover);
    if(blob&&blob.type&&blob.type.startsWith('image/')){
     node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Cover">`;
    }else node.innerHTML='<div class="small">Kein Cover</div>';
@@ -8801,12 +8813,33 @@ async function hydratePublicationCovers(root=document){
 }
 async function openPublicationPdf(id){
  try{
-  const blob=await getMedia('pdf:'+id);
+  const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');
+  let blob=pub?.pdfMediaId?await getMedia(pub.pdfMediaId):null;
+  if(!blob)blob=await getMedia('pdf:'+id);
   if(!blob){toast('Keine PDF gespeichert.');return}
   const url=URL.createObjectURL(blob);
   window.open(url,'_blank');
   setTimeout(()=>URL.revokeObjectURL(url),60000);
  }catch(e){console.error(e);toast('PDF konnte nicht geöffnet werden.')}
+}
+async function clearPublicationMedia(id,role){
+ const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');if(!pub)return;
+ const isCover=role==='cover';
+ const mediaId=isCover?pub.coverMediaId:pub.pdfMediaId;
+ const label=isCover?'Cover':'PDF';
+ if(!confirm(`${label} wirklich von dieser Ausgabe lösen? Das Medium selbst bleibt im Archiv.`))return;
+ if(mediaId){
+  const media=(state.archive||[]).find(a=>a.id===mediaId&&a.type==='media');
+  if(media)media.links=(media.links||[]).filter(x=>x!==pub.id);
+  pub.links=(pub.links||[]).filter(x=>x!==mediaId);
+ }
+ if(isCover)pub.coverMediaId='';
+ else{pub.pdfMediaId='';pub.hasPdf=false}
+ try{await deleteMediaBlob((isCover?'cover:':'pdf:')+pub.id)}catch(e){console.error(e)}
+ if(!save())return;
+ renderArchive();
+ openPublicationDetail(pub.id);
+ toast(`${label} gelöst.`);
 }
 function openPublicationDetail(id){
  rememberRecentArchive(id);
@@ -8823,7 +8856,11 @@ function openPublicationDetail(id){
   </div>
   <div class="publicationDetailAssets">
    <div class="publicationCover" data-publication-cover="${pub.id}"><div class="small">Lade Cover …</div></div>
-   <div class="publicationDetailActions">${pub.hasPdf?`<button class="btn" type="button" data-open-pdf="${pub.id}">📄 Scan / PDF öffnen</button>`:'<div class="small">Noch kein Scan / PDF hinterlegt.</div>'}</div>
+   <div class="publicationDetailActions">
+    ${pub.pdfMediaId||pub.hasPdf?`<button class="btn" type="button" data-open-pdf="${pub.id}">📄 Scan / PDF öffnen</button>`:'<div class="small">Noch kein Scan / PDF hinterlegt.</div>'}
+    ${pub.coverMediaId?`<button class="btn" type="button" data-clear-publication-cover="${pub.id}">Cover lösen</button>`:''}
+    ${pub.pdfMediaId||pub.hasPdf?`<button class="btn" type="button" data-clear-publication-pdf="${pub.id}">PDF lösen</button>`:''}
+   </div>
   </div>
  </div>
   <div class="relationBlock"><div class="publicationDetailSeriesHead"><h3>Enthaltene Rubriken</h3><span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
@@ -8838,6 +8875,8 @@ function openPublicationDetail(id){
  openOverlay('publicationDetailPane');
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
  box.querySelectorAll('[data-open-pdf]').forEach(x=>x.onclick=()=>openPublicationPdf(x.dataset.openPdf));
+ box.querySelectorAll('[data-clear-publication-cover]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationCover,'cover'));
+ box.querySelectorAll('[data-clear-publication-pdf]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationPdf,'pdf'));
  hydratePublicationCovers(box);
  hydrateShootingCovers(box);hydrateSeriesCovers(box);
 }
@@ -10275,9 +10314,19 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
 };
 async function deleteArchiveItem(id){
  const a=(state.archive||[]).find(x=>x.id===id);if(!a)return;
+ if(a.type==='printSeries'){
+  const issues=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&(pub.printSeriesId===a.id||(!pub.printSeriesId&&String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===String(a.title||'').trim().toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===(a.archiveArea||''))));
+  if(issues.length){toast(`Reihe kann nicht gelöscht werden: ${issues.length} ${issues.length===1?'Ausgabe ist':'Ausgaben sind'} noch zugeordnet.`);return}
+ }
  const label=a.title||a.fileName||'diesen Eintrag';
  if(!window.confirm(`${label} wirklich löschen?`))return;
- if(a.type==='media'){try{await deleteMediaBlob(a.id)}catch(e){console.error(e)}}
+ if(a.type==='media'){
+  (state.archive||[]).filter(pub=>pub&&pub.type==='publication').forEach(pub=>{
+   if(pub.coverMediaId===a.id)pub.coverMediaId='';
+   if(pub.pdfMediaId===a.id){pub.pdfMediaId='';pub.hasPdf=false}
+  });
+  try{await deleteMediaBlob(a.id)}catch(e){console.error(e)}
+ }
  if(a.type==='publication'){
    try{await deleteMediaBlob('cover:'+a.id)}catch(e){console.error(e)}
    try{await deleteMediaBlob('pdf:'+a.id)}catch(e){console.error(e)}
@@ -10838,7 +10887,7 @@ function renderArchive(){
  const mediaTypeFilters=document.getElementById('archiveMediaTypeFilters');
  if(mediaTypeFilters)mediaTypeFilters.classList.toggle('hidden',archiveTab!=='media');
  if(archiveTab==='media'){
-   const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&(x.type==='shoot'||x.type==='gallery');})?'assigned':'new';
+   const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&(x.type==='shoot'||x.type==='gallery'||x.type==='video'||x.type==='publication');})?'assigned':'new';
    const kindOf=a=>{const mt=String(a.mimeType||'').toLowerCase();return mt.startsWith('image/')?'Foto':mt.startsWith('video/')?'Video':mt.includes('pdf')?'PDF':'Datei'};
    const counts={new:0,keep:0,assigned:0};items.forEach(a=>counts[statusOf(a)]++);
    document.querySelectorAll('[data-media-work-count]').forEach(el=>el.textContent=counts[el.dataset.mediaWorkCount]||0);
@@ -10945,7 +10994,7 @@ function renderArchive(){
        <div class="publicationSeriesHeading">${esc(sr.title||'Reihe')}</div>
        ${sr._legacy
         ? `<button type="button" class="publicationSeriesAdd" data-adopt-print-series="${esc(sr.title||'')}" data-print-area="${esc(sr.archiveArea||'')}">Reihe übernehmen</button>`
-        : `<button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button>`}
+        : `<div class="publicationSeriesActions"><button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button><button type="button" class="titleDeleteX" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
       </div>
       <div class="publicationSeriesBody">${issueCards}</div>
      </div>`;
@@ -11131,6 +11180,7 @@ function renderArchive(){
  if(srFab){srFab.classList.toggle('visible',archiveTab==='series'&&seriesWorkSelected.size>0);srFab.textContent=`Auswahl (${seriesWorkSelected.size})`;if(!seriesWorkSelected.size){srFab.setAttribute('aria-expanded','false');srMenu&&srMenu.classList.remove('mobileOpen')}}
  box.querySelectorAll('[data-open-publication]').forEach(x=>x.onclick=()=>openPublicationDetail(x.dataset.openPublication));
  box.querySelectorAll('[data-add-print-issue]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openPrintIssueForSeries(x.dataset.addPrintIssue||'',x.dataset.printArea||'')});
+ box.querySelectorAll('[data-delete-print-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();deleteArchiveItem(x.dataset.deletePrintSeries)});
  box.querySelectorAll('[data-adopt-print-series]').forEach(x=>x.onclick=e=>{
   e.preventDefault();e.stopPropagation();
   const name=String(x.dataset.adoptPrintSeries||'').trim(),area=x.dataset.printArea||'';
@@ -11178,6 +11228,8 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  if(mwMove)mwMove.textContent=mediaWorkTab==='keep'?'Zurück zu Neu':'Fürs Archiv behalten';
  const mwReturn=document.getElementById('mediaWorkReturnInboxBtn');if(mwReturn)mwReturn.style.display=mediaWorkTab==='assigned'?'none':'';
  const mwAssignShoot=document.getElementById('mediaWorkAssignShootBtn');if(mwAssignShoot)mwAssignShoot.style.display=mediaWorkTab==='new'?'':'none';
+ const mwAssignCover=document.getElementById('mediaWorkAssignPublicationCoverBtn');if(mwAssignCover)mwAssignCover.style.display=mediaWorkTab==='new'?'':'none';
+ const mwAssignPdf=document.getElementById('mediaWorkAssignPublicationPdfBtn');if(mwAssignPdf)mwAssignPdf.style.display=mediaWorkTab==='new'?'':'none';
  box.querySelectorAll('[data-media-keep]').forEach(x=>x.onclick=e=>{e.stopPropagation();const a=(state.archive||[]).find(o=>o.id===x.dataset.mediaKeep);if(!a)return;a.workflowStatus='keep';save();renderArchive();toast('Medium wird nur beim Model behalten.')});
  box.querySelectorAll('[data-media-unkeep]').forEach(x=>x.onclick=e=>{e.stopPropagation();const a=(state.archive||[]).find(o=>o.id===x.dataset.mediaUnkeep);if(!a)return;delete a.workflowStatus;save();renderArchive();toast('Medium zurück zu „Neu / zu prüfen“ verschoben.')});
  box.querySelectorAll('[data-delete-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();deleteArchiveItem(x.dataset.deleteArchive)});
@@ -11480,6 +11532,80 @@ document.getElementById('mediaWorkAssignVideoBtn').onclick=()=>{
 document.getElementById('mediaWorkVideoConfirm').onclick=()=>assignSelectedMediaToVideo(document.getElementById('mediaWorkVideoSelect').value);
 document.getElementById('mediaWorkVideoCancel').onclick=closeMediaVideoPanel;
 document.getElementById('mediaWorkVideoCancelBottom').onclick=closeMediaVideoPanel;
+
+let mediaPublicationAssignRole='';
+function publicationMediaTargetLabel(pub){
+ const sr=publicationPrintSeriesObject(pub);
+ const parts=[
+  sr?.title||pub.printSeries||'Ohne Reihe',
+  String(pub.issueNumber||'').trim()?`Nr. ${pub.issueNumber}`:'',
+  publicationPeriodLabel(pub)||'',
+  archiveAreaLabel(pub.archiveArea)
+ ].filter(Boolean);
+ return parts.join(' · ');
+}
+function closeMediaPublicationPanel(){
+ const panel=document.getElementById('mediaWorkPublicationPanel');
+ panel.classList.add('hidden');
+ panel.classList.remove('mobileOpen');
+ mediaPublicationAssignRole='';
+}
+function openMediaPublicationPanel(role){
+ if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
+ const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(selected.length!==1){toast('Bitte genau ein Medium auswählen.');return}
+ const media=selected[0],mime=String(media.mimeType||'').toLowerCase(),name=String(media.fileName||'').toLowerCase();
+ if(role==='cover'&&!mime.startsWith('image/')){toast('Bitte für das Cover genau ein Foto auswählen.');return}
+ if(role==='pdf'&&!(mime.includes('pdf')||name.endsWith('.pdf'))){toast('Bitte genau eine PDF auswählen.');return}
+ const pubs=(state.archive||[]).filter(a=>a.type==='publication').slice().sort((a,b)=>publicationMediaTargetLabel(a).localeCompare(publicationMediaTargetLabel(b),'de',{numeric:true,sensitivity:'base'}));
+ if(!pubs.length){toast('Noch keine Ausgabe im Archiv vorhanden.');return}
+ mediaPublicationAssignRole=role;
+ const sel=document.getElementById('mediaWorkPublicationSelect');
+ sel.innerHTML=pubs.map(pub=>`<option value="${esc(pub.id)}">${esc(publicationMediaTargetLabel(pub))}</option>`).join('');
+ document.getElementById('mediaWorkPublicationPanelTitle').textContent=role==='cover'?'Cover einer Ausgabe zuordnen':'PDF einer Ausgabe zuordnen';
+ document.getElementById('mediaWorkPublicationPanelHint').textContent=role==='cover'?'Das gewählte Foto wird als Cover verwendet.':'Die gewählte PDF wird als Scan der Ausgabe verwendet.';
+ document.getElementById('mediaWorkPublicationConfirm').textContent=role==='cover'?'Als Cover zuordnen':'Als PDF zuordnen';
+ document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');
+ const panel=document.getElementById('mediaWorkPublicationPanel');
+ panel.classList.remove('hidden');
+ panel.classList.add('mobileOpen');
+}
+async function assignSelectedMediaToPublication(pubId,role){
+ const pub=(state.archive||[]).find(a=>a.id===pubId&&a.type==='publication');
+ const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(!pub||selected.length!==1)return;
+ const media=selected[0],isCover=role==='cover';
+ const oldId=isCover?pub.coverMediaId:pub.pdfMediaId;
+ if(oldId&&oldId!==media.id&&!confirm(`${isCover?'Cover':'PDF'} ist bereits vorhanden. Wirklich ersetzen?`))return;
+ if(oldId&&oldId!==media.id){
+  const old=(state.archive||[]).find(a=>a.id===oldId&&a.type==='media');
+  if(old)old.links=(old.links||[]).filter(x=>x!==pub.id);
+  pub.links=(pub.links||[]).filter(x=>x!==oldId);
+ }
+ media.links=media.links||[];
+ if(!media.links.includes(pub.id))media.links.push(pub.id);
+ pub.links=pub.links||[];
+ if(!pub.links.includes(media.id))pub.links.push(media.id);
+ delete media.workflowStatus;
+ if(isCover){
+  pub.coverMediaId=media.id;
+  try{await deleteMediaBlob('cover:'+pub.id)}catch(e){console.error(e)}
+ }else{
+  pub.pdfMediaId=media.id;
+  pub.hasPdf=true;
+  try{await deleteMediaBlob('pdf:'+pub.id)}catch(e){console.error(e)}
+ }
+ if(!save())return;
+ mediaWorkSelected.clear();
+ closeMediaPublicationPanel();
+ renderArchive();
+ toast(isCover?'Cover der Ausgabe zugeordnet.':'PDF der Ausgabe zugeordnet.');
+}
+document.getElementById('mediaWorkAssignPublicationCoverBtn').onclick=()=>openMediaPublicationPanel('cover');
+document.getElementById('mediaWorkAssignPublicationPdfBtn').onclick=()=>openMediaPublicationPanel('pdf');
+document.getElementById('mediaWorkPublicationConfirm').onclick=()=>assignSelectedMediaToPublication(document.getElementById('mediaWorkPublicationSelect').value,mediaPublicationAssignRole);
+document.getElementById('mediaWorkPublicationCancel').onclick=closeMediaPublicationPanel;
+document.getElementById('mediaWorkPublicationCancelBottom').onclick=closeMediaPublicationPanel;
 
 document.getElementById('mediaWorkAssignShootBtn').onclick=()=>{
  if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
