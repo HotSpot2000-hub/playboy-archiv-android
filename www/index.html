@@ -10886,12 +10886,26 @@ function renderArchive(){
    const mid=managementSelectedModelId();
    const q=String(managementSearch||'').trim().toLocaleLowerCase('de-DE');
    const area=managementAreaFilter;
-   let seriesRows=printSeriesObjects().filter(sr=>{
+   let availablePrintSeries=printSeriesObjects();
+   if(!availablePrintSeries.length){
+     const recovered=[];
+     (state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&String(pub.printSeries||'').trim()).forEach(pub=>{
+       const name=String(pub.printSeries||'').trim();
+       const key=`${pub.archiveArea||''}|${name.toLocaleLowerCase('de-DE')}`;
+       if(recovered.some(x=>x._key===key))return;
+       recovered.push({id:`__legacy__${key}`,type:'printSeries',title:name,archiveArea:pub.archiveArea||'',_key:key,_legacy:true});
+     });
+     availablePrintSeries=recovered;
+   }
+   let seriesRows=availablePrintSeries.filter(sr=>{
      if(area==='__none__')return !sr.archiveArea;
      if(area&&area!=='__all__')return sr.archiveArea===area;
      return true;
    }).map(sr=>{
-     let pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&(pub.printSeriesId===sr.id||(!pub.printSeriesId&&String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===String(sr.title||'').trim().toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===(sr.archiveArea||''))));
+     let pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&(
+       (!sr._legacy&&pub.printSeriesId===sr.id)||
+       (String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===String(sr.title||'').trim().toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===(sr.archiveArea||''))
+     ));
      if(mid)pubs=pubs.filter(pub=>publicationBelongsToModel(pub,mid));
      if(q){
        const seriesHit=[sr.title,archiveAreaLabel(sr.archiveArea)].filter(Boolean).join(' ').toLocaleLowerCase('de-DE').includes(q);
@@ -10929,7 +10943,9 @@ function renderArchive(){
       <div class="publicationManageHead">
        <span class="publicationManageIcon" aria-hidden="true">▤</span>
        <div class="publicationSeriesHeading">${esc(sr.title||'Reihe')}</div>
-       <button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button>
+       ${sr._legacy
+        ? `<button type="button" class="publicationSeriesAdd" data-adopt-print-series="${esc(sr.title||'')}" data-print-area="${esc(sr.archiveArea||'')}">Reihe übernehmen</button>`
+        : `<button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button>`}
       </div>
       <div class="publicationSeriesBody">${issueCards}</div>
      </div>`;
@@ -11115,6 +11131,20 @@ function renderArchive(){
  if(srFab){srFab.classList.toggle('visible',archiveTab==='series'&&seriesWorkSelected.size>0);srFab.textContent=`Auswahl (${seriesWorkSelected.size})`;if(!seriesWorkSelected.size){srFab.setAttribute('aria-expanded','false');srMenu&&srMenu.classList.remove('mobileOpen')}}
  box.querySelectorAll('[data-open-publication]').forEach(x=>x.onclick=()=>openPublicationDetail(x.dataset.openPublication));
  box.querySelectorAll('[data-add-print-issue]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openPrintIssueForSeries(x.dataset.addPrintIssue||'',x.dataset.printArea||'')});
+ box.querySelectorAll('[data-adopt-print-series]').forEach(x=>x.onclick=e=>{
+  e.preventDefault();e.stopPropagation();
+  const name=String(x.dataset.adoptPrintSeries||'').trim(),area=x.dataset.printArea||'';
+  if(!name)return;
+  let sr=printSeriesObjects().find(s=>String(s.title||'').trim().toLocaleLowerCase('de-DE')===name.toLocaleLowerCase('de-DE')&&(s.archiveArea||'')===area);
+  if(!sr){
+   sr={id:'PS-'+Date.now(),type:'printSeries',title:name,archiveArea:area,note:'',links:[],credits:[],tags:[],at:new Date().toISOString()};
+   state.archive.push(sr);
+   (state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===name.toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===area).forEach(pub=>pub.printSeriesId=sr.id);
+   if(!save())return;
+  }
+  renderArchive();
+  toast('Reihe übernommen.');
+ });
  box.querySelectorAll('[data-open-related-model]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.openRelatedModel;if(!state.models.some(m=>m.id===id))return;state.currentModelId=id;save();rememberRecentProfile(id);showProfile();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'smooth'}));});
  box.querySelectorAll('[data-title-class]').forEach(x=>x.onclick=()=>{titleBrowseClass=x.dataset.titleClass;titleBrowseLevel='';renderArchive()});
  box.querySelectorAll('[data-title-level]').forEach(x=>x.onclick=()=>{titleBrowseLevel=x.dataset.titleLevel;renderArchive()});
@@ -11985,8 +12015,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(duplicate){toast('Diese Reihe existiert in diesem Bereich bereits.');return}
   const item={id:'PS-'+Date.now(),type:'printSeries',title,archiveArea,note:'',links:[],credits:[],tags:[],at:new Date().toISOString()};
   linkItem(item);
-  archiveTab='publication';
-  finish();
+  finish(1,'publication');
   return;
  }
  if(type==='publication'){
