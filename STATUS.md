@@ -1,6 +1,6 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-12\
+Stand: 2026-09-13\
 Referenz-Commit: `125333060f3aa043e150a0e66c84c4418f7bc4c4`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig
@@ -205,17 +205,25 @@ Datums-/Ortsangaben zur Shooting-Unterscheidung; - Model-Filter als
 Beitragsidentität; - Galerie-/Video-Nummer als sichtbare
 Veröffentlichungsidentität.
 
+## Abgeschlossener Rubriken-Referenztest
+
+Der kontrollierte Rubriken-/Beitrags-Referenztest ist vollständig bestanden:
+
+- zwei Beiträge derselben Rubrik und derselben exakten Model-Kombination zeigen `Nr. 1` / `Nr. 2`;
+- ein einzelner Beitrag einer anderen Model-Kombination zeigt keine `Nr. 1`;
+- ein Beitrag mit individuellem Namen zeigt Model + individuellen Namen, z. B. `TEST Anna • High Time`, ohne zusätzliche sichtbare Beitragsnummer.
+
+Damit gilt **Rubrik → Beitrag → Galerie/Video** fachlich und bedienseitig als ausreichend gefestigt.
+
 ## Nächster Schritt
 
-Kontrollierten Referenztest fortsetzen; **noch keine Ausweitung auf
-Titel oder Printausgaben**.
+**Etappe 5a vorbereiten: Titel → Beitrag → Galerie/Video.**
 
-1.  In einer anderen Rubrik einen einzelnen Beitrag mit einer anderen
-    Model-Kombination anlegen/zuordnen.
-2.  Erwartung: Solange dort für exakt diese Model-Kombination nur ein
-    Beitrag existiert, darf **keine `Nr. 1`** sichtbar sein.
-3.  Danach einen Beitrag mit individuellem Namen nach Muster
-    `TEST Anna • High Time` prüfen; Name sichtbar, keine zusätzliche
-    Beitragsnummer nötig.
-4.  Erst nach verständlichem Referenztest das Beitrag-im-Kontext-Muster
-    auf Titel und danach Printausgaben übertragen.
+Vor der Implementierung den aktuellen Titel-Code in `www/index.html` untersuchen und die kleinste Übertragung des bestätigten Rubrikenmusters planen.
+
+- Titel bleibt eigener Bereich und wird nicht mit Rubrik zusammengeführt.
+- Beitrag wird direkt innerhalb eines Titels sichtbar/bedienbar.
+- technischer `release` bleibt im Hintergrund.
+- Modelableitung, individueller Name, Vorschau und Galerie-/Video-Zugriff folgen möglichst dem bestätigten Rubrikenmuster.
+- Titelhierarchien noch nicht in 5a erzwingen; zunächst Grundfluss stabilisieren.
+- kein Schema-Bump und keine automatische Migration, sofern nicht zwingend erforderlich.
