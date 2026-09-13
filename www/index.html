@@ -171,7 +171,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationCover img{width:100%;height:100%;object-fit:cover}.publicationBody{padding:9px}.publicationBody b{display:block}
 .publicationActions{display:flex;border-top:1px solid var(--line)}.publicationActions button{flex:1;border:0;background:#fff;padding:8px;font-size:11px}.publicationActions .deleteBtn{color:#9b1c1c}
 
-.stockBadge{display:inline-block;background:#eef7ef;border:1px solid #cfe3d1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}
+.stockBadge{display:inline-block;background:#eef7ef;border:1px solid #cfe3d1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}.stockBadge.ordered{background:#fff6df;border-color:#e6d19b}.stockBadge.none{background:#f3f3f3;border-color:#d8d8d8}
 .pdfBadge{display:inline-block;background:#f1f1f1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}
 .shootingGridStandalone{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
 .shootingCardStandalone{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
@@ -2174,7 +2174,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 <div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
 <select id="managementAreaFilter" class="managementAreaFilter hidden" aria-label="Archivbereich filtern"></select>
   <div class="archiveTabs managementNav">
-   <button class="active" data-archive-tab="publication">Publikationen</button>
+   <button class="active" data-archive-tab="publication">Print</button>
    <button data-archive-tab="title">Titel</button>
    <button data-archive-tab="series">Rubriken</button>
    <button data-archive-tab="gallery">Galerien</button>
@@ -2520,8 +2520,22 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
  <div id="archiveEditNoteWrap"><label>Notiz</label><textarea id="archiveEditNote"></textarea></div>
  <div id="archiveEditOwnershipWrap" class="hidden">
- <label style="font-weight:400"><input id="archiveEditOwned" type="checkbox" style="width:auto"> Printausgabe im eigenen Bestand</label>
-</div>
+  <label>Print-Reihe</label>
+  <input id="archiveEditPrintSeries" placeholder="z. B. Girlfriends">
+  <label>Ausgabe Nr. <span class="small">(optional)</span></label>
+  <input id="archiveEditIssueNumber" inputmode="numeric" placeholder="z. B. 5">
+  <label>Zeitraum / Ausgabe</label>
+  <input id="archiveEditIssuePeriod" placeholder="z. B. Juli/August 2002">
+  <label>Cover-Models <span class="small">(optional)</span></label>
+  <div class="small">Nur Coverangabe. Daraus wird kein Beitrag und kein Shooting abgeleitet.</div>
+  <div id="archiveEditCoverModels" class="shootModelSelector"></div>
+  <label>Physischer Bestand</label>
+  <select id="archiveEditStockStatus">
+   <option value="none">Nicht vorhanden</option>
+   <option value="ordered">Bestellt</option>
+   <option value="owned">Im Bestand</option>
+  </select>
+ </div>
 <div id="archiveEditWorkReleaseWrap" class="hidden">
  <label>Beitrag <span class="small">(optional)</span></label>
  <select id="archiveEditWorkRelease" class="hidden" aria-hidden="true"><option value="">Noch keinem Beitrag zugeordnet</option></select>
@@ -2564,7 +2578,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveTypeWrap">
  <label>Typ</label>
  <select id="archiveType">
-  <option value="publication">Publikation</option>
+  <option value="publication">Printausgabe</option>
   <option value="release" hidden>Beitrag</option>
   <option value="series">Fotoserie / Rubrik</option>
   <option value="gallery">Galerie</option>
@@ -2603,7 +2617,21 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="titleYearWrap" class="hidden"><label>Jahr</label><input id="titleYear" inputmode="numeric" placeholder="z. B. 2008"></div>
  </div>
  <div id="publicationOwnershipWrap" class="hidden">
-  <label style="font-weight:400"><input id="publicationOwned" type="checkbox" style="width:auto"> Printausgabe im eigenen Bestand</label>
+  <label>Print-Reihe</label>
+  <input id="publicationPrintSeries" placeholder="z. B. Girlfriends">
+  <label>Ausgabe Nr. <span class="small">(optional)</span></label>
+  <input id="publicationIssueNumber" inputmode="numeric" placeholder="z. B. 5">
+  <label>Zeitraum / Ausgabe</label>
+  <input id="publicationIssuePeriod" placeholder="z. B. Juli/August 2002">
+  <label>Cover-Models <span class="small">(optional)</span></label>
+  <div class="small">Nur Coverangabe. Daraus wird kein Beitrag und kein Shooting abgeleitet.</div>
+  <div id="publicationCoverModels" class="shootModelSelector"></div>
+  <label>Physischer Bestand</label>
+  <select id="publicationStockStatus">
+   <option value="none">Nicht vorhanden</option>
+   <option value="ordered">Bestellt</option>
+   <option value="owned">Im Bestand</option>
+  </select>
  </div>
  <div id="archiveReleaseFieldsWrap" class="hidden">
   <div id="archiveContributionModelHint" class="small hidden" style="margin-bottom:8px"></div>
@@ -3154,7 +3182,14 @@ function normalizeArchiveObjectV6(a){
   if(a.creditsMode!=='custom')a.creditsMode='inherit';
  }
  if(a.type==='publication'){
-  a.owned=!!a.owned;
+  a.printSeries=String(a.printSeries||'').trim();
+  a.issueNumber=String(a.issueNumber||'').trim();
+  a.issuePeriod=String(a.issuePeriod||a.date||'').trim();
+  if(!Array.isArray(a.coverModelIds))a.coverModelIds=[];
+  a.coverModelIds=[...new Set(a.coverModelIds.filter(Boolean))];
+  const validStock=new Set(['none','ordered','owned']);
+  a.stockStatus=validStock.has(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
+  a.owned=a.stockStatus==='owned';
   a.hasPdf=!!a.hasPdf;
  }
  if(archiveAreaSupportsType(a.type)){
@@ -4155,13 +4190,13 @@ function globalObjectModelIds(a){
  if(!a)return [];
  if(a.type==='shoot')return shootingModelIds(a);
  if(a.type==='series')return [...new Set((state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(a.id)).flatMap(sh=>shootingModelIds(sh)))];
- if(a.type==='publication'){const series=(state.archive||[]).filter(sr=>sr.type==='series'&&(sr.links||[]).includes(a.id));return [...new Set(series.flatMap(sr=>(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(sr.id)).flatMap(sh=>shootingModelIds(sh))))];}
+ if(a.type==='publication'){const series=(state.archive||[]).filter(sr=>sr.type==='series'&&(sr.links||[]).includes(a.id));return [...new Set([...(a.coverModelIds||[]),...series.flatMap(sr=>(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(sr.id)).flatMap(sh=>shootingModelIds(sh)))])];}
  return [a.modelId].filter(Boolean);
 }
 function renderGlobalPublications(){
  const box=document.getElementById('globalPublicationsList');if(!box)return;
  const pubs=(state.archive||[]).filter(a=>a.type==='publication').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
- box.innerHTML=pubs.length?pubs.map(pub=>{const mids=globalObjectModelIds(pub).filter(id=>(state.models||[]).some(m=>m.id===id));const names=mids.map(id=>state.models.find(m=>m.id===id)?.name).filter(Boolean);return `<div class="globalBrowseCard"><div class="publicationCover" data-global-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}"><div class="small">Lade Cover …</div></div><div class="globalBrowseBody" data-global-publication="${esc(pub.id)}"><b>${esc(pub.title||'Publikation ohne Titel')}</b><div class="small">${esc(pub.date||'Ausgabe offen')}</div>${names.length?`<div class="globalBrowseModels">${esc(names.join(' · '))}</div>`:''}</div></div>`}).join(''):'<div class="small">Noch keine Publikationen im Archiv.</div>';
+ box.innerHTML=pubs.length?pubs.map(pub=>{const mids=globalObjectModelIds(pub).filter(id=>(state.models||[]).some(m=>m.id===id));const names=mids.map(id=>state.models.find(m=>m.id===id)?.name).filter(Boolean);return `<div class="globalBrowseCard"><div class="publicationCover" data-global-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}"><div class="small">Lade Cover …</div></div><div class="globalBrowseBody" data-global-publication="${esc(pub.id)}"><b>${esc(publicationDisplayTitle(pub))}</b><div class="small">${esc(publicationPeriodLabel(pub)||'Ausgabe offen')}</div>${names.length?`<div class="globalBrowseModels">${esc(names.join(' · '))}</div>`:''}</div></div>`}).join(''):'<div class="small">Noch keine Publikationen im Archiv.</div>';
  box.querySelectorAll('[data-global-publication]').forEach(x=>x.onclick=()=>{const pub=(state.archive||[]).find(a=>a.id===x.dataset.globalPublication);const mid=globalObjectModelIds(pub)[0];if(mid){state.currentModelId=mid;save()}openPublicationDetail(x.dataset.globalPublication)});hydratePublicationCovers(box);
 }
 function individualSearchQuery(){const panel=document.getElementById('individualOverviewSearchPanel'),input=document.getElementById('individualOverviewSearchInput');return panel&&input&&!panel.classList.contains('hidden')?normalizeSeriesSearch(input.value):''}
@@ -8724,14 +8759,15 @@ async function openPublicationPdf(id){
 }
 function openPublicationDetail(id){
  rememberRecentArchive(id);
- const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication'&&publicationBelongsToModel(a,state.currentModelId));
+ const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');
  if(!pub){toast('Publikation nicht gefunden.');return}
  const mid=managementSelectedModelId(); const series=linkedObjects(pub.id,'series').filter(s=>!mid||seriesBelongsToModel(s,mid));
  const box=document.getElementById('publicationDetailContent');
  box.innerHTML=`<div class="publicationDetailSummary">
   <div class="detailHero">
-   <div class="small">Publikation / Ausgabe</div><h2>${esc(pub.title)}</h2>
-   <div class="publicationDetailMeta"><span class="small">${esc(pub.date||'')}</span>${pub.owned?'<span class="stockBadge">✓ Printausgabe im Bestand</span>':''}</div>
+   <div class="small">Printausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
+   <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}</div>
+   ${publicationCoverModelNames(pub).length?`<div class="small" style="margin-top:7px"><b>Cover:</b> ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
    ${pub.note?`<div class="publicationDetailNote">${esc(pub.note)}</div>`:''}${renderCredits(pub.credits||[])}
   </div>
   <div class="publicationDetailAssets">
@@ -8833,6 +8869,28 @@ function modelSelector(selected=[],edit=false){
  const cls=edit?'editShootModelCheck':'shootModelCheck';
  return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${m.id}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
 }
+function publicationCoverModelSelector(selected=[],edit=false){
+ const cls=edit?'editPublicationCoverModelCheck':'publicationCoverModelCheck';
+ return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
+}
+function publicationDisplayTitle(pub){
+ const series=String(pub?.printSeries||'').trim();
+ const issue=String(pub?.issueNumber||'').trim();
+ if(series)return issue?`${series} • Nr. ${issue}`:series;
+ return String(pub?.title||'Printausgabe').trim()||'Printausgabe';
+}
+function publicationPeriodLabel(pub){return String(pub?.issuePeriod||pub?.date||'').trim()}
+function publicationStockLabel(pub){
+ const status=pub?.stockStatus||(pub?.owned?'owned':'none');
+ return status==='owned'?'Im Bestand':status==='ordered'?'Bestellt':'Nicht vorhanden';
+}
+function publicationStockBadge(pub){
+ const status=pub?.stockStatus||(pub?.owned?'owned':'none');
+ const cls=status==='ordered'?' ordered':status==='none'?' none':'';
+ const icon=status==='owned'?'✓ ':status==='ordered'?'◷ ':'';
+ return `<span class="stockBadge${cls}">${icon}${esc(publicationStockLabel(pub))}</span>`;
+}
+function publicationCoverModelNames(pub){return (pub?.coverModelIds||[]).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean)}
 function modelChips(ids=[]){
  const ms=ids.map(id=>state.models.find(m=>m.id===id)).filter(Boolean);
  return ms.length?`<div class="creditRow relationshipRow"><span class="creditChip relationshipGroup" title="Models"><span class="relationshipIcon">👤</span><span class="relationshipNames">${ms.map(m=>`<button type="button" class="relationshipName relationshipLink" data-open-related-model="${esc(m.id)}">${esc(m.name)}</button>`).join('')}</span></span></div>`:'';
@@ -9896,19 +9954,20 @@ if(preview&&l==='week'){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
- document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':'Archiv-Eintrag bearbeiten';
+ document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
  const isGallery=a.type==='gallery';
  const isVideo=a.type==='video';
  const isRelease=a.type==='release';
+ const isPublication=a.type==='publication';
  const hasArchiveArea=archiveAreaSupportsType(a.type);
  document.getElementById('archiveEditAreaWrap').classList.toggle('hidden',!hasArchiveArea);
  document.getElementById('archiveEditArea').value=hasArchiveArea&&ARCHIVE_AREA_IDS.has(a.archiveArea)?a.archiveArea:'';
- document.getElementById('archiveEditNameWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease);
+ document.getElementById('archiveEditNameWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease||isPublication);
  document.getElementById('archiveEditNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease);
- document.getElementById('archiveEditDateWrap').classList.toggle('hidden',isGallery||isVideo||isRelease);
+ document.getElementById('archiveEditDateWrap').classList.toggle('hidden',isGallery||isVideo||isRelease||isPublication);
  document.getElementById('archiveEditDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveEditDate').placeholder=isShoot?'YYYY-MM-DD':'';
  document.getElementById('archiveEditShootLocationWrap').classList.toggle('hidden',!isShoot);
@@ -9986,7 +10045,7 @@ document.getElementById('archiveEditDate').oninput=()=>{
 };
     
  document.getElementById('archiveEditNote').value=a.note||'';
- document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',a.type!=='publication');
+ document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',!isPublication);
  document.getElementById('archiveEditReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
  if(isRelease){document.getElementById('archiveEditReleaseName').value=a.name||'';document.getElementById('archiveEditContributionNumber').value=Number(a.contributionNumber)>0?String(Number(a.contributionNumber)):'';}
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
@@ -9998,7 +10057,15 @@ document.getElementById('archiveEditDate').oninput=()=>{
  const shootModelsBox=document.getElementById('archiveEditShootModels');
  if(shootModelsWrap)shootModelsWrap.classList.toggle('hidden',a.type!=='shoot');
  if(shootModelsBox)shootModelsBox.innerHTML=a.type==='shoot'?modelSelector(shootingModelIds(a),true):'';
- document.getElementById('archiveEditOwned').checked=!!a.owned;
+ if(isPublication){
+  document.getElementById('archiveEditPrintSeries').value=a.printSeries||a.title||'';
+  document.getElementById('archiveEditIssueNumber').value=a.issueNumber||'';
+  document.getElementById('archiveEditIssuePeriod').value=a.issuePeriod||a.date||'';
+  document.getElementById('archiveEditCoverModels').innerHTML=publicationCoverModelSelector(a.coverModelIds||[],true);
+  document.getElementById('archiveEditStockStatus').value=['none','ordered','owned'].includes(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
+ }else{
+  document.getElementById('archiveEditCoverModels').innerHTML='';
+ }
  if(a.type==='title'){document.getElementById('archiveEditTitleClass').value=a.titleClass||'coed';fillEditTitleLevels();document.getElementById('archiveEditTitleLevel').value=a.titleLevel||titleLevelsForClass(a.titleClass||'coed')[0]?.[0]||'month';refreshEditTitlePeriod();if(a.titleLevel==='week'){setTitleWeekDate('archiveEditTitle',a.titlePeriod||'');if(a.titlePeriod){const parts=a.titlePeriod.split('-').map(Number);document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||String(Math.ceil(parts[2]/7));document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||String(parts[1]);}else{document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||'';document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||'';}}document.getElementById('archiveEditTitleMonth').value=a.titleLevel==='month'?(a.titlePeriod||''):'';document.getElementById('archiveEditTitleYear').value=a.titleLevel==='year'?(a.titleYear||''):'';refreshEditTitlePeriod();} 
     openOverlay('archiveEditPane');
 }
@@ -10007,9 +10074,9 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
  const id=document.getElementById('archiveEditId').value;
  const a=(state.archive||[]).find(x=>x.id===id);if(!a)return;
  const name=document.getElementById('archiveEditName').value.trim();
- if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&a.type!=='release'&&!name){toast('Bitte einen Namen eingeben.');return}
- if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&a.type!=='release')a.title=name;
- if(a.type!=='video'&&a.type!=='release')a.date=document.getElementById('archiveEditDate').value.trim();
+ if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&a.type!=='release'&&a.type!=='publication'&&!name){toast('Bitte einen Namen eingeben.');return}
+ if(a.type!=='media'&&a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&a.type!=='release'&&a.type!=='publication')a.title=name;
+ if(a.type!=='video'&&a.type!=='release'&&a.type!=='publication')a.date=document.getElementById('archiveEditDate').value.trim();
  if(a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&a.type!=='release')a.note=document.getElementById('archiveEditNote').value.trim();
  a.updatedAt=new Date().toISOString();
  if(archiveAreaSupportsType(a.type)){
@@ -10017,7 +10084,20 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.archiveArea=ARCHIVE_AREA_IDS.has(archiveArea)?archiveArea:'';
  }
  if(a.type==='publication'){
-   a.owned=document.getElementById('archiveEditOwned').checked;
+   const printSeries=document.getElementById('archiveEditPrintSeries').value.trim();
+   const issueNumber=document.getElementById('archiveEditIssueNumber').value.trim();
+   const issuePeriod=document.getElementById('archiveEditIssuePeriod').value.trim();
+   if(!printSeries){toast('Bitte eine Print-Reihe eingeben.');return}
+   if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
+   a.printSeries=printSeries;
+   a.issueNumber=issueNumber;
+   a.issuePeriod=issuePeriod;
+   a.title=publicationDisplayTitle({...a,printSeries,issueNumber});
+   a.date=issuePeriod;
+   a.coverModelIds=[...document.querySelectorAll('#archiveEditCoverModels .editPublicationCoverModelCheck:checked')].map(x=>x.value);
+   a.stockStatus=document.getElementById('archiveEditStockStatus').value;
+   a.owned=a.stockStatus==='owned';
+   delete a.modelId;
  }
  if(a.type==='release'){
    a.name=document.getElementById('archiveEditReleaseName').value.trim();
@@ -10174,6 +10254,7 @@ function seriesBelongsToModel(series,modelId){
 }
 function publicationBelongsToModel(pub,modelId){
  if(pub.type!=='publication')return false;
+ if((pub.coverModelIds||[]).includes(modelId))return true;
  if(pub.modelId===modelId)return true;
  const linkedSeries=linkedObjects(pub.id,'series');
  return linkedSeries.some(s=>seriesBelongsToModel(s,modelId));
@@ -10736,11 +10817,11 @@ function renderArchive(){
             <div class="small">Cover</div>
           </div>
           <div class="publicationBody" data-open-publication="${pub.id}">
-            <b>${esc(pub.title)}</b>
+            <b>${esc(publicationDisplayTitle(pub))}</b>
             <div class="small">${esc(archiveAreaLabel(pub.archiveArea))}</div>
-            <div class="small">${esc(pub.date||'Ausgabe offen')} · <span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
-            
-            ${pub.owned?'<span class="stockBadge">✓ Im Bestand</span>':''}
+            <div class="small">${esc(publicationPeriodLabel(pub)||'Ausgabe offen')}</div>
+            ${publicationCoverModelNames(pub).length?`<div class="small">Cover: ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
+            ${publicationStockBadge(pub)}
             ${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}${renderCredits(pub.credits||[])}
           </div>
           <div class="publicationActions">
@@ -11615,8 +11696,8 @@ function openArchive(){
 }
 function refreshArchiveForm(){
  const type=document.getElementById('archiveType').value;
- document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='release'?'Beitrag hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
- const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot', isRelease=type==='release';
+ document.getElementById('archivePaneTitle').textContent=type==='publication'?'Printausgabe hinzufügen':type==='release'?'Beitrag hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
+ const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot', isRelease=type==='release', isPublication=type==='publication';
  const hasArchiveArea=archiveAreaSupportsType(type);
  document.getElementById('archiveAreaWrap').classList.toggle('hidden',!hasArchiveArea);
  if(hasArchiveArea)document.getElementById('archiveArea').value='';
@@ -11628,9 +11709,9 @@ function refreshArchiveForm(){
  document.getElementById('archiveVideoShootWrap').classList.toggle('hidden',!isVideo);
  document.getElementById('archiveShootFieldsWrap').classList.toggle('hidden',!isShoot);
  document.getElementById('titleFieldsWrap').classList.toggle('hidden',!isTitle);
- document.getElementById('archiveTitleWrap').classList.toggle('hidden',isMedia||isTitle||isShoot||isGallery||isVideo||isRelease);
+ document.getElementById('archiveTitleWrap').classList.toggle('hidden',isMedia||isTitle||isShoot||isGallery||isVideo||isRelease||isPublication);
  document.getElementById('archiveNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease);
- document.getElementById('archiveDateWrap').classList.toggle('hidden',isMedia||isTitle||isGallery||isVideo||isRelease);
+ document.getElementById('archiveDateWrap').classList.toggle('hidden',isMedia||isTitle||isGallery||isVideo||isRelease||isPublication);
  document.getElementById('archiveDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveDate').placeholder=isShoot?'YYYY-MM-DD':'z. B. März 2010';
  if(isRelease)fillReleaseSelectors('archiveReleaseSeries','archiveReleaseTitle',null);
@@ -11656,7 +11737,15 @@ function refreshArchiveForm(){
 }
  if(isMedia){document.getElementById('archiveTitle').value='';document.getElementById('archiveDate').value='';}
  document.getElementById('archiveFile').value='';
- document.getElementById('publicationOwned').checked=false;
+  if(isPublication){
+  document.getElementById('publicationPrintSeries').value='';
+  document.getElementById('publicationIssueNumber').value='';
+  document.getElementById('publicationIssuePeriod').value='';
+  document.getElementById('publicationCoverModels').innerHTML=publicationCoverModelSelector([],false);
+  document.getElementById('publicationStockStatus').value='none';
+ }else{
+  document.getElementById('publicationCoverModels').innerHTML='';
+ }
  renderMediaQueue();
 }
 function refreshTitleLevels(){
@@ -11772,9 +11861,23 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   titleBrowseLevel=level;
   finish();return;
  }
- const title=type==='shoot'?'Shooting':type==='gallery'?'Galerie':type==='video'?'Video':document.getElementById('archiveTitle').value.trim();
- if(!title){toast('Bitte einen Titel eingeben.');return}
+ const title=type==='shoot'?'Shooting':type==='gallery'?'Galerie':type==='video'?'Video':type==='publication'?'Printausgabe':document.getElementById('archiveTitle').value.trim();
+ if(type!=='publication'&&!title){toast('Bitte einen Titel eingeben.');return}
  const archiveArea=archiveAreaSupportsType(type)&&ARCHIVE_AREA_IDS.has(document.getElementById('archiveArea').value)?document.getElementById('archiveArea').value:'';
+ if(type==='publication'){
+  const printSeries=document.getElementById('publicationPrintSeries').value.trim();
+  const issueNumber=document.getElementById('publicationIssueNumber').value.trim();
+  const issuePeriod=document.getElementById('publicationIssuePeriod').value.trim();
+  if(!printSeries){toast('Bitte eine Print-Reihe eingeben.');return}
+  if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
+  const stockStatus=document.getElementById('publicationStockStatus').value;
+  const coverModelIds=[...document.querySelectorAll('#publicationCoverModels .publicationCoverModelCheck:checked')].map(x=>x.value);
+  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  item.title=publicationDisplayTitle(item);
+  linkItem(item);
+  finish();
+  return;
+ }
  if(type==='gallery'){
   const shootingId=document.getElementById('archiveGalleryShoot').value;
   const releaseId=document.getElementById('archiveWorkRelease').value;
@@ -11834,7 +11937,6 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   item.shootingNumber=nextShootingNumber(shootModelIds);
   item.location=document.getElementById('archiveShootLocation').value.trim();
  }
- if(type==='publication') item.owned=document.getElementById('publicationOwned').checked;
  linkItem(item);
  finish();
 };
