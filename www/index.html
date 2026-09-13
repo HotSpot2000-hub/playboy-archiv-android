@@ -178,9 +178,9 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationSeriesHeading{min-width:0;text-align:center;font-size:17px;font-weight:800;line-height:1.25}
 .publicationSeriesAdd{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;font:inherit;font-size:12px;white-space:nowrap}
 .publicationSeriesActions{display:flex;align-items:center;gap:7px}
-.publicationSeriesActions .titleDeleteX{width:38px;height:38px;flex:0 0 38px}
+.publicationSeriesActions .titleDeleteX{width:40px;height:40px;flex:0 0 40px;border-radius:10px}
 .publicationSeriesBody{display:grid;gap:10px;padding:10px;background:var(--bg)}
-.publicationIssueCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid var(--line);border-radius:14px;background:#fff;padding:10px;min-width:0}
+.publicationIssueCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;padding:10px;min-width:0}
 .publicationManageCover{width:100%;aspect-ratio:2/3;border:0;border-radius:12px;background:#eee;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--muted)}
 .publicationManageCover img{width:100%;height:100%;object-fit:cover;border-radius:12px}
 .publicationIssueBody{min-width:0;display:flex;flex-direction:column;justify-content:center}
@@ -192,7 +192,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageArea{margin-top:8px;font-weight:700}
 .publicationManageModels{margin-top:5px;line-height:1.4}
 .publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px}
-.publicationIssueActions{margin-top:10px}
+.publicationIssueActions{margin-top:10px;justify-content:flex-start;flex-wrap:wrap}
+.publicationIssueActions button{flex:0 0 auto;min-height:40px;padding:8px 12px;border-radius:10px;background:#fff}
 @media(max-width:430px){
  .publicationManageHead{grid-template-columns:30px minmax(0,1fr) auto;padding:10px}
  .publicationSeriesHeading{font-size:16px}
@@ -8991,6 +8992,15 @@ function publicationDisplayTitle(pub){
  return String(pub?.title||'Printausgabe').trim()||'Printausgabe';
 }
 function publicationPeriodLabel(pub){return String(pub?.issuePeriod||pub?.date||'').trim()}
+function publicationCompactPeriodLabel(pub){
+ const raw=publicationPeriodLabel(pub);
+ if(!raw.includes('/'))return raw;
+ const months={
+  Januar:'Jan.',Februar:'Feb.',März:'März',April:'Apr.',Mai:'Mai',Juni:'Juni',
+  Juli:'Jul.',August:'Aug.',September:'Sept.',Oktober:'Okt.',November:'Nov.',Dezember:'Dez.'
+ };
+ return raw.replace(/\b(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\b/g,m=>months[m]||m);
+}
 function publicationStockLabel(pub){
  const status=pub?.stockStatus||(pub?.owned?'owned':'none');
  return status==='owned'?'Im Bestand':status==='ordered'?'Bestellt':'Nicht vorhanden';
@@ -10971,7 +10981,13 @@ function renderArchive(){
      return {sr,pubs};
    }).filter(Boolean);
    if(mid)seriesRows=seriesRows.filter(row=>row.pubs.length);
-   box.innerHTML=seriesRows.length?`<div class="publicationManageList">${seriesRows.map(({sr,pubs})=>{
+   let unassignedPrintIssues=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&!publicationPrintSeriesObject(pub));
+   if(area==='unassigned')unassignedPrintIssues=unassignedPrintIssues.filter(pub=>!pub.archiveArea);
+   else if(area&&area!=='all')unassignedPrintIssues=unassignedPrintIssues.filter(pub=>pub.archiveArea===area);
+   if(mid)unassignedPrintIssues=unassignedPrintIssues.filter(pub=>publicationBelongsToModel(pub,mid));
+   if(q)unassignedPrintIssues=unassignedPrintIssues.filter(managementMatchesSearch);
+   unassignedPrintIssues.sort((a,b)=>String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{sensitivity:'base',numeric:true}));
+   box.innerHTML=(seriesRows.length||unassignedPrintIssues.length)?`<div class="publicationManageList">${seriesRows.map(({sr,pubs})=>{
      const issueCards=pubs.length?pubs.map(pub=>{
        const coverModels=publicationCoverModelNames(pub);
        const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
@@ -10979,12 +10995,12 @@ function renderArchive(){
         <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
         <div class="publicationIssueBody">
          <button type="button" class="publicationIssueOpen" data-open-publication="${esc(pub.id)}">
-          <span class="publicationIssueLine"><b>${issueLabel}</b><span>${esc(publicationPeriodLabel(pub)||'Zeitraum noch offen')}</span></span>
+          <span class="publicationIssueLine"><b>${issueLabel}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span>
          </button>
          <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
          ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
          <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
-         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
+         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
         </div>
        </div>`;
      }).join(''):'<div class="small" style="padding:10px">Noch keine Ausgabe in dieser Reihe.</div>';
@@ -10998,7 +11014,29 @@ function renderArchive(){
       </div>
       <div class="publicationSeriesBody">${issueCards}</div>
      </div>`;
-   }).join('')}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
+   }).join('')}${unassignedPrintIssues.length?`<div class="publicationManageCard">
+    <div class="publicationManageHead">
+     <span class="publicationManageIcon" aria-hidden="true">▤</span>
+     <div class="publicationSeriesHeading">Nicht zugeordnet</div>
+     <span></span>
+    </div>
+    <div class="publicationSeriesBody">${unassignedPrintIssues.map(pub=>{
+      const coverModels=publicationCoverModelNames(pub);
+      const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
+      return `<div class="publicationIssueCard">
+       <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
+       <div class="publicationIssueBody">
+        <button type="button" class="publicationIssueOpen" data-open-publication="${esc(pub.id)}">
+         <span class="publicationIssueLine"><b>${issueLabel}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span>
+        </button>
+        <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
+        ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
+        <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
+        <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
+       </div>
+      </div>`;
+    }).join('')}</div>
+   </div>`:''}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
  }else if(archiveTab==='gallery'){
    box.innerHTML=items.length
     ? items.slice().reverse().map(g=>{
@@ -11181,6 +11219,17 @@ function renderArchive(){
  box.querySelectorAll('[data-open-publication]').forEach(x=>x.onclick=()=>openPublicationDetail(x.dataset.openPublication));
  box.querySelectorAll('[data-add-print-issue]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openPrintIssueForSeries(x.dataset.addPrintIssue||'',x.dataset.printArea||'')});
  box.querySelectorAll('[data-delete-print-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();deleteArchiveItem(x.dataset.deletePrintSeries)});
+ box.querySelectorAll('[data-unlink-print-issue]').forEach(x=>x.onclick=e=>{
+  e.preventDefault();e.stopPropagation();
+  const pub=(state.archive||[]).find(a=>a.id===x.dataset.unlinkPrintIssue&&a.type==='publication');
+  const sr=printSeriesById(x.dataset.printSeriesId||'');
+  if(!pub||!sr)return;
+  if(!confirm('Ausgabe wirklich von dieser Reihe lösen? Die Ausgabe sowie Cover, PDF und weitere Zuordnungen bleiben im Archiv.'))return;
+  pub.printSeriesId='';
+  pub.printSeries='';
+  pub.title=String(pub.issueNumber||'').trim()?`Ausgabe • Nr. ${pub.issueNumber}`:'Ausgabe';
+  if(save()){renderArchive();toast('Ausgabe von der Reihe gelöst.')}
+ });
  box.querySelectorAll('[data-adopt-print-series]').forEach(x=>x.onclick=e=>{
   e.preventDefault();e.stopPropagation();
   const name=String(x.dataset.adoptPrintSeries||'').trim(),area=x.dataset.printArea||'';
