@@ -171,19 +171,23 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationCover img{width:100%;height:100%;object-fit:cover}.publicationBody{padding:9px}.publicationBody b{display:block}
 .publicationActions{display:flex;border-top:1px solid var(--line)}.publicationActions button{flex:1;border:0;background:#fff;padding:8px;font-size:11px}.publicationActions .deleteBtn{color:#9b1c1c}
 
-.publicationManageList{display:grid;gap:12px;margin-top:10px}
-.publicationManageCard{display:grid;grid-template-columns:132px minmax(0,1fr);gap:14px;border:1px solid var(--line);border-radius:18px;padding:12px;background:#fff}
-.publicationManageCover{width:100%;aspect-ratio:2/3;border:0;border-radius:14px;background:#eee;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--muted)}
-.publicationManageCover img{width:100%;height:100%;object-fit:cover}
-.publicationManageBody{min-width:0;display:flex;flex-direction:column}
+.publicationManageList{display:grid;gap:14px;margin-top:10px;min-width:0}
+.publicationManageCard{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;min-width:0}
+.publicationManageHead{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:12px;border-bottom:1px solid var(--line);background:#baa6bd}
+.publicationManageIcon{width:30px;height:30px;display:grid;place-items:center;font-size:20px}
+.publicationManageHeading{text-align:center!important;min-width:0}
 .publicationManageOpen{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:inherit}
-.publicationManageOpen b{display:block;font-size:18px;line-height:1.25;margin-bottom:4px}
-.publicationManageOpen span{display:block}
-.publicationManageArea{margin-top:8px;font-weight:700}
+.publicationManageOpen b{display:block;font-size:16px;line-height:1.25;font-weight:800}
+.publicationManageOpen span{display:block;margin-top:3px;font-size:14px;line-height:1.25}
+.publicationManageBody{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;padding:10px;background:var(--bg);min-width:0}
+.publicationManageCover{width:100%;aspect-ratio:2/3;border:0;border-radius:12px;background:#eee;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--muted)}
+.publicationManageCover img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.publicationManageMeta{min-width:0;display:flex;flex-direction:column;justify-content:center}
+.publicationManageArea{font-weight:700}
 .publicationManageModels{margin-top:5px;line-height:1.4}
 .publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px}
-.publicationManageActions{margin-top:auto;padding-top:10px}
-@media(max-width:430px){.publicationManageCard{grid-template-columns:112px minmax(0,1fr);gap:11px;padding:10px}.publicationManageOpen b{font-size:17px}}
+#publicationOwnershipWrap input[type="file"],#archiveEditOwnershipWrap input[type="file"]{padding:9px 10px;background:#fff}
+@media(max-width:430px){.publicationManageBody{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}.publicationManageHead{padding:10px}.publicationManageOpen b{font-size:15px}}
 
 .stockBadge{display:inline-block;background:#eef7ef;border:1px solid #cfe3d1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}.stockBadge.ordered{background:#fff6df;border-color:#e6d19b}.stockBadge.none{background:#f3f3f3;border-color:#d8d8d8}
 .pdfBadge{display:inline-block;background:#f1f1f1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}
@@ -1244,7 +1248,9 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesBrowseCardBody{padding:10px;background:var(--bg)}
 .seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;margin-top:9px;min-height:168px}
 .seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border-right:1px solid var(--line);overflow:hidden;align-self:stretch;display:grid;place-items:center}
-.seriesContributionPreview img{width:100%;height:100%;object-fit:cover;display:block}
+.seriesContributionPreview{border-radius:12px}
+.seriesContributionPreview img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
+.shootingCover img,.workReleaseChoicePreview img{border-radius:12px}
 .seriesContributionBody{grid-column:2;grid-row:1;padding:12px;display:flex;flex-direction:column;justify-content:center;min-width:0;text-align:center}
 .seriesContributionModel{font-weight:800;font-size:16px;line-height:1.25}
 .seriesContributionLabel{margin-top:5px;font-size:14px;line-height:1.3}
@@ -1454,7 +1460,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  min-height:44px;border-radius:12px;background:#fff
 }
 [data-collapse-key="career-archive"] .managementNav{
- display:flex;gap:8px;margin:4px 0 16px;overflow-x:auto;scrollbar-width:none
+ display:flex;gap:8px;margin:4px 0 16px;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;
+ width:100%;max-width:100%;min-width:0;box-sizing:border-box;overscroll-behavior-inline:contain
 }
 [data-collapse-key="career-archive"] .managementNav::-webkit-scrollbar{display:none}
 [data-collapse-key="career-archive"] .managementNav button{
@@ -1583,12 +1590,17 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 }
 
 /* v278: Rubriken-Dropdown in der Verwaltung darf niemals von Karte/Container abgeschnitten werden. */
-[data-collapse-key="career-archive"],
-[data-collapse-key="career-archive"] > .collapseBody,
-[data-collapse-key="career-archive"] #archiveList,
-[data-collapse-key="career-archive"] .seriesBrowseCard,
-[data-collapse-key="career-archive"] .seriesBrowseCardHead{
+[data-collapse-key="career-archive"] .seriesBrowseCard:has(.seriesBrowsePicker:not(.hidden)),
+[data-collapse-key="career-archive"] .seriesBrowseCard:has(.seriesBrowsePicker:not(.hidden)) .seriesBrowseCardHead{
   overflow:visible !important;
+}
+[data-collapse-key="career-archive"] > .collapseBody,
+[data-collapse-key="career-archive"] .managementTools,
+[data-collapse-key="career-archive"] #managementContextTools,
+[data-collapse-key="career-archive"] #archiveList{
+  width:100%;
+  max-width:100%;
+  min-width:0;
 }
 [data-collapse-key="career-archive"] .seriesBrowseCard{
   position:relative;
@@ -2548,6 +2560,14 @@ body.archiveFilterOpen .bottom{display:none!important}
    <option value="ordered">Bestellt</option>
    <option value="owned">Im Bestand</option>
   </select>
+  <label>Cover</label>
+  <div id="archiveEditCoverStatus" class="small">Noch kein Cover hinterlegt.</div>
+  <input id="archiveEditCoverFile" type="file" accept="image/*">
+  <div class="small" style="margin-top:5px">Nur auswählen, wenn das vorhandene Cover ersetzt oder erstmals ergänzt werden soll.</div>
+  <label>PDF / Scan</label>
+  <div id="archiveEditPdfStatus" class="small">Noch keine PDF hinterlegt.</div>
+  <input id="archiveEditPdfFile" type="file" accept="application/pdf,.pdf">
+  <div class="small" style="margin-top:5px">Nur auswählen, wenn die vorhandene PDF ersetzt oder erstmals ergänzt werden soll.</div>
  </div>
 <div id="archiveEditWorkReleaseWrap" class="hidden">
  <label>Beitrag <span class="small">(optional)</span></label>
@@ -2591,7 +2611,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveTypeWrap">
  <label>Typ</label>
  <select id="archiveType">
-  <option value="publication">Printausgabe</option>
+  <option value="publication">Ausgabe</option>
   <option value="release" hidden>Beitrag</option>
   <option value="series">Fotoserie / Rubrik</option>
   <option value="gallery">Galerie</option>
@@ -2645,6 +2665,12 @@ body.archiveFilterOpen .bottom{display:none!important}
    <option value="ordered">Bestellt</option>
    <option value="owned">Im Bestand</option>
   </select>
+  <label>Cover <span class="small">(optional)</span></label>
+  <input id="publicationCoverFile" type="file" accept="image/*">
+  <div class="small" style="margin-top:5px">Das Cover gehört direkt zur Ausgabe und kann später ersetzt werden.</div>
+  <label>PDF / Scan <span class="small">(optional)</span></label>
+  <input id="publicationPdfFile" type="file" accept="application/pdf,.pdf">
+  <div class="small" style="margin-top:5px">PDF und physischer Bestand bleiben unabhängig voneinander.</div>
  </div>
  <div id="archiveReleaseFieldsWrap" class="hidden">
   <div id="archiveContributionModelHint" class="small hidden" style="margin-bottom:8px"></div>
@@ -8778,7 +8804,7 @@ function openPublicationDetail(id){
  const box=document.getElementById('publicationDetailContent');
  box.innerHTML=`<div class="publicationDetailSummary">
   <div class="detailHero">
-   <div class="small">Printausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
+   <div class="small">Ausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
    <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}</div>
    ${publicationCoverModelNames(pub).length?`<div class="small" style="margin-top:7px"><b>Cover:</b> ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
    ${pub.note?`<div class="publicationDetailNote">${esc(pub.note)}</div>`:''}${renderCredits(pub.credits||[])}
@@ -10076,6 +10102,15 @@ document.getElementById('archiveEditDate').oninput=()=>{
   document.getElementById('archiveEditIssuePeriod').value=a.issuePeriod||a.date||'';
   document.getElementById('archiveEditCoverModels').innerHTML=publicationCoverModelSelector(a.coverModelIds||[],true);
   document.getElementById('archiveEditStockStatus').value=['none','ordered','owned'].includes(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
+  document.getElementById('archiveEditCoverFile').value='';
+  document.getElementById('archiveEditPdfFile').value='';
+  const coverStatus=document.getElementById('archiveEditCoverStatus');
+  const pdfStatus=document.getElementById('archiveEditPdfStatus');
+  if(coverStatus){
+    coverStatus.textContent='Cover wird geprüft …';
+    getMedia('cover:'+a.id).then(blob=>{coverStatus.textContent=blob?'Cover vorhanden – Auswahl ersetzt es.':'Noch kein Cover hinterlegt.'}).catch(()=>{coverStatus.textContent='Coverstatus konnte nicht geprüft werden.'});
+  }
+  if(pdfStatus)pdfStatus.textContent=a.hasPdf?'PDF vorhanden – Auswahl ersetzt sie.':'Noch keine PDF hinterlegt.';
  }else{
   document.getElementById('archiveEditCoverModels').innerHTML='';
  }
@@ -10110,6 +10145,18 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.coverModelIds=[...document.querySelectorAll('#archiveEditCoverModels .editPublicationCoverModelCheck:checked')].map(x=>x.value);
    a.stockStatus=document.getElementById('archiveEditStockStatus').value;
    a.owned=a.stockStatus==='owned';
+   const coverFile=document.getElementById('archiveEditCoverFile').files?.[0]||null;
+   const pdfFile=document.getElementById('archiveEditPdfFile').files?.[0]||null;
+   if(coverFile&&!(coverFile.type||'').startsWith('image/')){toast('Bitte für das Cover eine Bilddatei auswählen.');return}
+   if(pdfFile&&pdfFile.type!=='application/pdf'&&!String(pdfFile.name||'').toLowerCase().endsWith('.pdf')){toast('Bitte eine PDF-Datei auswählen.');return}
+   try{
+    if(coverFile)await putMedia('cover:'+a.id,coverFile);
+    if(pdfFile){await putMedia('pdf:'+a.id,pdfFile);a.hasPdf=true}
+   }catch(err){
+    console.error(err);
+    toast('Cover oder PDF konnten nicht gespeichert werden.');
+    return;
+   }
    delete a.modelId;
  }
  if(a.type==='release'){
@@ -10696,7 +10743,7 @@ function openRecentArchiveItem(id){
 
 function managementContextConfig(){
  return {
-  publication:{title:'Printausgaben',add:'＋ Printausgabe',placeholder:'Reihe, Ausgabe, Zeitraum oder Cover-Model suchen …'},
+  publication:{title:'Ausgaben',add:'＋ Ausgabe',placeholder:'Reihe, Ausgabe, Zeitraum oder Cover-Model suchen …'},
   release:{title:'Beiträge',add:'＋ Beitrag',placeholder:'Beitrag, Rubrik oder Titel suchen …'},
   title:{title:'Titel',add:'＋ Titel',placeholder:'Titel, Model oder Zeitraum suchen …'},
   series:{title:'Rubriken',add:'＋ Rubrik',placeholder:'Rubrik, Model oder Shooting suchen …'},
@@ -10826,21 +10873,25 @@ function renderArchive(){
     ? `<div class="publicationManageList">${items.slice().reverse().map(pub=>{
         const coverModels=publicationCoverModelNames(pub);
         return `<div class="publicationManageCard">
-          <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen">
-            <span class="small">Kein Cover</span>
-          </button>
-          <div class="publicationManageBody">
-            <button type="button" class="publicationManageOpen" data-open-publication="${esc(pub.id)}">
+          <div class="publicationManageHead">
+            <span class="publicationManageIcon" aria-hidden="true">▤</span>
+            <button type="button" class="publicationManageOpen publicationManageHeading" data-open-publication="${esc(pub.id)}">
               <b>${esc(publicationDisplayTitle(pub))}</b>
-              <span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum noch offen')}</span>
+              <span>${esc(publicationPeriodLabel(pub)||'Zeitraum noch offen')}</span>
             </button>
-            <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
-            ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-            <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
-            <div class="itemActions publicationManageActions">
-              ${archivePinHtml(pub.id)}
+            <div class="titleBrowseActions">
               <button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button>
-              <button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button>
+              <button type="button" class="titleDeleteX" data-delete-archive="${esc(pub.id)}" aria-label="Ausgabe löschen" title="Ausgabe löschen">×</button>
+            </div>
+          </div>
+          <div class="publicationManageBody">
+            <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen">
+              <span class="small">Kein Cover</span>
+            </button>
+            <div class="publicationManageMeta">
+              <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
+              ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
+              <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
             </div>
           </div>
         </div>`;
@@ -10947,7 +10998,7 @@ function renderArchive(){
      const galleryAccess=galleries.map(g=>`<button type="button" data-open-release-work="${esc(g.id)}">${esc(workDisplayLabel(g))}</button>`).join('');
      const videoAccess=videos.map(v=>`<button type="button" data-open-release-work="${esc(v.id)}">${esc(workDisplayLabel(v))}</button>`).join('');
      const parts=seriesContributionDisplayParts(release);
-     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${galleryAccess||videoAccess?`<div class="itemActions" style="margin-top:9px">${galleryAccess}${videoAccess}</div>`:''}<div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button></div></div></div>`;
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${galleryAccess||videoAccess?`<div class="itemActions" style="margin-top:9px">${galleryAccess}${videoAccess}</div>`:''}<div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button><button type="button" class="deleteBtn" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
     }).join('');
     box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" data-edit-management-series="${esc(selectedSeries.id)}">Rubrik bearbeiten</button><button type="button" class="titleDeleteX" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Beiträge in dieser Rubrik. Galerien und Videos gehören jeweils zu ihrem Beitrag.</div><button type="button" class="btn primary" data-add-series-contribution="${esc(selectedSeries.id)}" style="margin:0 0 10px">＋ Beitrag hinzufügen</button>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
    }
@@ -11033,6 +11084,7 @@ function renderArchive(){
  box.querySelectorAll('[data-delete-title]').forEach(x=>x.onclick=e=>{e.stopPropagation();deleteArchiveItem(x.dataset.deleteTitle)});
  box.querySelectorAll('[data-unlink-title-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.unlinkTitleShooting&&a.type==='shoot');const titleId=x.dataset.titleId;if(!sh||!titleId)return;if(!confirm('Shooting wirklich von diesem Titel lösen? Das Shooting selbst bleibt im Archiv.'))return;sh.links=(sh.links||[]).filter(id=>id!==titleId);if(save()){renderArchive();toast('Shooting vom Titel gelöst.')}});
  box.querySelectorAll('[data-unlink-title-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const release=(state.archive||[]).find(a=>a.id===x.dataset.unlinkTitleContribution&&a.type==='release');const titleId=x.dataset.titleId;if(!release||!titleId)return;if(!linkedObjects(release.id,'title').some(t=>t.id===titleId))return;if(!confirm('Beitrag wirklich von diesem Titel lösen? Der Beitrag sowie zugeordnete Galerien und Videos bleiben im Archiv.'))return;const seriesId=linkedObjects(release.id,'series')[0]?.id||'';setReleaseRelations(release,seriesId,'');if(save()){renderArchive();toast('Beitrag vom Titel gelöst.')}});
+ box.querySelectorAll('[data-unlink-series-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const release=(state.archive||[]).find(a=>a.id===x.dataset.unlinkSeriesContribution&&a.type==='release');const seriesId=x.dataset.seriesId;if(!release||!seriesId)return;if(!linkedObjects(release.id,'series').some(s=>s.id===seriesId))return;if(!confirm('Beitrag wirklich von dieser Rubrik lösen? Der Beitrag sowie zugeordnete Galerien und Videos bleiben im Archiv.'))return;const titleId=linkedObjects(release.id,'title')[0]?.id||'';setReleaseRelations(release,'',titleId);if(save()){renderArchive();toast('Beitrag von der Rubrik gelöst.')}});
  box.querySelectorAll('[data-open-title-shooting]').forEach(x=>x.onclick=()=>{const mid=x.dataset.modelId;if(mid&&state.models.some(m=>m.id===mid)){state.currentModelId=mid;save();}openShootingDetail(x.dataset.openTitleShooting,null,{source:'title',archiveTab:'title',titleClass:titleBrowseClass,titleLevel:titleBrowseLevel,scrollY:window.scrollY})});
  const managementSeriesTitleBtn=box.querySelector('#managementSeriesTitleButton'),managementSeriesPicker=box.querySelector('#managementSeriesPicker');
   if(managementSeriesTitleBtn&&managementSeriesPicker)managementSeriesTitleBtn.onclick=e=>{e.stopPropagation();const opening=managementSeriesPicker.classList.contains('hidden');managementSeriesPicker.classList.toggle('hidden');managementSeriesTitleBtn.setAttribute('aria-expanded',opening?'true':'false')};
@@ -11757,6 +11809,8 @@ function refreshArchiveForm(){
   document.getElementById('publicationIssuePeriod').value='';
   document.getElementById('publicationCoverModels').innerHTML=publicationCoverModelSelector([],false);
   document.getElementById('publicationStockStatus').value='none';
+  document.getElementById('publicationCoverFile').value='';
+  document.getElementById('publicationPdfFile').value='';
  }else{
   document.getElementById('publicationCoverModels').innerHTML='';
  }
@@ -11886,8 +11940,22 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
   const stockStatus=document.getElementById('publicationStockStatus').value;
   const coverModelIds=[...document.querySelectorAll('#publicationCoverModels .publicationCoverModelCheck:checked')].map(x=>x.value);
-  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
   item.title=publicationDisplayTitle(item);
+  const coverFile=document.getElementById('publicationCoverFile').files?.[0]||null;
+  const pdfFile=document.getElementById('publicationPdfFile').files?.[0]||null;
+  if(coverFile&&!(coverFile.type||'').startsWith('image/')){toast('Bitte für das Cover eine Bilddatei auswählen.');return}
+  if(pdfFile&&pdfFile.type!=='application/pdf'&&!String(pdfFile.name||'').toLowerCase().endsWith('.pdf')){toast('Bitte eine PDF-Datei auswählen.');return}
+  try{
+   if(coverFile)await putMedia('cover:'+item.id,coverFile);
+   if(pdfFile){await putMedia('pdf:'+item.id,pdfFile);item.hasPdf=true}
+  }catch(err){
+   console.error(err);
+   try{await deleteMediaBlob('cover:'+item.id)}catch(_){}
+   try{await deleteMediaBlob('pdf:'+item.id)}catch(_){}
+   toast('Cover oder PDF konnten nicht gespeichert werden.');
+   return;
+  }
   linkItem(item);
   finish();
   return;
