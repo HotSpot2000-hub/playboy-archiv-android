@@ -1166,6 +1166,19 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   grid-template-columns:1fr;
   gap:10px;
 }
+/* Etappe 5a: Titelkopf + Beiträge */
+.titleBrowseHead{display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;gap:8px!important;align-items:center!important;padding:12px!important}
+.titleBrowseHead .titleTrophy{width:30px!important;height:30px!important;flex:0 0 30px!important;font-size:18px!important;justify-self:start}
+.titleBrowseHeading{min-width:0;text-align:center}
+.titleBrowseHeading .titleBrowseName{font-weight:800;font-size:16px;line-height:1.25}
+.titleBrowseHeading .titleBrowsePeriod{margin-top:3px;font-size:14px;line-height:1.25}
+.titleBrowseHead .titleBrowseActions{margin:0!important;align-self:center!important}
+.titleContributionArea{padding:10px;background:var(--bg)}
+.titleContributionArea .seriesContributionCard:first-child{margin-top:0}
+.titleLegacyShootings{padding:10px;background:var(--bg);border-top:1px solid var(--line)}
+.titleLegacyLabel{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:7px}
+.titleAddContribution{margin-top:9px!important}
+
   .titleBrowseCard .shootingCardStandalone{
   display:grid!important;
   grid-template-columns:minmax(112px,36%) minmax(0,1fr)!important;
@@ -10811,12 +10824,7 @@ function renderArchive(){
    const levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
    const levelOrder=['week','month','year'];
    const managementMid=managementSelectedModelId();
-   const allTitles=(state.archive||[]).filter(a=>{
-     if(a.type!=='title'||!managementMatchesSearch(a))return false;
-     const linkedShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(a.id));
-     if(linkedShoots.length===0)return true;
-     return !managementMid||linkedShoots.some(sh=>shootingModelIds(sh).includes(managementMid));
-   });
+   const allTitles=(state.archive||[]).filter(a=>a.type==='title'&&managementMatchesSearch(a));
    const classes=classOrder.filter(c=>allTitles.some(t=>t.titleClass===c));
    if(!classes.includes(titleBrowseClass))titleBrowseClass=classes[0]||'';
    const levels=levelOrder.filter(l=>allTitles.some(t=>t.titleClass===titleBrowseClass&&t.titleLevel===l));
@@ -10825,13 +10833,20 @@ function renderArchive(){
    const classTabs=classes.map(c=>`<button type="button" class="${c===titleBrowseClass?'active':''}" data-title-class="${c}">${esc(classNames[c])}</button>`).join('');
    const levelTabs=levels.map(l=>`<button type="button" class="${l===titleBrowseLevel?'active':''}" data-title-level="${l}">${esc(levelNames[l])}</button>`).join('');
    const cards=visible.map(t=>{
-     const period=t.titleLevel==='week'?(t.titlePeriod?[monthWeekLabel(t.titlePeriod),germanDateLabel(t.titlePeriod),isoWeekLabel(t.titlePeriod)].filter(Boolean).join(' · '):monthWeekPartsLabel(t.titleMonthWeek,t.titleMonthWeekMonth,t.titleYear)):[t.titlePeriod,t.titleYear].filter(Boolean).join(' ');     
-     const periodHtml=(period||t.title||'Titel').split(' · ').map((p,i,a)=>`<span class="titleDatePart">${esc(p)}</span>${i<a.length-1?'<span class="titleDateSep"> · </span>':''}`).join('');
-     const shoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&(!managementMid||shootingModelIds(sh).includes(managementMid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
-     const derivedModelIds=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))].filter(id=>(state.models||[]).some(m=>m.id===id));
-     const modelHtml=derivedModelIds.length?derivedModelIds.map(id=>{const m=state.models.find(x=>x.id===id);return `<button type="button" class="titleBrowseModel" data-open-related-model="${esc(id)}">${esc(m?.name||'Model')}</button>`}).join(''):'<span class="small">Noch keinem Model zugeordnet</span>';
-     const shootHtml=shoots.length?`<div class="seriesBrowseCardBody"><div class="shootingGridStandalone">${shoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;const mid=managementMid&&shootingModelIds(sh).includes(managementMid)?managementMid:(shootingModelIds(sh)[0]||'');return `<div class="shootingCardStandalone" data-open-title-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(shootingDisplayLabel(sh))}</b><div class="titleShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-unlink-title-shooting="${esc(sh.id)}" data-title-id="${esc(t.id)}">Löschen</button></div></div>`}).join('')}</div></div>`:`<div class="seriesBrowseCardBody"><div class="small">Noch kein Shooting zugeordnet.</div></div>`;
-     return `<div class="titleBrowseCard"><div class="titleBrowseHead"><button type="button" class="titleTrophy" data-edit-title="${esc(t.id)}" aria-label="Titel bearbeiten" title="Titel bearbeiten">🏆</button><div><div class="titleBrowseName">${periodHtml}</div>${modelHtml}<div class="titleBrowseActions"><button type="button" data-edit-title="${esc(t.id)}">Bearbeiten</button><button type="button" class="titleDeleteX" data-delete-title="${esc(t.id)}" aria-label="Titel löschen" title="Titel löschen">×</button></div></div></div>${shootHtml}</div>`;   }).join('');
+     const titleName=titleNameFor(t.titleClass,t.titleLevel)||t.title||'Titel';
+     const period=modelTitleWhen(t)||'Zeitraum offen';
+     const contributions=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id)&&(!managementMid||releaseModelIds(r).includes(managementMid))&&managementMatchesSearch(r)).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||'')));
+     const contributionHtml=contributions.map(release=>{
+       const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
+       const parts=titleContributionDisplayParts(release);
+       const galleryAccess=galleries.map(g=>`<button type="button" data-open-release-work="${esc(g.id)}">${esc(workDisplayLabel(g))}</button>`).join('');
+       const videoAccess=videos.map(v=>`<button type="button" data-open-release-work="${esc(v.id)}">${esc(workDisplayLabel(v))}</button>`).join('');
+       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${(galleryAccess||videoAccess)?`<div class="itemActions">${galleryAccess}${videoAccess}</div>`:''}<div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button></div></div></div>`;
+     }).join('');
+     const legacyShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&(!managementMid||shootingModelIds(sh).includes(managementMid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
+     const legacyHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="titleLegacyLabel">Bisher direkt zugeordnete Shootings</div><div class="shootingGridStandalone">${legacyShoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;const mid=managementMid&&shootingModelIds(sh).includes(managementMid)?managementMid:(shootingModelIds(sh)[0]||'');return `<div class="shootingCardStandalone" data-open-title-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(shootingDisplayLabel(sh))}</b><div class="titleShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-unlink-title-shooting="${esc(sh.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div>`}).join('')}</div></div>`:'';
+     return `<div class="titleBrowseCard"><div class="titleBrowseHead"><button type="button" class="titleTrophy" data-edit-title="${esc(t.id)}" aria-label="Titel bearbeiten" title="Titel bearbeiten">🏆</button><div class="titleBrowseHeading"><div class="titleBrowseName">${esc(titleName)}</div><div class="titleBrowsePeriod">${esc(period)}</div></div><div class="titleBrowseActions"><button type="button" data-edit-title="${esc(t.id)}">Bearbeiten</button><button type="button" class="titleDeleteX" data-delete-title="${esc(t.id)}" aria-label="Titel löschen" title="Titel löschen">×</button></div></div><div class="titleContributionArea">${contributionHtml||'<div class="small">Noch kein Beitrag diesem Titel zugeordnet.</div>'}<button type="button" class="btn titleAddContribution" data-add-title-contribution="${esc(t.id)}">＋ Beitrag hinzufügen</button></div>${legacyHtml}</div>`;
+   }).join('');
    box.innerHTML=classes.length?`<div class="titleManagementScope"><div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards||'<div class="small">Keine Einträge in dieser Stufe.</div>'}</div></div>`:'<div class="small" style="margin-top:10px">Noch keine Titel im Archiv.</div>';
  }else{
    const emptyLabel=mediaWorkTab==='new'?'Keine neuen Medien zu prüfen.':mediaWorkTab==='keep'?'Noch keine Medien bewusst nur beim Model behalten.':'Noch keine Medien einer Galerie oder einem Shooting zugeordnet.';
@@ -10861,6 +10876,7 @@ function renderArchive(){
  const managementSeriesTitleBtn=box.querySelector('#managementSeriesTitleButton'),managementSeriesPicker=box.querySelector('#managementSeriesPicker');
   if(managementSeriesTitleBtn&&managementSeriesPicker)managementSeriesTitleBtn.onclick=e=>{e.stopPropagation();const opening=managementSeriesPicker.classList.contains('hidden');managementSeriesPicker.classList.toggle('hidden');managementSeriesTitleBtn.setAttribute('aria-expanded',opening?'true':'false')};
 box.querySelectorAll('[data-add-series-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openSeriesContribution(x.dataset.addSeriesContribution)});
+box.querySelectorAll('[data-add-title-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openTitleContribution(x.dataset.addTitleContribution)});
 box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openArchiveEdit(x.dataset.editManagementSeries)}); box.querySelectorAll('[data-delete-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.deleteManagementSeries;const s=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!s)return;const label=s.title||'Rubrik';if(!window.confirm(`${label} wirklich löschen? Die zugeordneten Shootings und Medien bleiben im Archiv.`))return;state.archive=(state.archive||[]).filter(a=>a.id!==id);state.archive.forEach(a=>{a.links=(a.links||[]).filter(link=>link!==id)});if(modelSeriesBrowseId===id)modelSeriesBrowseId='';if(globalSeriesBrowseId===id)globalSeriesBrowseId='';if(save()){render();renderArchive();toast('Rubrik gelöscht.')}});
   box.querySelectorAll('[data-model-series-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();modelSeriesBrowseId=x.dataset.modelSeriesTab;renderArchive()});
  box.querySelectorAll('[data-open-model-series-shooting]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openModelSeriesShooting,null,{source:'model-series',seriesId:modelSeriesBrowseId,scrollY:window.scrollY}));
@@ -11361,6 +11377,25 @@ function visibleSeriesContributionNumber(release){
  if(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored))return stored;
  return peers.findIndex(r=>r.id===release.id)+1;
 }
+function titleContributionPeers(release){
+ const titleId=linkedObjects(release.id,'title')[0]?.id||'';
+ const key=releaseModelKey(release);
+ if(!titleId||!key)return [];
+ return (state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(t=>t.id===titleId)&&releaseModelKey(r)===key).sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
+}
+function visibleTitleContributionNumber(release){
+ const peers=titleContributionPeers(release);
+ if(peers.length<2)return 0;
+ const stored=Number(release?.contributionNumber)||0;
+ if(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored))return stored;
+ return peers.findIndex(r=>r.id===release.id)+1;
+}
+function titleContributionDisplayParts(release){
+ const modelNames=releaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const name=String(release?.name||'').trim();
+ const number=visibleTitleContributionNumber(release);
+ return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
+}
 function releaseContextIds(release){
  return {
   seriesId:linkedObjects(release.id,'series')[0]?.id||'',
@@ -11405,10 +11440,35 @@ function nextSeriesContributionNumber(seriesId,modelId,excludeReleaseId=''){
  return Math.max(peers.length,stored.length?Math.max(...stored):0)+1;
 }
 let seriesContributionCreateId='';
+let titleContributionCreateId='';
 function openSeriesContribution(seriesId){
  const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');
  if(!series)return;
  seriesContributionCreateId=seriesId;
+ pendingMediaFiles=[];
+ document.getElementById('archiveType').value='release';
+ document.getElementById('archiveTitle').value='';
+ document.getElementById('archiveDate').value='';
+ document.getElementById('archiveNote').value='';
+ document.getElementById('archiveReleaseName').value='';
+ document.getElementById('archiveContributionNumber').value='';
+ document.getElementById('archiveShootLocation').value='';
+ document.getElementById('archiveFile').value='';
+ refreshArchiveForm();
+ document.getElementById('archivePaneTitle').textContent='Beitrag hinzufügen';
+ const modelHint=document.getElementById('archiveContributionModelHint');
+ modelHint.textContent='Models werden automatisch aus den Shootings der zugeordneten Galerien und Videos übernommen.';
+ modelHint.classList.remove('hidden');
+ document.getElementById('archiveTypeWrap').classList.add('hidden');
+ document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
+ document.getElementById('archiveContributionNumberWrap').classList.add('hidden');
+ openOverlay('archivePane');
+}
+function openTitleContribution(titleId){
+ const title=(state.archive||[]).find(a=>a.id===titleId&&a.type==='title');
+ if(!title)return;
+ seriesContributionCreateId='';
+ titleContributionCreateId=titleId;
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
  document.getElementById('archiveTitle').value='';
@@ -11463,6 +11523,7 @@ function setReleaseRelations(release,seriesId,titleId){
 }
 function openArchive(){
  seriesContributionCreateId='';
+ titleContributionCreateId='';
  pendingMediaFiles=[];
  document.getElementById('archiveTypeWrap').classList.remove('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.remove('hidden');
@@ -11594,8 +11655,8 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  }
  if(type==='release'){
   const name=document.getElementById('archiveReleaseName').value.trim();
-  const seriesId=seriesContributionCreateId||document.getElementById('archiveReleaseSeries').value;
-  const titleId=seriesContributionCreateId?'':document.getElementById('archiveReleaseTitle').value;
+  const seriesId=seriesContributionCreateId||(!titleContributionCreateId?document.getElementById('archiveReleaseSeries').value:'');
+  const titleId=titleContributionCreateId||(!seriesContributionCreateId?document.getElementById('archiveReleaseTitle').value:'');
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
   const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
   const contributionNumber=enteredNumber>0?enteredNumber:0;
@@ -11603,7 +11664,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
   item.title=releaseDisplayTitle(item);
-  finish(1,seriesContributionCreateId?'series':type);return;
+  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':type);titleContributionCreateId='';return;
  }
  if(type==='title'){
   const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
