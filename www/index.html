@@ -183,8 +183,10 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageCover img{width:100%;height:100%;object-fit:cover;border-radius:12px}
 .publicationIssueBody{min-width:0;display:flex;flex-direction:column;justify-content:center}
 .publicationIssueOpen{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:inherit}
-.publicationIssueOpen b{display:block;font-size:16px;line-height:1.25}
-.publicationIssueOpen span{display:block;margin-top:3px;font-size:14px;line-height:1.25}
+.publicationIssueOpen{width:100%}
+.publicationIssueLine{display:flex!important;align-items:baseline;justify-content:space-between;gap:10px;margin:0!important}
+.publicationIssueLine b{display:block;font-size:16px;line-height:1.25;white-space:nowrap}
+.publicationIssueLine>span{display:block;margin:0!important;font-size:14px;line-height:1.25;text-align:right}
 .publicationManageArea{margin-top:8px;font-weight:700}
 .publicationManageModels{margin-top:5px;line-height:1.4}
 .publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px}
@@ -2552,8 +2554,8 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
  <div id="archiveEditNoteWrap"><label>Notiz</label><textarea id="archiveEditNote"></textarea></div>
  <div id="archiveEditOwnershipWrap" class="hidden">
-  <label>Print-Reihe</label>
-  <input id="archiveEditPrintSeries" placeholder="z. B. Girlfriends">
+  <label>Reihe</label>
+  <select id="archiveEditPrintSeries"><option value="">Bitte Reihe wählen</option></select>
   <label>Ausgabe Nr. <span class="small">(optional)</span></label>
   <input id="archiveEditIssueNumber" inputmode="numeric" placeholder="z. B. 5">
   <label>Zeitraum / Ausgabe</label>
@@ -2611,6 +2613,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Typ</label>
  <select id="archiveType">
   <option value="publication">Ausgabe</option>
+  <option value="printSeries" hidden>Reihe</option>
   <option value="release" hidden>Beitrag</option>
   <option value="series">Fotoserie / Rubrik</option>
   <option value="gallery">Galerie</option>
@@ -2620,7 +2623,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <option value="media">Foto / Medium</option>
  </select>
  </div>
- <div id="archiveTitleWrap"><label>Titel</label><input id="archiveTitle"></div>
+ <div id="archiveTitleWrap"><label id="archiveTitleLabel">Titel</label><input id="archiveTitle"></div>
  <div id="archiveDateWrap"><label id="archiveDateLabel">Datum / Ausgabe</label><input id="archiveDate" placeholder="z. B. März 2010"></div>
  <div id="archiveShootFieldsWrap" class="hidden">
   <label>Ort</label><input id="archiveShootLocation" placeholder="Ort des Shootings">
@@ -2649,8 +2652,8 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="titleYearWrap" class="hidden"><label>Jahr</label><input id="titleYear" inputmode="numeric" placeholder="z. B. 2008"></div>
  </div>
  <div id="publicationOwnershipWrap" class="hidden">
-  <label>Print-Reihe</label>
-  <input id="publicationPrintSeries" placeholder="z. B. Girlfriends">
+  <label>Reihe</label>
+  <select id="publicationPrintSeries"><option value="">Bitte Reihe wählen</option></select>
   <label>Ausgabe Nr. <span class="small">(optional)</span></label>
   <input id="publicationIssueNumber" inputmode="numeric" placeholder="z. B. 5">
   <label>Zeitraum / Ausgabe</label>
@@ -3197,7 +3200,7 @@ const ARCHIVE_AREA_OPTIONS=[
 ];
 const ARCHIVE_AREA_IDS=new Set(ARCHIVE_AREA_OPTIONS.map(x=>x[0]));
 function archiveAreaLabel(value){return ARCHIVE_AREA_OPTIONS.find(x=>x[0]===value)?.[1]||'Noch keinem Bereich zugeordnet';}
-function archiveAreaSupportsType(type){return type==='title'||type==='series'||type==='publication';}
+function archiveAreaSupportsType(type){return type==='title'||type==='series'||type==='publication'||type==='printSeries';}
 
 function normalizeArchiveObjectV6(a){
  if(!a||typeof a!=='object')return a;
@@ -3212,6 +3215,9 @@ function normalizeArchiveObjectV6(a){
   if(!Array.isArray(a.modelIds))a.modelIds=[];
   if(a.modelsMode!=='custom')a.modelsMode='inherit';
   if(a.creditsMode!=='custom')a.creditsMode='inherit';
+ }
+ if(a.type==='printSeries'){
+  a.title=String(a.title||'').trim();
  }
  if(a.type==='publication'){
   a.printSeries=String(a.printSeries||'').trim();
@@ -3234,6 +3240,19 @@ function normalizeStateForSchema(s){
  if(!Array.isArray(s.models))s.models=[];
  if(!Array.isArray(s.archive))s.archive=[];
  s.archive=s.archive.map(normalizeArchiveObjectV6).filter(Boolean);
+ // Controlled Print adoption: every already named printSeries becomes one real series object.
+ // Existing publication fields remain as readable fallback; no issue/content data is rewritten.
+ const printSeriesObjects=s.archive.filter(a=>a&&a.type==='printSeries');
+ s.archive.filter(a=>a&&a.type==='publication'&&String(a.printSeries||'').trim()).forEach(pub=>{
+  const name=String(pub.printSeries||'').trim();
+  let sr=printSeriesObjects.find(x=>String(x.title||'').trim().toLocaleLowerCase('de-DE')===name.toLocaleLowerCase('de-DE')&&(x.archiveArea||'')===(pub.archiveArea||''));
+  if(!sr){
+   const safe=[pub.archiveArea||'none',name.toLocaleLowerCase('de-DE')].join('|').replace(/[^a-z0-9äöüß|_-]+/gi,'-').slice(0,90);
+   sr={id:'PS-'+safe,type:'printSeries',title:name,archiveArea:pub.archiveArea||'',note:'',links:[],credits:[],tags:[],at:pub.at||new Date().toISOString()};
+   printSeriesObjects.push(sr);s.archive.push(sr);
+  }
+  pub.printSeriesId=sr.id;
+ });
  if(!Array.isArray(s.people))s.people=[];
  if(!Array.isArray(s.evidence))s.evidence=[];
  if(!Array.isArray(s.revisions))s.revisions=[];
@@ -8905,6 +8924,27 @@ function publicationCoverModelSelector(selected=[],edit=false){
  const cls=edit?'editPublicationCoverModelCheck':'publicationCoverModelCheck';
  return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
 }
+function printSeriesObjects(){
+ return (state.archive||[]).filter(a=>a&&a.type==='printSeries').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
+}
+function printSeriesById(id){return (state.archive||[]).find(a=>a&&a.type==='printSeries'&&a.id===id)||null}
+function publicationPrintSeriesObject(pub){
+ const direct=printSeriesById(pub?.printSeriesId||'');
+ if(direct)return direct;
+ const name=String(pub?.printSeries||'').trim();
+ if(!name)return null;
+ return printSeriesObjects().find(x=>String(x.title||'').trim().toLocaleLowerCase('de-DE')===name.toLocaleLowerCase('de-DE')&&(x.archiveArea||'')===(pub.archiveArea||''))||null;
+}
+function fillPrintSeriesSelect(id,selectedId='',fallbackName=''){
+ const sel=document.getElementById(id);if(!sel)return;
+ const rows=printSeriesObjects();
+ sel.innerHTML='<option value="">Bitte Reihe wählen</option>'+rows.map(sr=>`<option value="${esc(sr.id)}">${esc(sr.title||'Reihe')} · ${esc(archiveAreaLabel(sr.archiveArea))}</option>`).join('');
+ let wanted=selectedId;
+ if(!wanted&&fallbackName){
+  wanted=rows.find(sr=>String(sr.title||'').trim().toLocaleLowerCase('de-DE')===String(fallbackName||'').trim().toLocaleLowerCase('de-DE'))?.id||'';
+ }
+ sel.value=wanted||'';
+}
 function publicationDisplayTitle(pub){
  const series=String(pub?.printSeries||'').trim();
  const issue=String(pub?.issueNumber||'').trim();
@@ -10090,7 +10130,7 @@ document.getElementById('archiveEditDate').oninput=()=>{
  if(shootModelsWrap)shootModelsWrap.classList.toggle('hidden',a.type!=='shoot');
  if(shootModelsBox)shootModelsBox.innerHTML=a.type==='shoot'?modelSelector(shootingModelIds(a),true):'';
  if(isPublication){
-  document.getElementById('archiveEditPrintSeries').value=a.printSeries||a.title||'';
+  fillPrintSeriesSelect('archiveEditPrintSeries',a.printSeriesId||'',a.printSeries||a.title||'');
   document.getElementById('archiveEditIssueNumber').value=a.issueNumber||'';
   document.getElementById('archiveEditIssuePeriod').value=a.issuePeriod||a.date||'';
   document.getElementById('archiveEditCoverModels').innerHTML=publicationCoverModelSelector(a.coverModelIds||[],true);
@@ -10116,10 +10156,12 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.archiveArea=ARCHIVE_AREA_IDS.has(archiveArea)?archiveArea:'';
  }
  if(a.type==='publication'){
-   const printSeries=document.getElementById('archiveEditPrintSeries').value.trim();
+   const printSeriesId=document.getElementById('archiveEditPrintSeries').value;
+   const printSeriesObj=printSeriesById(printSeriesId);
+   const printSeries=String(printSeriesObj?.title||'').trim();
    const issueNumber=document.getElementById('archiveEditIssueNumber').value.trim();
    const issuePeriod=document.getElementById('archiveEditIssuePeriod').value.trim();
-   if(!printSeries){toast('Bitte eine Print-Reihe eingeben.');return}
+   if(!printSeriesObj){toast('Bitte eine Reihe wählen.');return}
    if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
    a.printSeries=printSeries;
    a.issueNumber=issueNumber;
@@ -10715,7 +10757,7 @@ function openRecentArchiveItem(id){
 
 function managementContextConfig(){
  return {
-  publication:{title:'Ausgaben',add:'＋ Ausgabe',placeholder:'Reihe, Ausgabe, Zeitraum oder Cover-Model suchen …'},
+  publication:{title:'Reihen',add:'＋ Reihe',placeholder:'Reihe, Ausgabe, Zeitraum oder Cover-Model suchen …'},
   release:{title:'Beiträge',add:'＋ Beitrag',placeholder:'Beitrag, Rubrik oder Titel suchen …'},
   title:{title:'Titel',add:'＋ Titel',placeholder:'Titel, Model oder Zeitraum suchen …'},
   series:{title:'Rubriken',add:'＋ Rubrik',placeholder:'Rubrik, Model oder Shooting suchen …'},
@@ -10759,7 +10801,7 @@ function renderManagementContextTools(){
  };
  if(close)close.onclick=()=>{managementSearch='';managementSearchOpen=false;renderArchive()};
  if(add)add.onclick=()=>{
-   const type=archiveTab;
+   const type=archiveTab==='publication'?'printSeries':archiveTab;
    openArchive();
    document.getElementById('archiveType').value=type;
    refreshArchiveForm();
@@ -10841,59 +10883,57 @@ function renderArchive(){
       }).join('')
     : '<div class="small" style="margin-top:10px">Noch keine konkreten Veröffentlichungen.</div>';
  }else if(archiveTab==='publication'){
-   if(!items.length){
-     box.innerHTML='<div class="small" style="margin-top:10px">Noch keine Ausgabe in dieser Auswahl.</div>';
-   }else{
-     const groupMap=new Map();
-     items.forEach(pub=>{
-       const explicitSeries=String(pub.printSeries||'').trim();
-       const seriesName=explicitSeries||String(pub.title||'Ohne Reihe').trim()||'Ohne Reihe';
-       if(!groupMap.has(seriesName))groupMap.set(seriesName,[]);
-       groupMap.get(seriesName).push(pub);
+   const mid=managementSelectedModelId();
+   const q=String(managementSearch||'').trim().toLocaleLowerCase('de-DE');
+   const area=managementAreaFilter;
+   let seriesRows=printSeriesObjects().filter(sr=>{
+     if(area==='__none__')return !sr.archiveArea;
+     if(area&&area!=='__all__')return sr.archiveArea===area;
+     return true;
+   }).map(sr=>{
+     let pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&(pub.printSeriesId===sr.id||(!pub.printSeriesId&&String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===String(sr.title||'').trim().toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===(sr.archiveArea||''))));
+     if(mid)pubs=pubs.filter(pub=>publicationBelongsToModel(pub,mid));
+     if(q){
+       const seriesHit=[sr.title,archiveAreaLabel(sr.archiveArea)].filter(Boolean).join(' ').toLocaleLowerCase('de-DE').includes(q);
+       if(!seriesHit)pubs=pubs.filter(managementMatchesSearch);
+       if(!seriesHit&&!pubs.length)return null;
+     }
+     pubs.sort((a,b)=>{
+       const an=Number(a.issueNumber),bn=Number(b.issueNumber);
+       if(an&&bn&&an!==bn)return an-bn;
+       if(an&&!bn)return -1;
+       if(!an&&bn)return 1;
+       return String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{sensitivity:'base',numeric:true});
      });
-     const groups=[...groupMap.entries()].sort((a,b)=>a[0].localeCompare(b[0],'de',{sensitivity:'base',numeric:true}));
-     box.innerHTML=`<div class="publicationManageList">${groups.map(([seriesName,pubs])=>{
-       pubs.sort((a,b)=>{
-         const an=Number(a.issueNumber),bn=Number(b.issueNumber);
-         if(an&&bn&&an!==bn)return an-bn;
-         if(an&&!bn)return -1;
-         if(!an&&bn)return 1;
-         return String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{sensitivity:'base',numeric:true});
-       });
-       const first=pubs[0]||null;
-       const seriesArea=first?.archiveArea||'';
-       const issueCards=pubs.map(pub=>{
-         const coverModels=publicationCoverModelNames(pub);
-         const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
-         return `<div class="publicationIssueCard">
-          <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen">
-           <span class="small">Kein Cover</span>
-          </button>
-          <div class="publicationIssueBody">
-           <button type="button" class="publicationIssueOpen" data-open-publication="${esc(pub.id)}">
-            <b>${issueLabel}</b>
-            <span>${esc(publicationPeriodLabel(pub)||'Zeitraum noch offen')}</span>
-           </button>
-           <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
-           ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-           <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
-           <div class="itemActions publicationIssueActions">
-            <button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button>
-            <button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button>
-           </div>
-          </div>
-         </div>`;
-       }).join('');
-       return `<div class="publicationManageCard">
-        <div class="publicationManageHead">
-         <span class="publicationManageIcon" aria-hidden="true">▤</span>
-         <div class="publicationSeriesHeading">${esc(seriesName)}</div>
-         <button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(seriesName)}" data-print-area="${esc(seriesArea)}">＋ Ausgabe</button>
+     return {sr,pubs};
+   }).filter(Boolean);
+   if(mid)seriesRows=seriesRows.filter(row=>row.pubs.length);
+   box.innerHTML=seriesRows.length?`<div class="publicationManageList">${seriesRows.map(({sr,pubs})=>{
+     const issueCards=pubs.length?pubs.map(pub=>{
+       const coverModels=publicationCoverModelNames(pub);
+       const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
+       return `<div class="publicationIssueCard">
+        <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
+        <div class="publicationIssueBody">
+         <button type="button" class="publicationIssueOpen" data-open-publication="${esc(pub.id)}">
+          <span class="publicationIssueLine"><b>${issueLabel}</b><span>${esc(publicationPeriodLabel(pub)||'Zeitraum noch offen')}</span></span>
+         </button>
+         <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
+         ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
+         <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
+         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
         </div>
-        <div class="publicationSeriesBody">${issueCards}</div>
        </div>`;
-     }).join('')}</div>`;
-   }
+     }).join(''):'<div class="small" style="padding:10px">Noch keine Ausgabe in dieser Reihe.</div>';
+     return `<div class="publicationManageCard">
+      <div class="publicationManageHead">
+       <span class="publicationManageIcon" aria-hidden="true">▤</span>
+       <div class="publicationSeriesHeading">${esc(sr.title||'Reihe')}</div>
+       <button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button>
+      </div>
+      <div class="publicationSeriesBody">${issueCards}</div>
+     </div>`;
+   }).join('')}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
  }else if(archiveTab==='gallery'){
    box.innerHTML=items.length
     ? items.slice().reverse().map(g=>{
@@ -11740,13 +11780,15 @@ function setReleaseRelations(release,seriesId,titleId){
  });
  release.title=releaseDisplayTitle(release);
 }
-function openPrintIssueForSeries(seriesName='',archiveArea=''){
+function openPrintIssueForSeries(seriesId='',archiveArea=''){
  archiveTab='publication';
  openArchive();
  document.getElementById('archiveType').value='publication';
  refreshArchiveForm();
- document.getElementById('publicationPrintSeries').value=seriesName||'';
- if(ARCHIVE_AREA_IDS.has(archiveArea))document.getElementById('archiveArea').value=archiveArea;
+ fillPrintSeriesSelect('publicationPrintSeries',seriesId);
+ const sr=printSeriesById(seriesId);
+ if(sr&&ARCHIVE_AREA_IDS.has(sr.archiveArea))document.getElementById('archiveArea').value=sr.archiveArea;
+ else if(ARCHIVE_AREA_IDS.has(archiveArea))document.getElementById('archiveArea').value=archiveArea;
  document.getElementById('publicationIssueNumber').focus();
 }
 function openArchive(){
@@ -11769,8 +11811,8 @@ function openArchive(){
 }
 function refreshArchiveForm(){
  const type=document.getElementById('archiveType').value;
- document.getElementById('archivePaneTitle').textContent=type==='publication'?'Ausgabe hinzufügen':type==='release'?'Beitrag hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
- const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot', isRelease=type==='release', isPublication=type==='publication';
+ document.getElementById('archivePaneTitle').textContent=type==='printSeries'?'Reihe hinzufügen':type==='publication'?'Ausgabe hinzufügen':type==='release'?'Beitrag hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
+ const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot', isRelease=type==='release', isPublication=type==='publication', isPrintSeries=type==='printSeries';
  const hasArchiveArea=archiveAreaSupportsType(type);
  document.getElementById('archiveAreaWrap').classList.toggle('hidden',!hasArchiveArea);
  if(hasArchiveArea)document.getElementById('archiveArea').value='';
@@ -11783,8 +11825,9 @@ function refreshArchiveForm(){
  document.getElementById('archiveShootFieldsWrap').classList.toggle('hidden',!isShoot);
  document.getElementById('titleFieldsWrap').classList.toggle('hidden',!isTitle);
  document.getElementById('archiveTitleWrap').classList.toggle('hidden',isMedia||isTitle||isShoot||isGallery||isVideo||isRelease||isPublication);
- document.getElementById('archiveNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease);
- document.getElementById('archiveDateWrap').classList.toggle('hidden',isMedia||isTitle||isGallery||isVideo||isRelease||isPublication);
+ document.getElementById('archiveTitleLabel').textContent=isPrintSeries?'Reihe':'Titel';
+ document.getElementById('archiveNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease||isPrintSeries);
+ document.getElementById('archiveDateWrap').classList.toggle('hidden',isMedia||isTitle||isGallery||isVideo||isRelease||isPublication||isPrintSeries);
  document.getElementById('archiveDateLabel').textContent=isShoot?'Datum':'Datum / Ausgabe';
  document.getElementById('archiveDate').placeholder=isShoot?'YYYY-MM-DD':'z. B. März 2010';
  if(isRelease)fillReleaseSelectors('archiveReleaseSeries','archiveReleaseTitle',null);
@@ -11811,7 +11854,7 @@ function refreshArchiveForm(){
  if(isMedia){document.getElementById('archiveTitle').value='';document.getElementById('archiveDate').value='';}
  document.getElementById('archiveFile').value='';
   if(isPublication){
-  document.getElementById('publicationPrintSeries').value='';
+  fillPrintSeriesSelect('publicationPrintSeries');
   document.getElementById('publicationIssueNumber').value='';
   document.getElementById('publicationIssuePeriod').value='';
   document.getElementById('publicationCoverModels').innerHTML=publicationCoverModelSelector([],false);
@@ -11935,17 +11978,28 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   finish();return;
  }
  const title=type==='shoot'?'Shooting':type==='gallery'?'Galerie':type==='video'?'Video':type==='publication'?'Ausgabe':document.getElementById('archiveTitle').value.trim();
- if(type!=='publication'&&!title){toast('Bitte einen Titel eingeben.');return}
+ if(type!=='publication'&&!title){toast(type==='printSeries'?'Bitte einen Reihennamen eingeben.':'Bitte einen Titel eingeben.');return}
  const archiveArea=archiveAreaSupportsType(type)&&ARCHIVE_AREA_IDS.has(document.getElementById('archiveArea').value)?document.getElementById('archiveArea').value:'';
+ if(type==='printSeries'){
+  const duplicate=printSeriesObjects().find(sr=>String(sr.title||'').trim().toLocaleLowerCase('de-DE')===title.toLocaleLowerCase('de-DE')&&(sr.archiveArea||'')===archiveArea);
+  if(duplicate){toast('Diese Reihe existiert in diesem Bereich bereits.');return}
+  const item={id:'PS-'+Date.now(),type:'printSeries',title,archiveArea,note:'',links:[],credits:[],tags:[],at:new Date().toISOString()};
+  linkItem(item);
+  archiveTab='publication';
+  finish();
+  return;
+ }
  if(type==='publication'){
-  const printSeries=document.getElementById('publicationPrintSeries').value.trim();
+  const printSeriesId=document.getElementById('publicationPrintSeries').value;
+  const printSeriesObj=printSeriesById(printSeriesId);
+  const printSeries=String(printSeriesObj?.title||'').trim();
   const issueNumber=document.getElementById('publicationIssueNumber').value.trim();
   const issuePeriod=document.getElementById('publicationIssuePeriod').value.trim();
-  if(!printSeries){toast('Bitte eine Print-Reihe eingeben.');return}
+  if(!printSeriesObj){toast('Bitte eine Reihe wählen.');return}
   if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
   const stockStatus=document.getElementById('publicationStockStatus').value;
   const coverModelIds=[...document.querySelectorAll('#publicationCoverModels .publicationCoverModelCheck:checked')].map(x=>x.value);
-  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeriesId,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea:printSeriesObj.archiveArea||archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
   item.title=publicationDisplayTitle(item);
   linkItem(item);
   finish();
