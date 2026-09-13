@@ -177,8 +177,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageIcon{width:30px;height:30px;display:grid;place-items:center;font-size:20px}
 .publicationSeriesHeading{min-width:0;text-align:center;font-size:17px;font-weight:800;line-height:1.25}
 .publicationSeriesAdd{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;font:inherit;font-size:12px;white-space:nowrap}
-.publicationSeriesActions{display:flex;align-items:center;gap:7px}
-.publicationSeriesActions .titleDeleteX{width:auto;height:auto;min-width:0;flex:0 0 auto;border-radius:10px;padding:8px 10px;font:inherit;font-size:12px;line-height:normal}
+.publicationSeriesActions{display:flex;align-items:center;gap:7px;margin-top:0;flex-wrap:nowrap}
 .publicationSeriesBody{display:grid;gap:10px;padding:10px;background:var(--bg)}
 .publicationIssueCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;padding:10px;min-width:0}
 .publicationManageCover{width:100%;aspect-ratio:2/3;border:0;border-radius:12px;background:#eee;overflow:hidden;padding:0;display:grid;place-items:center;color:var(--muted)}
@@ -199,8 +198,6 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  .publicationSeriesHeading{font-size:16px}
  .publicationIssueCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
 }
-.publicationSeriesAdd,
-.publicationSeriesActions .titleDeleteX,
 .publicationIssueActions button{
  height:auto;
  min-height:0;
@@ -11020,7 +11017,7 @@ function renderArchive(){
        <div class="publicationSeriesHeading">${esc(sr.title||'Reihe')}</div>
        ${sr._legacy
         ? `<button type="button" class="publicationSeriesAdd" data-adopt-print-series="${esc(sr.title||'')}" data-print-area="${esc(sr.archiveArea||'')}">Reihe übernehmen</button>`
-        : `<div class="publicationSeriesActions"><button type="button" class="publicationSeriesAdd" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button><button type="button" class="titleDeleteX" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
+        : `<div class="itemActions publicationIssueActions publicationSeriesActions"><button type="button" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button><button type="button" class="deleteBtn" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
       </div>
       <div class="publicationSeriesBody">${issueCards}</div>
      </div>`;
