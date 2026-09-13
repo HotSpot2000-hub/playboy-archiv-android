@@ -111,6 +111,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 .archiveTabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.archiveTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px}.archiveTabs button.active{background:#171717;color:#fff}
 .managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}@media(max-width:520px){.managementTools{grid-template-columns:1fr}}
+.managementAreaFilter{grid-column:1/-1;display:flex;gap:7px;overflow:auto;padding:1px 0 2px;scrollbar-width:none}.managementAreaFilter::-webkit-scrollbar{display:none}.managementAreaFilter button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px;font:inherit;font-size:12px}.managementAreaFilter button.active{background:#171717;color:#fff;border-color:#171717}.managementAreaFilter.hidden{display:none!important}
 .archiveItem{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:9px}.linkChip{display:inline-block;background:#eee7ef;border-radius:999px;padding:4px 8px;margin:4px 3px 0 0;font-size:12px}.mediaThumb{position:relative;aspect-ratio:2/3;background:#eee;border-radius:10px;overflow:hidden;margin-top:8px}.mediaThumb img{width:100%;height:100%;object-fit:cover}
 
 .archiveItem.clickable{cursor:pointer}.archiveItem.clickable:active{transform:scale(.995)}
@@ -2169,6 +2170,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Titel, Rubriken, Galerien, Videos, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
+  <div id="managementAreaFilter" class="managementAreaFilter hidden" aria-label="Archivbereich filtern"></div>
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
 <div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
   <div class="archiveTabs managementNav">
@@ -2484,6 +2486,17 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="small">Standardmäßig werden alle Fotograf(en) des Shootings übernommen. Fotograf(en) abwählen, die für dieses Video nicht gelten.</div>
  <div id="archiveEditVideoPhotographers" class="shootModelSelector"></div>
 </div>
+<div id="archiveEditAreaWrap" class="hidden">
+ <label>Archivbereich</label>
+ <select id="archiveEditArea">
+  <option value="">Noch keinem Bereich zugeordnet</option>
+  <option value="playboy">Playboy</option>
+  <option value="special-editions">Special Editions</option>
+  <option value="cyber-club">Cyber Club</option>
+  <option value="playboy-plus">Playboy Plus</option>
+ </select>
+ <div class="small" style="margin-top:5px">Der Bereich wird ausdrücklich gespeichert und nicht aus Titel, Rubrik oder Datum abgeleitet.</div>
+</div>
 <div id="archiveEditTitleFields" class="hidden">
   <label>Klasse</label><select id="archiveEditTitleClass"><option value="coed">Coed</option><option value="cyber-girl">Cyber Girl</option><option value="playmate">Playmate</option><option value="special-edition">SE Model</option></select>
   <label>Stufe</label><select id="archiveEditTitleLevel"></select>
@@ -2570,6 +2583,17 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="archiveShootModels" class="shootModelSelector"></div>
   <label>Fotograf(en)</label>
   <div id="archiveShootPhotographers"></div>
+ </div>
+ <div id="archiveAreaWrap" class="hidden">
+  <label>Archivbereich</label>
+  <select id="archiveArea">
+   <option value="">Noch keinem Bereich zugeordnet</option>
+   <option value="playboy">Playboy</option>
+   <option value="special-editions">Special Editions</option>
+   <option value="cyber-club">Cyber Club</option>
+   <option value="playboy-plus">Playboy Plus</option>
+  </select>
+  <div class="small" style="margin-top:5px">Keine automatische Zuordnung: Der Bereich wird bewusst gewählt.</div>
  </div>
  <div id="titleFieldsWrap" class="hidden">
   <label>Klasse</label><select id="titleClass"><option value="coed">Coed</option><option value="cyber-girl">Cyber Girl</option><option value="playmate">Playmate</option><option value="special-edition">SE Model</option></select>
@@ -3105,6 +3129,15 @@ function writeStoredSchemaVersion(v){try{localStorage.setItem(DATA_SCHEMA_KEY,St
  und verändert keine bestehenden Shooting-/Medienbeziehungen automatisch.
 */
 const ARCHIVE_WORK_TYPES=['gallery','video'];
+const ARCHIVE_AREA_OPTIONS=[
+ ['playboy','Playboy'],
+ ['special-editions','Special Editions'],
+ ['cyber-club','Cyber Club'],
+ ['playboy-plus','Playboy Plus']
+];
+const ARCHIVE_AREA_IDS=new Set(ARCHIVE_AREA_OPTIONS.map(x=>x[0]));
+function archiveAreaLabel(value){return ARCHIVE_AREA_OPTIONS.find(x=>x[0]===value)?.[1]||'Noch keinem Bereich zugeordnet';}
+function archiveAreaSupportsType(type){return type==='title'||type==='series'||type==='publication';}
 
 function normalizeArchiveObjectV6(a){
  if(!a||typeof a!=='object')return a;
@@ -3123,6 +3156,9 @@ function normalizeArchiveObjectV6(a){
  if(a.type==='publication'){
   a.owned=!!a.owned;
   a.hasPdf=!!a.hasPdf;
+ }
+ if(archiveAreaSupportsType(a.type)){
+  a.archiveArea=ARCHIVE_AREA_IDS.has(a.archiveArea)?a.archiveArea:'';
  }
  return a;
 }
@@ -9867,6 +9903,9 @@ if(preview&&l==='week'){
  const isGallery=a.type==='gallery';
  const isVideo=a.type==='video';
  const isRelease=a.type==='release';
+ const hasArchiveArea=archiveAreaSupportsType(a.type);
+ document.getElementById('archiveEditAreaWrap').classList.toggle('hidden',!hasArchiveArea);
+ document.getElementById('archiveEditArea').value=hasArchiveArea&&ARCHIVE_AREA_IDS.has(a.archiveArea)?a.archiveArea:'';
  document.getElementById('archiveEditNameWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease);
  document.getElementById('archiveEditNoteWrap').classList.toggle('hidden',isShoot||isGallery||isVideo||isRelease);
  document.getElementById('archiveEditDateWrap').classList.toggle('hidden',isGallery||isVideo||isRelease);
@@ -9973,6 +10012,10 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
  if(a.type!=='video'&&a.type!=='release')a.date=document.getElementById('archiveEditDate').value.trim();
  if(a.type!=='shoot'&&a.type!=='gallery'&&a.type!=='video'&&a.type!=='release')a.note=document.getElementById('archiveEditNote').value.trim();
  a.updatedAt=new Date().toISOString();
+ if(archiveAreaSupportsType(a.type)){
+   const archiveArea=document.getElementById('archiveEditArea').value;
+   a.archiveArea=ARCHIVE_AREA_IDS.has(archiveArea)?archiveArea:'';
+ }
  if(a.type==='publication'){
    a.owned=document.getElementById('archiveEditOwned').checked;
  }
@@ -10217,9 +10260,24 @@ function archiveBelongsToModel(a,modelId){
 }
 
 let managementModelId='all';
+let managementArea='all';
 let managementSearch='';
 let managementSearchOpen=false;
 function managementSelectedModelId(){return managementModelId&&managementModelId!=='all'?managementModelId:null}
+function managementAreaAllows(a){
+ if(!a||!archiveAreaSupportsType(a.type)||managementArea==='all')return true;
+ if(managementArea==='unassigned')return !a.archiveArea;
+ return a.archiveArea===managementArea;
+}
+function renderManagementAreaFilter(){
+ const host=document.getElementById('managementAreaFilter');if(!host)return;
+ const visible=archiveAreaSupportsType(archiveTab);
+ host.classList.toggle('hidden',!visible);
+ if(!visible){host.innerHTML='';return}
+ const options=[['all','Alle Bereiche'],...ARCHIVE_AREA_OPTIONS,['unassigned','Ohne Bereich']];
+ host.innerHTML=options.map(([id,label])=>`<button type="button" class="${managementArea===id?'active':''}" data-management-area="${esc(id)}">${esc(label)}</button>`).join('');
+ host.querySelectorAll('[data-management-area]').forEach(btn=>btn.onclick=()=>{managementArea=btn.dataset.managementArea;renderArchive()});
+}
 function managementMatchesSearch(a){
  const q=String(managementSearch||'').trim().toLocaleLowerCase('de-DE');
  if(!q)return true;
@@ -10227,12 +10285,12 @@ function managementMatchesSearch(a){
  const modelNames=[];
  if(a.type==='shoot')shootingModelIds(a).forEach(id=>{const m=(state.models||[]).find(x=>x.id===id);if(m)modelNames.push(m.name||'')});
  else (state.models||[]).forEach(m=>{if(archiveBelongsToModel(a,m.id))modelNames.push(m.name||'')});
- const hay=[a.title,a.fileName,a.date,a.note,a.titlePeriod,a.titleYear,...modelNames,...linked.map(x=>x.title||x.fileName||'')].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
+ const hay=[a.title,a.fileName,a.date,a.note,a.titlePeriod,a.titleYear,archiveAreaLabel(a.archiveArea),...modelNames,...linked.map(x=>x.title||x.fileName||'')].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
  return hay.includes(q);
 }
 function managementArchive(type){
  const mid=managementSelectedModelId();
- return (state.archive||[]).filter(a=>a.type===type&&(!mid||archiveBelongsToModel(a,mid))&&managementMatchesSearch(a));
+ return (state.archive||[]).filter(a=>a.type===type&&managementAreaAllows(a)&&(!mid||archiveBelongsToModel(a,mid))&&managementMatchesSearch(a));
 }
 function renderManagementTools(){
  const picker=document.getElementById('managementModelPicker');
@@ -10597,6 +10655,7 @@ function renderArchive(){
  renderPinnedArchive();
  renderRecentArchive();
  renderManagementTools();
+ renderManagementAreaFilter();
  renderManagementContextTools();
  const raLimit=document.getElementById('recentArchiveLimit');
  if(raLimit){
@@ -10677,6 +10736,7 @@ function renderArchive(){
           </div>
           <div class="publicationBody" data-open-publication="${pub.id}">
             <b>${esc(pub.title)}</b>
+            <div class="small">${esc(archiveAreaLabel(pub.archiveArea))}</div>
             <div class="small">${esc(pub.date||'Ausgabe offen')} · <span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
             
             ${pub.owned?'<span class="stockBadge">✓ Im Bestand</span>':''}
@@ -10823,7 +10883,7 @@ function renderArchive(){
    const levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
    const levelOrder=['week','month','year'];
    const managementMid=managementSelectedModelId();
-   const allTitles=(state.archive||[]).filter(a=>a.type==='title'&&managementMatchesSearch(a));
+   const allTitles=(state.archive||[]).filter(a=>a.type==='title'&&managementAreaAllows(a)&&managementMatchesSearch(a));
    const classes=classOrder.filter(c=>allTitles.some(t=>t.titleClass===c));
    if(!classes.includes(titleBrowseClass))titleBrowseClass=classes[0]||'';
    const levels=levelOrder.filter(l=>allTitles.some(t=>t.titleClass===titleBrowseClass&&t.titleLevel===l));
@@ -11551,6 +11611,9 @@ function refreshArchiveForm(){
  const type=document.getElementById('archiveType').value;
  document.getElementById('archivePaneTitle').textContent=type==='publication'?'Publikation hinzufügen':type==='release'?'Beitrag hinzufügen':type==='series'?'Rubrik hinzufügen':type==='gallery'?'Galerie hinzufügen':type==='video'?'Video hinzufügen':type==='shoot'?'Shooting hinzufügen':type==='title'?'Titel hinzufügen':'Medien importieren';
  const isMedia=type==='media', isTitle=type==='title', isGallery=type==='gallery', isVideo=type==='video', isShoot=type==='shoot', isRelease=type==='release';
+ const hasArchiveArea=archiveAreaSupportsType(type);
+ document.getElementById('archiveAreaWrap').classList.toggle('hidden',!hasArchiveArea);
+ if(hasArchiveArea)document.getElementById('archiveArea').value='';
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
  document.getElementById('archiveReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
@@ -11696,7 +11759,8 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(level==='week'&&!period&&!(titleMonthWeek&&titleMonthWeekMonth)){toast('Bitte ein Datum oder eine Woche im Monat eingeben.');return}
   if(level==='month'&&!period){toast('Bitte einen Monat auswählen.');return}
 
-  const item={id:'A-'+Date.now(),type:'title',title:titleNameFor(cls,level),titleClass:cls,titleLevel:level,titlePeriod:level==='year'?'':period,titleMonthWeek,titleMonthWeekMonth,titleYear:year,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  const archiveArea=ARCHIVE_AREA_IDS.has(document.getElementById('archiveArea').value)?document.getElementById('archiveArea').value:'';
+  const item={id:'A-'+Date.now(),type:'title',title:titleNameFor(cls,level),titleClass:cls,titleLevel:level,titlePeriod:level==='year'?'':period,titleMonthWeek,titleMonthWeekMonth,titleYear:year,archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
   linkItem(item);
   titleBrowseClass=cls;
   titleBrowseLevel=level;
@@ -11704,6 +11768,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  }
  const title=type==='shoot'?'Shooting':type==='gallery'?'Galerie':type==='video'?'Video':document.getElementById('archiveTitle').value.trim();
  if(!title){toast('Bitte einen Titel eingeben.');return}
+ const archiveArea=archiveAreaSupportsType(type)&&ARCHIVE_AREA_IDS.has(document.getElementById('archiveArea').value)?document.getElementById('archiveArea').value:'';
  if(type==='gallery'){
   const shootingId=document.getElementById('archiveGalleryShoot').value;
   const releaseId=document.getElementById('archiveWorkRelease').value;
@@ -11757,6 +11822,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   return;
  }
  const item={id:'A-'+Date.now(),modelId:type==='shoot'?(shootModelIds[0]||null):state.currentModelId,type,title,date:document.getElementById('archiveDate').value.trim(),note,links,credits:[...credits],tags:[...tags],at:new Date().toISOString()};
+ if(archiveAreaSupportsType(type))item.archiveArea=archiveArea;
  if(type==='shoot'){
   item.modelIds=[...shootModelIds];
   item.shootingNumber=nextShootingNumber(shootModelIds);
