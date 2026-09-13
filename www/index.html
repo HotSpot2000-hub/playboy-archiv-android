@@ -11312,11 +11312,19 @@ function releaseSeriesContextLabel(release){
  const series=linkedObjects(release.id,'series')[0]||null;
  return series?releaseRelationLabel(series):'Nicht zugeordnet';
 }
+function releaseTitleContextLabel(release){
+ const title=linkedObjects(release.id,'title')[0]||null;
+ if(!title)return '';
+ const name=titleNameFor(title.titleClass,title.titleLevel)||title.title||'Titel';
+ const period=modelTitleWhen(title);
+ return [name,period].filter(Boolean).join(' · ');
+}
 function workReleaseChoiceHtml(release,current){
  const galleries=releaseWorks(release,'gallery');
  const videos=releaseWorks(release,'video');
  const parts=seriesContributionDisplayParts(release);
- return `<button type="button" class="workReleaseChoice ${release.id===current?'selected':''}" data-work-release-choice="${esc(release.id)}">${seriesContributionPreviewHtml(release,galleries,videos).replace('seriesContributionPreview','workReleaseChoicePreview')}<span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(parts.model)}</span>${parts.label?`<span class="workReleaseChoiceLabel">${esc(parts.label)}</span>`:''}<span class="workReleaseChoiceContext">Rubrik: ${esc(releaseSeriesContextLabel(release))}</span><span class="workReleaseChoiceMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+ const titleContext=releaseTitleContextLabel(release);
+ return `<button type="button" class="workReleaseChoice ${release.id===current?'selected':''}" data-work-release-choice="${esc(release.id)}">${seriesContributionPreviewHtml(release,galleries,videos).replace('seriesContributionPreview','workReleaseChoicePreview')}<span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(parts.model)}</span>${parts.label?`<span class="workReleaseChoiceLabel">${esc(parts.label)}</span>`:''}${titleContext?`<span class="workReleaseChoiceContext">Titel: ${esc(titleContext)}</span>`:''}<span class="workReleaseChoiceContext">Rubrik: ${esc(releaseSeriesContextLabel(release))}</span><span class="workReleaseChoiceMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
 }
 function fillWorkReleaseSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
