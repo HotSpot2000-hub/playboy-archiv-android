@@ -10811,13 +10811,18 @@ function renderArchive(){
  }else if(archiveTab==='series'){
    const mid=managementSelectedModelId();
    const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
-   const unassignedReleases=managementArchive('release').filter(release=>!linkedObjects(release.id,'series').length).slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}));
-   const unassignedWorks=[...managementArchive('gallery'),...managementArchive('video')].filter(work=>!workRelease(work)).sort((a,b)=>workDisplayLabel(a).localeCompare(workDisplayLabel(b),'de',{sensitivity:'base'}));
+   const showUnassignedSeriesArea=managementArea==='all'||managementArea==='unassigned';
+   const unassignedReleases=showUnassignedSeriesArea
+    ?managementArchive('release').filter(release=>!linkedObjects(release.id,'series').length).slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}))
+    :[];
+   const unassignedWorks=showUnassignedSeriesArea
+    ?[...managementArchive('gallery'),...managementArchive('video')].filter(work=>!workRelease(work)).sort((a,b)=>workDisplayLabel(a).localeCompare(workDisplayLabel(b),'de',{sensitivity:'base'}))
+    :[];
    const unassignedCount=unassignedReleases.length+unassignedWorks.length;
-   const validBrowse=modelSeries.some(sr=>sr.id===modelSeriesBrowseId)||modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID;
-   if(!validBrowse)modelSeriesBrowseId=modelSeries[0]?.id||UNASSIGNED_SERIES_BROWSE_ID;
+   const validBrowse=modelSeries.some(sr=>sr.id===modelSeriesBrowseId)||(showUnassignedSeriesArea&&modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID);
+   if(!validBrowse)modelSeriesBrowseId=modelSeries[0]?.id||(showUnassignedSeriesArea?UNASSIGNED_SERIES_BROWSE_ID:'');
    const selectedSeries=modelSeries.find(sr=>sr.id===modelSeriesBrowseId);
-   const unassignedTab=`<button type="button" class="${modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID?'active':''}" data-model-series-tab="${UNASSIGNED_SERIES_BROWSE_ID}">Nicht zugeordnet · ${unassignedCount}</button>`;
+   const unassignedTab=showUnassignedSeriesArea?`<button type="button" class="${modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID?'active':''}" data-model-series-tab="${UNASSIGNED_SERIES_BROWSE_ID}">Nicht zugeordnet · ${unassignedCount}</button>`:'';
    const tabs=unassignedTab+modelSeries.map(sr=>`<button type="button" class="${sr.id===modelSeriesBrowseId?'active':''}" data-model-series-tab="${esc(sr.id)}">${esc(sr.title||'Rubrik ohne Titel')}</button>`).join('');
    if(modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID){
     seriesWorkSelected.clear();
