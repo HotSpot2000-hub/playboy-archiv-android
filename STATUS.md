@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-13
-Referenz-Commit: `042be254fe678949fcd09f1ee7959389f1d28651`
+Referenz-Commit: `36edb580d4fa2a592329b63601a4eb33fe0f88c9`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,10 +18,11 @@ Referenz-Commit: `042be254fe678949fcd09f1ee7959389f1d28651`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Getesteter Referenz-Code: `042be254fe678949fcd09f1ee7959389f1d28651`
+- Getesteter Referenz-Code: `36edb580d4fa2a592329b63601a4eb33fe0f88c9`
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
+- Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
 - Keine automatische Legacy-Migration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -126,7 +127,7 @@ Referenzfall:
 
 Technischer Typ bleibt vorerst `publication`. Grunddaten: Reihe, Ausgabennummer, Zeitraum, Archivbereich, Cover-Models, physischer Bestandsstatus (`Nicht vorhanden`, `Bestellt`, `Im Bestand`).
 
-Cover-Models sind Metadaten der Ausgabe und erzeugen keinen Beitrag bzw. keinen Nachweis für einen Inhalt im Heft. Verwaltungsdarstellung: Reihe als übergeordneter Kopf; Ausgabennummer und Zeitraum in einer Zeile.
+Cover-Models sind Metadaten der Ausgabe und erzeugen keinen Beitrag bzw. keinen Nachweis für einen Inhalt im Heft. Verwaltungsdarstellung: Reihe als übergeordneter Kopf; Ausgabennummer und Zeitraum in einer Zeile. Mehrmonatige Zeiträume werden in der Verwaltung platzsparend angezeigt, z. B. `Jul./Aug. 2002`, ohne die gespeicherten Grunddaten zu verändern.
 
 ### Cover und PDF
 
@@ -144,6 +145,19 @@ Zuordnen, Ersetzen und Lösen sind gerätetest-bestätigt.
 
 Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen. Ausbau auf Beiträge und Seiten folgt später.
 
+### Print als visuelle Referenz -- gerätetest-bestätigt
+
+Der Print/Reihen-Bereich ist nach dem Feinschliff die verbindliche visuelle Referenz für die weitere Vereinheitlichung der Verwaltung:
+- Reihe als auberginefarbener übergeordneter Kopf;
+- Ausgabe als innere Karte in sehr hellem Aubergine;
+- 2:3-Cover links mit Rundungen an allen vier Ecken;
+- Ausgabennummer links und Zeitraum rechts in einer Zeile;
+- `＋ Ausgabe`, `×`, `Bearbeiten` und `Lösen` bilden eine gemeinsame Buttonfamilie;
+- diese vier Aktionsbuttons verwenden dieselbe explizite Kompaktklasse (`publicationCompactAction`) mit identischer Höhe, Schriftgröße, Innenabständen, Rundung und Zentrierung;
+- `Lösen` trennt die Ausgabe von der Reihe, ohne die Ausgabe oder ihre Medien zu löschen.
+
+Der finale Buttonstandard wurde auf dem Android-Gerät ausdrücklich bestätigt.
+
 ## Verwaltung -- aktueller UI-Stand
 
 - Model-Filter ganz oben.
@@ -152,8 +166,8 @@ Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbe
 - Tabstreifen ist auf den Verwaltungscontainer begrenzt.
 - Printbereich heißt innen `Reihen`.
 - Vorschaubilder in den bearbeiteten Verwaltungskarten haben Rundungen an allen vier Ecken.
-- Print/Reihen ist aktuell die optisch jüngste Darstellung.
-- Titel, Rubriken und Print/Reihen sind funktional angenähert, aber optisch noch nicht vollständig einheitlich.
+- **Print/Reihen ist ab jetzt die verbindliche Designreferenz.**
+- Titel und Rubriken sind funktional stabil, sollen optisch kontrolliert an diese Print-Referenz angeglichen werden; keine gleichzeitige Umstellung beider Bereiche.
 
 ## Weitere stabile Funktionen
 
@@ -167,7 +181,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Titel/Rubriken/Print-Reihen sind optisch noch nicht vollständig vereinheitlicht.
+- Rubriken und Titel sind optisch noch nicht auf die bestätigte Print-Referenz umgestellt.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -187,12 +201,15 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Verwaltung optisch vereinheitlichen: Print/Reihen, Titel und Rubriken.**
+**Verwaltung optisch vereinheitlichen -- zuerst Rubriken nach der bestätigten Print-Referenz.**
 
-Ziel:
-- keine fachliche oder Datenmodelländerung;
-- gemeinsame visuelle Grundsprache für die drei Veröffentlichungskontexte;
-- gemeinsame Abstände, Kopfzeilen, Aktionsanordnung, Kartenradien und Vorschauprinzipien;
-- fachlich sinnvolle Spezialelemente wie Titel-Tabs, Print-Reihenstruktur und Rubrik-Arbeitsbereich bleiben erhalten;
-- funktionierende Print-, Titel- und Rubriklogik nicht neu schreiben;
-- erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
+Vorgehen:
+1. Nur Rubriken visuell an Print/Reihen angleichen; bestehende Rubrik-Fachlogik unverändert lassen.
+2. Gerätetest der Rubriken.
+3. Erst nach Bestätigung dasselbe Muster kontrolliert auf Titel übertragen.
+4. Danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
+
+Ziel der Rubrik-Anpassung:
+- Print als konkrete visuelle Vorlage verwenden, nicht nur ähnliche Einzel-CSS-Regeln;
+- gemeinsame Abstände, Kopfzeilen, Kartenradien, sehr helles Aubergine für innere Karten, 2:3-Vorschauprinzip und einheitliche Aktionsbuttons;
+- `Nicht zugeordnet`, Bereichsfilter, Beitragsnummerierung, Galerie-/Video-Zugriff und `Lösen` funktional unverändert erhalten.
