@@ -207,6 +207,24 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  font-size:12px;
  line-height:normal;
 }
+.publicationCompactAction{
+ -webkit-appearance:none;
+ appearance:none;
+ box-sizing:border-box;
+ height:34px!important;
+ min-height:34px!important;
+ padding:0 10px!important;
+ border-radius:10px!important;
+ font-family:inherit!important;
+ font-size:12px!important;
+ font-weight:400!important;
+ line-height:1!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ flex:0 0 auto!important;
+ white-space:nowrap;
+}
 
 .stockBadge{display:inline-block;background:#eef7ef;border:1px solid #cfe3d1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}.stockBadge.ordered{background:#fff6df;border-color:#e6d19b}.stockBadge.none{background:#f3f3f3;border-color:#d8d8d8}
 .pdfBadge{display:inline-block;background:#f1f1f1;border-radius:999px;padding:4px 8px;font-size:12px;margin-top:6px}
@@ -11007,7 +11025,7 @@ function renderArchive(){
          <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
          ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
          <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
-         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
+         <div class="itemActions publicationIssueActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
         </div>
        </div>`;
      }).join(''):'<div class="small" style="padding:10px">Noch keine Ausgabe in dieser Reihe.</div>';
@@ -11017,7 +11035,7 @@ function renderArchive(){
        <div class="publicationSeriesHeading">${esc(sr.title||'Reihe')}</div>
        ${sr._legacy
         ? `<button type="button" class="publicationSeriesAdd" data-adopt-print-series="${esc(sr.title||'')}" data-print-area="${esc(sr.archiveArea||'')}">Reihe übernehmen</button>`
-        : `<div class="itemActions publicationIssueActions publicationSeriesActions"><button type="button" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button><button type="button" class="deleteBtn" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
+        : `<div class="itemActions publicationIssueActions publicationSeriesActions"><button type="button" class="publicationCompactAction" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
       </div>
       <div class="publicationSeriesBody">${issueCards}</div>
      </div>`;
