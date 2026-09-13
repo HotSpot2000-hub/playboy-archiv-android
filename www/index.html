@@ -10885,7 +10885,7 @@ function renderArchive(){
  }else if(archiveTab==='publication'){
    const mid=managementSelectedModelId();
    const q=String(managementSearch||'').trim().toLocaleLowerCase('de-DE');
-   const area=managementAreaFilter;
+   const area=managementArea;
    let availablePrintSeries=printSeriesObjects();
    if(!availablePrintSeries.length){
      const recovered=[];
@@ -10898,8 +10898,8 @@ function renderArchive(){
      availablePrintSeries=recovered;
    }
    let seriesRows=availablePrintSeries.filter(sr=>{
-     if(area==='__none__')return !sr.archiveArea;
-     if(area&&area!=='__all__')return sr.archiveArea===area;
+     if(area==='unassigned')return !sr.archiveArea;
+     if(area&&area!=='all')return sr.archiveArea===area;
      return true;
    }).map(sr=>{
      let pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&(
