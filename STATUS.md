@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-13
-Referenz-Commit: `36edb580d4fa2a592329b63601a4eb33fe0f88c9`
+Stand: 2026-09-14
+Referenz-Commit: `5979c912a7cb1121a8e26870812d3e3ed586a2a0`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,11 +18,12 @@ Referenz-Commit: `36edb580d4fa2a592329b63601a4eb33fe0f88c9`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Getesteter Referenz-Code: `36edb580d4fa2a592329b63601a4eb33fe0f88c9`
+- Getesteter Referenz-Code: `5979c912a7cb1121a8e26870812d3e3ed586a2a0`
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
 - Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
+- Rubriken-Übertragung auf die Print-Designsprache einschließlich anschließendem Feinschliff gerätetest-bestätigt.
 - Keine automatische Legacy-Migration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -70,13 +71,28 @@ Beitragsnummerierung:
 - ab mindestens zwei Beiträgen derselben Rubrik und exakt derselben Model-Kombination: `Nr. 1`, `Nr. 2`, ...;
 - andere Model-Kombination = eigene Reihe;
 - individueller Name wird sichtbar bevorzugt;
-- interne Nummer darf stabil gespeichert bleiben.
+- interne Nummer darf stabil gespeichert bleiben;
+- manuelle Eingabe der Beitragsnummer ist aus Anlegen/Bearbeiten entfernt; die sichtbare Nummerierung wird automatisch aus dem Beitragskontext bestimmt.
 
-## Rubriken -- stabiler Stand
+## Rubriken -- gerätetest-bestätigter Feinschliff
 
 Hierarchie: **Rubrik → Beitrag → Galerie/Video**.
 
-Echte Rubrik bietet `＋ Beitrag hinzufügen`; intern entsteht `release`. Beitragskarten zeigen 2:3-Vorschau, Model, ggf. individuellen Namen/Nummer, Galerie-/Video-Zugriff und `Beitrag bearbeiten`. Beiträge können von Rubriken gelöst werden, ohne Beitrag/Medien zu löschen. `Nicht zugeordnet` zeigt Beiträge ohne Rubrik sowie Galerien/Videos ohne Beitrag und folgt dem gewählten Archivbereich. Gerätetest bestätigt.
+Echte Rubrik bietet `＋ Beitrag hinzufügen`; intern entsteht `release`. Beiträge können von Rubriken gelöst werden, ohne Beitrag/Medien zu löschen. `Nicht zugeordnet` zeigt Beiträge ohne Rubrik sowie Galerien/Videos ohne Beitrag und folgt dem gewählten Archivbereich.
+
+Aktuell bestätigte Rubrik-Darstellung:
+- kompakter auberginefarbener Rubrikkopf;
+- Rubriktitel horizontal in der verfügbaren Mittelzone zentriert;
+- Kopfaktionen stehen ruhig auf derselben Höhe;
+- gemeinsame kompakte Aktionsbuttons sind explizit weiß, fein umrandet und schattenfrei;
+- innere Beitragskarten sehr hell aubergine;
+- 2:3-Vorschau mit Rundungen an allen vier Ecken;
+- Modelname auf Beitragskarten bewusst ruhiger (`14px`, weniger fett), damit Mehrfach-Models nicht dominieren;
+- Medienanzahl bleibt sichtbar;
+- direkte Galerie-/Video-Sprungbuttons wurden aus der Rubrik-Beitragskarte entfernt; die Beziehungen selbst bleiben unverändert;
+- `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen.
+
+Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
 ## Titel -- Etappe 5a stabil
 
@@ -145,18 +161,18 @@ Zuordnen, Ersetzen und Lösen sind gerätetest-bestätigt.
 
 Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen. Ausbau auf Beiträge und Seiten folgt später.
 
-### Print als visuelle Referenz -- gerätetest-bestätigt
+### Print-Design -- gerätetest-bestätigt, Kopf als nächster Feinschliff
 
-Der Print/Reihen-Bereich ist nach dem Feinschliff die verbindliche visuelle Referenz für die weitere Vereinheitlichung der Verwaltung:
-- Reihe als auberginefarbener übergeordneter Kopf;
+Der Print/Reihen-Bereich bleibt die bestätigte Referenz für Ausgabekarten:
 - Ausgabe als innere Karte in sehr hellem Aubergine;
 - 2:3-Cover links mit Rundungen an allen vier Ecken;
 - Ausgabennummer links und Zeitraum rechts in einer Zeile;
 - `＋ Ausgabe`, `×`, `Bearbeiten` und `Lösen` bilden eine gemeinsame Buttonfamilie;
-- diese vier Aktionsbuttons verwenden dieselbe explizite Kompaktklasse (`publicationCompactAction`) mit identischer Höhe, Schriftgröße, Innenabständen, Rundung und Zentrierung;
 - `Lösen` trennt die Ausgabe von der Reihe, ohne die Ausgabe oder ihre Medien zu löschen.
 
 Der finale Buttonstandard wurde auf dem Android-Gerät ausdrücklich bestätigt.
+
+Beim Rubrik-Feinschliff hat sich jedoch der **kompaktere Rubrikkopf** als ruhiger und besser erwiesen als der bisherige Print-Reihenkopf. Deshalb ist der nächste geplante visuelle Schritt ausdrücklich, nur diesen bestätigten Rubrik-Kopf auf Print/Reihen zurückzuübertragen. Die bestätigten Print-Ausgabekarten bleiben dabei unangetastet.
 
 ## Verwaltung -- aktueller UI-Stand
 
@@ -166,8 +182,9 @@ Der finale Buttonstandard wurde auf dem Android-Gerät ausdrücklich bestätigt.
 - Tabstreifen ist auf den Verwaltungscontainer begrenzt.
 - Printbereich heißt innen `Reihen`.
 - Vorschaubilder in den bearbeiteten Verwaltungskarten haben Rundungen an allen vier Ecken.
-- **Print/Reihen ist ab jetzt die verbindliche Designreferenz.**
-- Titel und Rubriken sind funktional stabil, sollen optisch kontrolliert an diese Print-Referenz angeglichen werden; keine gleichzeitige Umstellung beider Bereiche.
+- Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
+- Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
+- Titel ist funktional stabil, aber visuell noch nicht auf das neue gemeinsame Muster übertragen.
 
 ## Weitere stabile Funktionen
 
@@ -181,7 +198,8 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Rubriken und Titel sind optisch noch nicht auf die bestätigte Print-Referenz umgestellt.
+- Titel ist optisch noch nicht auf das gemeinsame Print-/Rubrik-Muster umgestellt.
+- Print-Reihenkopf soll vor Titel noch auf den bestätigten kompakteren Rubrikkopf angeglichen werden.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -201,15 +219,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Verwaltung optisch vereinheitlichen -- zuerst Rubriken nach der bestätigten Print-Referenz.**
+**Den gerätetest-bestätigten kompakten Rubrikkopf kontrolliert auf den Print-Reihenkopf übertragen.**
 
 Vorgehen:
-1. Nur Rubriken visuell an Print/Reihen angleichen; bestehende Rubrik-Fachlogik unverändert lassen.
-2. Gerätetest der Rubriken.
-3. Erst nach Bestätigung dasselbe Muster kontrolliert auf Titel übertragen.
-4. Danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
+1. Nur den Print-Reihenkopf ändern: kompakte Höhe/Anordnung, Reihenname horizontal in der verfügbaren Mittelzone zentrieren, Aktionen auf derselben Ebene.
+2. Print-Ausgabekarten und sämtliche Print-Fachlogik unverändert lassen.
+3. Gerätetest nur dieses Print-Kopfblocks.
+4. Nach Bestätigung das gemeinsame Muster kontrolliert auf Titel übertragen.
+5. Danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
 
-Ziel der Rubrik-Anpassung:
-- Print als konkrete visuelle Vorlage verwenden, nicht nur ähnliche Einzel-CSS-Regeln;
-- gemeinsame Abstände, Kopfzeilen, Kartenradien, sehr helles Aubergine für innere Karten, 2:3-Vorschauprinzip und einheitliche Aktionsbuttons;
-- `Nicht zugeordnet`, Bereichsfilter, Beitragsnummerierung, Galerie-/Video-Zugriff und `Lösen` funktional unverändert erhalten.
+Der aktuelle Rubrik-Stand ist dabei die konkrete Kopf-Referenz; die bestehenden Print-Ausgabekarten bleiben die konkrete Karten-Referenz.
