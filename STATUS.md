@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-15
-Referenz-Commit: `dbb0e185e17a02b245a0413c797311b127aa4945`
+Stand: 2026-09-16
+Referenz-Commit: `db76e26997e7f98c01ed545146a7ebab8abef727`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,8 @@ Referenz-Commit: `dbb0e185e17a02b245a0413c797311b127aa4945`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Getesteter Referenz-Code: `dbb0e185e17a02b245a0413c797311b127aa4945`
+- Aktuell berücksichtigter Code: `db76e26997e7f98c01ed545146a7ebab8abef727`
+- Titel-Feinschliff in diesem Stand nur teilweise gerätetest-bestätigt; bestätigte und offene Teile sind unten getrennt dokumentiert.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
@@ -95,7 +96,7 @@ Aktuell bestätigte Rubrik-Darstellung:
 
 Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
-## Titel -- Etappe 5a stabil
+## Titel -- Etappe 5a funktional stabil, visueller Feinschliff begonnen
 
 Hierarchie: **Titel → Beitrag → Galerie/Video**.
 
@@ -104,6 +105,13 @@ Vorhandene Titel-Tabs bleiben fachlich bestätigt: erste Ebene z. B. `Coed`, `Cy
 Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge zeigen Modelableitung aus Galerie/Video → Shooting, individuellen Namen/Nummer sowie Galerie-/Video-Zugriff. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
 
 Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen bleiben unter `Bisher direkt zugeordnete Shootings` sichtbar und werden nicht automatisch migriert.
+
+Aktueller visueller Zwischenstand in Commit `db76e26997e7f98c01ed545146a7ebab8abef727`:
+- der kompakte auberginefarbene Titelkopf mit mittiger Titel-/Zeitraumdarstellung sowie `Bearbeiten` und quadratischem `×` ist gerätetest-bestätigt;
+- `＋ Beitrag hinzufügen` entspricht nun optisch dem bestätigten Rubriken-Button und ist gerätetest-bestätigt;
+- eine echte Titel-Beitragskarte war im abschließenden Gerätetest nicht sichtbar, weil dem getesteten Titel noch kein Beitrag zugeordnet war; ihre neue Darstellung und ihre Galerie-/Video-Zugriffe sind deshalb noch nicht bestätigt;
+- der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet weiterhin das alte Shooting-Kartenmuster und muss später kontrolliert an die gemeinsame Designsprache angepasst werden;
+- Titel-Fachlogik, Beziehungen und Schema wurden nicht verändert.
 
 ## Titelhierarchien -- vorerst fachlich geklärt
 
@@ -192,7 +200,7 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
 - Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
-- Titel ist funktional stabil, aber visuell noch nicht auf das neue gemeinsame Muster übertragen.
+- Titel ist funktional stabil. Titelkopf und `＋ Beitrag hinzufügen` sind visuell angeglichen und gerätetest-bestätigt; Beitragskarten und Legacy-Shootings sind noch offen.
 
 ## Weitere stabile Funktionen
 
@@ -206,7 +214,8 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Titel ist optisch noch nicht auf das gemeinsame Print-/Rubrik-Muster umgestellt.
+- Titel-Beitragskarten sind im aktuellen Stand noch nicht gerätetest-bestätigt.
+- `Bisher direkt zugeordnete Shootings` im Titelbereich verwendet noch das alte Kartenmuster.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -226,13 +235,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Titel kontrolliert auf die gemeinsame gerätetest-bestätigte Print-/Rubriken-Designsprache übertragen.**
+**Titel-Feinschliff später ab dem dokumentierten Zwischenstand fortsetzen.**
 
 Vorgehen:
-1. Zuerst nur den Titelkopf auf kompakte Höhe, mittige Kontextbezeichnung und dieselbe Aktionsanordnung umstellen.
-2. Danach Titel-Beitragskarten kontrolliert an die bestätigten inneren Print-/Rubrikkarten angleichen.
-3. Titel-Fachlogik, Titelhierarchien, Beziehungen und Schema unverändert lassen.
-4. Den Titelbereich separat auf dem Android-Gerät testen.
-5. Danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
+1. Für den nächsten Gerätetest einem Titel mindestens einen echten Beitrag mit Galerie/Video zuordnen, damit die Titel-Beitragskarte sichtbar ist.
+2. Diese Titel-Beitragskarte kontrolliert mit der bestätigten Rubrik-Beitragskarte vergleichen und verbleibende Abweichungen korrigieren; Galerie-/Video-Zugriffe erhalten.
+3. Danach den Bereich `Bisher direkt zugeordnete Shootings` separat auf die gemeinsame Karten- und Buttonsprache übertragen, ohne Legacy-Beziehungen zu migrieren oder zu löschen.
+4. Titel-Fachlogik, Titelhierarchien, Beziehungen und Schema unverändert lassen und den gesamten Titelbereich erneut auf dem Android-Gerät testen.
+5. Erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
 
-Print und Rubriken bilden gemeinsam die bestätigte Referenz; Titel wird schrittweise und ohne gleichzeitige Fachänderung angeglichen.
+Print und Rubriken bleiben die bestätigte Referenz. Beim Titel sind Kopf und Hinzufügen-Button abgeschlossen; Karten und Legacy-Bereich bleiben der nächste visuelle Arbeitsblock.
