@@ -10114,7 +10114,7 @@ if(preview&&l==='week'){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
- document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':'Archiv-Eintrag bearbeiten';
+ document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':a.type==='printSeries'?'Reihe bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
@@ -11055,9 +11055,9 @@ function renderArchive(){
        <div class="publicationSeriesPicker hidden" data-management-print-series-picker="1">${printSeriesPicker}</div>
        ${sr._legacy
         ? `<button type="button" class="publicationSeriesAdd" data-adopt-print-series="${esc(sr.title||'')}" data-print-area="${esc(sr.archiveArea||'')}">Reihe übernehmen</button>`
-        : `<div class="itemActions publicationIssueActions publicationSeriesActions"><button type="button" class="publicationCompactAction" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
+        : `<div class="itemActions publicationIssueActions publicationSeriesActions"><button type="button" class="publicationCompactAction" data-edit-print-series="${esc(sr.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-print-series="${esc(sr.id)}" aria-label="Reihe löschen" title="Reihe löschen">×</button></div>`}
       </div>
-      <div class="publicationSeriesBody">${issueCards}</div>
+      <div class="publicationSeriesBody">${sr._legacy?'':`<div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-print-issue="${esc(sr.id)}" data-print-area="${esc(sr.archiveArea||'')}">＋ Ausgabe hinzufügen</button></div>`}${issueCards}</div>
      </div>`;
    }).join('')}${unassignedPrintIssues.length?`<div class="publicationManageCard">
     <div class="publicationManageHead">
@@ -11183,7 +11183,7 @@ function renderArchive(){
      const parts=seriesContributionDisplayParts(release);
      return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
     }).join('');
-    box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" class="publicationCompactAction" data-edit-management-series="${esc(selectedSeries.id)}">Bearbeiten</button><button type="button" class="titleDeleteX publicationCompactAction" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Beiträge in dieser Rubrik. Galerien und Videos gehören jeweils zu ihrem Beitrag.</div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-series-contribution="${esc(selectedSeries.id)}">＋ Beitrag hinzufügen</button></div>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
+    box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" class="publicationCompactAction" data-edit-management-series="${esc(selectedSeries.id)}">Bearbeiten</button><button type="button" class="titleDeleteX publicationCompactAction" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small" style="margin-bottom:10px">Beiträge in dieser Rubrik. Galerien und Videos gehören jeweils zu ihrem Beitrag.</div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-series-contribution="${esc(selectedSeries.id)}">＋ Beitrag hinzufügen</button></div>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
    }
  }else if(archiveTab==='shoot'){
    box.innerHTML=items.length
@@ -11263,6 +11263,7 @@ function renderArchive(){
  const managementPrintSeriesTitleBtn=box.querySelector('[data-management-print-series-title]'),managementPrintSeriesPicker=box.querySelector('[data-management-print-series-picker]');
  if(managementPrintSeriesTitleBtn&&managementPrintSeriesPicker)managementPrintSeriesTitleBtn.onclick=e=>{e.stopPropagation();const opening=managementPrintSeriesPicker.classList.contains('hidden');managementPrintSeriesPicker.classList.toggle('hidden');managementPrintSeriesTitleBtn.setAttribute('aria-expanded',opening?'true':'false')};
  box.querySelectorAll('[data-management-print-series-pick]').forEach(x=>x.onclick=e=>{e.stopPropagation();window.managementPrintSeriesBrowseId=x.dataset.managementPrintSeriesPick;renderArchive()});
+ box.querySelectorAll('[data-edit-print-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openArchiveEdit(x.dataset.editPrintSeries)});
  box.querySelectorAll('[data-add-print-issue]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openPrintIssueForSeries(x.dataset.addPrintIssue||'',x.dataset.printArea||'')});
  box.querySelectorAll('[data-delete-print-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();deleteArchiveItem(x.dataset.deletePrintSeries)});
  box.querySelectorAll('[data-unlink-print-issue]').forEach(x=>x.onclick=e=>{
