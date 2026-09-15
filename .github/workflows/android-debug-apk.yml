@@ -25,9 +25,6 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install dependencies
         run: npm install
 
@@ -103,7 +100,7 @@ jobs:
 
           "$APKSIGNER" verify --verbose \
             android/app/build/outputs/apk/debug/app-debug.apk
-        
+
       - name: Rename APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Playboy-Archiv-Build-${{ github.run_number }}.apk
 
