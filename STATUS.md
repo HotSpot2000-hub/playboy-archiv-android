@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-14
-Referenz-Commit: `5979c912a7cb1121a8e26870812d3e3ed586a2a0`
+Stand: 2026-09-15
+Referenz-Commit: `dbb0e185e17a02b245a0413c797311b127aa4945`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `5979c912a7cb1121a8e26870812d3e3ed586a2a0`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Getesteter Referenz-Code: `5979c912a7cb1121a8e26870812d3e3ed586a2a0`
+- Getesteter Referenz-Code: `dbb0e185e17a02b245a0413c797311b127aa4945`
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
@@ -91,6 +91,7 @@ Aktuell bestätigte Rubrik-Darstellung:
 - Medienanzahl bleibt sichtbar;
 - direkte Galerie-/Video-Sprungbuttons wurden aus der Rubrik-Beitragskarte entfernt; die Beziehungen selbst bleiben unverändert;
 - `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen.
+- Der reine Erklärungstext oberhalb von `＋ Beitrag hinzufügen` wurde entfernt; der Button beginnt direkt im Rubriken-Inhaltsbereich.
 
 Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
@@ -161,7 +162,7 @@ Zuordnen, Ersetzen und Lösen sind gerätetest-bestätigt.
 
 Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen. Ausbau auf Beiträge und Seiten folgt später.
 
-### Print-Design -- gerätetest-bestätigt, Kopf als nächster Feinschliff
+### Print-Design -- vollständig gerätetest-bestätigt
 
 Der Print/Reihen-Bereich bleibt die bestätigte Referenz für Ausgabekarten:
 - Ausgabe als innere Karte in sehr hellem Aubergine;
@@ -172,7 +173,13 @@ Der Print/Reihen-Bereich bleibt die bestätigte Referenz für Ausgabekarten:
 
 Der finale Buttonstandard wurde auf dem Android-Gerät ausdrücklich bestätigt.
 
-Beim Rubrik-Feinschliff hat sich jedoch der **kompaktere Rubrikkopf** als ruhiger und besser erwiesen als der bisherige Print-Reihenkopf. Deshalb ist der nächste geplante visuelle Schritt ausdrücklich, nur diesen bestätigten Rubrik-Kopf auf Print/Reihen zurückzuübertragen. Die bestätigten Print-Ausgabekarten bleiben dabei unangetastet.
+Der Print-Reihenkopf verwendet nun direkt dieselbe bestätigte Struktur und Designklasse wie der Rubrikkopf:
+- gleich kompakte Kopfzeile mit Symbol, mittig angeordnetem Reihennamen samt Auswahlpfeil, `Bearbeiten` und quadratischem `×`;
+- `＋ Ausgabe hinzufügen` entspricht optisch `＋ Beitrag hinzufügen`;
+- Reihenwahl und Reihenbearbeitung funktionieren weiterhin;
+- die bestätigten Print-Ausgabekarten und die Print-Fachlogik blieben unverändert.
+
+Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 
 ## Verwaltung -- aktueller UI-Stand
 
@@ -183,6 +190,7 @@ Beim Rubrik-Feinschliff hat sich jedoch der **kompaktere Rubrikkopf** als ruhige
 - Printbereich heißt innen `Reihen`.
 - Vorschaubilder in den bearbeiteten Verwaltungskarten haben Rundungen an allen vier Ecken.
 - Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
+- Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
 - Titel ist funktional stabil, aber visuell noch nicht auf das neue gemeinsame Muster übertragen.
 
@@ -199,7 +207,6 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
 - Titel ist optisch noch nicht auf das gemeinsame Print-/Rubrik-Muster umgestellt.
-- Print-Reihenkopf soll vor Titel noch auf den bestätigten kompakteren Rubrikkopf angeglichen werden.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -219,13 +226,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Den gerätetest-bestätigten kompakten Rubrikkopf kontrolliert auf den Print-Reihenkopf übertragen.**
+**Titel kontrolliert auf die gemeinsame gerätetest-bestätigte Print-/Rubriken-Designsprache übertragen.**
 
 Vorgehen:
-1. Nur den Print-Reihenkopf ändern: kompakte Höhe/Anordnung, Reihenname horizontal in der verfügbaren Mittelzone zentrieren, Aktionen auf derselben Ebene.
-2. Print-Ausgabekarten und sämtliche Print-Fachlogik unverändert lassen.
-3. Gerätetest nur dieses Print-Kopfblocks.
-4. Nach Bestätigung das gemeinsame Muster kontrolliert auf Titel übertragen.
+1. Zuerst nur den Titelkopf auf kompakte Höhe, mittige Kontextbezeichnung und dieselbe Aktionsanordnung umstellen.
+2. Danach Titel-Beitragskarten kontrolliert an die bestätigten inneren Print-/Rubrikkarten angleichen.
+3. Titel-Fachlogik, Titelhierarchien, Beziehungen und Schema unverändert lassen.
+4. Den Titelbereich separat auf dem Android-Gerät testen.
 5. Danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
 
-Der aktuelle Rubrik-Stand ist dabei die konkrete Kopf-Referenz; die bestehenden Print-Ausgabekarten bleiben die konkrete Karten-Referenz.
+Print und Rubriken bilden gemeinsam die bestätigte Referenz; Titel wird schrittweise und ohne gleichzeitige Fachänderung angeglichen.
