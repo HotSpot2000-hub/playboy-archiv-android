@@ -1296,8 +1296,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesBrowseCard .publicationCompactAction{background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
 .seriesBrowseCardHead .seriesBrowseIcon{font-size:20px}.seriesBrowseCardHead .seriesBrowseTitle{font-weight:700;flex:1;min-width:0;display:flex;justify-content:center}.seriesBrowseTitleButton{display:inline-flex;align-items:center;justify-content:center;gap:6px;max-width:100%;border:0;background:transparent;padding:2px 0;font:inherit;font-weight:700;color:inherit;text-align:center;cursor:pointer}.seriesBrowseTitleButton .chev{font-size:11px;color:var(--muted)}.seriesBrowsePicker{position:absolute;left:42px;right:12px;top:calc(100% - 4px);z-index:24;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.14);padding:6px;display:grid;gap:2px;max-height:260px;overflow:auto}.seriesBrowsePicker.hidden{display:none}.seriesBrowsePicker button{width:100%;border:0;background:transparent;border-radius:8px;padding:9px 10px;font:inherit;text-align:left}.seriesBrowsePicker button.active{background:#171717;color:#fff}
 .seriesBrowseCardBody{padding:10px;background:var(--bg)}
-.seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;overflow:visible;background:#f8f3f8;margin-top:9px;min-height:168px;padding:10px}
-.seriesBrowseCard .seriesContributionPreview,.managementTitleContributions .seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border:0;overflow:hidden;align-self:stretch;display:grid;place-items:center;border-radius:12px}
+.seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard,.managementWorkList .seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;overflow:visible;background:#f8f3f8;margin-top:9px;min-height:168px;padding:10px}
+.seriesBrowseCard .seriesContributionPreview,.managementTitleContributions .seriesContributionPreview,.managementWorkList .seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border:0;overflow:hidden;align-self:stretch;display:grid;place-items:center;border-radius:12px}
 .seriesContributionPreview{border-radius:12px}
 .seriesContributionPreview img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
 .shootingCover img,.workReleaseChoicePreview img{border-radius:12px}
@@ -1307,16 +1307,21 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesContributionMeta{margin-top:8px;font-size:12px;color:var(--muted)}
 .seriesContributionBody .itemActions{justify-content:center;flex-wrap:wrap}
 .seriesContributionBody .itemActions button{flex:1 1 88px}
-.seriesBrowseCard .seriesContributionBody,.managementTitleContributions .seriesContributionBody{padding:2px 2px 2px 0}
-.seriesBrowseCard .seriesContributionBody .itemActions,.managementTitleContributions .seriesContributionBody .itemActions{justify-content:center;gap:7px}
-.seriesBrowseCard .seriesContributionBody .publicationCompactAction,.managementTitleContributions .seriesContributionBody .publicationCompactAction{flex:0 0 auto!important}
+.seriesBrowseCard .seriesContributionBody,.managementTitleContributions .seriesContributionBody,.managementWorkList .seriesContributionBody{padding:2px 2px 2px 0}
+.seriesBrowseCard .seriesContributionBody .itemActions,.managementTitleContributions .seriesContributionBody .itemActions,.managementWorkList .seriesContributionBody .itemActions{justify-content:center;gap:7px}
+.seriesBrowseCard .seriesContributionBody .publicationCompactAction,.managementTitleContributions .seriesContributionBody .publicationCompactAction,.managementWorkList .seriesContributionBody .publicationCompactAction{flex:0 0 auto!important}
 .seriesBrowseCard .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
 .managementTitleContributions .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
-.managementTitleContributions .publicationCompactAction{background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
+.managementTitleContributions .publicationCompactAction,.managementWorkList .publicationCompactAction{background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
+.managementWorkList{display:grid;gap:10px}
+.managementWorkList .seriesContributionCard{margin-top:0}
+.managementWorkList .seriesContributionPreview{align-self:start}
+.managementWorkList .seriesContributionLabel{margin-bottom:7px}
+.managementWorkList .managementWorkDetails{display:grid;gap:4px}
 .publicationManageCard.seriesBrowseCard{margin-top:0}
 @media(max-width:430px){
  .seriesBrowseCardHead{padding:10px;gap:8px}
- .seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
+ .seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard,.managementWorkList .seriesContributionCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
 }
 
 .workReleasePicker{display:grid;gap:9px;margin-top:8px;max-height:48vh;overflow:auto;padding:2px}
@@ -11092,7 +11097,7 @@ function renderArchive(){
    </div>`:''}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
  }else if(archiveTab==='gallery'){
    box.innerHTML=items.length
-    ? items.slice().reverse().map(g=>{
+    ? `<div class="managementWorkList">${items.slice().reverse().map(g=>{
        const context=galleryCreationContext(g);
        const shoots=context.shoots;
        const inheritedModelIds=g.modelsMode==='custom'?(g.modelIds||[]):galleryInheritedModelIds(g);
@@ -11100,28 +11105,34 @@ function renderArchive(){
        const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
        const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const photos=galleryPhotoMedia(g);
-       return `<div class="archiveItem">
-        <b>${esc(workDisplayLabel(g))}</b>
-        <div class="small" style="margin-top:7px">Beitrag: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
-        ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
-        <div class="small" style="margin-top:7px">${shoots.length
+       const firstPhoto=photos[0]||null;
+       const preview=firstPhoto
+        ?`<div class="seriesContributionPreview" data-media-id="${esc(firstPhoto.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small">Lade Vorschau …</div></div>`
+        :'<div class="seriesContributionPreview"><div class="small">Noch kein Foto</div></div>';
+       return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
+        <div class="seriesContributionLabel">${esc(workDisplayLabel(g))}</div>
+        <div class="managementWorkDetails">
+        <div class="small">Beitrag: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
+        ${g.note?`<div class="small" style="white-space:pre-wrap">${esc(g.note)}</div>`:''}
+        <div class="small">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(shootingDisplayLabel(sh))).join(' · ')}`
           :'Shooting noch nicht bekannt'}</div>
-        ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
-        ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
-        ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
-        ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
-        ${photos.length?`<div class="small" style="margin-top:4px">Fotos: ${photos.length}</div><div class="galleryPhotoGrid">${photos.map(photo=>`<div class="mediaThumb" data-media-id="${esc(photo.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small" style="padding:8px">Lade …</div></div>`).join('')}</div>`:''}
-        <div class="itemActions">
-         <button type="button" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
-         <button type="button" class="deleteBtn" data-delete-archive="${esc(g.id)}">Löschen</button>
+        ${context.date?`<div class="small">Datum: ${esc(context.date)}</div>`:''}
+        ${context.location?`<div class="small">Ort: ${esc(context.location)}</div>`:''}
+        ${modelNames.length?`<div class="small">Models: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${photographers.length?`<div class="small">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        <div class="small">Fotos: ${photos.length}</div>
         </div>
-       </div>`;
-      }).join('')
+        <div class="itemActions">
+         <button type="button" class="publicationCompactAction" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
+         <button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(g.id)}">Löschen</button>
+        </div>
+       </div></div>`;
+      }).join('')}</div>`
     : '<div class="small" style="margin-top:10px">Noch keine passenden Galerien.</div>';
  }else if(archiveTab==='video'){
    box.innerHTML=items.length
-    ? items.slice().reverse().map(v=>{
+    ? `<div class="managementWorkList">${items.slice().reverse().map(v=>{
        const context=videoCreationContext(v);
        const shoots=context.shoots;
        const inheritedModelIds=v.modelsMode==='custom'?(v.modelIds||[]):videoInheritedModelIds(v);
@@ -11129,23 +11140,29 @@ function renderArchive(){
        const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
        const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const media=videoMedia(v);
-       return `<div class="archiveItem">
-        <b>${esc(workDisplayLabel(v))}</b>
-        <div class="small" style="margin-top:7px">Beitrag: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
-        <div class="small" style="margin-top:4px">${shoots.length
+       const firstVideo=media[0]||null;
+       const preview=firstVideo
+        ?`<div class="seriesContributionPreview" data-media-id="${esc(firstVideo.id)}"><div class="small">Lade Video …</div></div>`
+        :'<div class="seriesContributionPreview"><div class="small">Noch kein Video</div></div>';
+       return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
+        <div class="seriesContributionLabel">${esc(workDisplayLabel(v))}</div>
+        <div class="managementWorkDetails">
+        <div class="small">Beitrag: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
+        <div class="small">${shoots.length
           ?`Shooting: ${shoots.map(sh=>esc(shootingDisplayLabel(sh))).join(' · ')}`
           :'Shooting noch nicht bekannt'}</div>
-        ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
-        ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
-        ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
-        ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
-        ${media.length?`<div class="small" style="margin-top:4px">Videodatei: ${media.length}</div><div class="galleryPhotoGrid">${media.map(m=>`<div class="mediaThumb" data-media-id="${esc(m.id)}"><div class="small" style="padding:8px">Lade …</div></div>`).join('')}</div>`:''}
-        <div class="itemActions">
-         <button type="button" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
-         <button type="button" class="deleteBtn" data-delete-archive="${esc(v.id)}">Löschen</button>
+        ${context.date?`<div class="small">Datum: ${esc(context.date)}</div>`:''}
+        ${context.location?`<div class="small">Ort: ${esc(context.location)}</div>`:''}
+        ${modelNames.length?`<div class="small">Models: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${photographers.length?`<div class="small">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        <div class="small">Videodateien: ${media.length}</div>
         </div>
-       </div>`;
-      }).join('')
+        <div class="itemActions">
+         <button type="button" class="publicationCompactAction" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
+         <button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(v.id)}">Löschen</button>
+        </div>
+       </div></div>`;
+      }).join('')}</div>`
     : '<div class="small" style="margin-top:10px">Noch keine passenden Videos.</div>';
  }else if(archiveTab==='series'){
    const mid=managementSelectedModelId();
