@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-16
-Referenz-Commit: `57efda152d848c7e1ee4c82b086665cd156303cc`
+Referenz-Commit: `64c7d336e413417f24d4a20fb212fa99663e8866`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `57efda152d848c7e1ee4c82b086665cd156303cc`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `57efda152d848c7e1ee4c82b086665cd156303cc`
+- Aktuell berücksichtigter Code: `64c7d336e413417f24d4a20fb212fa99663e8866`
 - Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -63,15 +63,18 @@ Zielmodell Medien:
 
 Direkte Medien→Shooting-Zuordnung ist noch vorhanden und erst nach Abhängigkeitsprüfung zu entfernen. Visuelle Galerie-/Video-Zielkarten sind getestet.
 
-Aktueller Verwaltungs-Zwischenstand in Commit `57efda152d848c7e1ee4c82b086665cd156303cc`:
+Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `64c7d336e413417f24d4a20fb212fa99663e8866`:
 - `Galerien` und `Videos` sind unter dem gemeinsamen Haupttab `Medien` zusammengefasst;
 - der Bereich besitzt oben die feste Überschrift `Medien` mit Suche und passender Hinzufügen-Aktion;
 - darunter folgt wie bei Rubriken ein eigener auberginefarbener Auswahlkopf, über den zwischen `Galerien` und `Videos` gewechselt wird;
 - `Import` bleibt als eigenständiger Haupttab mit seinem bisherigen Workflow und den Foto-/Video-/PDF-Filtern erhalten;
 - Galerie- und Videokarten verwenden eine einzelne 2:3-Vorschau in der gemeinsamen sehr hellen Kartenfarbe;
 - die redundante sichtbare Kartenbezeichnung `Galerie` beziehungsweise `Video` rechts neben der Vorschau wurde entfernt;
+- rechts neben der Vorschau stehen nur die aus den zugeordneten Shootings abgeleitete Modelbezeichnung, die Medienanzahl sowie `Bearbeiten` und `Löschen`;
+- existiert pro Medientyp nur eine Galerie beziehungsweise ein Video derselben exakten Model-Kombination, bleibt die Bezeichnung ohne Nummer; ab zwei Einträgen derselben Kombination werden sichtbar `Nr. 1`, `Nr. 2`, ... ergänzt;
+- Beitrag, Shooting, Datum, Ort, Fotografen und Notiz bleiben gespeichert und über `Bearbeiten` erreichbar, werden auf der kompakten Karte aber nicht mehr angezeigt;
 - zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
-- die weitere inhaltliche und optische Verdichtung der Galerie-/Videokarten ist noch offen.
+- der gesamte aktuelle Galerie-/Video-Kartenfeinschliff ist auf dem Android-Gerät bestätigt.
 
 ## Beitrag (`release`)
 
@@ -227,7 +230,6 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Galerie-/Videokarten sind in der neuen Medienstruktur funktionsgeprüft, benötigen aber noch den vereinbarten weiteren visuellen Feinschliff.
 - `Bisher direkt zugeordnete Shootings` im Titelbereich verwendet noch das alte Kartenmuster.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
@@ -248,12 +250,12 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Die Galerie-/Videokarten innerhalb des bestätigten Medienbereichs weiter verfeinern.**
+**Die Shootingkarten auf die bestätigte gemeinsame Kartensprache übertragen.**
 
 Vorgehen:
-1. Nur Inhalt, Abstände und Gewichtung innerhalb der Galerie-/Videokarten weiter angleichen; die bestätigte Medien-/Import-Navigation unverändert lassen.
-2. Medienzugriff, Suche, Hinzufügen, Beziehungen und Schema unverändert lassen und Galerie/Video erneut auf dem Android-Gerät testen.
-3. Danach die Shootingkarten und den separaten Legacy-Shootingbereich unter Titeln kontrolliert auf dieselbe Kartensprache übertragen, ohne Legacy-Beziehungen zu migrieren oder zu löschen.
+1. Zuerst die Shootingkarten im Haupttab `Shootings` kontrolliert auf 2:3-Vorschau, helle Kartenfarbe und kompakte Aktionsbuttons angleichen.
+2. Shootingdaten, Auswahlfunktion, Beziehungen, Medienzugriff und Schema unverändert lassen und diesen Haupttab auf dem Android-Gerät testen.
+3. Danach den separaten Legacy-Shootingbereich unter Titeln mit derselben bestätigten Darstellung angleichen, ohne Legacy-Beziehungen zu migrieren oder zu löschen.
 4. Erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
 
-Print, Rubriken und Titelbeiträge bleiben die bestätigte Referenz. Die neue Medien-/Import-Hierarchie ist abgeschlossen; als Nächstes folgt ausschließlich der Feinschliff der Galerie-/Videokarten.
+Print, Rubriken, Titelbeiträge sowie Galerie-/Videokarten bleiben die bestätigte Referenz. Als Nächstes folgt ausschließlich der Feinschliff der Shootingkarten im Haupttab.
