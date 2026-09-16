@@ -1591,6 +1591,14 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   border-radius:12px;
   overflow:hidden;
 }
+[data-collapse-key="career-archive"] .managementShootingsList .shootingCover>.small{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  padding:12px;
+  text-align:center;
+}
 [data-collapse-key="career-archive"] .managementShootingsList .shootingBody{
   grid-column:2;
   grid-row:1;
@@ -1610,6 +1618,11 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   margin-top:8px;
   font-size:12px;
   color:var(--muted);
+}
+[data-collapse-key="career-archive"] .managementShootingsList .managementShootingModels{
+  margin-top:5px;
+  font-size:14px;
+  line-height:1.3;
 }
 [data-collapse-key="career-archive"] .managementShootingsList .seriesCardActions{
   grid-column:2;
@@ -9033,6 +9046,14 @@ function shootingDisplayLabel(sh){
  const models=shootingModelNames(sh);
  return `${models.join(' + ')||'Ohne Model'} • Shooting • Nr. ${shootingNumber(sh)}`;
 }
+function managementShootingDisplayParts(sh){
+ const ids=shootingModelIds(sh);
+ const key=shootingModelKey(ids);
+ const models=shootingModelNames(sh).join(' + ')||'Model noch nicht bekannt';
+ const peers=key?(state.archive||[]).filter(x=>x&&x.type==='shoot'&&shootingModelKey(shootingModelIds(x))===key):[];
+ const title=peers.length<2?'Shooting':`Shooting • Nr. ${shootingNumber(sh)}`;
+ return {title,models};
+}
 function shootingBelongsToModel(sh,id){return sh.type==='shoot'&&shootingModelIds(sh).includes(id)}
 function modelSelector(selected=[],edit=false){
  const cls=edit?'editShootModelCheck':'shootModelCheck';
@@ -11220,18 +11241,20 @@ function renderArchive(){
     ? `<div class="shootingGridStandalone managementShootingsList">${items.slice().reverse().map(sh=>{
         const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
         const parts=shootingPreviewParts(sh);
+        const display=managementShootingDisplayParts(sh);
         return `<div class="shootingCardStandalone ${shootWorkSelected.has(sh.id)?'selected':''}">
          <div class="shootingCover" data-open-shooting-standalone="${sh.id}" ${cover?`data-shooting-cover="${cover.id}"`:''}>
           ${shootingCoverContent(sh)}<button type="button" class="shootingSelectBtn" data-shoot-work-select="${sh.id}" aria-label="${shootWorkSelected.has(sh.id)?'Aus Auswahl entfernen':'Shooting auswählen'}">${shootWorkSelected.has(sh.id)?'✓':'○'}</button>
          </div>
          <div class="shootingBody" data-open-shooting-standalone="${sh.id}">
-          <b>${esc(shootingDisplayLabel(sh))}</b>
+          <b>${esc(display.title)}</b>
+          <div class="managementShootingModels">${esc(display.models)}</div>
           <div class="managementShootingMediaCount">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</div>
          </div>
          <div class="seriesCardActions">
           ${archivePinHtml(sh.id)}
-          <button type="button" data-edit-archive="${sh.id}">Bearbeiten</button>
-          <button type="button" class="deleteBtn" data-delete-archive="${sh.id}">Löschen</button>
+          <button type="button" class="publicationCompactAction" data-edit-archive="${sh.id}">Bearbeiten</button>
+          <button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${sh.id}">Löschen</button>
          </div>
         </div>`;
       }).join('')}</div>`
