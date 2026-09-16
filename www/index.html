@@ -1568,27 +1568,32 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 [data-collapse-key="career-archive"] .managementShootingsList .shootingCardStandalone{
   display:grid!important;
   grid-template-columns:minmax(118px,36%) minmax(0,1fr)!important;
-  grid-template-rows:1fr auto!important;
+  grid-template-rows:auto auto!important;
+  gap:12px;
   align-items:stretch;
-  border:1px solid var(--line);
+  border:1px solid #e6dce8;
   border-radius:14px;
-  overflow:hidden;
-  background:#fff;
-  min-height:178px;
+  overflow:visible;
+  background:#f8f3f8;
+  min-height:168px;
+  padding:10px;
 }
 [data-collapse-key="career-archive"] .managementShootingsList .shootingCover{
   grid-column:1;
   grid-row:1 / span 2;
   width:100%;
-  height:100%!important;
-  min-height:178px!important;
-  aspect-ratio:auto!important;
-  border-right:1px solid var(--line);
+  height:auto!important;
+  min-height:0!important;
+  aspect-ratio:2/3!important;
+  align-self:start;
+  border:0;
+  border-radius:12px;
+  overflow:hidden;
 }
 [data-collapse-key="career-archive"] .managementShootingsList .shootingBody{
   grid-column:2;
   grid-row:1;
-  padding:12px!important;
+  padding:2px 2px 2px 0!important;
   display:flex;
   flex-direction:column;
   justify-content:center;
@@ -1602,16 +1607,30 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 [data-collapse-key="career-archive"] .managementShootingsList .seriesCardActions{
   grid-column:2;
   grid-row:2;
-  width:100%!important;
+  display:flex;
+  justify-content:center;
+  gap:7px;
+  width:auto!important;
   margin:0!important;
-  border-top:1px solid var(--line);
+  border:0;
+  align-self:start;
+}
+[data-collapse-key="career-archive"] .managementShootingsList .seriesCardActions button{
+  flex:0 0 auto!important;
+  width:auto!important;
+  border:1px solid var(--line)!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+  padding:7px 10px!important;
 }
 @media(max-width:460px){
   [data-collapse-key="career-archive"] .managementShootingsList .shootingCardStandalone{
-    grid-template-columns:minmax(112px,38%) minmax(0,1fr)!important;
+    grid-template-columns:minmax(104px,38%) minmax(0,1fr)!important;
+    gap:10px;
   }
   [data-collapse-key="career-archive"] .managementShootingsList .shootingBody{
-    padding:10px!important;
+    padding:2px 2px 2px 0!important;
   }
 }
 
