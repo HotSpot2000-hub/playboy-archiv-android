@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-16
-Referenz-Commit: `db76e26997e7f98c01ed545146a7ebab8abef727`
+Referenz-Commit: `8e627b13187d9f317634b2b7e6178883496f7ce0`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,8 +18,8 @@ Referenz-Commit: `db76e26997e7f98c01ed545146a7ebab8abef727`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `db76e26997e7f98c01ed545146a7ebab8abef727`
-- Titel-Feinschliff in diesem Stand nur teilweise gerätetest-bestätigt; bestätigte und offene Teile sind unten getrennt dokumentiert.
+- Aktuell berücksichtigter Code: `8e627b13187d9f317634b2b7e6178883496f7ce0`
+- Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
@@ -96,20 +96,22 @@ Aktuell bestätigte Rubrik-Darstellung:
 
 Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
-## Titel -- Etappe 5a funktional stabil, visueller Feinschliff begonnen
+## Titel -- Etappe 5a funktional stabil, Beitragskarten gerätetest-bestätigt
 
 Hierarchie: **Titel → Beitrag → Galerie/Video**.
 
 Vorhandene Titel-Tabs bleiben fachlich bestätigt: erste Ebene z. B. `Coed`, `Cyber Girl`, `Playmate`, `SE Model`; zweite Ebene z. B. `of the Week`, `of the Month`, `of the Year`.
 
-Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge zeigen Modelableitung aus Galerie/Video → Shooting, individuellen Namen/Nummer sowie Galerie-/Video-Zugriff. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
+Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge zeigen Modelableitung aus Galerie/Video → Shooting, individuellen Namen/Nummer sowie die Medienanzahl. Direkte Galerie-/Video-Sprungbuttons werden wie bei Rubriken nicht angezeigt. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
 
 Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen bleiben unter `Bisher direkt zugeordnete Shootings` sichtbar und werden nicht automatisch migriert.
 
-Aktueller visueller Zwischenstand in Commit `db76e26997e7f98c01ed545146a7ebab8abef727`:
+Aktueller visueller Stand in Commit `8e627b13187d9f317634b2b7e6178883496f7ce0`:
 - der kompakte auberginefarbene Titelkopf mit mittiger Titel-/Zeitraumdarstellung sowie `Bearbeiten` und quadratischem `×` ist gerätetest-bestätigt;
 - `＋ Beitrag hinzufügen` entspricht nun optisch dem bestätigten Rubriken-Button und ist gerätetest-bestätigt;
-- eine echte Titel-Beitragskarte war im abschließenden Gerätetest nicht sichtbar, weil dem getesteten Titel noch kein Beitrag zugeordnet war; ihre neue Darstellung und ihre Galerie-/Video-Zugriffe sind deshalb noch nicht bestätigt;
+- die echte Titel-Beitragskarte entspricht optisch der bestätigten Rubrik-Beitragskarte und ist auf dem Android-Gerät bestätigt;
+- Medienvorschau und Medienanzahl bleiben sichtbar; die überflüssigen direkten Galerie-/Video-Sprungbuttons wurden wie bei Rubriken entfernt, ohne Beziehungen oder Medien zu verändern;
+- `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen;
 - der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet weiterhin das alte Shooting-Kartenmuster und muss später kontrolliert an die gemeinsame Designsprache angepasst werden;
 - Titel-Fachlogik, Beziehungen und Schema wurden nicht verändert.
 
@@ -200,7 +202,7 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
 - Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
-- Titel ist funktional stabil. Titelkopf und `＋ Beitrag hinzufügen` sind visuell angeglichen und gerätetest-bestätigt; Beitragskarten und Legacy-Shootings sind noch offen.
+- Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen` und echte Beitragskarten sind visuell angeglichen und gerätetest-bestätigt; nur die Legacy-Shootings sind noch offen.
 
 ## Weitere stabile Funktionen
 
@@ -214,7 +216,6 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Titel-Beitragskarten sind im aktuellen Stand noch nicht gerätetest-bestätigt.
 - `Bisher direkt zugeordnete Shootings` im Titelbereich verwendet noch das alte Kartenmuster.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
@@ -235,13 +236,12 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Titel-Feinschliff später ab dem dokumentierten Zwischenstand fortsetzen.**
+**Den separaten Legacy-Shootingbereich unter Titeln kontrolliert angleichen.**
 
 Vorgehen:
-1. Für den nächsten Gerätetest einem Titel mindestens einen echten Beitrag mit Galerie/Video zuordnen, damit die Titel-Beitragskarte sichtbar ist.
-2. Diese Titel-Beitragskarte kontrolliert mit der bestätigten Rubrik-Beitragskarte vergleichen und verbleibende Abweichungen korrigieren; Galerie-/Video-Zugriffe erhalten.
-3. Danach den Bereich `Bisher direkt zugeordnete Shootings` separat auf die gemeinsame Karten- und Buttonsprache übertragen, ohne Legacy-Beziehungen zu migrieren oder zu löschen.
-4. Titel-Fachlogik, Titelhierarchien, Beziehungen und Schema unverändert lassen und den gesamten Titelbereich erneut auf dem Android-Gerät testen.
-5. Erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
+1. Den Bereich `Bisher direkt zugeordnete Shootings` separat auf die gemeinsame Karten- und Buttonsprache übertragen.
+2. Legacy-Beziehungen dabei weder migrieren noch löschen; Titel-Fachlogik, Titelhierarchien, Beziehungen und Schema unverändert lassen.
+3. Den Legacy-Bereich anschließend auf dem Android-Gerät testen.
+4. Erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
 
-Print und Rubriken bleiben die bestätigte Referenz. Beim Titel sind Kopf und Hinzufügen-Button abgeschlossen; Karten und Legacy-Bereich bleiben der nächste visuelle Arbeitsblock.
+Print und Rubriken bleiben die bestätigte Referenz. Beim Titel sind Kopf, Hinzufügen-Button und echte Beitragskarten abgeschlossen; nur der Legacy-Bereich bleibt als nächster visueller Arbeitsblock.
