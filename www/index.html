@@ -1565,6 +1565,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   gap:10px;
   margin-top:10px;
 }
+[data-collapse-key="career-archive"] .managementShootingBrowseCard .managementShootingsList{margin-top:0}
 [data-collapse-key="career-archive"] .managementShootingsList .shootingCardStandalone{
   display:grid!important;
   grid-template-columns:minmax(118px,36%) minmax(0,1fr)!important;
@@ -1598,11 +1599,17 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   flex-direction:column;
   justify-content:center;
   min-width:0;
+  text-align:center;
 }
 [data-collapse-key="career-archive"] .managementShootingsList .shootingBody b{
   font-size:14px;
   line-height:1.25;
   margin-bottom:5px;
+}
+[data-collapse-key="career-archive"] .managementShootingsList .managementShootingMediaCount{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
 }
 [data-collapse-key="career-archive"] .managementShootingsList .seriesCardActions{
   grid-column:2;
@@ -10901,6 +10908,9 @@ function managementMediaBrowseHtml(kind,content){
  const current=kind==='video'?'Videos':'Galerien';
  return `<div class="seriesBrowseCard managementMediaBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▧</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementMediaTitleButton" aria-expanded="false">${current} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementMediaPicker"><button type="button" class="${kind==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${kind==='video'?'active':''}" data-management-media-tab="video">Videos</button></div></div><div class="seriesBrowseCardBody">${content}</div></div>`;
 }
+function managementShootingBrowseHtml(content){
+ return `<div class="seriesBrowseCard managementShootingBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">◉</span><div class="seriesBrowseTitle">Shootings</div></div><div class="seriesBrowseCardBody">${content}</div></div>`;
+}
 function renderManagementContextTools(){
  const host=document.getElementById('managementContextTools');if(!host)return;
  const cfg=managementContextConfig();
@@ -11206,23 +11216,17 @@ function renderArchive(){
     box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" class="publicationCompactAction" data-edit-management-series="${esc(selectedSeries.id)}">Bearbeiten</button><button type="button" class="titleDeleteX publicationCompactAction" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-series-contribution="${esc(selectedSeries.id)}">＋ Beitrag hinzufügen</button></div>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
    }
  }else if(archiveTab==='shoot'){
-   box.innerHTML=items.length
+   box.innerHTML=managementShootingBrowseHtml(items.length
     ? `<div class="shootingGridStandalone managementShootingsList">${items.slice().reverse().map(sh=>{
         const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
-        const assignedSeries=linkedObjects(sh.id,'series');
-        const seriesStatus=assignedSeries.length
-          ? `<div class="creditRow shootingSeriesChips relationshipRow"><span class="creditChip relationshipGroup" title="Rubrik"><span class="relationshipIcon">▣</span><span class="relationshipNames">${assignedSeries.map(s=>`<button type="button" class="relationshipName relationshipLink" data-open-related-series="${esc(s.id)}">${esc(s.title||'Ohne Titel')}</button>`).join('')}</span></span></div>`
-          : '<div class="small shootingSeriesStatus">Noch keiner Rubrik zugeordnet</div>';
-        const assignedTitles=(sh.links||[]).map(id=>(state.archive||[]).find(a=>a.id===id&&a.type==='title')).filter(Boolean);
-        const titleStatus=assignedTitles.length?`<div class="shootingTitleBlock"><div class="shootingTitleTrophy" aria-hidden="true">🏆</div><div class="shootingTitleList">${assignedTitles.map(t=>`<div class="shootingTitleItem"><span class="shootingTitleName">${esc(t.title||'Titel')}</span>${t.titlePeriod||t.titleYear?`<span class="shootingTitleWhen">${esc(modelTitleWhen(t))}</span>`:''}</div>`).join('')}</div></div>`:'';
+        const parts=shootingPreviewParts(sh);
         return `<div class="shootingCardStandalone ${shootWorkSelected.has(sh.id)?'selected':''}">
          <div class="shootingCover" data-open-shooting-standalone="${sh.id}" ${cover?`data-shooting-cover="${cover.id}"`:''}>
           ${shootingCoverContent(sh)}<button type="button" class="shootingSelectBtn" data-shoot-work-select="${sh.id}" aria-label="${shootWorkSelected.has(sh.id)?'Aus Auswahl entfernen':'Shooting auswählen'}">${shootWorkSelected.has(sh.id)?'✓':'○'}</button>
          </div>
          <div class="shootingBody" data-open-shooting-standalone="${sh.id}">
           <b>${esc(shootingDisplayLabel(sh))}</b>
-          ${shootingMediaSummary(sh)}
-          ${seriesStatus}${titleStatus}${modelChips(shootingModelIds(sh))}${renderShootingPhotographers(sh.credits||[])}
+          <div class="managementShootingMediaCount">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</div>
          </div>
          <div class="seriesCardActions">
           ${archivePinHtml(sh.id)}
@@ -11231,7 +11235,7 @@ function renderArchive(){
          </div>
         </div>`;
       }).join('')}</div>`
-    : '<div class="small" style="margin-top:10px">Noch keine passenden Shootings.</div>';
+    : '<div class="small">Noch keine passenden Shootings.</div>');
  }else if(archiveTab==='title'){
    const classNames={coed:'Coed','special-edition':'SE Model',playmate:'Playmate','cyber-girl':'Cyber Girl'};
    const classOrder=['coed','cyber-girl','playmate','special-edition'];
