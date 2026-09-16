@@ -1095,23 +1095,6 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  .mediaWorkShootPanel .shootPanelActions .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}
 }
 
-/* v168 mobile shooting multi-select */
-.shootingSelectBtn,.shootSelectionFab{display:none}
-@media(max-width:700px){
- .shootingCardStandalone{position:relative}
- .shootingSelectBtn{display:grid;position:absolute;right:8px;bottom:8px;z-index:4;width:40px;height:40px;border:1px solid rgba(0,0,0,.16);border-radius:50%;background:rgba(255,255,255,.94);font-size:18px;place-items:center;-webkit-tap-highlight-color:transparent}
- .shootingCardStandalone.selected{box-shadow:0 0 0 2px #171717 inset;background:#fafaf8}
- .shootingCardStandalone.selected .shootingSelectBtn{background:#171717;color:#fff;border-color:#171717}
- .shootSelectionFab.visible{display:block;position:fixed;right:14px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:64;border:0;border-radius:999px;background:#171717;color:#fff;padding:11px 14px;min-height:44px;font:inherit;font-size:13px;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.22)}
- .shootSelectionMenu{display:none}
- .shootSelectionMenu.mobileOpen{display:grid;position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:65;grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}
- .shootSelectionMenu button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:11px;line-height:1.2;padding:9px 10px}
- .shootSelectionMenu .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}
- .shootSeriesPanel{display:none}
- .shootSeriesPanel.mobileOpen{display:block;position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:66;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}
- .shootSeriesPanel label{margin-top:0}.shootSeriesPanel select{width:100%}.shootSeriesActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.shootSeriesActions button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:11px}.shootSeriesActions .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}.shootTitlePanel{display:none}.shootTitlePanel.mobileOpen{display:block;position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:67;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}.shootTitlePanel label{margin-top:0}.shootTitlePanel select{width:100%}.shootTitleFilterRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.shootTitleActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.shootTitleActions button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:11px}.shootTitleActions .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}
-}
-
 /* v169 mobile series multi-select */
 .seriesSelectBtn,.seriesSelectionFab{display:none}
 @media(max-width:700px){
@@ -2443,10 +2426,6 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <button type="button" id="inboxSelectionFab" class="inboxSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <button type="button" id="mediaWorkSelectionFab" class="mediaWorkSelectionFab" aria-expanded="false">Auswahl (0)</button>
-<button type="button" id="shootSelectionFab" class="shootSelectionFab" aria-expanded="false">Auswahl (0)</button>
-<div id="shootSelectionMenu" class="shootSelectionMenu"><button type="button" id="shootAssignSeriesBtn" class="primaryAction">Rubrik zuordnen</button><button type="button" id="shootAssignTitleBtn">Titel zuordnen</button><button type="button" id="shootSelectAllBtn">Alle auswählen</button><button type="button" id="shootClearBtn">Auswahl aufheben</button></div>
-<div id="shootSeriesPanel" class="shootSeriesPanel"><label for="shootSeriesSelect">Ausgewählte Shootings einer Rubrik zuordnen</label><select id="shootSeriesSelect"></select><div class="shootSeriesActions"><button type="button" id="shootSeriesCancel">Abbrechen</button><button type="button" id="shootSeriesConfirm" class="primaryAction">Zuordnen</button></div></div>
-<div id="shootTitlePanel" class="shootTitlePanel"><label>Ausgewählte Shootings einem Titel zuordnen</label><div class="shootTitleFilterRow"><select id="shootTitleClassFilter" aria-label="Titelklasse"></select><select id="shootTitleLevelFilter" aria-label="Titelstufe"></select></div><select id="shootTitleSelect"></select><div class="shootTitleActions"><button type="button" id="shootTitleCancel">Abbrechen</button><button type="button" id="shootTitleConfirm" class="primaryAction">Zuordnen</button></div></div>
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
 <div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
@@ -10475,7 +10454,6 @@ let globalSeriesBrowseId='';
 let titleBrowseClass='';let titleBrowseLevel='';
 let mediaWorkTab='new';let archiveMediaTypeFilter='Alle';
 const mediaWorkSelected=new Set();
-const shootWorkSelected=new Set();
 const seriesWorkSelected=new Set();
 
 function seriesBelongsToModel(series,modelId){
@@ -11242,9 +11220,9 @@ function renderArchive(){
         const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
         const parts=shootingPreviewParts(sh);
         const display=managementShootingDisplayParts(sh);
-        return `<div class="shootingCardStandalone ${shootWorkSelected.has(sh.id)?'selected':''}">
+        return `<div class="shootingCardStandalone">
          <div class="shootingCover" data-open-shooting-standalone="${sh.id}" ${cover?`data-shooting-cover="${cover.id}"`:''}>
-          ${shootingCoverContent(sh)}<button type="button" class="shootingSelectBtn" data-shoot-work-select="${sh.id}" aria-label="${shootWorkSelected.has(sh.id)?'Aus Auswahl entfernen':'Shooting auswählen'}">${shootWorkSelected.has(sh.id)?'✓':'○'}</button>
+          ${shootingCoverContent(sh)}
          </div>
          <div class="shootingBody" data-open-shooting-standalone="${sh.id}">
           <b>${esc(display.title)}</b>
@@ -11362,9 +11340,6 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  box.querySelectorAll('[data-open-shooting-standalone]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openShootingStandalone,null));
  box.querySelectorAll('[data-open-release-work]').forEach(x=>x.onclick=e=>{e.stopPropagation();const work=(state.archive||[]).find(a=>a.id===x.dataset.openReleaseWork&&(a.type==='gallery'||a.type==='video'));if(!work)return;archiveTab=work.type;managementSearch='';managementSearchOpen=false;renderArchive();setTimeout(()=>{const btn=[...document.querySelectorAll('[data-edit-archive]')].find(b=>b.dataset.editArchive===work.id);btn?.closest('.archiveItem')?.scrollIntoView({behavior:'smooth',block:'center'})},0)});
  box.querySelectorAll('[data-release-video-quick]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingVideoQuick(x.dataset.releaseVideoQuick)});
- box.querySelectorAll('[data-shoot-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.shootWorkSelect;if(shootWorkSelected.has(id))shootWorkSelected.delete(id);else shootWorkSelected.add(id);renderArchive()});
- const swFab=document.getElementById('shootSelectionFab'),swMenu=document.getElementById('shootSelectionMenu');
- if(swFab){swFab.classList.toggle('visible',archiveTab==='shoot'&&shootWorkSelected.size>0);swFab.textContent=`Auswahl (${shootWorkSelected.size})`;if(!shootWorkSelected.size){swFab.setAttribute('aria-expanded','false');swMenu&&swMenu.classList.remove('mobileOpen')}}
  box.querySelectorAll('[data-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.editArchive)});
  box.querySelectorAll('[data-media-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.mediaWorkSelect;if(mediaWorkSelected.has(id))mediaWorkSelected.delete(id);else mediaWorkSelected.add(id);renderArchive()});
  const mwFab=document.getElementById('mediaWorkSelectionFab'),mwMenu=document.getElementById('mediaWorkSelectionMenu'),mwMove=document.getElementById('mediaWorkMoveBtn');
@@ -11402,69 +11377,6 @@ document.getElementById('seriesPublicationConfirm').onclick=()=>{
  const pubId=document.getElementById('seriesPublicationSelect').value;const pub=(state.archive||[]).find(a=>a.id===pubId&&a.type==='publication');if(!pub||!seriesWorkSelected.size)return;let changed=0;
  pub.links=pub.links||[];seriesWorkSelected.forEach(id=>{const sr=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!sr)return;sr.links=sr.links||[];if(!sr.links.includes(pubId))sr.links.push(pubId);if(!pub.links.includes(id))pub.links.push(id);changed++});
  if(!save())return;seriesWorkSelected.clear();document.getElementById('seriesPublicationPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Rubrik der Publikation zugeordnet.':`${changed} Rubriken der Publikation zugeordnet.`);
-};
-document.getElementById('shootSelectionFab').onclick=()=>{const menu=document.getElementById('shootSelectionMenu');menu.classList.toggle('mobileOpen');document.getElementById('shootSelectionFab').setAttribute('aria-expanded',menu.classList.contains('mobileOpen')?'true':'false')};
-document.getElementById('shootSelectAllBtn').onclick=()=>{modelArchive('shoot').forEach(sh=>shootWorkSelected.add(sh.id));renderArchive()};
-document.getElementById('shootClearBtn').onclick=()=>{shootWorkSelected.clear();document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');renderArchive()};
-document.getElementById('shootAssignSeriesBtn').onclick=()=>{
- if(!shootWorkSelected.size)return;
- // A management model filter limits the shootings being worked on, not the possible target series.
- const series=(state.archive||[]).filter(a=>a.type==='series').slice().sort((a,b)=>(a.title||'').localeCompare(b.title||''));
- if(!series.length){toast('Bitte zuerst eine Rubrik anlegen.');return}
- document.getElementById('shootSeriesSelect').innerHTML=series.map(x=>`<option value="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</option>`).join('');
- document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');document.getElementById('shootSeriesPanel').classList.add('mobileOpen');
-};
-document.getElementById('shootSeriesCancel').onclick=()=>document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');
-document.getElementById('shootSeriesConfirm').onclick=()=>{
- const seriesId=document.getElementById('shootSeriesSelect').value;const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');if(!series||!shootWorkSelected.size)return;let changed=0;
- series.links=series.links||[];shootWorkSelected.forEach(id=>{const sh=(state.archive||[]).find(a=>a.id===id&&a.type==='shoot');if(!sh)return;sh.links=sh.links||[];if(!sh.links.includes(seriesId))sh.links.push(seriesId);if(!series.links.includes(id))series.links.push(id);changed++});
- if(!save())return;shootWorkSelected.clear();document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Shooting der Rubrik zugeordnet.':`${changed} Shootings der Rubrik zugeordnet.`);
-};
-document.getElementById('shootAssignTitleBtn').onclick=()=>{
- if(!shootWorkSelected.size)return;
- const selectedShoots=(state.archive||[]).filter(a=>a.type==='shoot'&&shootWorkSelected.has(a.id));
- if(!selectedShoots.length)return;
- const titleClassNames={coed:'Coed','cyber-girl':'Cyber Girl',playmate:'Playmate','special-edition':'SE Model'};
- const titleLevelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
- const classOrder=['coed','cyber-girl','playmate','special-edition'],levelOrder=['week','month','year'];
- const titles=(state.archive||[]).filter(t=>t.type==='title').slice();
- if(!titles.length){toast('Bitte zuerst einen Titel anlegen.');return}
- const classFilter=document.getElementById('shootTitleClassFilter'),levelFilter=document.getElementById('shootTitleLevelFilter'),titleSelect=document.getElementById('shootTitleSelect');
- const classes=classOrder.filter(c=>titles.some(t=>t.titleClass===c));
- classFilter.innerHTML=classes.map(c=>`<option value="${esc(c)}">${esc(titleClassNames[c]||c)}</option>`).join('');
- const refreshLevels=()=>{
-  const cls=classFilter.value;
-  const levels=levelOrder.filter(l=>titles.some(t=>t.titleClass===cls&&t.titleLevel===l));
-  const previous=levelFilter.value;
-  levelFilter.innerHTML=levels.map(l=>`<option value="${esc(l)}">${esc(titleLevelNames[l]||l)}</option>`).join('');
-  if(levels.includes(previous))levelFilter.value=previous;
-  refreshTitles();
- };
- const refreshTitles=()=>{
-  const visible=titles.filter(t=>t.titleClass===classFilter.value&&t.titleLevel===levelFilter.value).sort(sortTitlesChronological);
-  titleSelect.innerHTML=visible.map(t=>{const exact=/^\d{4}-\d{2}-\d{2}$/.test(t.titlePeriod||'')?t.titlePeriod.split('-').reverse().join('.'):'';const monthWeek=t.titleLevel==='week'&&exact?monthWeekLabel(t.titlePeriod).replace(/ /g,'\u00A0'):'';const iso=t.titleLevel==='week'&&exact?isoWeekLabel(t.titlePeriod).replace(/ /g,'\u00A0'):'';const when=[monthWeek,exact,iso].filter(Boolean).join(' · ')||modelTitleWhen(t);return `<option value="${esc(t.id)}">${esc(when)}</option>`}).join(''); 
- };
- classFilter.onchange=refreshLevels;levelFilter.onchange=refreshTitles;
- refreshLevels();
- document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');
- document.getElementById('shootTitlePanel').classList.add('mobileOpen');
-};
-document.getElementById('shootTitleCancel').onclick=()=>document.getElementById('shootTitlePanel').classList.remove('mobileOpen');
-document.getElementById('shootTitleConfirm').onclick=()=>{
- const titleId=document.getElementById('shootTitleSelect').value;
- const title=(state.archive||[]).find(a=>a.id===titleId&&a.type==='title');
- if(!title||!shootWorkSelected.size)return;
- const selectedShoots=(state.archive||[]).filter(a=>a.type==='shoot'&&shootWorkSelected.has(a.id));
- let changed=0;
- selectedShoots.forEach(sh=>{
-   sh.links=sh.links||[];
-   if(!sh.links.includes(titleId)){sh.links.push(titleId);changed++}
- });
- if(!save())return;
- shootWorkSelected.clear();
- document.getElementById('shootTitlePanel').classList.remove('mobileOpen');
- renderArchive();
- toast(changed===1?'Shooting dem Titel zugeordnet.':`${changed} Shootings dem Titel zugeordnet.`);
 };
 document.getElementById('mediaWorkSelectionFab').onclick=()=>{const menu=document.getElementById('mediaWorkSelectionMenu');menu.classList.toggle('mobileOpen');document.getElementById('mediaWorkSelectionFab').setAttribute('aria-expanded',menu.classList.contains('mobileOpen')?'true':'false')};
 document.getElementById('mediaWorkSelectAllBtn').onclick=()=>{const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&x.type==='shoot';})?'assigned':'new';const seen=new Set();modelArchive('media').filter(a=>{const k=a.fingerprint||`${a.fileName||''}|${a.size||''}|${a.mimeType||''}|${(a.links||[]).slice().sort().join(',')}`;if(seen.has(k))return false;seen.add(k);return statusOf(a)===mediaWorkTab}).forEach(a=>mediaWorkSelected.add(a.id));renderArchive()};
@@ -12570,9 +12482,7 @@ async function hydrateShootingCovers(root=document){
    const blob=await getMedia(preferredId);
    if(blob&&blob.type&&blob.type.startsWith('image/')){
     const url=URL.createObjectURL(blob);
-    const selectBtn=node.querySelector('.shootingSelectBtn');
     node.innerHTML=`<img src="${url}" alt="Shooting-Vorschau">`;
-    if(selectBtn)node.appendChild(selectBtn);
    }else node.innerHTML='<div class="small">Kein Vorschaubild</div>';
   }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
  }
