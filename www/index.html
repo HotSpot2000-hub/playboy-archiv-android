@@ -1317,10 +1317,6 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .managementWorkList .seriesContributionCard{margin-top:0}
 .managementWorkList .seriesContributionPreview{align-self:start}
 .managementWorkList .managementWorkDetails{display:grid;gap:4px}
-.managementMediaHeading{position:relative;min-width:0}
-.managementMediaTitleButton{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;padding:0;font:inherit;font-size:inherit;font-weight:inherit;color:inherit;text-align:left;cursor:pointer}
-.managementMediaTitleButton .chev{font-size:12px;color:var(--muted)}
-.managementMediaPicker{left:0!important;right:auto!important;top:calc(100% + 6px)!important;min-width:170px}
 .publicationManageCard.seriesBrowseCard{margin-top:0}
 @media(max-width:430px){
  .seriesBrowseCardHead{padding:10px;gap:8px}
@@ -10880,15 +10876,17 @@ function managementContextConfig(){
   media:{title:'Import',add:'＋ Medien',placeholder:'Dateiname, Model oder Verknüpfung suchen …'}
  }[archiveTab]||null;
 }
+function managementMediaBrowseHtml(kind,content){
+ const current=kind==='video'?'Videos':'Galerien';
+ return `<div class="seriesBrowseCard managementMediaBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▧</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementMediaTitleButton" aria-expanded="false">${current} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementMediaPicker"><button type="button" class="${kind==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${kind==='video'?'active':''}" data-management-media-tab="video">Videos</button></div></div><div class="seriesBrowseCardBody">${content}</div></div>`;
+}
 function renderManagementContextTools(){
  const host=document.getElementById('managementContextTools');if(!host)return;
  const cfg=managementContextConfig();
  if(!cfg){host.innerHTML='';return}
- const mediaGroup=archiveTab==='gallery'||archiveTab==='video';
- const mediaTitle=archiveTab==='gallery'?'Galerien':'Videos';
- const mediaPicker=mediaGroup?`<div class="managementMediaHeading"><h2><button type="button" class="managementMediaTitleButton" id="managementMediaTitleButton" aria-expanded="false">${mediaTitle} <span class="chev">▼</span></button></h2><div class="seriesBrowsePicker managementMediaPicker hidden" id="managementMediaPicker"><button type="button" class="${archiveTab==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${archiveTab==='video'?'active':''}" data-management-media-tab="video">Videos</button></div></div>`:`<div><h2>${esc(cfg.title)}</h2></div>`;
+ const contextTitle=archiveTab==='gallery'||archiveTab==='video'?'Medien':cfg.title;
  host.innerHTML=`<div class="globalModelsHeader managementContextHeader">
-  ${mediaPicker}
+  <div><h2>${esc(contextTitle)}</h2></div>
   <div class="seriesOverviewTools">
    <button class="btn" type="button" id="managementContextSearchBtn" aria-expanded="${managementSearchOpen?'true':'false'}">🔍 Suche</button>
    <button class="btn" type="button" id="managementContextAddBtn">${esc(cfg.add)}</button>
@@ -10904,10 +10902,6 @@ function renderManagementContextTools(){
  const input=document.getElementById('managementContextSearchInput');
  const close=document.getElementById('managementContextSearchClose');
  const add=document.getElementById('managementContextAddBtn');
- const mediaTitleButton=document.getElementById('managementMediaTitleButton');
- const mediaPickerBox=document.getElementById('managementMediaPicker');
- if(mediaTitleButton&&mediaPickerBox)mediaTitleButton.onclick=e=>{e.stopPropagation();const opening=mediaPickerBox.classList.contains('hidden');mediaPickerBox.classList.toggle('hidden');mediaTitleButton.setAttribute('aria-expanded',opening?'true':'false')};
- host.querySelectorAll('[data-management-media-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();archiveTab=x.dataset.managementMediaTab;managementSearch='';managementSearchOpen=false;renderArchive()});
  if(btn)btn.onclick=()=>{
    managementSearchOpen=!managementSearchOpen;
    if(!managementSearchOpen)managementSearch='';
@@ -11105,7 +11099,7 @@ function renderArchive(){
     }).join('')}</div>
    </div>`:''}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
  }else if(archiveTab==='gallery'){
-   box.innerHTML=items.length
+   box.innerHTML=managementMediaBrowseHtml('gallery',items.length
     ? `<div class="managementWorkList">${items.slice().reverse().map(g=>{
        const context=galleryCreationContext(g);
        const shoots=context.shoots;
@@ -11137,9 +11131,9 @@ function renderArchive(){
         </div>
        </div></div>`;
       }).join('')}</div>`
-    : '<div class="small" style="margin-top:10px">Noch keine passenden Galerien.</div>';
+    : '<div class="small">Noch keine passenden Galerien.</div>');
  }else if(archiveTab==='video'){
-   box.innerHTML=items.length
+   box.innerHTML=managementMediaBrowseHtml('video',items.length
     ? `<div class="managementWorkList">${items.slice().reverse().map(v=>{
        const context=videoCreationContext(v);
        const shoots=context.shoots;
@@ -11170,7 +11164,7 @@ function renderArchive(){
         </div>
        </div></div>`;
       }).join('')}</div>`
-    : '<div class="small" style="margin-top:10px">Noch keine passenden Videos.</div>';
+    : '<div class="small">Noch keine passenden Videos.</div>');
  }else if(archiveTab==='series'){
    const mid=managementSelectedModelId();
    const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
@@ -11285,6 +11279,9 @@ function renderArchive(){
    }).join('')}</div>`:`<div class="small" style="margin-top:10px">${emptyLabel}</div>`;
  }
  document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveGroup==='media'?(archiveTab==='gallery'||archiveTab==='video'):b.dataset.archiveTab===archiveTab));
+ const managementMediaTitleButton=box.querySelector('#managementMediaTitleButton'),managementMediaPicker=box.querySelector('#managementMediaPicker');
+ if(managementMediaTitleButton&&managementMediaPicker)managementMediaTitleButton.onclick=e=>{e.stopPropagation();const opening=managementMediaPicker.classList.contains('hidden');managementMediaPicker.classList.toggle('hidden');managementMediaTitleButton.setAttribute('aria-expanded',opening?'true':'false')};
+ box.querySelectorAll('[data-management-media-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();archiveTab=x.dataset.managementMediaTab;managementSearch='';managementSearchOpen=false;renderArchive()});
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
  box.querySelectorAll('[data-series-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.seriesWorkSelect;if(seriesWorkSelected.has(id))seriesWorkSelected.delete(id);else seriesWorkSelected.add(id);renderArchive()});
  const srFab=document.getElementById('seriesSelectionFab'),srMenu=document.getElementById('seriesSelectionMenu');
