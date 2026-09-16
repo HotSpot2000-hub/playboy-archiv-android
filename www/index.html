@@ -2261,7 +2261,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <section id="managementView" class="hidden">
 <div class="card collapseCard" data-collapse-key="career-archive">
- <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Print, Titel, Rubriken, Medien und Shootings verwalten.</div></div><span class="collapseIcon">⌄</span></button>
+ <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Print, Titel, Rubriken, Medien, Shootings und Import verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
@@ -2273,6 +2273,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <button data-archive-tab="series">Rubriken</button>
    <button data-archive-tab="gallery" data-archive-group="media">Medien</button>
    <button data-archive-tab="shoot">Shootings</button>
+   <button data-archive-tab="media">Import</button>
   </div>
   <div id="mediaWorkflowTabs" class="mediaWorkflowTabs hidden">
    <button type="button" class="active" data-media-work-tab="new">Neu / zu prüfen<span class="mediaWorkflowCount" data-media-work-count="new">0</span></button>
@@ -10883,9 +10884,9 @@ function renderManagementContextTools(){
  const host=document.getElementById('managementContextTools');if(!host)return;
  const cfg=managementContextConfig();
  if(!cfg){host.innerHTML='';return}
- const mediaGroup=['gallery','video','media'].includes(archiveTab);
- const mediaTitle=archiveTab==='gallery'?'Galerien':archiveTab==='video'?'Videos':'Import';
- const mediaPicker=mediaGroup?`<div class="managementMediaHeading"><h2><button type="button" class="managementMediaTitleButton" id="managementMediaTitleButton" aria-expanded="false">${mediaTitle} <span class="chev">▼</span></button></h2><div class="seriesBrowsePicker managementMediaPicker hidden" id="managementMediaPicker"><button type="button" class="${archiveTab==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${archiveTab==='video'?'active':''}" data-management-media-tab="video">Videos</button><button type="button" class="${archiveTab==='media'?'active':''}" data-management-media-tab="media">Import</button></div></div>`:`<div><h2>${esc(cfg.title)}</h2></div>`;
+ const mediaGroup=archiveTab==='gallery'||archiveTab==='video';
+ const mediaTitle=archiveTab==='gallery'?'Galerien':'Videos';
+ const mediaPicker=mediaGroup?`<div class="managementMediaHeading"><h2><button type="button" class="managementMediaTitleButton" id="managementMediaTitleButton" aria-expanded="false">${mediaTitle} <span class="chev">▼</span></button></h2><div class="seriesBrowsePicker managementMediaPicker hidden" id="managementMediaPicker"><button type="button" class="${archiveTab==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${archiveTab==='video'?'active':''}" data-management-media-tab="video">Videos</button></div></div>`:`<div><h2>${esc(cfg.title)}</h2></div>`;
  host.innerHTML=`<div class="globalModelsHeader managementContextHeader">
   ${mediaPicker}
   <div class="seriesOverviewTools">
@@ -10906,7 +10907,7 @@ function renderManagementContextTools(){
  const mediaTitleButton=document.getElementById('managementMediaTitleButton');
  const mediaPickerBox=document.getElementById('managementMediaPicker');
  if(mediaTitleButton&&mediaPickerBox)mediaTitleButton.onclick=e=>{e.stopPropagation();const opening=mediaPickerBox.classList.contains('hidden');mediaPickerBox.classList.toggle('hidden');mediaTitleButton.setAttribute('aria-expanded',opening?'true':'false')};
- host.querySelectorAll('[data-management-media-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();archiveTab=x.dataset.managementMediaTab;managementSearch='';managementSearchOpen=false;if(archiveTab==='media')archiveMediaTypeFilter='Alle';renderArchive()});
+ host.querySelectorAll('[data-management-media-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();archiveTab=x.dataset.managementMediaTab;managementSearch='';managementSearchOpen=false;renderArchive()});
  if(btn)btn.onclick=()=>{
    managementSearchOpen=!managementSearchOpen;
    if(!managementSearchOpen)managementSearch='';
@@ -11283,7 +11284,7 @@ function renderArchive(){
      </div>`;
    }).join('')}</div>`:`<div class="small" style="margin-top:10px">${emptyLabel}</div>`;
  }
- document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveGroup==='media'?['gallery','video','media'].includes(archiveTab):b.dataset.archiveTab===archiveTab));
+ document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveGroup==='media'?(archiveTab==='gallery'||archiveTab==='video'):b.dataset.archiveTab===archiveTab));
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
  box.querySelectorAll('[data-series-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.seriesWorkSelect;if(seriesWorkSelected.has(id))seriesWorkSelected.delete(id);else seriesWorkSelected.add(id);renderArchive()});
  const srFab=document.getElementById('seriesSelectionFab'),srMenu=document.getElementById('seriesSelectionMenu');
