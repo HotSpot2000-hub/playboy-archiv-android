@@ -1317,6 +1317,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .managementWorkList .seriesContributionCard{margin-top:0}
 .managementWorkList .seriesContributionPreview{align-self:start}
 .managementWorkList .managementWorkDetails{display:grid;gap:4px}
+.managementWorkList .managementWorkName{font-size:14px;font-weight:700;line-height:1.3;text-align:center}
+.managementWorkList .managementWorkCount{margin-top:8px;font-size:12px;color:var(--muted);text-align:center}
 .publicationManageCard.seriesBrowseCard{margin-top:0}
 @media(max-width:430px){
  .seriesBrowseCardHead{padding:10px;gap:8px}
@@ -11101,12 +11103,6 @@ function renderArchive(){
  }else if(archiveTab==='gallery'){
    box.innerHTML=managementMediaBrowseHtml('gallery',items.length
     ? `<div class="managementWorkList">${items.slice().reverse().map(g=>{
-       const context=galleryCreationContext(g);
-       const shoots=context.shoots;
-       const inheritedModelIds=g.modelsMode==='custom'?(g.modelIds||[]):galleryInheritedModelIds(g);
-       const inheritedCreditIds=g.creditsMode==='custom'?(g.credits||[]):galleryInheritedCredits(g);
-       const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
-       const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const photos=galleryPhotoMedia(g);
        const firstPhoto=photos[0]||null;
        const preview=firstPhoto
@@ -11114,16 +11110,8 @@ function renderArchive(){
         :'<div class="seriesContributionPreview"><div class="small">Noch kein Foto</div></div>';
        return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
         <div class="managementWorkDetails">
-        <div class="small">Beitrag: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
-        ${g.note?`<div class="small" style="white-space:pre-wrap">${esc(g.note)}</div>`:''}
-        <div class="small">${shoots.length
-          ?`Shooting: ${shoots.map(sh=>esc(shootingDisplayLabel(sh))).join(' · ')}`
-          :'Shooting noch nicht bekannt'}</div>
-        ${context.date?`<div class="small">Datum: ${esc(context.date)}</div>`:''}
-        ${context.location?`<div class="small">Ort: ${esc(context.location)}</div>`:''}
-        ${modelNames.length?`<div class="small">Models: ${esc(modelNames.join(' + '))}</div>`:''}
-        ${photographers.length?`<div class="small">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
-        <div class="small">Fotos: ${photos.length}</div>
+        <div class="managementWorkName">${esc(managementWorkDisplayName(g))}</div>
+        <div class="managementWorkCount">${photos.length} ${photos.length===1?'Foto':'Fotos'}</div>
         </div>
         <div class="itemActions">
          <button type="button" class="publicationCompactAction" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
@@ -11135,12 +11123,6 @@ function renderArchive(){
  }else if(archiveTab==='video'){
    box.innerHTML=managementMediaBrowseHtml('video',items.length
     ? `<div class="managementWorkList">${items.slice().reverse().map(v=>{
-       const context=videoCreationContext(v);
-       const shoots=context.shoots;
-       const inheritedModelIds=v.modelsMode==='custom'?(v.modelIds||[]):videoInheritedModelIds(v);
-       const inheritedCreditIds=v.creditsMode==='custom'?(v.credits||[]):videoInheritedCredits(v);
-       const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
-       const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const media=videoMedia(v);
        const firstVideo=media[0]||null;
        const preview=firstVideo
@@ -11148,15 +11130,8 @@ function renderArchive(){
         :'<div class="seriesContributionPreview"><div class="small">Noch kein Video</div></div>';
        return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
         <div class="managementWorkDetails">
-        <div class="small">Beitrag: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
-        <div class="small">${shoots.length
-          ?`Shooting: ${shoots.map(sh=>esc(shootingDisplayLabel(sh))).join(' · ')}`
-          :'Shooting noch nicht bekannt'}</div>
-        ${context.date?`<div class="small">Datum: ${esc(context.date)}</div>`:''}
-        ${context.location?`<div class="small">Ort: ${esc(context.location)}</div>`:''}
-        ${modelNames.length?`<div class="small">Models: ${esc(modelNames.join(' + '))}</div>`:''}
-        ${photographers.length?`<div class="small">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
-        <div class="small">Videodateien: ${media.length}</div>
+        <div class="managementWorkName">${esc(managementWorkDisplayName(v))}</div>
+        <div class="managementWorkCount">${media.length} ${media.length===1?'Video':'Videos'}</div>
         </div>
         <div class="itemActions">
          <button type="button" class="publicationCompactAction" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
@@ -11837,6 +11812,22 @@ function workDisplayLabel(work){
  const stored=work.releaseNumberReleaseId===release.id?Number(work.releaseNumber)||0:0;
  const n=stored||peers.indexOf(work)+1;
  return `${work.type==='gallery'?'Galerie':'Video'} • Nr. ${n}`;
+}
+function managementWorkModelIds(work){
+ if(work?.type==='gallery')return work.modelsMode==='custom'?(work.modelIds||[]):galleryInheritedModelIds(work);
+ if(work?.type==='video')return work.modelsMode==='custom'?(work.modelIds||[]):videoInheritedModelIds(work);
+ return [];
+}
+function managementWorkDisplayName(work){
+ const ids=[...new Set(managementWorkModelIds(work).filter(Boolean))];
+ const names=ids.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const base=names.join(' + ')||'Model noch nicht bekannt';
+ const key=shootingModelKey(ids);
+ if(!key)return base;
+ const peers=(state.archive||[]).filter(x=>x&&x.type===work.type&&shootingModelKey(managementWorkModelIds(x))===key).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
+ if(peers.length<2)return base;
+ const index=peers.findIndex(x=>x.id===work.id);
+ return `${base} • Nr. ${index>=0?index+1:1}`;
 }
 function releaseSeriesContextLabel(release){
  const series=linkedObjects(release.id,'series')[0]||null;
