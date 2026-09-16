@@ -1316,8 +1316,11 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .managementWorkList{display:grid;gap:10px}
 .managementWorkList .seriesContributionCard{margin-top:0}
 .managementWorkList .seriesContributionPreview{align-self:start}
-.managementWorkList .seriesContributionLabel{margin-bottom:7px}
 .managementWorkList .managementWorkDetails{display:grid;gap:4px}
+.managementMediaHeading{position:relative;min-width:0}
+.managementMediaTitleButton{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;padding:0;font:inherit;font-size:inherit;font-weight:inherit;color:inherit;text-align:left;cursor:pointer}
+.managementMediaTitleButton .chev{font-size:12px;color:var(--muted)}
+.managementMediaPicker{left:0!important;right:auto!important;top:calc(100% + 6px)!important;min-width:170px}
 .publicationManageCard.seriesBrowseCard{margin-top:0}
 @media(max-width:430px){
  .seriesBrowseCardHead{padding:10px;gap:8px}
@@ -2258,7 +2261,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <section id="managementView" class="hidden">
 <div class="card collapseCard" data-collapse-key="career-archive">
- <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Titel, Rubriken, Galerien, Videos, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
+ <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Print, Titel, Rubriken, Medien und Shootings verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
@@ -2268,10 +2271,8 @@ body.archiveFilterOpen .bottom{display:none!important}
    <button class="active" data-archive-tab="publication">Print</button>
    <button data-archive-tab="title">Titel</button>
    <button data-archive-tab="series">Rubriken</button>
-   <button data-archive-tab="gallery">Galerien</button>
-   <button data-archive-tab="video">Videos</button>
+   <button data-archive-tab="gallery" data-archive-group="media">Medien</button>
    <button data-archive-tab="shoot">Shootings</button>
-   <button data-archive-tab="media">Medien</button>
   </div>
   <div id="mediaWorkflowTabs" class="mediaWorkflowTabs hidden">
    <button type="button" class="active" data-media-work-tab="new">Neu / zu prüfen<span class="mediaWorkflowCount" data-media-work-count="new">0</span></button>
@@ -10875,15 +10876,18 @@ function managementContextConfig(){
   gallery:{title:'Galerien',add:'＋ Galerie',placeholder:'Galerie, Model oder Shooting suchen …'},
   video:{title:'Videos',add:'＋ Video',placeholder:'Video, Model oder Shooting suchen …'},
   shoot:{title:'Shootings',add:'＋ Shooting',placeholder:'Shooting, Model oder Datum suchen …'},
-  media:{title:'Medien',add:'＋ Medien',placeholder:'Dateiname, Model oder Verknüpfung suchen …'}
+  media:{title:'Import',add:'＋ Medien',placeholder:'Dateiname, Model oder Verknüpfung suchen …'}
  }[archiveTab]||null;
 }
 function renderManagementContextTools(){
  const host=document.getElementById('managementContextTools');if(!host)return;
  const cfg=managementContextConfig();
  if(!cfg){host.innerHTML='';return}
+ const mediaGroup=['gallery','video','media'].includes(archiveTab);
+ const mediaTitle=archiveTab==='gallery'?'Galerien':archiveTab==='video'?'Videos':'Import';
+ const mediaPicker=mediaGroup?`<div class="managementMediaHeading"><h2><button type="button" class="managementMediaTitleButton" id="managementMediaTitleButton" aria-expanded="false">${mediaTitle} <span class="chev">▼</span></button></h2><div class="seriesBrowsePicker managementMediaPicker hidden" id="managementMediaPicker"><button type="button" class="${archiveTab==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${archiveTab==='video'?'active':''}" data-management-media-tab="video">Videos</button><button type="button" class="${archiveTab==='media'?'active':''}" data-management-media-tab="media">Import</button></div></div>`:`<div><h2>${esc(cfg.title)}</h2></div>`;
  host.innerHTML=`<div class="globalModelsHeader managementContextHeader">
-  <div><h2>${esc(cfg.title)}</h2></div>
+  ${mediaPicker}
   <div class="seriesOverviewTools">
    <button class="btn" type="button" id="managementContextSearchBtn" aria-expanded="${managementSearchOpen?'true':'false'}">🔍 Suche</button>
    <button class="btn" type="button" id="managementContextAddBtn">${esc(cfg.add)}</button>
@@ -10899,6 +10903,10 @@ function renderManagementContextTools(){
  const input=document.getElementById('managementContextSearchInput');
  const close=document.getElementById('managementContextSearchClose');
  const add=document.getElementById('managementContextAddBtn');
+ const mediaTitleButton=document.getElementById('managementMediaTitleButton');
+ const mediaPickerBox=document.getElementById('managementMediaPicker');
+ if(mediaTitleButton&&mediaPickerBox)mediaTitleButton.onclick=e=>{e.stopPropagation();const opening=mediaPickerBox.classList.contains('hidden');mediaPickerBox.classList.toggle('hidden');mediaTitleButton.setAttribute('aria-expanded',opening?'true':'false')};
+ host.querySelectorAll('[data-management-media-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();archiveTab=x.dataset.managementMediaTab;managementSearch='';managementSearchOpen=false;if(archiveTab==='media')archiveMediaTypeFilter='Alle';renderArchive()});
  if(btn)btn.onclick=()=>{
    managementSearchOpen=!managementSearchOpen;
    if(!managementSearchOpen)managementSearch='';
@@ -11110,7 +11118,6 @@ function renderArchive(){
         ?`<div class="seriesContributionPreview" data-media-id="${esc(firstPhoto.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small">Lade Vorschau …</div></div>`
         :'<div class="seriesContributionPreview"><div class="small">Noch kein Foto</div></div>';
        return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
-        <div class="seriesContributionLabel">${esc(workDisplayLabel(g))}</div>
         <div class="managementWorkDetails">
         <div class="small">Beitrag: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
         ${g.note?`<div class="small" style="white-space:pre-wrap">${esc(g.note)}</div>`:''}
@@ -11145,7 +11152,6 @@ function renderArchive(){
         ?`<div class="seriesContributionPreview" data-media-id="${esc(firstVideo.id)}"><div class="small">Lade Video …</div></div>`
         :'<div class="seriesContributionPreview"><div class="small">Noch kein Video</div></div>';
        return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
-        <div class="seriesContributionLabel">${esc(workDisplayLabel(v))}</div>
         <div class="managementWorkDetails">
         <div class="small">Beitrag: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
         <div class="small">${shoots.length
@@ -11277,7 +11283,7 @@ function renderArchive(){
      </div>`;
    }).join('')}</div>`:`<div class="small" style="margin-top:10px">${emptyLabel}</div>`;
  }
- document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveTab===archiveTab));
+ document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveGroup==='media'?['gallery','video','media'].includes(archiveTab):b.dataset.archiveTab===archiveTab));
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
  box.querySelectorAll('[data-series-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.seriesWorkSelect;if(seriesWorkSelected.has(id))seriesWorkSelected.delete(id);else seriesWorkSelected.add(id);renderArchive()});
  const srFab=document.getElementById('seriesSelectionFab'),srMenu=document.getElementById('seriesSelectionMenu');
