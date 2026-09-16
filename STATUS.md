@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-16
-Referenz-Commit: `22e6a9d4d21b826d1260c7008348053c04f47d6f`
+Referenz-Commit: `57efda152d848c7e1ee4c82b086665cd156303cc`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `22e6a9d4d21b826d1260c7008348053c04f47d6f`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `22e6a9d4d21b826d1260c7008348053c04f47d6f`
+- Aktuell berücksichtigter Code: `57efda152d848c7e1ee4c82b086665cd156303cc`
 - Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -63,13 +63,14 @@ Zielmodell Medien:
 
 Direkte Medien→Shooting-Zuordnung ist noch vorhanden und erst nach Abhängigkeitsprüfung zu entfernen. Visuelle Galerie-/Video-Zielkarten sind getestet.
 
-Aktueller Verwaltungs-Zwischenstand in Commit `22e6a9d4d21b826d1260c7008348053c04f47d6f`:
+Aktueller Verwaltungs-Zwischenstand in Commit `57efda152d848c7e1ee4c82b086665cd156303cc`:
 - `Galerien` und `Videos` sind unter dem gemeinsamen Haupttab `Medien` zusammengefasst;
-- innerhalb von `Medien` wird über die wählbare Überschrift zwischen `Galerien` und `Videos` gewechselt;
+- der Bereich besitzt oben die feste Überschrift `Medien` mit Suche und passender Hinzufügen-Aktion;
+- darunter folgt wie bei Rubriken ein eigener auberginefarbener Auswahlkopf, über den zwischen `Galerien` und `Videos` gewechselt wird;
 - `Import` bleibt als eigenständiger Haupttab mit seinem bisherigen Workflow und den Foto-/Video-/PDF-Filtern erhalten;
 - Galerie- und Videokarten verwenden eine einzelne 2:3-Vorschau in der gemeinsamen sehr hellen Kartenfarbe;
 - die redundante sichtbare Kartenbezeichnung `Galerie` beziehungsweise `Video` rechts neben der Vorschau wurde entfernt;
-- Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
+- zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
 - die weitere inhaltliche und optische Verdichtung der Galerie-/Videokarten ist noch offen.
 
 ## Beitrag (`release`)
@@ -205,7 +206,7 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Model-Filter ganz oben.
 - Archivbereich darunter als Auswahlfeld.
 - Haupttabs horizontal: `Print`, `Titel`, `Rubriken`, `Medien`, `Shootings`, `Import`.
-- Der Haupttab `Medien` enthält die wählbare Überschrift `Galerien` / `Videos`; `Import` bleibt fachlich und funktional getrennt.
+- Der Haupttab `Medien` zeigt oben die feste Bereichsüberschrift und darunter den auberginefarbenen Auswahlkopf `Galerien` / `Videos`; `Import` bleibt fachlich und funktional getrennt. Diese Struktur ist gerätetest-bestätigt.
 - Tabstreifen ist auf den Verwaltungscontainer begrenzt.
 - Printbereich heißt innen `Reihen`.
 - Vorschaubilder in den bearbeiteten Verwaltungskarten haben Rundungen an allen vier Ecken.
