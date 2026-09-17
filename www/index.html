@@ -1323,6 +1323,12 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .workReleaseChoice.selected .workReleaseChoiceMark::after{content:"";width:12px;height:12px;border-radius:50%;background:#178f82}
 .workReleaseChoice.none{grid-template-columns:1fr;min-height:70px}
 .workReleaseChoice.none .workReleaseChoiceBody{padding-left:14px}
+.workRelationTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 8px}
+.workRelationTabs button{min-height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-weight:700}
+.workRelationTabs button.active{background:#171717;color:#fff;border-color:#171717}
+.workRelationPanel.hidden{display:none}
+.workShootingPicker{display:grid;gap:9px;margin-top:8px;max-height:48vh;overflow:auto;padding:2px}
+.workShootingChoice .workReleaseChoicePreview{position:relative}
 .unassignedSeriesWorkArea{border:1px dashed #a995ad;border-radius:14px;background:#f6f0f7;overflow:hidden}
 .unassignedSeriesWorkArea .seriesBrowseCardHead{background:#f0e6f2}
 .unassignedSeriesWorkArea .seriesBrowseCardBody{padding:12px}
@@ -2567,20 +2573,26 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Fotograf(en)</label>
  <div id="archiveEditShootPhotographers"></div>
 </div>
+<div id="archiveEditWorkRelationsWrap" class="hidden">
+ <label>Zuordnung</label>
+ <div class="workRelationTabs" role="tablist" aria-label="Zuordnung auswählen">
+  <button type="button" id="archiveEditShootingRelationTab" class="active" role="tab" aria-selected="true">Shooting</button>
+  <button type="button" id="archiveEditReleaseRelationTab" role="tab" aria-selected="false">Beitrag</button>
+ </div>
+ <div id="archiveEditShootingRelationPanel" class="workRelationPanel">
 <div id="archiveEditGalleryShootWrap" class="hidden">
  <label>Shooting</label>
- <select id="archiveEditGalleryShoot">
+ <select id="archiveEditGalleryShoot" class="hidden" aria-hidden="true">
   <option value="">Shooting noch nicht bekannt</option>
  </select>
- <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
 </div>
 <div id="archiveEditVideoShootWrap" class="hidden">
  <label>Shooting</label>
- <select id="archiveEditVideoShoot">
+ <select id="archiveEditVideoShoot" class="hidden" aria-hidden="true">
   <option value="">Shooting noch nicht bekannt</option>
  </select>
- <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
 </div>
+<div id="archiveEditWorkShootingPicker" class="workShootingPicker"></div>
 <div id="archiveEditGalleryModelsWrap" class="hidden">
  <label>Models in dieser Galerie</label>
  <div class="small">Standardmäßig werden alle Models des Shootings übernommen. Models abwählen, die in dieser Galerie nicht vorkommen.</div>
@@ -2600,6 +2612,16 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Fotograf(en) dieses Videos</label>
  <div class="small">Standardmäßig werden alle Fotograf(en) des Shootings übernommen. Fotograf(en) abwählen, die für dieses Video nicht gelten.</div>
  <div id="archiveEditVideoPhotographers" class="shootModelSelector"></div>
+</div>
+</div>
+<div id="archiveEditReleaseRelationPanel" class="workRelationPanel hidden">
+<div id="archiveEditWorkReleaseWrap" class="hidden">
+ <label>Beitrag <span class="small">(optional)</span></label>
+ <select id="archiveEditWorkRelease" class="hidden" aria-hidden="true"><option value="">Noch keinem Beitrag zugeordnet</option></select>
+ <div id="archiveEditWorkReleasePicker" class="workReleasePicker"></div>
+ <div class="small" style="margin-top:6px">Vorschau, Model und Rubrik helfen bei der eindeutigen Auswahl. Das Werk bleibt eigenständig; der Beitrag kann später geändert oder entfernt werden.</div>
+</div>
+</div>
 </div>
 <div id="archiveEditAreaWrap" class="hidden">
  <label>Archivbereich</label>
@@ -2651,12 +2673,6 @@ body.archiveFilterOpen .bottom{display:none!important}
    <option value="owned">Im Bestand</option>
   </select>
  </div>
-<div id="archiveEditWorkReleaseWrap" class="hidden">
- <label>Beitrag <span class="small">(optional)</span></label>
- <select id="archiveEditWorkRelease" class="hidden" aria-hidden="true"><option value="">Noch keinem Beitrag zugeordnet</option></select>
- <div id="archiveEditWorkReleasePicker" class="workReleasePicker"></div>
- <div class="small" style="margin-top:6px">Vorschau, Model und Rubrik helfen bei der eindeutigen Auswahl. Das Werk bleibt eigenständig; der Beitrag kann später geändert oder entfernt werden.</div>
-</div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Individueller Name <span class="small">(optional)</span></label>
  <input id="archiveEditReleaseName" placeholder="z. B. Divine Morning">
@@ -10180,15 +10196,7 @@ if(preview&&l==='week'){
  galleryShootWrap.classList.toggle('hidden',!isGallery);
  videoShootWrap.classList.toggle('hidden',!isVideo);
  if(isGallery||isVideo){
-  const currentShootId=(isGallery?galleryShootings(a):videoShootings(a))[0]?.id||'';
-  const shoots=(state.archive||[]).filter(x=>x&&x.type==='shoot').slice().sort(sortShootingsNatural);
-  const options='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
-   const modelNames=shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
-   const details=[sh.date||'',sh.location||''].filter(Boolean).join(' · ');
-   return `<option value="${esc(sh.id)}" ${sh.id===currentShootId?'selected':''}>${esc(shootingDisplayLabel(sh))}${details?` · ${esc(details)}`:''}</option>`;
-  }).join('');
-  if(isGallery)galleryShootSelect.innerHTML=options;
-  if(isVideo)videoShootSelect.innerHTML=options;
+  fillWorkShootingSelector(isGallery?'archiveEditGalleryShoot':'archiveEditVideoShoot',a);
  }else{
   galleryShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
   videoShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
@@ -10250,6 +10258,29 @@ document.getElementById('archiveEditDate').oninput=()=>{
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
  workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
  if(isGallery||isVideo)fillWorkReleaseSelector('archiveEditWorkRelease',a);
+ const workRelationsWrap=document.getElementById('archiveEditWorkRelationsWrap');
+ const shootingRelationTab=document.getElementById('archiveEditShootingRelationTab');
+ const releaseRelationTab=document.getElementById('archiveEditReleaseRelationTab');
+ const shootingRelationPanel=document.getElementById('archiveEditShootingRelationPanel');
+ const releaseRelationPanel=document.getElementById('archiveEditReleaseRelationPanel');
+ workRelationsWrap.classList.toggle('hidden',!(isGallery||isVideo));
+ const showWorkRelation=kind=>{
+  const shootingActive=kind==='shooting';
+  shootingRelationTab.classList.toggle('active',shootingActive);
+  releaseRelationTab.classList.toggle('active',!shootingActive);
+  shootingRelationTab.setAttribute('aria-selected',shootingActive?'true':'false');
+  releaseRelationTab.setAttribute('aria-selected',shootingActive?'false':'true');
+  shootingRelationPanel.classList.toggle('hidden',!shootingActive);
+  releaseRelationPanel.classList.toggle('hidden',shootingActive);
+ };
+ if(isGallery||isVideo){
+  shootingRelationTab.onclick=()=>showWorkRelation('shooting');
+  releaseRelationTab.onclick=()=>showWorkRelation('release');
+  showWorkRelation('shooting');
+ }else{
+  shootingRelationTab.onclick=null;
+  releaseRelationTab.onclick=null;
+ }
  if(isRelease)fillReleaseSelectors('archiveEditReleaseSeries','archiveEditReleaseTitle',a);
  document.getElementById('archiveEditTitleFields').classList.toggle('hidden',a.type!=='title');
  const shootModelsWrap=document.getElementById('archiveEditShootModelsWrap');
@@ -11804,6 +11835,28 @@ function workReleaseChoiceHtml(release,current){
  const parts=seriesContributionDisplayParts(release);
  const titleContext=releaseTitleContextLabel(release);
  return `<button type="button" class="workReleaseChoice ${release.id===current?'selected':''}" data-work-release-choice="${esc(release.id)}">${seriesContributionPreviewHtml(release,galleries,videos).replace('seriesContributionPreview','workReleaseChoicePreview')}<span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(parts.model)}</span>${parts.label?`<span class="workReleaseChoiceLabel">${esc(parts.label)}</span>`:''}${titleContext?`<span class="workReleaseChoiceContext">Titel: ${esc(titleContext)}</span>`:''}<span class="workReleaseChoiceContext">Rubrik: ${esc(releaseSeriesContextLabel(release))}</span><span class="workReleaseChoiceMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+}
+function workShootingChoiceHtml(shoot,current){
+ const parts=shootingPreviewParts(shoot);
+ const display=managementShootingDisplayParts(shoot);
+ const context=[shoot.date?germanDateLabel(shoot.date):'',shoot.location||''].filter(Boolean).join(' · ');
+ return `<button type="button" class="workReleaseChoice workShootingChoice ${shoot.id===current?'selected':''}" data-work-shooting-choice="${esc(shoot.id)}"><span class="workReleaseChoicePreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</span><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(display.models)}</span><span class="workReleaseChoiceLabel">${esc(display.title)}</span>${context?`<span class="workReleaseChoiceContext">${esc(context)}</span>`:''}<span class="workReleaseChoiceMeta">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+}
+function fillWorkShootingSelector(selectId,work){
+ const sel=document.getElementById(selectId);if(!sel)return;
+ const current=(work?.type==='gallery'?galleryShootings(work):videoShootings(work))[0]?.id||'';
+ const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot').slice().sort(sortShootingsNatural);
+ sel.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>`<option value="${esc(sh.id)}">${esc(shootingDisplayLabel(sh))}</option>`).join('');
+ sel.value=current;
+ const picker=document.getElementById('archiveEditWorkShootingPicker');if(!picker)return;
+ const none=`<button type="button" class="workReleaseChoice none ${current?'':'selected'}" data-work-shooting-choice=""><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">Shooting noch nicht bekannt</span><span class="workReleaseChoiceContext">Werk ohne Shootingzuordnung belassen</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+ picker.innerHTML=none+shoots.map(sh=>workShootingChoiceHtml(sh,current)).join('');
+ picker.querySelectorAll('[data-work-shooting-choice]').forEach(btn=>btn.onclick=()=>{
+  sel.value=btn.dataset.workShootingChoice||'';
+  picker.querySelectorAll('.workReleaseChoice').forEach(x=>x.classList.toggle('selected',x===btn));
+  if(typeof sel.onchange==='function')sel.onchange();
+ });
+ hydrateShootingCovers(picker);
 }
 function fillWorkReleaseSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
