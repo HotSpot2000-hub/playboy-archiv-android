@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-17
-Referenz-Commit: `1827efd28592da0db9ae789a7795b47396ed6aec`
+Referenz-Commit: `a5c5561a78330666611dfb252d8e9cc4a1430095`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,14 +18,14 @@ Referenz-Commit: `1827efd28592da0db9ae789a7795b47396ed6aec`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `1827efd28592da0db9ae789a7795b47396ed6aec`
+- Aktuell berücksichtigter Code: `a5c5561a78330666611dfb252d8e9cc4a1430095`
 - Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
 - Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
 - Rubriken-Übertragung auf die Print-Designsprache einschließlich anschließendem Feinschliff gerätetest-bestätigt.
-- Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag` sowie die indirekte Shooting-Medienauflösung sind gerätetest-bestätigt.
+- Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag`, die indirekte Shooting-Medienauflösung sowie der bereinigte Importworkflow sind gerätetest-bestätigt.
 - Keine automatische Legacy-Migration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -75,9 +75,9 @@ Zielmodell Medien:
 - Foto → Galerie → Shooting
 - Videodatei → Video → Shooting
 
-Direkte Medien→Shooting-Zuordnung ist noch vorhanden und erst nach Abhängigkeitsprüfung zu entfernen. Visuelle Galerie-/Video-Zielkarten sind getestet.
+Der neue Schreibweg folgt ausschließlich `Datei → Galerie/Video → Shooting`. Die direkte Importaktion `Datei → Shooting` ist entfernt. Vorhandene direkte Legacy-Verknüpfungen bleiben lesbar und können gezielt gelöst werden. Visuelle Galerie-/Video-Zielkarten sind getestet.
 
-Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `1827efd28592da0db9ae789a7795b47396ed6aec`:
+Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `a5c5561a78330666611dfb252d8e9cc4a1430095`:
 - `Galerien` und `Videos` sind unter dem gemeinsamen Haupttab `Medien` zusammengefasst;
 - der Bereich besitzt oben die feste Überschrift `Medien` mit Suche und passender Hinzufügen-Aktion;
 - darunter folgt wie bei Rubriken ein eigener auberginefarbener Auswahlkopf, über den zwischen `Galerien` und `Videos` gewechselt wird;
@@ -93,6 +93,9 @@ Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `1827efd28592da0db
 - `Shooting noch nicht bekannt` und `Noch keinem Beitrag zugeordnet` bleiben als bewusste neutrale Optionen erhalten;
 - Model- und Fotografenvererbung aus dem gewählten Shooting funktioniert unverändert;
 - bestehende Galerie- und Videozuordnungen wurden jeweils mit dem visuellen Umschalter geprüft; Shooting- und Beitragskarte zeigen die korrekten Beziehungen;
+- `Shooting zuordnen` wurde aus dem Import entfernt; der zugehörige Dialog und direkte Schreibcode sind nicht mehr vorhanden;
+- die Importtabs und `Alle auswählen` verwenden dieselbe Statuslogik und erkennen Zuordnungen zu Galerie, Video, Printausgabe sowie direkte Legacy-Shootingbeziehungen;
+- im Shootingdetail erscheint `Direkte Zuordnung lösen` ausschließlich bei einer tatsächlichen direkten Legacy-Datei↔Shooting-Beziehung; indirekte Dateien aus Galerie/Video erhalten keine wirkungslose Löseaktion;
 - zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
 - der gesamte aktuelle Galerie-/Video-Kartenfeinschliff ist auf dem Android-Gerät bestätigt.
 
@@ -247,7 +250,6 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 ## Risiken / offene Punkte
 
-- Direkte Medien→Shooting-Zuordnung vor Entfernung auf Abhängigkeiten prüfen.
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
@@ -271,13 +273,12 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Die Zuordnungslogik anhand echter Beispiele kontrolliert prüfen.**
+**Den separaten Legacy-Shootingbereich unter Titeln visuell angleichen.**
 
 Vorgehen:
-1. Als nächste abgegrenzte Prüfung die Importfunktion `direkte Datei → Shooting` auf noch notwendige Abhängigkeiten untersuchen; bestehende Legacy-Daten bleiben bis zu einer ausdrücklichen Entscheidung lesbar.
-2. Danach anhand kontrollierter Beispiele noch die Zustände ohne Zuordnung, nur mit Shooting und nur mit Beitrag prüfen; der gemeinsame Zustand mit Shooting und Beitrag ist für Galerie und Video bestätigt.
-3. Erst nach dieser Bestandsaufnahme entscheiden, ob die direkte Importzuordnung entfernt, weiter als Legacy-Fallback behalten oder kontrolliert migriert wird.
-4. Danach den separaten Legacy-Shootingbereich unter Titeln visuell angleichen, ohne Beziehungen automatisch zu migrieren oder zu löschen.
-5. Anschließend Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, danach Seiten/Fundstellen.
+1. Ausschließlich die Darstellung unter `Bisher direkt zugeordnete Shootings` an die bestätigte Shootingkartensprache angleichen.
+2. Legacy-Beziehungen nur anzeigen und weiterhin lösbar halten; keine automatische Migration oder neue direkte Titelzuordnung einführen.
+3. Danach optional die noch nicht einzeln geprüften neutralen Zustände ohne Shooting beziehungsweise ohne Beitrag kontrollieren.
+4. Anschließend Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, danach Seiten/Fundstellen.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
