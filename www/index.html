@@ -2435,7 +2435,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
 <div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
-<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignPublicationCoverBtn">Als Cover zuordnen</button><button type="button" id="mediaWorkAssignPublicationPdfBtn">Als PDF zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
+<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignPublicationCoverBtn">Als Cover zuordnen</button><button type="button" id="mediaWorkAssignPublicationPdfBtn">Als PDF zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
 <div id="mediaWorkGalleryPanel" class="mediaWorkShootPanel hidden">
  <div class="shootFinderHead"><div><b>Galerie auswählen</b><div class="small">Ausgewählte Fotos direkt einer Galerie zuordnen</div></div><button type="button" id="mediaWorkGalleryCancel">Schließen</button></div>
  <div id="mediaWorkGalleryResults" class="mediaWorkTargetResults"></div>
@@ -2453,12 +2453,6 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label for="mediaWorkPublicationSelect">Ausgabe</label>
  <select id="mediaWorkPublicationSelect"></select>
  <div class="shootPanelActions"><button type="button" id="mediaWorkPublicationCancelBottom">Abbrechen</button><button type="button" id="mediaWorkPublicationConfirm" class="primaryAction">Zuordnen</button></div>
-</div>
-<div id="mediaWorkShootPanel" class="mediaWorkShootPanel">
- <div class="shootFinderHead"><div><b>Shooting auswählen</b><div class="small">Ausgewählte Medien einem Shooting zuordnen</div></div><button type="button" id="mediaWorkShootCancel">Schließen</button></div>
- <input id="mediaWorkShootSearch" type="search" placeholder="Model, Shooting, Datum oder Publikation suchen">
- <div class="shootFinderFilters"><select id="mediaWorkShootModelFilter"><option value="">Alle Models</option></select><select id="mediaWorkShootYearFilter"><option value="">Alle Jahre</option></select></div>
- <div id="mediaWorkShootRecent"></div><div id="mediaWorkShootResults" class="shootFinderResults"></div>
 </div>
 <div class="bottom"><div class="nav"><button id="profileBtn">Profil</button><button id="spotBtn">Archiv</button><button id="researchBtn">Research</button><button id="managementBtn">Verwaltung</button><button id="inboxBtn">Inbox</button><button id="peopleBtn">Personen</button></div></div>
 
@@ -10698,6 +10692,14 @@ function renderManagementTools(){
 function modelArchive(type){
  return managementArchive(type);
 }
+function mediaWorkflowStatus(media){
+ if(media.workflowStatus==='keep')return 'keep';
+ const assigned=(media.links||[]).some(id=>{
+  const target=(state.archive||[]).find(item=>item.id===id);
+  return target&&['shoot','gallery','video','publication'].includes(target.type);
+ });
+ return assigned?'assigned':'new';
+}
 function archiveName(id){const x=(state.archive||[]).find(a=>a.id===id);return x?x.title:''}
 
 
@@ -11013,12 +11015,11 @@ function renderArchive(){
  const mediaTypeFilters=document.getElementById('archiveMediaTypeFilters');
  if(mediaTypeFilters)mediaTypeFilters.classList.toggle('hidden',archiveTab!=='media');
  if(archiveTab==='media'){
-   const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&(x.type==='shoot'||x.type==='gallery'||x.type==='video'||x.type==='publication');})?'assigned':'new';
    const kindOf=a=>{const mt=String(a.mimeType||'').toLowerCase();return mt.startsWith('image/')?'Foto':mt.startsWith('video/')?'Video':mt.includes('pdf')?'PDF':'Datei'};
-   const counts={new:0,keep:0,assigned:0};items.forEach(a=>counts[statusOf(a)]++);
+   const counts={new:0,keep:0,assigned:0};items.forEach(a=>counts[mediaWorkflowStatus(a)]++);
    document.querySelectorAll('[data-media-work-count]').forEach(el=>el.textContent=counts[el.dataset.mediaWorkCount]||0);
    document.querySelectorAll('[data-media-work-tab]').forEach(b=>b.classList.toggle('active',b.dataset.mediaWorkTab===mediaWorkTab));
-   items=items.filter(a=>statusOf(a)===mediaWorkTab);
+   items=items.filter(a=>mediaWorkflowStatus(a)===mediaWorkTab);
    const typeCounts={Alle:items.length,Foto:0,Video:0,PDF:0,Datei:0};items.forEach(a=>typeCounts[kindOf(a)]++);
    document.querySelectorAll('[data-archive-media-count]').forEach(el=>el.textContent=typeCounts[el.dataset.archiveMediaCount]||0);
    document.querySelectorAll('[data-archive-media-filter]').forEach(b=>b.classList.toggle('active',b.dataset.archiveMediaFilter===archiveMediaTypeFilter));
@@ -11377,7 +11378,6 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  if(mwFab){mwFab.classList.toggle('visible',archiveTab==='media'&&mediaWorkSelected.size>0);mwFab.textContent=`Auswahl (${mediaWorkSelected.size})`;if(!mediaWorkSelected.size){mwFab.setAttribute('aria-expanded','false');mwMenu&&mwMenu.classList.remove('mobileOpen')}}
  if(mwMove)mwMove.textContent=mediaWorkTab==='keep'?'Zurück zu Neu':'Fürs Archiv behalten';
  const mwReturn=document.getElementById('mediaWorkReturnInboxBtn');if(mwReturn)mwReturn.style.display=mediaWorkTab==='assigned'?'none':'';
- const mwAssignShoot=document.getElementById('mediaWorkAssignShootBtn');if(mwAssignShoot)mwAssignShoot.style.display=mediaWorkTab==='new'?'':'none';
  const mwAssignCover=document.getElementById('mediaWorkAssignPublicationCoverBtn');if(mwAssignCover)mwAssignCover.style.display=mediaWorkTab==='new'?'':'none';
  const mwAssignPdf=document.getElementById('mediaWorkAssignPublicationPdfBtn');if(mwAssignPdf)mwAssignPdf.style.display=mediaWorkTab==='new'?'':'none';
  box.querySelectorAll('[data-media-keep]').forEach(x=>x.onclick=e=>{e.stopPropagation();const a=(state.archive||[]).find(o=>o.id===x.dataset.mediaKeep);if(!a)return;a.workflowStatus='keep';save();renderArchive();toast('Medium wird nur beim Model behalten.')});
@@ -11410,54 +11410,15 @@ document.getElementById('seriesPublicationConfirm').onclick=()=>{
  if(!save())return;seriesWorkSelected.clear();document.getElementById('seriesPublicationPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Rubrik der Publikation zugeordnet.':`${changed} Rubriken der Publikation zugeordnet.`);
 };
 document.getElementById('mediaWorkSelectionFab').onclick=()=>{const menu=document.getElementById('mediaWorkSelectionMenu');menu.classList.toggle('mobileOpen');document.getElementById('mediaWorkSelectionFab').setAttribute('aria-expanded',menu.classList.contains('mobileOpen')?'true':'false')};
-document.getElementById('mediaWorkSelectAllBtn').onclick=()=>{const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&x.type==='shoot';})?'assigned':'new';const seen=new Set();modelArchive('media').filter(a=>{const k=a.fingerprint||`${a.fileName||''}|${a.size||''}|${a.mimeType||''}|${(a.links||[]).slice().sort().join(',')}`;if(seen.has(k))return false;seen.add(k);return statusOf(a)===mediaWorkTab}).forEach(a=>mediaWorkSelected.add(a.id));renderArchive()};
 document.getElementById('mediaWorkSelectAllBtn').onclick=()=>{
  const items=modelArchive('media');
- const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&x.type==='shoot';})?'assigned':'new';
  const seen=new Set();
  items.filter(a=>{const k=a.fingerprint||`${a.fileName||''}|${a.size||''}|${a.mimeType||''}|${(a.links||[]).slice().sort().join(',')}`;if(seen.has(k))return false;seen.add(k);return true;})
-   .filter(a=>statusOf(a)===mediaWorkTab)
+   .filter(a=>mediaWorkflowStatus(a)===mediaWorkTab)
    .forEach(a=>mediaWorkSelected.add(a.id));
  renderArchive();
 };
 
-const MEDIA_RECENT_SHOOTS_KEY='spotlightRecentAssignedShootings';
-function mediaRecentShootIds(){try{return JSON.parse(localStorage.getItem(MEDIA_RECENT_SHOOTS_KEY)||'[]').filter(Boolean).slice(0,5)}catch(_){return []}}
-function rememberMediaShoot(id){let ids=mediaRecentShootIds().filter(x=>x!==id);ids.unshift(id);localStorage.setItem(MEDIA_RECENT_SHOOTS_KEY,JSON.stringify(ids.slice(0,5)))}
-function shootFinderModelNames(sh){return shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean)}
-function shootFinderPublicationNames(sh){
- const series=(state.archive||[]).filter(x=>x.type==='series'&&(sh.links||[]).includes(x.id));
- const pubs=(state.archive||[]).filter(x=>x.type==='publication'&&series.some(sr=>(sr.links||[]).includes(x.id)));
- return pubs.map(x=>x.title||'').filter(Boolean);
-}
-function shootFinderYear(sh){const m=String(sh.date||'').match(/\b(19|20)\d{2}\b/);return m?m[0]:''}
-function shootFinderCard(sh){
- const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null,models=shootFinderModelNames(sh),pubs=shootFinderPublicationNames(sh);
- return `<button type="button" class="shootFinderCard" data-media-shoot-pick="${esc(sh.id)}"><div class="shootFinderCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${cover?'<div class="small">Lade …</div>':'<div class="small">Kein Bild</div>'}</div><div class="shootFinderBody"><b>${esc(shootingDisplayLabel(sh))}</b><div class="shootFinderMeta">${models.length?esc(models.join(', ')):'Ohne Model'}${sh.date?' · '+esc(sh.date):''}${pubs.length?'<br>'+esc(pubs.join(', ')):''}</div></div></button>`;
-}
-function renderMediaShootFinder(){
- const q=String(document.getElementById('mediaWorkShootSearch').value||'').trim().toLocaleLowerCase('de-DE');
- const mf=document.getElementById('mediaWorkShootModelFilter').value,yf=document.getElementById('mediaWorkShootYearFilter').value;
- let shoots=(state.archive||[]).filter(a=>a.type==='shoot').slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''),'de',{numeric:true})||String(a.title||'').localeCompare(String(b.title||''),'de'));
- shoots=shoots.filter(sh=>{
-  const mids=shootingModelIds(sh),year=shootFinderYear(sh),hay=[shootingDisplayLabel(sh),sh.title,sh.date,...shootFinderModelNames(sh),...shootFinderPublicationNames(sh)].join(' ').toLocaleLowerCase('de-DE');
-  return (!mf||mids.includes(mf))&&(!yf||year===yf)&&(!q||hay.includes(q));
- });
- const recentIds=mediaRecentShootIds(),recent=recentIds.map(id=>shoots.find(sh=>sh.id===id)).filter(Boolean);
- const recentBox=document.getElementById('mediaWorkShootRecent'),results=document.getElementById('mediaWorkShootResults');
- recentBox.innerHTML=recent.length?`<div class="shootFinderSectionTitle">Zuletzt verwendet</div><div class="shootFinderResults">${recent.map(shootFinderCard).join('')}</div>`:'';
- results.innerHTML=`<div class="shootFinderSectionTitle">${shoots.length} ${shoots.length===1?'Shooting':'Shootings'}</div>${shoots.map(shootFinderCard).join('')||'<div class="small">Keine passenden Shootings gefunden.</div>'}`;
- document.querySelectorAll('[data-media-shoot-pick]').forEach(b=>b.onclick=()=>assignSelectedMediaToShoot(b.dataset.mediaShootPick));
- hydrateShootingCovers(document.getElementById('mediaWorkShootPanel'));
-}
-function assignSelectedMediaToShoot(shootId){
- const shoot=(state.archive||[]).find(a=>a.id===shootId&&a.type==='shoot');if(!shoot||!mediaWorkSelected.size)return;
- const label=shootingDisplayLabel(shoot);
- if(!confirm(`${mediaWorkSelected.size} ${mediaWorkSelected.size===1?'Medium':'Medien'} „${label}“ zuordnen?`))return;
- let changed=0;(state.archive||[]).forEach(a=>{if(a.type!=='media'||!mediaWorkSelected.has(a.id))return;a.links=a.links||[];if(!a.links.includes(shootId))a.links.push(shootId);delete a.workflowStatus;changed++});
- shoot.links=shoot.links||[];mediaWorkSelected.forEach(id=>{if(!shoot.links.includes(id))shoot.links.push(id)});
- if(!save())return;rememberMediaShoot(shootId);mediaWorkSelected.clear();document.getElementById('mediaWorkShootPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Medium dem Shooting zugeordnet.':`${changed} Medien dem Shooting zugeordnet.`);
-}
 function mediaGalleryOptionLabel(gallery){
  const context=galleryCreationContext(gallery);
  const modelNames=galleryInheritedModelIds(gallery).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
@@ -11694,20 +11655,6 @@ document.getElementById('mediaWorkPublicationConfirm').onclick=()=>assignSelecte
 document.getElementById('mediaWorkPublicationCancel').onclick=closeMediaPublicationPanel;
 document.getElementById('mediaWorkPublicationCancelBottom').onclick=closeMediaPublicationPanel;
 
-document.getElementById('mediaWorkAssignShootBtn').onclick=()=>{
- if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
- const shoots=(state.archive||[]).filter(a=>a.type==='shoot');
- if(!shoots.length){toast('Noch kein Shooting im Archiv vorhanden.');return}
- const modelSel=document.getElementById('mediaWorkShootModelFilter'),yearSel=document.getElementById('mediaWorkShootYearFilter');
- const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))];modelSel.innerHTML='<option value="">Alle Models</option>'+alphabeticalModels((state.models||[]).filter(m=>mids.includes(m.id))).map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
- const years=[...new Set(shoots.map(shootFinderYear).filter(Boolean))].sort((a,b)=>b.localeCompare(a));yearSel.innerHTML='<option value="">Alle Jahre</option>'+years.map(y=>`<option>${esc(y)}</option>`).join('');
- document.getElementById('mediaWorkShootSearch').value='';modelSel.value='';yearSel.value='';
- document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');document.getElementById('mediaWorkShootPanel').classList.add('mobileOpen');renderMediaShootFinder();
-};
-document.getElementById('mediaWorkShootSearch').oninput=renderMediaShootFinder;
-document.getElementById('mediaWorkShootModelFilter').onchange=renderMediaShootFinder;
-document.getElementById('mediaWorkShootYearFilter').onchange=renderMediaShootFinder;
-document.getElementById('mediaWorkShootCancel').onclick=()=>document.getElementById('mediaWorkShootPanel').classList.remove('mobileOpen');
 document.getElementById('mediaWorkClearBtn').onclick=()=>{mediaWorkSelected.clear();document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');renderArchive()};
 document.getElementById('mediaWorkReturnInboxBtn').onclick=async()=>{
  if(!mediaWorkSelected.size)return;
@@ -12380,6 +12327,10 @@ function shootingMedia(shoot){
    String(b.fileName||b.title||''),'de',{numeric:true,sensitivity:'base'}
  ));
 }
+function shootingHasDirectMediaLink(shoot,mediaId){
+ const media=(state.archive||[]).find(item=>item.id===mediaId&&item.type==='media');
+ return Boolean(media&&((shoot.links||[]).includes(mediaId)||(media.links||[]).includes(shoot.id)));
+}
 
 
 function directSeriesMedia(series){
@@ -12596,7 +12547,7 @@ function openShootingDetail(id,seriesId,context=null){
  ${detailMedia.length
    ? `<div class="gallery">${detailMedia.map(x=>`<div class="galleryItem">
        <div class="mediaThumb" data-media-id="${x.id}"><div class="small" style="padding:10px">Lade Medium …</div></div>
-       <div class="galleryCaption"><b>${esc(x.fileName||'Medium')}</b><div class="videoMeta">${x.mimeType&&x.mimeType.startsWith('video/')?'Video':'Foto'}</div>${activeMainView==='management'?`<button type="button" class="shootingMediaUnlink" data-unlink-shooting-media="${esc(x.id)}">Aus Shooting entfernen</button>`:''}</div>
+       <div class="galleryCaption"><b>${esc(x.fileName||'Medium')}</b><div class="videoMeta">${x.mimeType&&x.mimeType.startsWith('video/')?'Video':'Foto'}</div>${activeMainView==='management'&&shootingHasDirectMediaLink(sh,x.id)?`<button type="button" class="shootingMediaUnlink" data-unlink-shooting-media="${esc(x.id)}">Direkte Zuordnung lösen</button>`:''}</div>
       </div>`).join('')}</div>`
    : presentationMode&&videos.length
      ? '<div class="small">Dieses Shooting enthält keine Fotos. Das Video lässt sich über das ▶︎-Symbol der Shootingkarte öffnen.</div>'
