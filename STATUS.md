@@ -19,7 +19,7 @@ Referenz-Commit: `fb9ff5a5370f426842930a8f33de0cec1de88945`
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
 - Aktuell berücksichtigter Code: `fb9ff5a5370f426842930a8f33de0cec1de88945`
-- Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
+- Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
@@ -157,7 +157,8 @@ Aktueller visueller Stand in Commit `8e627b13187d9f317634b2b7e6178883496f7ce0`:
 - Medienvorschau und Medienanzahl bleiben sichtbar; die überflüssigen direkten Galerie-/Video-Sprungbuttons wurden wie bei Rubriken entfernt, ohne Beziehungen oder Medien zu verändern;
 - `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen;
 - der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet nun dieselbe 2:3-Vorschau, helle Kartenfarbe, Shooting-/Modelanzeige, Medienanzahl und kompakte Buttonfamilie wie der Shooting-Haupttab;
-- `Bearbeiten` und `Lösen` sowie sämtliche Legacy-Beziehungen blieben unverändert; die Darstellung ist implementiert, aber noch nicht als eigener separater Gerätetest protokolliert;
+- Darstellung, `Bearbeiten` und die Sicherheitsabfrage von `Lösen` sind separat auf dem Android-Gerät bestätigt;
+- sämtliche Legacy-Beziehungen blieben unverändert; beim Test wurde die Löseabfrage abgebrochen und keine Beziehung entfernt.
 - Titel-Fachlogik, Beziehungen und Schema wurden nicht verändert.
 
 ## Titelhierarchien -- vorerst fachlich geklärt
@@ -248,7 +249,7 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
 - Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
-- Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen` und echte Beitragskarten sind visuell angeglichen und gerätetest-bestätigt; nur die Legacy-Shootings sind noch offen.
+- Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen`, echte Beitragskarten und Legacy-Shootingkarten sind visuell angeglichen und gerätetest-bestätigt.
 - Shooting-Haupttab und der visuelle Galerie-/Video-Zuordnungswähler `Shooting | Beitrag` sind gerätetest-bestätigt.
 
 ## Weitere stabile Funktionen
@@ -262,7 +263,6 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Die neue Darstellung unter `Bisher direkt zugeordnete Shootings` ist noch nicht als eigener separater Gerätetest protokolliert.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -282,12 +282,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Die neue Legacy-Shootingdarstellung unter Titeln kurz separat bestätigen.**
+**Etappe 6b: Printausgabe → Beitrag → Galerie/Video kontrolliert ausbauen.**
 
 Vorgehen:
-1. Unter einem Titel mit direkter Legacy-Shootingbeziehung Darstellung, `Bearbeiten` und `Lösen` kontrollieren.
-2. Keine automatische Migration oder neue direkte Titelzuordnung einführen.
-3. Danach optional die noch nicht einzeln geprüften neutralen Zustände ohne Shooting beziehungsweise ohne Beitrag kontrollieren.
-4. Anschließend Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, danach Seiten/Fundstellen.
+1. Zuerst das bestehende Print-Datenmodell und die vorhandene Print-Detailansicht auf bereits nutzbare Beitragsbeziehungen prüfen.
+2. Danach innerhalb einer konkreten Ausgabe `＋ Beitrag hinzufügen`, Beitragskarten sowie `Bearbeiten` und `Lösen` nach der bestätigten Rubrik-/Titelsprache ergänzen.
+3. Galerie/Video bleiben Medien des Beitrags; keine direkte Shooting- oder Medienzuordnung zur Ausgabe als Ersatz für den Beitrag einführen.
+4. Bestehende Cover-/PDF-Zuordnungen, Reihenlogik und physische Bestandsdaten unverändert halten.
+5. Erst nach bestätigter Ausgabe→Beitrag-Struktur Seiten/Fundstellen ergänzen.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
