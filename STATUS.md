@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-16
-Referenz-Commit: `64c7d336e413417f24d4a20fb212fa99663e8866`
+Stand: 2026-09-17
+Referenz-Commit: `f084651c0284e8ed9858d1d2238286533bb7cdc8`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,13 +18,14 @@ Referenz-Commit: `64c7d336e413417f24d4a20fb212fa99663e8866`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `64c7d336e413417f24d4a20fb212fa99663e8866`
+- Aktuell berücksichtigter Code: `f084651c0284e8ed9858d1d2238286533bb7cdc8`
 - Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
 - Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
 - Rubriken-Übertragung auf die Print-Designsprache einschließlich anschließendem Feinschliff gerätetest-bestätigt.
+- Medienkarten, Shootingkarten sowie der visuelle Zuordnungswähler `Shooting | Beitrag` sind gerätetest-bestätigt.
 - Keine automatische Legacy-Migration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -53,6 +54,16 @@ In der Verwaltung steht der Model-Filter über dem Bereichsfilter. Der Archivber
 
 Entstehungskontext mit Datum/Ort sowie Model(s)/Fotograf(en). Kein fachlicher Shootingtitel und keine künstlichen Platzhalter. Identifikation über Model bzw. exakte Model-Kombination + Shootingnummer, z. B. `April Katherine • Shooting • Nr. 1`. Nummernreihe pro exakter Model-Kombination; Datum/Ort nur Zusatz. Gerätetest bestätigt.
 
+Aktueller gerätetest-bestätigter Verwaltungsstand:
+- zweistufige Darstellung wie in den anderen Bereichen: feste Überschrift `Shootings`, darunter auberginefarbener Kopf `Shootings`;
+- Karten in der gemeinsamen sehr hellen Kartenfarbe mit einzelner 2:3-Vorschau;
+- `Noch kein Medium` ist in der leeren Vorschau zentriert;
+- rechts stehen Shootingbezeichnung, Models, Foto-/Videoanzahl sowie die kompakten Aktionen `Bearbeiten` und `Löschen`;
+- bei genau einem Shooting derselben exakten Modelkombination erscheint `Shooting`, ab mehreren `Shooting • Nr. 1`, `Shooting • Nr. 2`, ...;
+- Shootings bleiben eigenständige Entstehungskontexte ohne direkte Archivbereichszuordnung;
+- neue direkte Zuordnungen `Shooting → Rubrik/Titel` wurden einschließlich der dadurch funktionslosen Mehrfachauswahl entfernt;
+- vorhandene Legacy-Verknüpfungen zu Rubriken/Titeln bleiben lesbar und können weiterhin gelöst werden; keine Migration oder Löschung.
+
 ## Galerie / Video
 
 Galerie = Foto-Werk/Container; Video fachlich parallel. Beide optional mit Shooting und Beitrag (`release`). Models, Fotograf(en), Datum und Ort werden aus Shooting geerbt; Ausschlüsse möglich.
@@ -63,7 +74,7 @@ Zielmodell Medien:
 
 Direkte Medien→Shooting-Zuordnung ist noch vorhanden und erst nach Abhängigkeitsprüfung zu entfernen. Visuelle Galerie-/Video-Zielkarten sind getestet.
 
-Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `64c7d336e413417f24d4a20fb212fa99663e8866`:
+Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `f084651c0284e8ed9858d1d2238286533bb7cdc8`:
 - `Galerien` und `Videos` sind unter dem gemeinsamen Haupttab `Medien` zusammengefasst;
 - der Bereich besitzt oben die feste Überschrift `Medien` mit Suche und passender Hinzufügen-Aktion;
 - darunter folgt wie bei Rubriken ein eigener auberginefarbener Auswahlkopf, über den zwischen `Galerien` und `Videos` gewechselt wird;
@@ -73,6 +84,11 @@ Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `64c7d336e413417f2
 - rechts neben der Vorschau stehen nur die aus den zugeordneten Shootings abgeleitete Modelbezeichnung, die Medienanzahl sowie `Bearbeiten` und `Löschen`;
 - existiert pro Medientyp nur eine Galerie beziehungsweise ein Video derselben exakten Model-Kombination, bleibt die Bezeichnung ohne Nummer; ab zwei Einträgen derselben Kombination werden sichtbar `Nr. 1`, `Nr. 2`, ... ergänzt;
 - Beitrag, Shooting, Datum, Ort, Fotografen und Notiz bleiben gespeichert und über `Bearbeiten` erreichbar, werden auf der kompakten Karte aber nicht mehr angezeigt;
+- beim Bearbeiten einer Galerie oder eines Videos steht ein gemeinsamer Umschalter `Shooting | Beitrag` zur Verfügung;
+- der Shooting-Wähler verwendet wie der Beitragswähler visuelle Auswahlkarten mit 2:3-Vorschau, Modelkombination, Shootingbezeichnung, Datum/Ort und Medienanzahl;
+- der Umschalter wechselt nur die sichtbare Zuordnungsansicht: Shooting- und Beitragsbeziehung bleiben unabhängig voneinander gleichzeitig speicherbar;
+- `Shooting noch nicht bekannt` und `Noch keinem Beitrag zugeordnet` bleiben als bewusste neutrale Optionen erhalten;
+- Model- und Fotografenvererbung aus dem gewählten Shooting funktioniert unverändert;
 - zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
 - der gesamte aktuelle Galerie-/Video-Kartenfeinschliff ist auf dem Android-Gerät bestätigt.
 
@@ -217,6 +233,7 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
 - Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen` und echte Beitragskarten sind visuell angeglichen und gerätetest-bestätigt; nur die Legacy-Shootings sind noch offen.
+- Shooting-Haupttab und der visuelle Galerie-/Video-Zuordnungswähler `Shooting | Beitrag` sind gerätetest-bestätigt.
 
 ## Weitere stabile Funktionen
 
@@ -250,12 +267,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Die Shootingkarten auf die bestätigte gemeinsame Kartensprache übertragen.**
+**Die Zuordnungslogik anhand echter Beispiele kontrolliert prüfen.**
 
 Vorgehen:
-1. Zuerst die Shootingkarten im Haupttab `Shootings` kontrolliert auf 2:3-Vorschau, helle Kartenfarbe und kompakte Aktionsbuttons angleichen.
-2. Shootingdaten, Auswahlfunktion, Beziehungen, Medienzugriff und Schema unverändert lassen und diesen Haupttab auf dem Android-Gerät testen.
-3. Danach den separaten Legacy-Shootingbereich unter Titeln mit derselben bestätigten Darstellung angleichen, ohne Legacy-Beziehungen zu migrieren oder zu löschen.
-4. Erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
+1. Mit vorhandenen echten Beispielen jeweils eine Galerie und ein Video prüfen: ohne Zuordnung, nur mit Shooting, nur mit Beitrag sowie mit Shooting und Beitrag.
+2. Kontrollieren, ob Model-/Fotografenvererbung, Shootingbeziehung und Veröffentlichungskontext weiterhin fachlich in die richtige Richtung laufen.
+3. Erst nach dieser Bestandsaufnahme entscheiden, welche verbliebenen Legacy- oder Direktzuordnungen entfernt, migriert oder unverändert lesbar gehalten werden.
+4. Danach den separaten Legacy-Shootingbereich unter Titeln visuell angleichen, ohne Beziehungen automatisch zu migrieren oder zu löschen.
+5. Anschließend Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, danach Seiten/Fundstellen.
 
-Print, Rubriken, Titelbeiträge sowie Galerie-/Videokarten bleiben die bestätigte Referenz. Als Nächstes folgt ausschließlich der Feinschliff der Shootingkarten im Haupttab.
+Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
