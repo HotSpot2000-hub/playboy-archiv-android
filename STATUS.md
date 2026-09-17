@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-17
-Referenz-Commit: `a5c5561a78330666611dfb252d8e9cc4a1430095`
+Referenz-Commit: `fb9ff5a5370f426842930a8f33de0cec1de88945`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,14 +18,14 @@ Referenz-Commit: `a5c5561a78330666611dfb252d8e9cc4a1430095`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `a5c5561a78330666611dfb252d8e9cc4a1430095`
+- Aktuell berücksichtigter Code: `fb9ff5a5370f426842930a8f33de0cec1de88945`
 - Titelkopf, Hinzufügen-Button und echte Titel-Beitragskarte sind gerätetest-bestätigt; nur der separate Legacy-Shootingbereich bleibt visuell offen.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
 - Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
 - Rubriken-Übertragung auf die Print-Designsprache einschließlich anschließendem Feinschliff gerätetest-bestätigt.
-- Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag`, die indirekte Shooting-Medienauflösung sowie der bereinigte Importworkflow sind gerätetest-bestätigt.
+- Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag`, die indirekte Shooting-Medienauflösung, der bereinigte Importworkflow sowie der neue Beitrags-Zuordnungsmodus sind gerätetest-bestätigt.
 - Keine automatische Legacy-Migration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -77,7 +77,7 @@ Zielmodell Medien:
 
 Der neue Schreibweg folgt ausschließlich `Datei → Galerie/Video → Shooting`. Die direkte Importaktion `Datei → Shooting` ist entfernt. Vorhandene direkte Legacy-Verknüpfungen bleiben lesbar und können gezielt gelöst werden. Visuelle Galerie-/Video-Zielkarten sind getestet.
 
-Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `a5c5561a78330666611dfb252d8e9cc4a1430095`:
+Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `fb9ff5a5370f426842930a8f33de0cec1de88945`:
 - `Galerien` und `Videos` sind unter dem gemeinsamen Haupttab `Medien` zusammengefasst;
 - der Bereich besitzt oben die feste Überschrift `Medien` mit Suche und passender Hinzufügen-Aktion;
 - darunter folgt wie bei Rubriken ein eigener auberginefarbener Auswahlkopf, über den zwischen `Galerien` und `Videos` gewechselt wird;
@@ -110,6 +110,14 @@ Beitragsnummerierung:
 - individueller Name wird sichtbar bevorzugt;
 - interne Nummer darf stabil gespeichert bleiben;
 - manuelle Eingabe der Beitragsnummer ist aus Anlegen/Bearbeiten entfernt; die sichtbare Nummerierung wird automatisch aus dem Beitragskontext bestimmt.
+
+Gerätetest-bestätigter Beitragseditor:
+- der Veröffentlichungskontext wird bewusst als `Keine Zuordnung`, `Rubrik`, `Titel` oder `Rubrik und Titel` gewählt;
+- Standardfall ist genau ein Kontext: Rubrik oder Titel;
+- nur der zur Auswahl passende Zuordnungsbereich wird angezeigt;
+- `Rubrik und Titel` bleibt als bewusster Ausnahmefall möglich und zeigt einen deutlichen Warnhinweis;
+- vorhandene Doppelzuordnungen werden beim Öffnen erkannt und automatisch im Ausnahmefall `Rubrik und Titel` angezeigt;
+- beim Speichern verlangt der Doppelmodus beide Werte; eine bestehende Beziehung wird nicht stillschweigend beim Öffnen gelöscht.
 
 ## Rubriken -- gerätetest-bestätigter Feinschliff
 
@@ -148,7 +156,8 @@ Aktueller visueller Stand in Commit `8e627b13187d9f317634b2b7e6178883496f7ce0`:
 - die echte Titel-Beitragskarte entspricht optisch der bestätigten Rubrik-Beitragskarte und ist auf dem Android-Gerät bestätigt;
 - Medienvorschau und Medienanzahl bleiben sichtbar; die überflüssigen direkten Galerie-/Video-Sprungbuttons wurden wie bei Rubriken entfernt, ohne Beziehungen oder Medien zu verändern;
 - `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen;
-- der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet weiterhin das alte Shooting-Kartenmuster und muss später kontrolliert an die gemeinsame Designsprache angepasst werden;
+- der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet nun dieselbe 2:3-Vorschau, helle Kartenfarbe, Shooting-/Modelanzeige, Medienanzahl und kompakte Buttonfamilie wie der Shooting-Haupttab;
+- `Bearbeiten` und `Lösen` sowie sämtliche Legacy-Beziehungen blieben unverändert; die Darstellung ist implementiert, aber noch nicht als eigener separater Gerätetest protokolliert;
 - Titel-Fachlogik, Beziehungen und Schema wurden nicht verändert.
 
 ## Titelhierarchien -- vorerst fachlich geklärt
@@ -253,7 +262,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
 - Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- `Bisher direkt zugeordnete Shootings` im Titelbereich verwendet noch das alte Kartenmuster.
+- Die neue Darstellung unter `Bisher direkt zugeordnete Shootings` ist noch nicht als eigener separater Gerätetest protokolliert.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -273,11 +282,11 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Den separaten Legacy-Shootingbereich unter Titeln visuell angleichen.**
+**Die neue Legacy-Shootingdarstellung unter Titeln kurz separat bestätigen.**
 
 Vorgehen:
-1. Ausschließlich die Darstellung unter `Bisher direkt zugeordnete Shootings` an die bestätigte Shootingkartensprache angleichen.
-2. Legacy-Beziehungen nur anzeigen und weiterhin lösbar halten; keine automatische Migration oder neue direkte Titelzuordnung einführen.
+1. Unter einem Titel mit direkter Legacy-Shootingbeziehung Darstellung, `Bearbeiten` und `Lösen` kontrollieren.
+2. Keine automatische Migration oder neue direkte Titelzuordnung einführen.
 3. Danach optional die noch nicht einzeln geprüften neutralen Zustände ohne Shooting beziehungsweise ohne Beitrag kontrollieren.
 4. Anschließend Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, danach Seiten/Fundstellen.
 
