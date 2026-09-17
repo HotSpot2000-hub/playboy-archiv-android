@@ -12368,7 +12368,10 @@ function seriesPublications(series){
 }
 
 function shootingMedia(shoot){
- const media=linkedObjects(shoot.id,'media');
+ const direct=relatedObjects(shoot.id,'media');
+ const galleryMedia=relatedObjects(shoot.id,'gallery').flatMap(galleryPhotoMedia);
+ const videos=relatedObjects(shoot.id,'video').flatMap(videoMedia);
+ const media=[...direct,...galleryMedia,...videos];
  const seen=new Set();
  return media.filter(x=>{
    const k=x.fingerprint||`${x.fileName||''}|${x.size||''}|${x.mimeType||''}|${x.id}`;
