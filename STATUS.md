@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-17
-Referenz-Commit: `fb9ff5a5370f426842930a8f33de0cec1de88945`
+Stand: 2026-09-18
+Referenz-Commit: `6402e6af96b068a7465ba1335e628d783d5799af`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `fb9ff5a5370f426842930a8f33de0cec1de88945`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `fb9ff5a5370f426842930a8f33de0cec1de88945`
+- Aktuell berücksichtigter Code: `6402e6af96b068a7465ba1335e628d783d5799af`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -216,7 +216,19 @@ Zuordnen, Ersetzen und Lösen sind gerätetest-bestätigt.
 
 ### Print-Detailansicht
 
-Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen. Ausbau auf Beiträge und Seiten folgt später.
+Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen sowie dem neuen Artikelbereich. Der aktuelle Stand ist auf dem Android-Gerät bestätigt:
+- die Reihenansicht bleibt ruhig und zeigt ausschließlich die kompakten Ausgaben untereinander;
+- Artikel werden nicht mehr direkt unter der Ausgabekarte aufgefächert, sondern ausschließlich in der geöffneten Ausgabedetailansicht;
+- die sichtbare Aktion heißt im Printkontext `＋ Artikel hinzufügen`; technisch bleibt das Artikelobjekt vorerst `release`;
+- `Bearbeiten` und `Lösen` stehen am Artikel zur Verfügung; `Lösen` entfernt nur Artikel ↔ Ausgabe und erhält Artikel, Galerien und Videos;
+- der Artikeleditor zeigt die konkrete Printausgabe; Rubrik/Titel werden dort eindeutig als `Weitere Zuordnung (optional)` bezeichnet und verändern die Printzuordnung nicht;
+- ein eingetragener Artikel ohne Foto und ohne ermittelbares Shooting erhält `🔎 Recherche`;
+- sobald mindestens ein Artikel Recherchebedarf hat, trägt auch die gesamte Ausgabe `🔎 Recherche` neben dem unabhängigen physischen Bestandsstatus;
+- die Recherchemarkierung verschwindet automatisch, sobald kein eingetragener Artikel mehr diese Bedingung erfüllt;
+- Cover/PDF, Reihenlogik, Bestand und vorhandene Beziehungen blieben unverändert;
+- kein Schema-Bump und keine automatische Migration.
+
+Noch offen sind die eigentlichen Print-Artikeldaten: Seiten/Fundstellen, Models, Fotograf(en), Ort, deutscher Kurztext, gezielte Auswahl einzelner vorhandener Fotos sowie eine ausdrückliche Shootingzuordnung als Rückfall, wenn kein Foto vorliegt.
 
 ### Print-Design -- vollständig gerätetest-bestätigt
 
@@ -262,7 +274,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
-- Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
+- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel**; Artikeldaten, gezielte Foto-/Shootingzuordnung und Seiten/Fundstellen fehlen noch.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -282,13 +294,15 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Etappe 6b: Printausgabe → Beitrag → Galerie/Video kontrolliert ausbauen.**
+**Etappe 6b.2: Printartikel fachlich erfassen und belegen.**
 
 Vorgehen:
-1. Zuerst das bestehende Print-Datenmodell und die vorhandene Print-Detailansicht auf bereits nutzbare Beitragsbeziehungen prüfen.
-2. Danach innerhalb einer konkreten Ausgabe `＋ Beitrag hinzufügen`, Beitragskarten sowie `Bearbeiten` und `Lösen` nach der bestätigten Rubrik-/Titelsprache ergänzen.
-3. Galerie/Video bleiben Medien des Beitrags; keine direkte Shooting- oder Medienzuordnung zur Ausgabe als Ersatz für den Beitrag einführen.
-4. Bestehende Cover-/PDF-Zuordnungen, Reihenlogik und physische Bestandsdaten unverändert halten.
-5. Erst nach bestätigter Ausgabe→Beitrag-Struktur Seiten/Fundstellen ergänzen.
+1. Artikelfelder für Seiten/Fundstellen, Models, Fotograf(en), optionalen Ort und einen kurzen deutschen Erklärungstext ergänzen.
+2. Vorhandene Fotos gezielt und einzeln aus Galerien auswählbar machen; mehrere ausgewählte Fotos dürfen gespeichert werden, die Artikelkarte zeigt nur eine 2:3-Vorschau.
+3. Antippen der Vorschau öffnet die ausgewählten Fotos in der bestehenden Vollbildansicht.
+4. Wenn kein Foto zugeordnet werden kann, eine ausdrückliche Shootingzuordnung als nachvollziehbaren Rückfall ermöglichen.
+5. Models, Fotograf und Ort aus dem gewählten Shooting höchstens vorschlagen; Heftcredits müssen ausdrücklich speicherbar und korrigierbar bleiben.
+6. Cover-Fotograf(en) als eigene Ausgaben-/Coverangabe behandeln und nicht automatisch auf alle Artikel übertragen.
+7. Bestehende Cover-/PDF-Zuordnungen, Reihenlogik, physische Bestandsdaten und gerätetest-bestätigte Recherchekennzeichnung unverändert halten.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
