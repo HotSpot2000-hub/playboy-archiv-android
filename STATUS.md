@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-18
-Referenz-Commit: `6402e6af96b068a7465ba1335e628d783d5799af`
+Referenz-Commit: `708ab35dd0f5148af28dc2f4422d12e37a886754`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `6402e6af96b068a7465ba1335e628d783d5799af`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `6402e6af96b068a7465ba1335e628d783d5799af`
+- Aktuell berücksichtigter Code: `708ab35dd0f5148af28dc2f4422d12e37a886754`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -221,14 +221,23 @@ Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbe
 - Artikel werden nicht mehr direkt unter der Ausgabekarte aufgefächert, sondern ausschließlich in der geöffneten Ausgabedetailansicht;
 - die sichtbare Aktion heißt im Printkontext `＋ Artikel hinzufügen`; technisch bleibt das Artikelobjekt vorerst `release`;
 - `Bearbeiten` und `Lösen` stehen am Artikel zur Verfügung; `Lösen` entfernt nur Artikel ↔ Ausgabe und erhält Artikel, Galerien und Videos;
-- der Artikeleditor zeigt die konkrete Printausgabe; Rubrik/Titel werden dort eindeutig als `Weitere Zuordnung (optional)` bezeichnet und verändern die Printzuordnung nicht;
+- der Artikeleditor zeigt die konkrete Printausgabe;
+- saubere Printartikel besitzen keine zusätzliche Rubrik-/Titelwahl mehr, da die Ausgabe ihr eindeutiger Veröffentlichungskontext ist;
+- vorhandene ältere Zusatzverknüpfungen werden nicht automatisch gelöscht: Nur in diesem Fall erscheint einmalig ein gekennzeichneter Bereinigungsbereich, über den bewusst `Keine Zuordnung` gewählt werden kann; die Printzuordnung bleibt dabei erhalten;
+- Seiten/Fundstelle, ausdrücklich gespeicherte Models, Fotograf(en), optionaler Ort und ein deutscher Erklärungstext können beim Anlegen und Bearbeiten erfasst werden und bleiben vollständig vorausgewählt;
+- die Artikelkarte zeigt diese Heftangaben kompakt neben der festen 2:3-Vorschau;
+- der deutsche Erklärungstext ist standardmäßig auf vier Zeilen begrenzt und lässt sich durch Antippen vollständig ein- und wieder ausklappen;
+- Galerie-/Videozahlen werden im Printartikel nicht mehr angezeigt; die künftige Medienangabe soll nur die tatsächlich ausgewählten Fotos berücksichtigen;
+- ein optionales Entstehungsjahr steht direkt hinter der Seitenangabe, z. B. `Seiten: 1–7 · Entstehung: 1995 (?)`;
+- die Unsicherheit des Jahres wird ausdrücklich gespeichert und kann nach Bestätigung entfernt werden; die ursprüngliche, nicht automatisch interpretierte Quellenangabe, z. B. `95(1)`, bleibt separat erhalten;
+- Heftangaben werden durch eine spätere Shootingzuordnung höchstens vorgeschlagen und dürfen nicht automatisch überschrieben werden;
 - ein eingetragener Artikel ohne Foto und ohne ermittelbares Shooting erhält `🔎 Recherche`;
 - sobald mindestens ein Artikel Recherchebedarf hat, trägt auch die gesamte Ausgabe `🔎 Recherche` neben dem unabhängigen physischen Bestandsstatus;
 - die Recherchemarkierung verschwindet automatisch, sobald kein eingetragener Artikel mehr diese Bedingung erfüllt;
 - Cover/PDF, Reihenlogik, Bestand und vorhandene Beziehungen blieben unverändert;
 - kein Schema-Bump und keine automatische Migration.
 
-Noch offen sind die eigentlichen Print-Artikeldaten: Seiten/Fundstellen, Models, Fotograf(en), Ort, deutscher Kurztext, gezielte Auswahl einzelner vorhandener Fotos sowie eine ausdrückliche Shootingzuordnung als Rückfall, wenn kein Foto vorliegt.
+Noch offen sind die gezielte Auswahl einzelner vorhandener Fotos, deren Vollbildanzeige sowie eine ausdrückliche Shootingzuordnung als Rückfall, wenn kein Foto vorliegt. Ebenfalls offen bleibt die eigene Erfassung von Cover-Fotograf(en) an der Ausgabe.
 
 ### Print-Design -- vollständig gerätetest-bestätigt
 
@@ -274,7 +283,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
-- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel**; Artikeldaten, gezielte Foto-/Shootingzuordnung und Seiten/Fundstellen fehlen noch.
+- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel** einschließlich der fachlichen Artikeldaten; gezielte Foto-/Shootingzuordnung und Cover-Fotograf(en) fehlen noch.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -294,15 +303,16 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Etappe 6b.2: Printartikel fachlich erfassen und belegen.**
+**Etappe 6b.3: Printartikel mit Foto oder Shooting belegen.**
 
 Vorgehen:
-1. Artikelfelder für Seiten/Fundstellen, Models, Fotograf(en), optionalen Ort und einen kurzen deutschen Erklärungstext ergänzen.
-2. Vorhandene Fotos gezielt und einzeln aus Galerien auswählbar machen; mehrere ausgewählte Fotos dürfen gespeichert werden, die Artikelkarte zeigt nur eine 2:3-Vorschau.
+1. Vorhandene Fotos gezielt und einzeln aus Galerien auswählbar machen; mehrere ausgewählte Fotos dürfen gespeichert werden, die Artikelkarte zeigt nur eine 2:3-Vorschau.
+2. Auf der Artikelkarte ausschließlich die Zahl der tatsächlich ausgewählten Fotos anzeigen; keine Galerie-/Videozählung zurückbringen.
 3. Antippen der Vorschau öffnet die ausgewählten Fotos in der bestehenden Vollbildansicht.
 4. Wenn kein Foto zugeordnet werden kann, eine ausdrückliche Shootingzuordnung als nachvollziehbaren Rückfall ermöglichen.
-5. Models, Fotograf und Ort aus dem gewählten Shooting höchstens vorschlagen; Heftcredits müssen ausdrücklich speicherbar und korrigierbar bleiben.
-6. Cover-Fotograf(en) als eigene Ausgaben-/Coverangabe behandeln und nicht automatisch auf alle Artikel übertragen.
-7. Bestehende Cover-/PDF-Zuordnungen, Reihenlogik, physische Bestandsdaten und gerätetest-bestätigte Recherchekennzeichnung unverändert halten.
+5. Models, Fotograf, Ort und Entstehungsjahr aus dem gewählten Shooting höchstens vorschlagen; gespeicherte Heftangaben nicht automatisch überschreiben.
+6. `🔎 Recherche` nur dann auflösen, wenn mindestens ein ausgewähltes Foto oder ein ausdrücklich zugeordnetes Shooting vorhanden ist.
+7. Danach Cover-Fotograf(en) als eigene Ausgaben-/Coverangabe ergänzen und nicht automatisch auf Artikel übertragen.
+8. Bestehende Cover-/PDF-Zuordnungen, Reihenlogik, physische Bestandsdaten und gerätetest-bestätigte Artikelangaben unverändert halten.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
