@@ -207,7 +207,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationArticleArea .seriesContributionCard{display:grid;grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;margin-top:9px;padding:10px;min-height:168px}
 .publicationArticleArea .seriesContributionPreview{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#eee;display:grid;place-items:center}
 .publicationArticleArea .seriesContributionBody{padding:2px 2px 2px 0;text-align:center}
-.publicationArticleSummary{margin-top:9px;font-size:12px;line-height:1.4;color:var(--muted);text-align:left}
+.publicationArticleSummary{margin-top:9px;font-size:12px;line-height:1.4;color:var(--muted);text-align:left;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:6;overflow:hidden;cursor:pointer}
+.publicationArticleSummary.expanded{display:block;overflow:visible}
 .publicationArticleArea .itemActions{justify-content:center;gap:7px}
 .publicationArticleArea .publicationCompactAction{flex:0 0 auto!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
 @media(max-width:430px){
@@ -9005,6 +9006,11 @@ function openPublicationDetail(id){
  box.querySelectorAll('[data-add-publication-contribution]').forEach(x=>x.onclick=()=>openPublicationContribution(x.dataset.addPublicationContribution));
  box.querySelectorAll('[data-edit-archive]').forEach(x=>x.onclick=()=>openArchiveEdit(x.dataset.editArchive));
  box.querySelectorAll('[data-unlink-publication-contribution]').forEach(x=>x.onclick=()=>unlinkPublicationContribution(x.dataset.unlinkPublicationContribution,x.dataset.publicationId,true));
+ box.querySelectorAll('[data-publication-article-summary]').forEach(x=>{
+  const toggle=()=>{x.classList.toggle('expanded');x.setAttribute('aria-expanded',x.classList.contains('expanded')?'true':'false')};
+  x.onclick=toggle;
+  x.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}};
+ });
  hydratePublicationCovers(box);
  hydrateShootingCovers(box);hydrateSeriesCovers(box);hydrateReleaseGalleryCovers(box);hydrateMediaThumbs(box);bindInteractiveMedia(box);
 }
@@ -12017,7 +12023,7 @@ function publicationArticleAreaHtml(pub){
   const parts=publicationContributionDisplayParts(release);
   const photographers=(release.printPhotographerIds||[]).map(id=>personById(id)?.name).filter(Boolean);
   const context=[photographers.length?`📷 ${photographers.join(' + ')}`:'',release.printLocation||''].filter(Boolean).join(' · ');
-  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${release.printPages?`<div class="seriesContributionMeta"><b>Seiten:</b> ${esc(release.printPages)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${release.printSummaryDe?`<div class="publicationArticleSummary">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${release.printPages?`<div class="seriesContributionMeta"><b>Seiten:</b> ${esc(release.printPages)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
  }).join('');
  return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
