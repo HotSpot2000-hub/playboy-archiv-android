@@ -2687,17 +2687,19 @@ body.archiveFilterOpen .bottom{display:none!important}
   <input id="archiveEditContributionNumber" type="number" min="1" step="1" inputmode="numeric">
  </div>
  <div id="archiveEditReleasePublicationContext" class="releaseRelationWarning hidden"></div>
- <label id="archiveEditReleaseRelationModeLabel">Veröffentlichungskontext</label>
- <select id="archiveEditReleaseRelationMode">
-  <option value="none">Keine Zuordnung</option>
-  <option value="series">Rubrik</option>
-  <option value="title">Titel</option>
-  <option value="both">Rubrik und Titel</option>
- </select>
- <div id="archiveEditReleaseSeriesWrap" class="hidden"><label>Rubrik</label><select id="archiveEditReleaseSeries"><option value="">Bitte Rubrik wählen</option></select></div>
- <div id="archiveEditReleaseTitleWrap" class="hidden"><label>Titel</label><select id="archiveEditReleaseTitle"><option value="">Bitte Titel wählen</option></select></div>
- <div id="archiveEditReleaseRelationWarning" class="releaseRelationWarning hidden">Warnung: Dieser Beitrag wird gleichzeitig einer Rubrik und einem Titel zugeordnet. Diesen Ausnahmefall bitte nur verwenden, wenn beide Veröffentlichungskontexte tatsächlich gelten.</div>
- <div id="archiveEditReleaseRelationHelp" class="small" style="margin-top:6px">Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.</div>
+ <div id="archiveEditReleaseRelationControls">
+  <label id="archiveEditReleaseRelationModeLabel">Veröffentlichungskontext</label>
+  <select id="archiveEditReleaseRelationMode">
+   <option value="none">Keine Zuordnung</option>
+   <option value="series">Rubrik</option>
+   <option value="title">Titel</option>
+   <option value="both">Rubrik und Titel</option>
+  </select>
+  <div id="archiveEditReleaseSeriesWrap" class="hidden"><label>Rubrik</label><select id="archiveEditReleaseSeries"><option value="">Bitte Rubrik wählen</option></select></div>
+  <div id="archiveEditReleaseTitleWrap" class="hidden"><label>Titel</label><select id="archiveEditReleaseTitle"><option value="">Bitte Titel wählen</option></select></div>
+  <div id="archiveEditReleaseRelationWarning" class="releaseRelationWarning hidden">Warnung: Dieser Beitrag wird gleichzeitig einer Rubrik und einem Titel zugeordnet. Diesen Ausnahmefall bitte nur verwenden, wenn beide Veröffentlichungskontexte tatsächlich gelten.</div>
+  <div id="archiveEditReleaseRelationHelp" class="small" style="margin-top:6px">Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.</div>
+ </div>
  <div id="archiveEditPrintArticleFields" class="hidden">
   <label>Seiten / Fundstelle</label>
   <input id="archiveEditPrintArticlePages" placeholder="z. B. 1–7">
@@ -12193,16 +12195,18 @@ function configureEditReleaseRelationMode(release){
  const seriesWrap=document.getElementById('archiveEditReleaseSeriesWrap');
  const titleWrap=document.getElementById('archiveEditReleaseTitleWrap');
  const warning=document.getElementById('archiveEditReleaseRelationWarning');
+ const controls=document.getElementById('archiveEditReleaseRelationControls');
  const publicationContext=document.getElementById('archiveEditReleasePublicationContext');
  const modeLabel=document.getElementById('archiveEditReleaseRelationModeLabel');
  const help=document.getElementById('archiveEditReleaseRelationHelp');
  const publication=linkedObjects(release.id,'publication')[0]||null;
- publicationContext.classList.toggle('hidden',!publication);
- publicationContext.textContent=publication?`Printausgabe: ${publicationDisplayTitle(publication)} · ${publicationPeriodLabel(publication)||'Zeitraum offen'}`:'';
- modeLabel.textContent=publication?'Weitere Zuordnung (optional)':'Veröffentlichungskontext';
- help.textContent=publication?'Die Printausgabe bleibt unabhängig davon zugeordnet. Rubrik oder Titel nur ergänzen, wenn dieser Artikel dort ebenfalls veröffentlicht ist.':'Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.';
  const hasSeries=Boolean(linkedObjects(release.id,'series')[0]);
  const hasTitle=Boolean(linkedObjects(release.id,'title')[0]);
+ publicationContext.classList.toggle('hidden',!publication);
+ publicationContext.textContent=publication?`Printausgabe: ${publicationDisplayTitle(publication)} · ${publicationPeriodLabel(publication)||'Zeitraum offen'}`:'';
+ controls.classList.toggle('hidden',Boolean(publication)&&!hasSeries&&!hasTitle);
+ modeLabel.textContent=publication?'Bestehende ältere Zusatzzuordnung':'Veröffentlichungskontext';
+ help.textContent=publication?'Diese Rubrik-/Titelverknüpfung stammt aus dem bisherigen Stand. Zum kontrollierten Bereinigen „Keine Zuordnung“ wählen und speichern. Die Printausgabe bleibt erhalten.':'Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.';
  mode.value=hasSeries&&hasTitle?'both':hasSeries?'series':hasTitle?'title':'none';
  const refresh=()=>{
   const value=mode.value;
