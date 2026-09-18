@@ -199,9 +199,16 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px}
 .publicationIssueActions{margin-top:10px;justify-content:flex-start;flex-wrap:wrap}
 .publicationIssueActions button{flex:0 0 auto;min-height:0;padding:8px 10px;border-radius:10px;background:#fff;font:inherit;font-size:12px;line-height:normal}
-.publicationIssueContributions{grid-column:1/-1;border-top:1px solid #e6dce8;padding-top:10px;min-width:0}
-.publicationIssueContributions .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
-.publicationIssueContributions .seriesAddContributionRow+.seriesContributionCard{margin-top:0}
+.researchBadge{display:inline-flex;align-items:center;border:1px solid #d59a36;border-radius:999px;background:#fff1d7;color:#75470a;padding:4px 8px;font-size:11px;font-weight:750;line-height:1.1}
+.publicationArticleArea{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+.publicationArticleHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.publicationArticleHead h3{margin:0}
+.publicationArticleArea .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
+.publicationArticleArea .seriesContributionCard{display:grid;grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;margin-top:9px;padding:10px;min-height:168px}
+.publicationArticleArea .seriesContributionPreview{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#eee;display:grid;place-items:center}
+.publicationArticleArea .seriesContributionBody{padding:2px 2px 2px 0;text-align:center}
+.publicationArticleArea .itemActions{justify-content:center;gap:7px}
+.publicationArticleArea .publicationCompactAction{flex:0 0 auto!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
 @media(max-width:430px){
  .publicationManageHead{padding:10px;gap:8px}
  .publicationIssueCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
@@ -2677,7 +2684,8 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="hidden" aria-hidden="true">
   <input id="archiveEditContributionNumber" type="number" min="1" step="1" inputmode="numeric">
  </div>
- <label>Veröffentlichungskontext</label>
+ <div id="archiveEditReleasePublicationContext" class="releaseRelationWarning hidden"></div>
+ <label id="archiveEditReleaseRelationModeLabel">Veröffentlichungskontext</label>
  <select id="archiveEditReleaseRelationMode">
   <option value="none">Keine Zuordnung</option>
   <option value="series">Rubrik</option>
@@ -2687,7 +2695,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveEditReleaseSeriesWrap" class="hidden"><label>Rubrik</label><select id="archiveEditReleaseSeries"><option value="">Bitte Rubrik wählen</option></select></div>
  <div id="archiveEditReleaseTitleWrap" class="hidden"><label>Titel</label><select id="archiveEditReleaseTitle"><option value="">Bitte Titel wählen</option></select></div>
  <div id="archiveEditReleaseRelationWarning" class="releaseRelationWarning hidden">Warnung: Dieser Beitrag wird gleichzeitig einer Rubrik und einem Titel zugeordnet. Diesen Ausnahmefall bitte nur verwenden, wenn beide Veröffentlichungskontexte tatsächlich gelten.</div>
- <div class="small" style="margin-top:6px">Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.</div>
+ <div id="archiveEditReleaseRelationHelp" class="small" style="margin-top:6px">Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.</div>
 </div>
  <button class="btn primary" id="saveArchiveEditBtn">Änderungen speichern</button>
  <button class="btn" id="cancelArchiveEditBtn">Abbrechen</button>
@@ -8941,7 +8949,7 @@ function openPublicationDetail(id){
  box.innerHTML=`<div class="publicationDetailSummary">
   <div class="detailHero">
    <div class="small">Ausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
-   <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}</div>
+   <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}${publicationResearchBadge(pub)}</div>
    ${publicationCoverModelNames(pub).length?`<div class="small" style="margin-top:7px"><b>Cover:</b> ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
    ${pub.note?`<div class="publicationDetailNote">${esc(pub.note)}</div>`:''}${renderCredits(pub.credits||[])}
   </div>
@@ -8954,6 +8962,7 @@ function openPublicationDetail(id){
    </div>
   </div>
  </div>
+ ${publicationArticleAreaHtml(pub)}
   <div class="relationBlock"><div class="publicationDetailSeriesHead"><h3>Enthaltene Rubriken</h3><span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
    ${series.length?`<div class="seriesGrid">${series.map(s=>{
       const media=seriesMedia(s),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
@@ -8968,8 +8977,11 @@ function openPublicationDetail(id){
  box.querySelectorAll('[data-open-pdf]').forEach(x=>x.onclick=()=>openPublicationPdf(x.dataset.openPdf));
  box.querySelectorAll('[data-clear-publication-cover]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationCover,'cover'));
  box.querySelectorAll('[data-clear-publication-pdf]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationPdf,'pdf'));
+ box.querySelectorAll('[data-add-publication-contribution]').forEach(x=>x.onclick=()=>openPublicationContribution(x.dataset.addPublicationContribution));
+ box.querySelectorAll('[data-edit-archive]').forEach(x=>x.onclick=()=>openArchiveEdit(x.dataset.editArchive));
+ box.querySelectorAll('[data-unlink-publication-contribution]').forEach(x=>x.onclick=()=>unlinkPublicationContribution(x.dataset.unlinkPublicationContribution,x.dataset.publicationId,true));
  hydratePublicationCovers(box);
- hydrateShootingCovers(box);hydrateSeriesCovers(box);
+ hydrateShootingCovers(box);hydrateSeriesCovers(box);hydrateReleaseGalleryCovers(box);hydrateMediaThumbs(box);bindInteractiveMedia(box);
 }
 function bindSummaryEditable(id,key){
  const el=document.getElementById(id);if(!el)return;
@@ -9108,6 +9120,16 @@ function publicationStockBadge(pub){
  const cls=status==='ordered'?' ordered':status==='none'?' none':'';
  const icon=status==='owned'?'✓ ':status==='ordered'?'◷ ':'';
  return `<span class="stockBadge${cls}">${icon}${esc(publicationStockLabel(pub))}</span>`;
+}
+function publicationArticleNeedsResearch(release){
+ const works=[...releaseWorks(release,'gallery'),...releaseWorks(release,'video')];
+ const hasPhoto=releaseWorks(release,'gallery').some(gallery=>galleryPhotoMedia(gallery).length>0);
+ const hasShooting=linkedObjects(release.id,'shoot').length>0||works.some(work=>linkedObjects(work.id,'shoot').length>0);
+ return !hasPhoto&&!hasShooting;
+}
+function publicationResearchBadge(pub){
+ const open=publicationContributions(pub).filter(publicationArticleNeedsResearch).length;
+ return open?`<span class="researchBadge" title="${open} ${open===1?'Artikel benötigt':'Artikel benötigen'} noch Foto oder Shooting">🔎 Recherche</span>`:'';
 }
 function publicationCoverModelNames(pub){return (pub?.coverModelIds||[]).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean)}
 function modelChips(ids=[]){
@@ -10173,7 +10195,8 @@ if(preview&&l==='week'){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
- document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':a.type==='printSeries'?'Reihe bearbeiten':'Archiv-Eintrag bearbeiten';
+ const releasePublication=a.type==='release'?linkedObjects(a.id,'publication')[0]||null:null;
+ document.getElementById('archiveEditTitle').textContent=a.type==='release'?(releasePublication?'Artikel bearbeiten':'Beitrag bearbeiten'):a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':a.type==='printSeries'?'Reihe bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
@@ -11135,10 +11158,9 @@ function renderArchive(){
          </button>
          <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
          ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-         <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
+         <div class="publicationManageBadges">${publicationStockBadge(pub)}${publicationResearchBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
          <div class="itemActions publicationIssueActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
         </div>
-        ${publicationContributionAreaHtml(pub)}
        </div>`;
      }).join(''):'<div class="small" style="padding:10px">Noch keine Ausgabe in dieser Reihe.</div>';
      return `<div class="publicationManageCard seriesBrowseCard">
@@ -11169,10 +11191,9 @@ function renderArchive(){
         </button>
         <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
         ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-        <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
+        <div class="publicationManageBadges">${publicationStockBadge(pub)}${publicationResearchBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
        </div>
-       ${publicationContributionAreaHtml(pub)}
       </div>`;
     }).join('')}</div>
    </div>`:''}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
@@ -11355,17 +11376,6 @@ function renderArchive(){
   pub.printSeries='';
   pub.title=String(pub.issueNumber||'').trim()?`Ausgabe • Nr. ${pub.issueNumber}`:'Ausgabe';
   if(save()){renderArchive();toast('Ausgabe von der Reihe gelöst.')}
- });
- box.querySelectorAll('[data-add-publication-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openPublicationContribution(x.dataset.addPublicationContribution)});
- box.querySelectorAll('[data-unlink-publication-contribution]').forEach(x=>x.onclick=e=>{
-  e.preventDefault();e.stopPropagation();
-  const release=(state.archive||[]).find(a=>a.id===x.dataset.unlinkPublicationContribution&&a.type==='release');
-  const publication=(state.archive||[]).find(a=>a.id===x.dataset.publicationId&&a.type==='publication');
-  if(!release||!publication||!linkedObjects(release.id,'publication').some(pub=>pub.id===publication.id))return;
-  if(!confirm('Beitrag wirklich von dieser Ausgabe lösen? Der Beitrag sowie zugeordnete Galerien und Videos bleiben im Archiv.'))return;
-  release.links=(release.links||[]).filter(id=>id!==publication.id);
-  publication.links=(publication.links||[]).filter(id=>id!==release.id);
-  if(save()){renderArchive();toast('Beitrag von der Ausgabe gelöst.')}
  });
  box.querySelectorAll('[data-adopt-print-series]').forEach(x=>x.onclick=e=>{
   e.preventDefault();e.stopPropagation();
@@ -11756,6 +11766,19 @@ function releaseWorks(release,type){
 function publicationContributions(pub){
  return linkedObjects(pub.id,'release').filter(release=>release&&release.type==='release');
 }
+function unlinkPublicationContribution(releaseId,publicationId,reopenDetail=false){
+ const release=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');
+ const publication=(state.archive||[]).find(a=>a.id===publicationId&&a.type==='publication');
+ if(!release||!publication||!linkedObjects(release.id,'publication').some(pub=>pub.id===publication.id))return;
+ if(!confirm('Artikel wirklich von dieser Ausgabe lösen? Der Artikel sowie zugeordnete Galerien und Videos bleiben im Archiv.'))return;
+ release.links=(release.links||[]).filter(id=>id!==publication.id);
+ publication.links=(publication.links||[]).filter(id=>id!==release.id);
+ if(save()){
+  renderArchive();
+  if(reopenDetail)openPublicationDetail(publication.id);
+  toast('Artikel von der Ausgabe gelöst.');
+ }
+}
 function assignWorkReleaseNumber(work,release){
  if(!work||!release||(work.type!=='gallery'&&work.type!=='video'))return;
  const key=releaseWorkNumberKey(work.type);
@@ -11932,14 +11955,14 @@ function publicationContributionDisplayParts(release){
  const number=peers.length<2?0:(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored)?stored:peers.findIndex(r=>r.id===release.id)+1);
  return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
 }
-function publicationContributionAreaHtml(pub){
+function publicationArticleAreaHtml(pub){
  const releases=publicationContributions(pub).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
  const cards=releases.map(release=>{
   const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
   const parts=publicationContributionDisplayParts(release);
-  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
  }).join('');
- return `<div class="publicationIssueContributions"><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Beitrag hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Ausgabe zugeordnet.</div>'}</div>`;
+ return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
 function releaseContextIds(release){
  return {
@@ -12053,7 +12076,7 @@ function openPublicationContribution(publicationId){
  document.getElementById('archiveShootLocation').value='';
  document.getElementById('archiveFile').value='';
  refreshArchiveForm();
- document.getElementById('archivePaneTitle').textContent='Beitrag hinzufügen';
+ document.getElementById('archivePaneTitle').textContent='Artikel hinzufügen';
  const modelHint=document.getElementById('archiveContributionModelHint');
  modelHint.textContent='Models werden automatisch aus den Shootings der zugeordneten Galerien und Videos übernommen.';
  modelHint.classList.remove('hidden');
@@ -12089,6 +12112,14 @@ function configureEditReleaseRelationMode(release){
  const seriesWrap=document.getElementById('archiveEditReleaseSeriesWrap');
  const titleWrap=document.getElementById('archiveEditReleaseTitleWrap');
  const warning=document.getElementById('archiveEditReleaseRelationWarning');
+ const publicationContext=document.getElementById('archiveEditReleasePublicationContext');
+ const modeLabel=document.getElementById('archiveEditReleaseRelationModeLabel');
+ const help=document.getElementById('archiveEditReleaseRelationHelp');
+ const publication=linkedObjects(release.id,'publication')[0]||null;
+ publicationContext.classList.toggle('hidden',!publication);
+ publicationContext.textContent=publication?`Printausgabe: ${publicationDisplayTitle(publication)} · ${publicationPeriodLabel(publication)||'Zeitraum offen'}`:'';
+ modeLabel.textContent=publication?'Weitere Zuordnung (optional)':'Veröffentlichungskontext';
+ help.textContent=publication?'Die Printausgabe bleibt unabhängig davon zugeordnet. Rubrik oder Titel nur ergänzen, wenn dieser Artikel dort ebenfalls veröffentlicht ist.':'Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.';
  const hasSeries=Boolean(linkedObjects(release.id,'series')[0]);
  const hasTitle=Boolean(linkedObjects(release.id,'title')[0]);
  mode.value=hasSeries&&hasTitle?'both':hasSeries?'series':hasTitle?'title':'none';
@@ -12271,6 +12302,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    return;
  }
  if(type==='release'){
+  const targetPublicationId=publicationContributionCreateId;
   const name=document.getElementById('archiveReleaseName').value.trim();
   const seriesId=seriesContributionCreateId||(!titleContributionCreateId&&!publicationContributionCreateId?document.getElementById('archiveReleaseSeries').value:'');
   const titleId=titleContributionCreateId||(!seriesContributionCreateId&&!publicationContributionCreateId?document.getElementById('archiveReleaseTitle').value:'');
@@ -12282,7 +12314,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
   item.title=releaseDisplayTitle(item);
-  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':publicationContributionCreateId?'publication':type);return;
+  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':targetPublicationId?'publication':type);
+  if(targetPublicationId)openPublicationDetail(targetPublicationId);
+  return;
  }
  if(type==='title'){
   const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
