@@ -207,6 +207,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationArticleArea .seriesContributionCard{display:grid;grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;margin-top:9px;padding:10px;min-height:168px}
 .publicationArticleArea .seriesContributionPreview{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#eee;display:grid;place-items:center}
 .publicationArticleArea .seriesContributionBody{padding:2px 2px 2px 0;text-align:center}
+.publicationArticleSummary{margin-top:9px;font-size:12px;line-height:1.4;color:var(--muted);text-align:left}
 .publicationArticleArea .itemActions{justify-content:center;gap:7px}
 .publicationArticleArea .publicationCompactAction{flex:0 0 auto!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
 @media(max-width:430px){
@@ -2696,6 +2697,18 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveEditReleaseTitleWrap" class="hidden"><label>Titel</label><select id="archiveEditReleaseTitle"><option value="">Bitte Titel wählen</option></select></div>
  <div id="archiveEditReleaseRelationWarning" class="releaseRelationWarning hidden">Warnung: Dieser Beitrag wird gleichzeitig einer Rubrik und einem Titel zugeordnet. Diesen Ausnahmefall bitte nur verwenden, wenn beide Veröffentlichungskontexte tatsächlich gelten.</div>
  <div id="archiveEditReleaseRelationHelp" class="small" style="margin-top:6px">Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.</div>
+ <div id="archiveEditPrintArticleFields" class="hidden">
+  <label>Seiten / Fundstelle</label>
+  <input id="archiveEditPrintArticlePages" placeholder="z. B. 1–7">
+  <label>Models</label>
+  <div id="archiveEditPrintArticleModels" class="shootModelSelector"></div>
+  <label>Fotograf(en)</label>
+  <div id="archiveEditPrintArticlePhotographers" class="shootModelSelector"></div>
+  <label>Ort <span class="small">(optional)</span></label>
+  <input id="archiveEditPrintArticleLocation" placeholder="z. B. Los Angeles">
+  <label>Kurzer deutscher Erklärungstext <span class="small">(optional)</span></label>
+  <textarea id="archiveEditPrintArticleSummary" placeholder="Kurze inhaltliche Beschreibung des Artikels"></textarea>
+ </div>
 </div>
  <button class="btn primary" id="saveArchiveEditBtn">Änderungen speichern</button>
  <button class="btn" id="cancelArchiveEditBtn">Abbrechen</button>
@@ -2784,12 +2797,24 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="archiveContributionNumberWrap" class="hidden" aria-hidden="true">
    <input id="archiveContributionNumber" type="number" min="1" step="1" inputmode="numeric">
   </div>
-  <div id="archiveReleaseContextWrap">
+ <div id="archiveReleaseContextWrap">
    <label>Rubrik <span class="small">(optional)</span></label>
    <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
    <label>Titel <span class="small">(optional)</span></label>
    <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
    <div class="small" style="margin-top:6px">Rubrik und Titel sind die Veröffentlichungskontexte des Beitrags.</div>
+  </div>
+  <div id="archivePrintArticleFields" class="hidden">
+   <label>Seiten / Fundstelle</label>
+   <input id="archivePrintArticlePages" placeholder="z. B. 1–7">
+   <label>Models</label>
+   <div id="archivePrintArticleModels" class="shootModelSelector"></div>
+   <label>Fotograf(en)</label>
+   <div id="archivePrintArticlePhotographers" class="shootModelSelector"></div>
+   <label>Ort <span class="small">(optional)</span></label>
+   <input id="archivePrintArticleLocation" placeholder="z. B. Los Angeles">
+   <label>Kurzer deutscher Erklärungstext <span class="small">(optional)</span></label>
+   <textarea id="archivePrintArticleSummary" placeholder="Kurze inhaltliche Beschreibung des Artikels"></textarea>
   </div>
  </div>
  <div id="archiveWorkReleaseWrap" class="hidden">
@@ -9074,6 +9099,16 @@ function publicationCoverModelSelector(selected=[],edit=false){
  const cls=edit?'editPublicationCoverModelCheck':'publicationCoverModelCheck';
  return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
 }
+function printArticleModelSelector(selected=[],edit=false){
+ const cls=edit?'editPrintArticleModelCheck':'printArticleModelCheck';
+ return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
+}
+function printArticlePhotographerSelector(selected=[],edit=false){
+ const photographers=(state.people||[]).filter(isPhotographerPerson).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','de',{sensitivity:'base'}));
+ if(!photographers.length)return '<div class="small">Noch keine Fotografen angelegt.</div>';
+ const cls=edit?'editPrintArticlePhotographerCheck':'printArticlePhotographerCheck';
+ return photographers.map(p=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(p.id)}" style="width:auto" ${selected.includes(p.id)?'checked':''}> ${esc(p.name)}</label>`).join('');
+}
 function printSeriesObjects(){
  return (state.archive||[]).filter(a=>a&&a.type==='printSeries').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
 }
@@ -10282,6 +10317,18 @@ document.getElementById('archiveEditDate').oninput=()=>{
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',!isPublication);
  document.getElementById('archiveEditReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
  if(isRelease){document.getElementById('archiveEditReleaseName').value=a.name||'';document.getElementById('archiveEditContributionNumber').value=Number(a.contributionNumber)>0?String(Number(a.contributionNumber)):'';}
+ const editPrintArticleFields=document.getElementById('archiveEditPrintArticleFields');
+ editPrintArticleFields.classList.toggle('hidden',!(isRelease&&releasePublication));
+ if(isRelease&&releasePublication){
+  document.getElementById('archiveEditPrintArticlePages').value=a.printPages||'';
+  document.getElementById('archiveEditPrintArticleModels').innerHTML=printArticleModelSelector(a.printModelIds||[],true);
+  document.getElementById('archiveEditPrintArticlePhotographers').innerHTML=printArticlePhotographerSelector(a.printPhotographerIds||[],true);
+  document.getElementById('archiveEditPrintArticleLocation').value=a.printLocation||'';
+  document.getElementById('archiveEditPrintArticleSummary').value=a.printSummaryDe||'';
+ }else{
+  document.getElementById('archiveEditPrintArticleModels').innerHTML='';
+  document.getElementById('archiveEditPrintArticlePhotographers').innerHTML='';
+ }
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
  workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
  if(isGallery||isVideo)fillWorkReleaseSelector('archiveEditWorkRelease',a);
@@ -10370,6 +10417,13 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    if(mode==='title'&&!titleId){toast('Bitte einen Titel wählen.');return}
    if(mode==='both'&&(!seriesId||!titleId)){toast('Bitte für „Rubrik und Titel“ beide Zuordnungen wählen.');return}
    setReleaseRelations(a,seriesId,titleId);
+   if(linkedObjects(a.id,'publication')[0]){
+    a.printPages=document.getElementById('archiveEditPrintArticlePages').value.trim();
+    a.printModelIds=[...document.querySelectorAll('#archiveEditPrintArticleModels .editPrintArticleModelCheck:checked')].map(x=>x.value);
+    a.printPhotographerIds=[...document.querySelectorAll('#archiveEditPrintArticlePhotographers .editPrintArticlePhotographerCheck:checked')].map(x=>x.value);
+    a.printLocation=document.getElementById('archiveEditPrintArticleLocation').value.trim();
+    a.printSummaryDe=document.getElementById('archiveEditPrintArticleSummary').value.trim();
+   }
  }
  if(a.type==='shoot'){
    const selected=[...document.querySelectorAll('#archiveEditShootModels .editShootModelCheck:checked')].map(x=>x.value);
@@ -11948,7 +12002,8 @@ function publicationContributionPeers(release){
  return (state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'publication').some(pub=>pub.id===publicationId)&&releaseModelKey(r)===key).sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
 }
 function publicationContributionDisplayParts(release){
- const modelNames=releaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ const explicitIds=(release?.printModelIds||[]).filter(Boolean);
+ const modelNames=(explicitIds.length?explicitIds:releaseModelIds(release)).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
  const name=String(release?.name||'').trim();
  const peers=publicationContributionPeers(release);
  const stored=Number(release?.contributionNumber)||0;
@@ -11960,7 +12015,9 @@ function publicationArticleAreaHtml(pub){
  const cards=releases.map(release=>{
   const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
   const parts=publicationContributionDisplayParts(release);
-  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  const photographers=(release.printPhotographerIds||[]).map(id=>personById(id)?.name).filter(Boolean);
+  const context=[photographers.length?`📷 ${photographers.join(' + ')}`:'',release.printLocation||''].filter(Boolean).join(' · ');
+  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${release.printPages?`<div class="seriesContributionMeta"><b>Seiten:</b> ${esc(release.printPages)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${release.printSummaryDe?`<div class="publicationArticleSummary">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
  }).join('');
  return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
@@ -12183,6 +12240,19 @@ function refreshArchiveForm(){
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
  document.getElementById('archiveReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
+ const printArticleFields=document.getElementById('archivePrintArticleFields');
+ const isPrintArticle=isRelease&&Boolean(publicationContributionCreateId);
+ printArticleFields.classList.toggle('hidden',!isPrintArticle);
+ if(isPrintArticle){
+  document.getElementById('archivePrintArticlePages').value='';
+  document.getElementById('archivePrintArticleModels').innerHTML=printArticleModelSelector([],false);
+  document.getElementById('archivePrintArticlePhotographers').innerHTML=printArticlePhotographerSelector([],false);
+  document.getElementById('archivePrintArticleLocation').value='';
+  document.getElementById('archivePrintArticleSummary').value='';
+ }else{
+  document.getElementById('archivePrintArticleModels').innerHTML='';
+  document.getElementById('archivePrintArticlePhotographers').innerHTML='';
+ }
  document.getElementById('archiveWorkReleaseWrap').classList.toggle('hidden',!(isGallery||isVideo));
  document.getElementById('archiveGalleryShootWrap').classList.toggle('hidden',!isGallery);
  document.getElementById('archiveVideoShootWrap').classList.toggle('hidden',!isVideo);
@@ -12311,6 +12381,13 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
   const contributionNumber=enteredNumber>0?enteredNumber:0;
   const item={id:'A-'+Date.now(),type:'release',name,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
+  if(targetPublicationId){
+   item.printPages=document.getElementById('archivePrintArticlePages').value.trim();
+   item.printModelIds=[...document.querySelectorAll('#archivePrintArticleModels .printArticleModelCheck:checked')].map(x=>x.value);
+   item.printPhotographerIds=[...document.querySelectorAll('#archivePrintArticlePhotographers .printArticlePhotographerCheck:checked')].map(x=>x.value);
+   item.printLocation=document.getElementById('archivePrintArticleLocation').value.trim();
+   item.printSummaryDe=document.getElementById('archivePrintArticleSummary').value.trim();
+  }
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
   item.title=releaseDisplayTitle(item);
