@@ -2701,6 +2701,11 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div id="archiveEditPrintArticleFields" class="hidden">
   <label>Seiten / Fundstelle</label>
   <input id="archiveEditPrintArticlePages" placeholder="z. B. 1–7">
+  <label>Entstehungsjahr <span class="small">(optional)</span></label>
+  <input id="archiveEditPrintArticleOriginYear" inputmode="numeric" placeholder="z. B. 1995">
+  <label style="font-weight:400"><input id="archiveEditPrintArticleOriginYearUncertain" type="checkbox" style="width:auto"> Jahr noch nicht bestätigt (?)</label>
+  <label>Ursprüngliche Quellenangabe <span class="small">(optional)</span></label>
+  <input id="archiveEditPrintArticleOriginSource" placeholder="z. B. 95(1)">
   <label>Models</label>
   <div id="archiveEditPrintArticleModels" class="shootModelSelector"></div>
   <label>Fotograf(en)</label>
@@ -2808,6 +2813,11 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="archivePrintArticleFields" class="hidden">
    <label>Seiten / Fundstelle</label>
    <input id="archivePrintArticlePages" placeholder="z. B. 1–7">
+   <label>Entstehungsjahr <span class="small">(optional)</span></label>
+   <input id="archivePrintArticleOriginYear" inputmode="numeric" placeholder="z. B. 1995">
+   <label style="font-weight:400"><input id="archivePrintArticleOriginYearUncertain" type="checkbox" style="width:auto"> Jahr noch nicht bestätigt (?)</label>
+   <label>Ursprüngliche Quellenangabe <span class="small">(optional)</span></label>
+   <input id="archivePrintArticleOriginSource" placeholder="z. B. 95(1)">
    <label>Models</label>
    <div id="archivePrintArticleModels" class="shootModelSelector"></div>
    <label>Fotograf(en)</label>
@@ -10327,6 +10337,9 @@ document.getElementById('archiveEditDate').oninput=()=>{
  editPrintArticleFields.classList.toggle('hidden',!(isRelease&&releasePublication));
  if(isRelease&&releasePublication){
   document.getElementById('archiveEditPrintArticlePages').value=a.printPages||'';
+  document.getElementById('archiveEditPrintArticleOriginYear').value=a.printOriginYear||'';
+  document.getElementById('archiveEditPrintArticleOriginYearUncertain').checked=Boolean(a.printOriginYearUncertain);
+  document.getElementById('archiveEditPrintArticleOriginSource').value=a.printOriginSource||'';
   document.getElementById('archiveEditPrintArticleModels').innerHTML=printArticleModelSelector(a.printModelIds||[],true);
   document.getElementById('archiveEditPrintArticlePhotographers').innerHTML=printArticlePhotographerSelector(a.printPhotographerIds||[],true);
   document.getElementById('archiveEditPrintArticleLocation').value=a.printLocation||'';
@@ -10425,6 +10438,9 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    setReleaseRelations(a,seriesId,titleId);
    if(linkedObjects(a.id,'publication')[0]){
     a.printPages=document.getElementById('archiveEditPrintArticlePages').value.trim();
+    a.printOriginYear=document.getElementById('archiveEditPrintArticleOriginYear').value.trim();
+    a.printOriginYearUncertain=document.getElementById('archiveEditPrintArticleOriginYearUncertain').checked;
+    a.printOriginSource=document.getElementById('archiveEditPrintArticleOriginSource').value.trim();
     a.printModelIds=[...document.querySelectorAll('#archiveEditPrintArticleModels .editPrintArticleModelCheck:checked')].map(x=>x.value);
     a.printPhotographerIds=[...document.querySelectorAll('#archiveEditPrintArticlePhotographers .editPrintArticlePhotographerCheck:checked')].map(x=>x.value);
     a.printLocation=document.getElementById('archiveEditPrintArticleLocation').value.trim();
@@ -12023,7 +12039,9 @@ function publicationArticleAreaHtml(pub){
   const parts=publicationContributionDisplayParts(release);
   const photographers=(release.printPhotographerIds||[]).map(id=>personById(id)?.name).filter(Boolean);
   const context=[photographers.length?`📷 ${photographers.join(' + ')}`:'',release.printLocation||''].filter(Boolean).join(' · ');
-  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${release.printPages?`<div class="seriesContributionMeta"><b>Seiten:</b> ${esc(release.printPages)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  const originYear=String(release.printOriginYear||'').trim();
+  const finding=[release.printPages?`Seiten: ${release.printPages}`:'',originYear?`Entstehung: ${originYear}${release.printOriginYearUncertain?' (?)':''}`:''].filter(Boolean).join(' · ');
+  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
  }).join('');
  return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
@@ -12141,7 +12159,7 @@ function openPublicationContribution(publicationId){
  refreshArchiveForm();
  document.getElementById('archivePaneTitle').textContent='Artikel hinzufügen';
  const modelHint=document.getElementById('archiveContributionModelHint');
- modelHint.textContent='Models werden automatisch aus den Shootings der zugeordneten Galerien und Videos übernommen.';
+ modelHint.textContent='Models, Fotograf, Ort und Entstehungsjahr werden als Heftangaben gespeichert. Eine spätere Shootingzuordnung darf diese Angaben nur vorschlagen, nicht überschreiben.';
  modelHint.classList.remove('hidden');
  document.getElementById('archiveTypeWrap').classList.add('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
@@ -12251,6 +12269,9 @@ function refreshArchiveForm(){
  printArticleFields.classList.toggle('hidden',!isPrintArticle);
  if(isPrintArticle){
   document.getElementById('archivePrintArticlePages').value='';
+  document.getElementById('archivePrintArticleOriginYear').value='';
+  document.getElementById('archivePrintArticleOriginYearUncertain').checked=false;
+  document.getElementById('archivePrintArticleOriginSource').value='';
   document.getElementById('archivePrintArticleModels').innerHTML=printArticleModelSelector([],false);
   document.getElementById('archivePrintArticlePhotographers').innerHTML=printArticlePhotographerSelector([],false);
   document.getElementById('archivePrintArticleLocation').value='';
@@ -12389,6 +12410,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   const item={id:'A-'+Date.now(),type:'release',name,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
   if(targetPublicationId){
    item.printPages=document.getElementById('archivePrintArticlePages').value.trim();
+   item.printOriginYear=document.getElementById('archivePrintArticleOriginYear').value.trim();
+   item.printOriginYearUncertain=document.getElementById('archivePrintArticleOriginYearUncertain').checked;
+   item.printOriginSource=document.getElementById('archivePrintArticleOriginSource').value.trim();
    item.printModelIds=[...document.querySelectorAll('#archivePrintArticleModels .printArticleModelCheck:checked')].map(x=>x.value);
    item.printPhotographerIds=[...document.querySelectorAll('#archivePrintArticlePhotographers .printArticlePhotographerCheck:checked')].map(x=>x.value);
    item.printLocation=document.getElementById('archivePrintArticleLocation').value.trim();
