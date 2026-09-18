@@ -211,6 +211,19 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationArticleSummary.expanded{display:block;overflow:visible}
 .publicationArticleArea .itemActions{justify-content:center;gap:7px}
 .publicationArticleArea .publicationCompactAction{flex:0 0 auto!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
+.printArticleSourceTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 8px}
+.printArticleSourceTabs button{min-height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-weight:700}
+.printArticleSourceTabs button.active{background:#171717;color:#fff;border-color:#171717}
+.printArticleSourcePanel.hidden{display:none}
+.printArticlePhotoPicker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;max-height:48vh;overflow:auto;padding:2px}
+.printArticlePhotoChoice{position:relative;border:1px solid var(--line);border-radius:12px;background:#fff;padding:5px;overflow:hidden;font:inherit;text-align:left}
+.printArticlePhotoChoice.selected{border-color:#171717;box-shadow:0 0 0 2px #171717 inset}
+.printArticlePhotoThumb{display:grid;place-items:center;width:100%;aspect-ratio:2/3;border-radius:9px;background:#eee;overflow:hidden}
+.printArticlePhotoThumb img{width:100%;height:100%;object-fit:cover}
+.printArticlePhotoMark{position:absolute;right:9px;top:9px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.94);border:1px solid rgba(0,0,0,.18);font-weight:800}
+.printArticlePhotoChoice.selected .printArticlePhotoMark{background:#171717;color:#fff;border-color:#171717}
+.printArticlePhotoLabel{display:block;margin-top:5px;font-size:10px;line-height:1.25;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.printArticleShootingPicker{display:grid;gap:9px;max-height:48vh;overflow:auto;padding:2px}
 @media(max-width:430px){
  .publicationManageHead{padding:10px;gap:8px}
  .publicationIssueCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
@@ -2716,6 +2729,11 @@ body.archiveFilterOpen .bottom{display:none!important}
   <input id="archiveEditPrintArticleLocation" placeholder="z. B. Los Angeles">
   <label>Kurzer deutscher Erklärungstext <span class="small">(optional)</span></label>
   <textarea id="archiveEditPrintArticleSummary" placeholder="Kurze inhaltliche Beschreibung des Artikels"></textarea>
+  <label>Beleg <span class="small">(optional)</span></label>
+  <div class="small">Einzelne Fotos auswählen oder ersatzweise ein Shooting zuordnen.</div>
+  <div class="printArticleSourceTabs"><button type="button" id="archiveEditPrintArticlePhotosTab">Fotos</button><button type="button" id="archiveEditPrintArticleShootingTab">Shooting</button></div>
+  <div id="archiveEditPrintArticlePhotosPanel" class="printArticleSourcePanel"><div id="archiveEditPrintArticlePhotos" class="printArticlePhotoPicker"></div></div>
+  <div id="archiveEditPrintArticleShootingPanel" class="printArticleSourcePanel hidden"><input id="archiveEditPrintArticleShooting" type="hidden"><div id="archiveEditPrintArticleShootingPicker" class="printArticleShootingPicker"></div></div>
  </div>
 </div>
  <button class="btn primary" id="saveArchiveEditBtn">Änderungen speichern</button>
@@ -2828,6 +2846,11 @@ body.archiveFilterOpen .bottom{display:none!important}
    <input id="archivePrintArticleLocation" placeholder="z. B. Los Angeles">
    <label>Kurzer deutscher Erklärungstext <span class="small">(optional)</span></label>
    <textarea id="archivePrintArticleSummary" placeholder="Kurze inhaltliche Beschreibung des Artikels"></textarea>
+   <label>Beleg <span class="small">(optional)</span></label>
+   <div class="small">Einzelne Fotos auswählen oder ersatzweise ein Shooting zuordnen.</div>
+   <div class="printArticleSourceTabs"><button type="button" id="archivePrintArticlePhotosTab">Fotos</button><button type="button" id="archivePrintArticleShootingTab">Shooting</button></div>
+   <div id="archivePrintArticlePhotosPanel" class="printArticleSourcePanel"><div id="archivePrintArticlePhotos" class="printArticlePhotoPicker"></div></div>
+   <div id="archivePrintArticleShootingPanel" class="printArticleSourcePanel hidden"><input id="archivePrintArticleShooting" type="hidden"><div id="archivePrintArticleShootingPicker" class="printArticleShootingPicker"></div></div>
   </div>
  </div>
  <div id="archiveWorkReleaseWrap" class="hidden">
@@ -9175,9 +9198,8 @@ function publicationStockBadge(pub){
  return `<span class="stockBadge${cls}">${icon}${esc(publicationStockLabel(pub))}</span>`;
 }
 function publicationArticleNeedsResearch(release){
- const works=[...releaseWorks(release,'gallery'),...releaseWorks(release,'video')];
- const hasPhoto=releaseWorks(release,'gallery').some(gallery=>galleryPhotoMedia(gallery).length>0);
- const hasShooting=linkedObjects(release.id,'shoot').length>0||works.some(work=>linkedObjects(work.id,'shoot').length>0);
+ const hasPhoto=(release?.printPhotoIds||[]).some(id=>(state.archive||[]).some(a=>a&&a.id===id&&a.type==='media'&&String(a.mimeType||'').startsWith('image/')));
+ const hasShooting=Boolean((state.archive||[]).find(a=>a&&a.id===release?.printShootingId&&a.type==='shoot'));
  return !hasPhoto&&!hasShooting;
 }
 function publicationResearchBadge(pub){
@@ -10346,9 +10368,12 @@ document.getElementById('archiveEditDate').oninput=()=>{
   document.getElementById('archiveEditPrintArticlePhotographers').innerHTML=printArticlePhotographerSelector(a.printPhotographerIds||[],true);
   document.getElementById('archiveEditPrintArticleLocation').value=a.printLocation||'';
   document.getElementById('archiveEditPrintArticleSummary').value=a.printSummaryDe||'';
+  configurePrintArticleSource('archiveEdit',a);
  }else{
   document.getElementById('archiveEditPrintArticleModels').innerHTML='';
   document.getElementById('archiveEditPrintArticlePhotographers').innerHTML='';
+  document.getElementById('archiveEditPrintArticlePhotos').innerHTML='';
+  document.getElementById('archiveEditPrintArticleShootingPicker').innerHTML='';
  }
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
  workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
@@ -10447,6 +10472,8 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
     a.printPhotographerIds=[...document.querySelectorAll('#archiveEditPrintArticlePhotographers .editPrintArticlePhotographerCheck:checked')].map(x=>x.value);
     a.printLocation=document.getElementById('archiveEditPrintArticleLocation').value.trim();
     a.printSummaryDe=document.getElementById('archiveEditPrintArticleSummary').value.trim();
+    a.printPhotoIds=[...document.querySelectorAll('#archiveEditPrintArticlePhotos .printArticlePhotoChoice.selected')].map(x=>x.dataset.printArticlePhoto).filter(Boolean);
+    a.printShootingId=document.getElementById('archiveEditPrintArticleShooting').value;
    }
  }
  if(a.type==='shoot'){
@@ -11925,6 +11952,62 @@ function workShootingChoiceHtml(shoot,current){
  const context=[shoot.date?germanDateLabel(shoot.date):'',shoot.location||''].filter(Boolean).join(' · ');
  return `<button type="button" class="workReleaseChoice workShootingChoice ${shoot.id===current?'selected':''}" data-work-shooting-choice="${esc(shoot.id)}"><span class="workReleaseChoicePreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</span><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(display.models)}</span><span class="workReleaseChoiceLabel">${esc(display.title)}</span>${context?`<span class="workReleaseChoiceContext">${esc(context)}</span>`:''}<span class="workReleaseChoiceMeta">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
 }
+function printArticleAvailablePhotos(){
+ const seen=new Set(),entries=[];
+ (state.archive||[]).filter(a=>a&&a.type==='gallery').forEach(gallery=>{
+  galleryPhotoMedia(gallery).forEach(photo=>{
+   if(seen.has(photo.id))return;
+   seen.add(photo.id);
+   entries.push({photo,gallery});
+  });
+ });
+ return entries;
+}
+async function hydratePrintArticlePhotoPicker(root){
+ const nodes=[...root.querySelectorAll('[data-print-article-photo-thumb]')];
+ for(const node of nodes){
+  try{
+   const blob=await getMedia(node.dataset.printArticlePhotoThumb);
+   node.innerHTML=blob&&String(blob.type||'').startsWith('image/')?`<img src="${URL.createObjectURL(blob)}" alt="Foto">`:'<span class="small">Kein Bild</span>';
+  }catch(e){node.innerHTML='<span class="small">Nicht verfügbar</span>'}
+ }
+}
+function configurePrintArticleSource(prefix,release=null){
+ const photosTab=document.getElementById(prefix+'PrintArticlePhotosTab');
+ const shootingTab=document.getElementById(prefix+'PrintArticleShootingTab');
+ const photosPanel=document.getElementById(prefix+'PrintArticlePhotosPanel');
+ const shootingPanel=document.getElementById(prefix+'PrintArticleShootingPanel');
+ const photosRoot=document.getElementById(prefix+'PrintArticlePhotos');
+ const shootingRoot=document.getElementById(prefix+'PrintArticleShootingPicker');
+ const shootingInput=document.getElementById(prefix+'PrintArticleShooting');
+ if(!photosTab||!shootingTab||!photosPanel||!shootingPanel||!photosRoot||!shootingRoot||!shootingInput)return;
+ const selectedPhotos=new Set(release?.printPhotoIds||[]);
+ const currentShooting=release?.printShootingId||'';
+ const entries=printArticleAvailablePhotos();
+ photosRoot.innerHTML=entries.length?entries.map(({photo,gallery})=>`<button type="button" class="printArticlePhotoChoice ${selectedPhotos.has(photo.id)?'selected':''}" data-print-article-photo="${esc(photo.id)}" aria-pressed="${selectedPhotos.has(photo.id)?'true':'false'}"><span class="printArticlePhotoThumb" data-print-article-photo-thumb="${esc(photo.id)}"><span class="small">Lade …</span></span><span class="printArticlePhotoMark">${selectedPhotos.has(photo.id)?'✓':'○'}</span><span class="printArticlePhotoLabel">${esc(managementWorkDisplayName(gallery))}</span></button>`).join(''):'<div class="small">Noch keine Fotos in vorhandenen Galerien.</div>';
+ const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot').slice().sort(sortShootingsNatural);
+ const none=`<button type="button" class="workReleaseChoice none ${currentShooting?'':'selected'}" data-print-article-shooting=""><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">Kein Shooting zugeordnet</span><span class="workReleaseChoiceContext">Artikel bleibt im Recherchebedarf, solange auch kein Foto ausgewählt ist.</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+ shootingRoot.innerHTML=none+shoots.map(sh=>workShootingChoiceHtml(sh,currentShooting).replaceAll('data-work-shooting-choice','data-print-article-shooting')).join('');
+ shootingInput.value=currentShooting;
+ const show=kind=>{
+  const photosActive=kind==='photos';
+  photosTab.classList.toggle('active',photosActive);shootingTab.classList.toggle('active',!photosActive);
+  photosPanel.classList.toggle('hidden',!photosActive);shootingPanel.classList.toggle('hidden',photosActive);
+ };
+ photosTab.onclick=()=>show('photos');shootingTab.onclick=()=>show('shooting');
+ photosRoot.querySelectorAll('[data-print-article-photo]').forEach(btn=>btn.onclick=()=>{
+  const selected=!btn.classList.contains('selected');
+  btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',selected?'true':'false');btn.querySelector('.printArticlePhotoMark').textContent=selected?'✓':'○';
+  if(selected){shootingInput.value='';shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(x=>x.classList.toggle('selected',!x.dataset.printArticleShooting))}
+ });
+ shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(btn=>btn.onclick=()=>{
+  const id=btn.dataset.printArticleShooting||'';shootingInput.value=id;
+  shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(x=>x.classList.toggle('selected',x===btn));
+  if(id)photosRoot.querySelectorAll('[data-print-article-photo]').forEach(x=>{x.classList.remove('selected');x.setAttribute('aria-pressed','false');x.querySelector('.printArticlePhotoMark').textContent='○'});
+ });
+ show(selectedPhotos.size||!currentShooting?'photos':'shooting');
+ hydratePrintArticlePhotoPicker(photosRoot);hydrateShootingCovers(shootingRoot);
+}
 function fillWorkShootingSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
  const current=(work?.type==='gallery'?galleryShootings(work):videoShootings(work))[0]?.id||'';
@@ -12034,16 +12117,25 @@ function publicationContributionDisplayParts(release){
  const number=peers.length<2?0:(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored)?stored:peers.findIndex(r=>r.id===release.id)+1);
  return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
 }
+function publicationArticlePreviewHtml(release){
+ const photoIds=(release?.printPhotoIds||[]).filter(id=>(state.archive||[]).some(a=>a&&a.id===id&&a.type==='media'&&String(a.mimeType||'').startsWith('image/')));
+ if(photoIds.length)return `<div class="seriesContributionPreview mediaThumb" data-media-id="${esc(photoIds[0])}" data-gallery-ids="${esc(photoIds.join(','))}"><div class="small" style="padding:8px">Lade Vorschau …</div></div>`;
+ const shoot=(state.archive||[]).find(a=>a&&a.id===release?.printShootingId&&a.type==='shoot');
+ if(shoot){const parts=shootingPreviewParts(shoot);return `<div class="seriesContributionPreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</div>`}
+ return '<div class="seriesContributionPreview"><div class="small" style="padding:8px">Noch keine Vorschau</div></div>';
+}
 function publicationArticleAreaHtml(pub){
  const releases=publicationContributions(pub).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
  const cards=releases.map(release=>{
-  const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
   const parts=publicationContributionDisplayParts(release);
   const photographers=(release.printPhotographerIds||[]).map(id=>personById(id)?.name).filter(Boolean);
   const context=[photographers.length?`📷 ${photographers.join(' + ')}`:'',release.printLocation||''].filter(Boolean).join(' · ');
   const originYear=String(release.printOriginYear||'').trim();
   const finding=[release.printPages?`Seiten: ${release.printPages}`:'',originYear?`Entstehung: ${originYear}${release.printOriginYearUncertain?' (?)':''}`:''].filter(Boolean).join(' · ');
-  return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  const photoCount=(release.printPhotoIds||[]).filter(id=>(state.archive||[]).some(a=>a&&a.id===id&&a.type==='media'&&String(a.mimeType||'').startsWith('image/'))).length;
+  const shoot=(state.archive||[]).find(a=>a&&a.id===release.printShootingId&&a.type==='shoot')||null;
+  const sourceLabel=photoCount?countLabel(photoCount,'Foto','Fotos'):shoot?`Shooting: ${shootingDisplayLabel(shoot)}`:'';
+  return `<div class="seriesContributionCard">${publicationArticlePreviewHtml(release)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}${sourceLabel?`<div class="seriesContributionMeta">${esc(sourceLabel)}</div>`:''}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}${publicationArticleNeedsResearch(release)?'<div style="margin-top:9px"><span class="researchBadge">🔎 Recherche</span></div>':''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
  }).join('');
  return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
@@ -12280,9 +12372,12 @@ function refreshArchiveForm(){
   document.getElementById('archivePrintArticlePhotographers').innerHTML=printArticlePhotographerSelector([],false);
   document.getElementById('archivePrintArticleLocation').value='';
   document.getElementById('archivePrintArticleSummary').value='';
+  configurePrintArticleSource('archive',null);
  }else{
   document.getElementById('archivePrintArticleModels').innerHTML='';
   document.getElementById('archivePrintArticlePhotographers').innerHTML='';
+  document.getElementById('archivePrintArticlePhotos').innerHTML='';
+  document.getElementById('archivePrintArticleShootingPicker').innerHTML='';
  }
  document.getElementById('archiveWorkReleaseWrap').classList.toggle('hidden',!(isGallery||isVideo));
  document.getElementById('archiveGalleryShootWrap').classList.toggle('hidden',!isGallery);
@@ -12421,6 +12516,8 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    item.printPhotographerIds=[...document.querySelectorAll('#archivePrintArticlePhotographers .printArticlePhotographerCheck:checked')].map(x=>x.value);
    item.printLocation=document.getElementById('archivePrintArticleLocation').value.trim();
    item.printSummaryDe=document.getElementById('archivePrintArticleSummary').value.trim();
+   item.printPhotoIds=[...document.querySelectorAll('#archivePrintArticlePhotos .printArticlePhotoChoice.selected')].map(x=>x.dataset.printArticlePhoto).filter(Boolean);
+   item.printShootingId=document.getElementById('archivePrintArticleShooting').value;
   }
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
