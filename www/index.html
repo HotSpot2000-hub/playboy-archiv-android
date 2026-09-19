@@ -1083,6 +1083,9 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .galleryPhotoGrid .mediaThumb{aspect-ratio:2/3;margin:0;border:1px solid var(--line);border-radius:8px;background:#eee;overflow:hidden;cursor:pointer}
 .galleryPhotoGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}
 @media(max-width:700px){.galleryPhotoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.managementVideoButtons{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:8px}
+.managementVideoQuick{width:38px;height:38px;min-height:0!important;border:1px solid var(--line)!important;border-radius:50%!important;background:#fff!important;padding:0!important;font-size:17px!important;line-height:1!important;box-shadow:none!important}
+.galleryDetailHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}.galleryDetailHead h2{margin:0}.galleryDetailGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.galleryDetailGrid .mediaThumb{aspect-ratio:2/3;margin:0;border-radius:10px;overflow:hidden;background:#eee;cursor:pointer}.galleryDetailGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}@media(max-width:430px){.galleryDetailGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.mediaWorkflowTabs{display:grid}.mediaWorkflowTabs button{min-height:46px;-webkit-tap-highlight-color:transparent}.mediaWorkflowTabs button:active{transform:scale(.97)}}
 
 /* v162: mobile Medienauswahl nach Inbox-Prinzip */
@@ -1301,6 +1304,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard,.managementWorkList .seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;overflow:visible;background:#f8f3f8;margin-top:9px;min-height:168px;padding:10px}
 .seriesBrowseCard .seriesContributionPreview,.managementTitleContributions .seriesContributionPreview,.managementWorkList .seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border:0;overflow:hidden;align-self:stretch;display:grid;place-items:center;border-radius:12px}
 .seriesContributionPreview{border-radius:12px}
+.seriesContributionPreview[data-open-gallery-detail]{cursor:pointer}
 .seriesContributionPreview img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
 .shootingCover img,.workReleaseChoicePreview img{border-radius:12px}
 .seriesContributionBody{grid-column:2;grid-row:1;padding:12px;display:flex;flex-direction:column;justify-content:center;min-width:0;text-align:center}
@@ -1506,13 +1510,13 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   .videoPlayerOverlay.appFullscreen video{
   max-height:none !important;
   }
-  .lightboxClose,
-  .videoClose{
-    top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
-  }
 .lightboxClose,
 .videoClose{
-  top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
+  top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
+}
+.lightboxClose,
+.videoClose{
+  top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
 }
 
 .lightboxClose,
@@ -1523,7 +1527,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 .lightboxSlideshow,
 .lightboxDownloadAll{
-  top:calc(env(safe-area-inset-top, 0px) + 76px) !important;
+  top:calc(env(safe-area-inset-top, 0px) + 14px) !important;
 }
   }
 
@@ -2740,6 +2744,11 @@ body.archiveFilterOpen .bottom{display:none!important}
 <div id="seriesDetailPane" class="hidden">
  <div id="seriesDetailContent"></div>
  <button class="btn" id="closeSeriesDetail">Zurück</button>
+</div>
+
+<div id="galleryDetailPane" class="hidden">
+ <div id="galleryDetailContent"></div>
+ <button class="btn" id="closeGalleryDetail">Zurück</button>
 </div>
 
 <div id="legacyMigrationPane" class="hidden">
@@ -5009,7 +5018,7 @@ document.getElementById('profileRatingIncomplete').textContent=
  renderArchive();
 }
 function openOverlay(pane){
- ['timelinePane','researchPane','researchImportPane','factPromotionPane','bioDraftPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','legacyMigrationPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+ ['timelinePane','researchPane','researchImportPane','factPromotionPane','bioDraftPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','galleryDetailPane','legacyMigrationPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
  document.getElementById(pane).classList.remove('hidden');
  document.getElementById('overlay').classList.add('open');
 }
@@ -10652,11 +10661,14 @@ function galleryCreationContext(gallery){
   location:shoots.map(sh=>sh.location||'').find(Boolean)||''
  };
 }
+function mediaNaturalCompare(a,b){
+ return String(a?.fileName||a?.title||'').localeCompare(String(b?.fileName||b?.title||''),'de',{numeric:true,sensitivity:'base'})||String(a?.id||'').localeCompare(String(b?.id||''));
+}
 function galleryPhotoMedia(gallery){
- return relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/'));
+ return relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/')).sort(mediaNaturalCompare);
 }
 function videoMedia(video){
- return relatedObjects(video.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/'));
+ return relatedObjects(video.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/')).sort(mediaNaturalCompare);
 }
 function videoShootings(video){
  return (video?.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id&&x.type==='shoot')).filter(Boolean);
@@ -11320,7 +11332,7 @@ function renderArchive(options={}){
        const photos=galleryPhotoMedia(g);
        const firstPhoto=photos[0]||null;
        const preview=firstPhoto
-        ?`<div class="seriesContributionPreview" data-media-id="${esc(firstPhoto.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small">Lade Vorschau …</div></div>`
+        ?`<div class="seriesContributionPreview" data-release-gallery-cover="${esc(g.id)}" data-open-gallery-detail="${esc(g.id)}" role="button" aria-label="Galerie öffnen"><div class="small">Lade Vorschau …</div></div>`
         :'<div class="seriesContributionPreview"><div class="small">Noch kein Foto</div></div>';
        return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
         <div class="managementWorkDetails">
@@ -11397,7 +11409,7 @@ function renderArchive(options={}){
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
      const parts=seriesContributionDisplayParts(release);
-     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
     }).join('');
     const legacyShoots=seriesShootingsAll(selectedSeries).filter(sh=>managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
     const migrationHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="legacyMigrationHead"><div class="legacyMigrationLabel">Alte Direktzuordnungen</div><span class="legacyMigrationBadge">${legacyShoots.length} · Umstellung erforderlich</span></div><p class="legacyMigrationHelp">Diese Shootings sind noch direkt mit der Rubrik verbunden und noch keine Beiträge. Hier wird noch nichts automatisch geändert.</p><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
@@ -11453,7 +11465,7 @@ function renderArchive(options={}){
      const contributionHtml=contributions.map(release=>{
        const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
        const parts=titleContributionDisplayParts(release);
-       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
+       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
      }).join('');
      const legacyShoots=relatedObjects(t.id,'shoot').filter(sh=>managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
      const legacyHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="legacyMigrationHead"><div class="legacyMigrationLabel">Alte Direktzuordnungen</div><span class="legacyMigrationBadge">${legacyShoots.length} · Umstellung erforderlich</span></div><p class="legacyMigrationHelp">Diese Shootings sind noch direkt mit dem Titel verbunden und noch keine Beiträge. Hier wird noch nichts automatisch geändert.</p><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
@@ -11541,6 +11553,7 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  box.querySelectorAll('[data-open-related-publication]').forEach(x=>x.onclick=e=>{e.stopPropagation();openPublicationDetail(x.dataset.openRelatedPublication)});
  box.querySelectorAll('[data-open-shooting-standalone]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openShootingStandalone,null));
  box.querySelectorAll('[data-open-release-work]').forEach(x=>x.onclick=e=>{e.stopPropagation();const work=(state.archive||[]).find(a=>a.id===x.dataset.openReleaseWork&&(a.type==='gallery'||a.type==='video'));if(!work)return;archiveTab=work.type;managementSearch='';managementSearchOpen=false;renderArchive();setTimeout(()=>{const btn=[...document.querySelectorAll('[data-edit-archive]')].find(b=>b.dataset.editArchive===work.id);btn?.closest('.archiveItem')?.scrollIntoView({behavior:'smooth',block:'center'})},0)});
+ box.querySelectorAll('[data-open-gallery-detail]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openGalleryDetail(x.dataset.openGalleryDetail)});
  box.querySelectorAll('[data-release-video-quick]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingVideoQuick(x.dataset.releaseVideoQuick)});
  box.querySelectorAll('[data-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.editArchive)});
  box.querySelectorAll('[data-media-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.mediaWorkSelect;if(mediaWorkSelected.has(id))mediaWorkSelected.delete(id);else mediaWorkSelected.add(id);renderArchive()});
@@ -12224,13 +12237,17 @@ function seriesContributionDisplayTitle(release){
  const parts=seriesContributionDisplayParts(release);
  return `${parts.model} • ${parts.label}`;
 }
-function seriesContributionPreviewHtml(release,galleries,videos){
+function seriesContributionPreviewHtml(release,galleries,videos,openGallery=false){
  const leadGallery=galleries[0]||null;
  const leadPhotos=leadGallery?galleryPhotoMedia(leadGallery):[];
  const firstVideo=videos.flatMap(video=>videoMedia(video))[0]||null;
- if(leadGallery&&leadPhotos.length)return `<div class="seriesContributionPreview" data-release-gallery-cover="${esc(leadGallery.id)}"><div class="small" style="padding:8px">Lade Vorschau …</div></div>`;
+ if(leadGallery&&leadPhotos.length)return `<div class="seriesContributionPreview" data-release-gallery-cover="${esc(leadGallery.id)}"${openGallery?` data-open-gallery-detail="${esc(leadGallery.id)}" role="button" aria-label="Galerie öffnen"`:''}><div class="small" style="padding:8px">Lade Vorschau …</div></div>`;
  if(firstVideo)return `<div class="seriesContributionPreview mediaThumb" data-media-id="${esc(firstVideo.id)}"><div class="small" style="padding:8px">Lade Video …</div></div>`;
  return `<div class="seriesContributionPreview"><div class="small" style="padding:8px">Noch keine Vorschau</div></div>`;
+}
+function managementReleaseVideoButtons(videos){
+ const files=videos.flatMap(video=>videoMedia(video));
+ return files.length?`<div class="managementVideoButtons">${files.map((media,index)=>`<button type="button" class="managementVideoQuick" data-release-video-quick="${esc(media.id)}" aria-label="Video ${index+1} abspielen" title="Video ${index+1} abspielen">▶︎</button>`).join('')}</div>`:'';
 }
 function nextSeriesContributionNumber(seriesId,modelId,excludeReleaseId=''){
  const peers=(state.archive||[]).filter(r=>{
@@ -12906,13 +12923,24 @@ async function hydrateReleaseGalleryCovers(root=document){
    const blob=await getMedia(chosen.id);
    if(blob&&blob.type&&blob.type.startsWith('image/')){
     node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Beitragsvorschau">`;
-    node.dataset.mediaId=chosen.id;
-    node.dataset.galleryIds=photos.map(x=>x.id).join(',');
+    if(!node.dataset.openGalleryDetail){node.dataset.mediaId=chosen.id;node.dataset.galleryIds=photos.map(x=>x.id).join(',')}
    }else node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>';
   }catch(e){console.error(e);node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>'}
  }
  bindInteractiveMedia(root);
 }
+function openGalleryDetail(galleryId){
+ const gallery=(state.archive||[]).find(a=>a&&a.id===galleryId&&a.type==='gallery');
+ if(!gallery){toast('Galerie nicht gefunden.');return}
+ const photos=galleryPhotoMedia(gallery);
+ const ids=photos.map(photo=>photo.id);
+ const box=document.getElementById('galleryDetailContent');
+ box.innerHTML=`<div class="galleryDetailHead"><h2>${esc(managementWorkDisplayName(gallery))}</h2><span>${countLabel(photos.length,'Foto','Fotos')}</span></div>${photos.length?`<div class="galleryDetailGrid">${photos.map(photo=>`<div class="mediaThumb" data-media-id="${esc(photo.id)}" data-gallery-ids="${esc(ids.join(','))}" aria-label="${esc(photo.fileName||'Foto')} öffnen"><div class="small" style="padding:8px">Lade Foto …</div></div>`).join('')}</div>`:'<div class="small">Noch keine Fotos in dieser Galerie.</div>'}`;
+ openOverlay('galleryDetailPane');
+ const sheet=document.querySelector('#overlay .sheet');if(sheet)sheet.scrollTop=0;
+ hydrateMediaThumbs(box);
+}
+document.getElementById('closeGalleryDetail').onclick=closeOverlay;
 let returnSeriesId=null;
 let returnShootingContext=null;
 function openShootingDetail(id,seriesId,context=null){
@@ -13302,6 +13330,7 @@ document.addEventListener('keydown',e=>{
 });
 async function bindInteractiveMedia(root=document){ bindShootingVideoQuick(root);
  root.querySelectorAll('[data-media-id]').forEach(node=>{
+  if(node.dataset.openGalleryDetail)return;
   if(node.dataset.interactiveBound==='1')return;
   node.dataset.interactiveBound='1';
   node.onclick=async e=>{
