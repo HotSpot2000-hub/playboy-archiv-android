@@ -2732,7 +2732,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Beleg <span class="small">(optional)</span></label>
   <div class="small">Einzelne Fotos auswählen oder ersatzweise ein Shooting zuordnen.</div>
   <div class="printArticleSourceTabs"><button type="button" id="archiveEditPrintArticlePhotosTab">Fotos</button><button type="button" id="archiveEditPrintArticleShootingTab">Shooting</button></div>
-  <div id="archiveEditPrintArticlePhotosPanel" class="printArticleSourcePanel"><div id="archiveEditPrintArticlePhotos" class="printArticlePhotoPicker"></div></div>
+  <div id="archiveEditPrintArticlePhotosPanel" class="printArticleSourcePanel"><label>Galerie</label><select id="archiveEditPrintArticleGallery"></select><div id="archiveEditPrintArticlePhotos" class="printArticlePhotoPicker" style="margin-top:8px"></div></div>
   <div id="archiveEditPrintArticleShootingPanel" class="printArticleSourcePanel hidden"><input id="archiveEditPrintArticleShooting" type="hidden"><div id="archiveEditPrintArticleShootingPicker" class="printArticleShootingPicker"></div></div>
  </div>
 </div>
@@ -2849,7 +2849,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <label>Beleg <span class="small">(optional)</span></label>
    <div class="small">Einzelne Fotos auswählen oder ersatzweise ein Shooting zuordnen.</div>
    <div class="printArticleSourceTabs"><button type="button" id="archivePrintArticlePhotosTab">Fotos</button><button type="button" id="archivePrintArticleShootingTab">Shooting</button></div>
-   <div id="archivePrintArticlePhotosPanel" class="printArticleSourcePanel"><div id="archivePrintArticlePhotos" class="printArticlePhotoPicker"></div></div>
+   <div id="archivePrintArticlePhotosPanel" class="printArticleSourcePanel"><label>Galerie</label><select id="archivePrintArticleGallery"></select><div id="archivePrintArticlePhotos" class="printArticlePhotoPicker" style="margin-top:8px"></div></div>
    <div id="archivePrintArticleShootingPanel" class="printArticleSourcePanel hidden"><input id="archivePrintArticleShooting" type="hidden"><div id="archivePrintArticleShootingPicker" class="printArticleShootingPicker"></div></div>
   </div>
  </div>
@@ -10472,7 +10472,7 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
     a.printPhotographerIds=[...document.querySelectorAll('#archiveEditPrintArticlePhotographers .editPrintArticlePhotographerCheck:checked')].map(x=>x.value);
     a.printLocation=document.getElementById('archiveEditPrintArticleLocation').value.trim();
     a.printSummaryDe=document.getElementById('archiveEditPrintArticleSummary').value.trim();
-    a.printPhotoIds=[...document.querySelectorAll('#archiveEditPrintArticlePhotos .printArticlePhotoChoice.selected')].map(x=>x.dataset.printArticlePhoto).filter(Boolean);
+    a.printPhotoIds=(document.getElementById('archiveEditPrintArticlePhotos').dataset.selectedPhotoIds||'').split(',').filter(Boolean);
     a.printShootingId=document.getElementById('archiveEditPrintArticleShooting').value;
    }
  }
@@ -11952,16 +11952,17 @@ function workShootingChoiceHtml(shoot,current){
  const context=[shoot.date?germanDateLabel(shoot.date):'',shoot.location||''].filter(Boolean).join(' · ');
  return `<button type="button" class="workReleaseChoice workShootingChoice ${shoot.id===current?'selected':''}" data-work-shooting-choice="${esc(shoot.id)}"><span class="workReleaseChoicePreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</span><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(display.models)}</span><span class="workReleaseChoiceLabel">${esc(display.title)}</span>${context?`<span class="workReleaseChoiceContext">${esc(context)}</span>`:''}<span class="workReleaseChoiceMeta">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
 }
-function printArticleAvailablePhotos(){
- const seen=new Set(),entries=[];
- (state.archive||[]).filter(a=>a&&a.type==='gallery').forEach(gallery=>{
-  galleryPhotoMedia(gallery).forEach(photo=>{
-   if(seen.has(photo.id))return;
-   seen.add(photo.id);
-   entries.push({photo,gallery});
-  });
- });
- return entries;
+function containsAllModelIds(candidateIds=[],requiredIds=[]){
+ const candidate=new Set(candidateIds.filter(Boolean));
+ return requiredIds.every(id=>candidate.has(id));
+}
+function printArticleMatchingGalleries(modelIds=[]){
+ if(!modelIds.length)return [];
+ return (state.archive||[]).filter(a=>a&&a.type==='gallery'&&containsAllModelIds(managementWorkModelIds(a),modelIds)&&galleryPhotoMedia(a).length).slice().sort((a,b)=>managementWorkDisplayName(a).localeCompare(managementWorkDisplayName(b),'de',{sensitivity:'base',numeric:true}));
+}
+function printArticleMatchingShootings(modelIds=[]){
+ if(!modelIds.length)return [];
+ return (state.archive||[]).filter(a=>a&&a.type==='shoot'&&containsAllModelIds(shootingModelIds(a),modelIds)).slice().sort(sortShootingsNatural);
 }
 async function hydratePrintArticlePhotoPicker(root){
  const nodes=[...root.querySelectorAll('[data-print-article-photo-thumb]')];
@@ -11978,16 +11979,46 @@ function configurePrintArticleSource(prefix,release=null){
  const photosPanel=document.getElementById(prefix+'PrintArticlePhotosPanel');
  const shootingPanel=document.getElementById(prefix+'PrintArticleShootingPanel');
  const photosRoot=document.getElementById(prefix+'PrintArticlePhotos');
+ const gallerySelect=document.getElementById(prefix+'PrintArticleGallery');
  const shootingRoot=document.getElementById(prefix+'PrintArticleShootingPicker');
  const shootingInput=document.getElementById(prefix+'PrintArticleShooting');
- if(!photosTab||!shootingTab||!photosPanel||!shootingPanel||!photosRoot||!shootingRoot||!shootingInput)return;
- const selectedPhotos=new Set(release?.printPhotoIds||[]);
- const currentShooting=release?.printShootingId||'';
- const entries=printArticleAvailablePhotos();
- photosRoot.innerHTML=entries.length?entries.map(({photo,gallery})=>`<button type="button" class="printArticlePhotoChoice ${selectedPhotos.has(photo.id)?'selected':''}" data-print-article-photo="${esc(photo.id)}" aria-pressed="${selectedPhotos.has(photo.id)?'true':'false'}"><span class="printArticlePhotoThumb" data-print-article-photo-thumb="${esc(photo.id)}"><span class="small">Lade …</span></span><span class="printArticlePhotoMark">${selectedPhotos.has(photo.id)?'✓':'○'}</span><span class="printArticlePhotoLabel">${esc(managementWorkDisplayName(gallery))}</span></button>`).join(''):'<div class="small">Noch keine Fotos in vorhandenen Galerien.</div>';
- const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot').slice().sort(sortShootingsNatural);
+ const modelsRoot=document.getElementById(prefix+'PrintArticleModels');
+ if(!photosTab||!shootingTab||!photosPanel||!shootingPanel||!photosRoot||!gallerySelect||!shootingRoot||!shootingInput||!modelsRoot)return;
+ const modelCheckClass=prefix==='archiveEdit'?'.editPrintArticleModelCheck':'.printArticleModelCheck';
+ const modelIds=[...modelsRoot.querySelectorAll(`${modelCheckClass}:checked`)].map(x=>x.value);
+ const allowedGalleries=printArticleMatchingGalleries(modelIds);
+ const allowedPhotoIds=new Set(allowedGalleries.flatMap(gallery=>galleryPhotoMedia(gallery).map(photo=>photo.id)));
+ const selectedPhotos=new Set((release?.printPhotoIds||[]).filter(id=>allowedPhotoIds.has(id)));
+ const allowedShootings=printArticleMatchingShootings(modelIds);
+ const requestedShooting=release?.printShootingId||'';
+ const currentShooting=allowedShootings.some(sh=>sh.id===requestedShooting)?requestedShooting:'';
+ const selectedGalleryFromPhoto=allowedGalleries.find(gallery=>galleryPhotoMedia(gallery).some(photo=>selectedPhotos.has(photo.id)))?.id||'';
+ const requestedGallery=release?.printGalleryBrowseId||gallerySelect.value||selectedGalleryFromPhoto;
+ const currentGallery=allowedGalleries.some(gallery=>gallery.id===requestedGallery)?requestedGallery:(selectedGalleryFromPhoto||allowedGalleries[0]?.id||'');
+ gallerySelect.innerHTML=modelIds.length
+  ?(allowedGalleries.length?allowedGalleries.map(gallery=>`<option value="${esc(gallery.id)}">${esc(managementWorkDisplayName(gallery))}</option>`).join(''):'<option value="">Keine passende Galerie</option>')
+  :'<option value="">Zuerst Models im Artikel wählen</option>';
+ gallerySelect.value=currentGallery;
+ photosRoot.dataset.selectedPhotoIds=[...selectedPhotos].join(',');
+ const renderGalleryPhotos=()=>{
+  const gallery=allowedGalleries.find(x=>x.id===gallerySelect.value)||null;
+  if(!modelIds.length){photosRoot.innerHTML='<div class="small">Zuerst mindestens ein Model im Artikel auswählen.</div>';return}
+  if(!gallery){photosRoot.innerHTML='<div class="small">Keine Galerie enthält alle gewählten Models.</div>';return}
+  const photos=galleryPhotoMedia(gallery);
+  photosRoot.innerHTML=photos.map(photo=>`<button type="button" class="printArticlePhotoChoice ${selectedPhotos.has(photo.id)?'selected':''}" data-print-article-photo="${esc(photo.id)}" aria-pressed="${selectedPhotos.has(photo.id)?'true':'false'}"><span class="printArticlePhotoThumb" data-print-article-photo-thumb="${esc(photo.id)}"><span class="small">Lade …</span></span><span class="printArticlePhotoMark">${selectedPhotos.has(photo.id)?'✓':'○'}</span><span class="printArticlePhotoLabel">${esc(photo.fileName||'Foto')}</span></button>`).join('');
+  photosRoot.querySelectorAll('[data-print-article-photo]').forEach(btn=>btn.onclick=()=>{
+   const id=btn.dataset.printArticlePhoto,selected=!selectedPhotos.has(id);
+   if(selected)selectedPhotos.add(id);else selectedPhotos.delete(id);
+   photosRoot.dataset.selectedPhotoIds=[...selectedPhotos].join(',');
+   btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',selected?'true':'false');btn.querySelector('.printArticlePhotoMark').textContent=selected?'✓':'○';
+   if(selected){shootingInput.value='';shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(x=>x.classList.toggle('selected',!x.dataset.printArticleShooting))}
+  });
+  hydratePrintArticlePhotoPicker(photosRoot);
+ };
+ gallerySelect.onchange=renderGalleryPhotos;
+ renderGalleryPhotos();
  const none=`<button type="button" class="workReleaseChoice none ${currentShooting?'':'selected'}" data-print-article-shooting=""><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">Kein Shooting zugeordnet</span><span class="workReleaseChoiceContext">Artikel bleibt im Recherchebedarf, solange auch kein Foto ausgewählt ist.</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
- shootingRoot.innerHTML=none+shoots.map(sh=>workShootingChoiceHtml(sh,currentShooting).replaceAll('data-work-shooting-choice','data-print-article-shooting')).join('');
+ shootingRoot.innerHTML=none+(modelIds.length?(allowedShootings.length?allowedShootings.map(sh=>workShootingChoiceHtml(sh,currentShooting).replaceAll('data-work-shooting-choice','data-print-article-shooting')).join(''):'<div class="small">Kein Shooting enthält alle gewählten Models.</div>'):'<div class="small">Zuerst mindestens ein Model im Artikel auswählen.</div>');
  shootingInput.value=currentShooting;
  const show=kind=>{
   const photosActive=kind==='photos';
@@ -11995,18 +12026,14 @@ function configurePrintArticleSource(prefix,release=null){
   photosPanel.classList.toggle('hidden',!photosActive);shootingPanel.classList.toggle('hidden',photosActive);
  };
  photosTab.onclick=()=>show('photos');shootingTab.onclick=()=>show('shooting');
- photosRoot.querySelectorAll('[data-print-article-photo]').forEach(btn=>btn.onclick=()=>{
-  const selected=!btn.classList.contains('selected');
-  btn.classList.toggle('selected',selected);btn.setAttribute('aria-pressed',selected?'true':'false');btn.querySelector('.printArticlePhotoMark').textContent=selected?'✓':'○';
-  if(selected){shootingInput.value='';shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(x=>x.classList.toggle('selected',!x.dataset.printArticleShooting))}
- });
  shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(btn=>btn.onclick=()=>{
   const id=btn.dataset.printArticleShooting||'';shootingInput.value=id;
   shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(x=>x.classList.toggle('selected',x===btn));
-  if(id)photosRoot.querySelectorAll('[data-print-article-photo]').forEach(x=>{x.classList.remove('selected');x.setAttribute('aria-pressed','false');x.querySelector('.printArticlePhotoMark').textContent='○'});
+  if(id){selectedPhotos.clear();photosRoot.dataset.selectedPhotoIds='';photosRoot.querySelectorAll('[data-print-article-photo]').forEach(x=>{x.classList.remove('selected');x.setAttribute('aria-pressed','false');x.querySelector('.printArticlePhotoMark').textContent='○'})}
  });
+ modelsRoot.querySelectorAll(modelCheckClass).forEach(check=>check.onchange=()=>configurePrintArticleSource(prefix,{printPhotoIds:[...(photosRoot.dataset.selectedPhotoIds||'').split(',').filter(Boolean)],printShootingId:shootingInput.value,printGalleryBrowseId:gallerySelect.value}));
  show(selectedPhotos.size||!currentShooting?'photos':'shooting');
- hydratePrintArticlePhotoPicker(photosRoot);hydrateShootingCovers(shootingRoot);
+ hydrateShootingCovers(shootingRoot);
 }
 function fillWorkShootingSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
@@ -12516,7 +12543,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    item.printPhotographerIds=[...document.querySelectorAll('#archivePrintArticlePhotographers .printArticlePhotographerCheck:checked')].map(x=>x.value);
    item.printLocation=document.getElementById('archivePrintArticleLocation').value.trim();
    item.printSummaryDe=document.getElementById('archivePrintArticleSummary').value.trim();
-   item.printPhotoIds=[...document.querySelectorAll('#archivePrintArticlePhotos .printArticlePhotoChoice.selected')].map(x=>x.dataset.printArticlePhoto).filter(Boolean);
+   item.printPhotoIds=(document.getElementById('archivePrintArticlePhotos').dataset.selectedPhotoIds||'').split(',').filter(Boolean);
    item.printShootingId=document.getElementById('archivePrintArticleShooting').value;
   }
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
