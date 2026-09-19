@@ -1353,10 +1353,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .releaseRelationWarning{margin-top:8px;padding:10px 12px;border:1px solid #c98932;border-radius:12px;background:#fff4df;color:#6e4308;font-size:12px;line-height:1.35}
 .workShootingPicker{display:grid;gap:9px;margin-top:8px;max-height:48vh;overflow:auto;padding:2px}
 .workShootingChoice .workReleaseChoicePreview{position:relative}
-.unassignedSeriesWorkArea{border:1px dashed #a995ad;border-radius:14px;background:#f6f0f7;overflow:hidden}
-.unassignedSeriesWorkArea .seriesBrowseCardHead{background:#f0e6f2}
-.unassignedSeriesWorkArea .seriesBrowseCardBody{padding:12px}
-.unassignedSeriesBadge{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.unassignedSeriesWorkArea .seriesContributionPreview{align-self:stretch}
 
 .seriesBrowseCardBody .seriesBrowseModel{padding:0 0 12px;border-top:0}
 .seriesBrowseCardBody .seriesBrowseModel+.seriesBrowseModel{padding-top:12px;border-top:1px solid var(--line)}
@@ -11390,7 +11387,8 @@ function renderArchive(options={}){
     const releaseCards=unassignedReleases.map(release=>{
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
-     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Veröffentlichungskontext: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(release.id)}">Löschen</button></div></div>`;
+     const parts=seriesContributionDisplayParts(release);
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,[],true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(release.id)}">Löschen</button></div></div></div>`;
     }).join('');
     const workCards=unassignedWorks.map(work=>{
      const sh=linkedObjects(work.id,'shoot')[0]||null;
@@ -11399,9 +11397,9 @@ function renderArchive(options={}){
       :(()=>{const media=videoMedia(work)[0]||null;return `<div class="seriesContributionPreview"${media?` data-media-id="${esc(media.id)}"`:''}><div class="small">${media?'Lade Video …':'Noch kein Video'}</div></div>`})();
      return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(sh?shootingDisplayLabel(sh):'Shooting noch nicht bekannt')}</div><div class="seriesContributionLabel">${work.type==='gallery'?'Galerie':'Video'}</div><div class="seriesContributionMeta">Noch keinem Beitrag zugeordnet</div><div class="itemActions"><button type="button" data-edit-archive="${esc(work.id)}">${work.type==='gallery'?'Galerie':'Video'} bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(work.id)}">Löschen</button></div></div></div>`;
     }).join('');
-    const releaseSection=unassignedReleases.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Beiträge ohne Veröffentlichungskontext · ${unassignedReleases.length}</div>${releaseCards}`:'';
+    const releaseSection=releaseCards||'<div class="seriesEmptyState small">Noch kein eigenständiger Beitrag vorhanden.</div>';
     const workSection=unassignedWorks.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Galerien / Videos ohne Beitrag · ${unassignedWorks.length}</div>${workCards}`:'';
-    box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedCount} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small">Eigenständige Beiträge ohne Rubrik, Titel oder Printausgabe sowie Galerien und Videos, die noch keinem Beitrag zugeordnet sind. Dieser Arbeitsbereich ersetzt die frühere separate Individuals-Logik und ist keine bearbeitbare Rubrik.</div><div class="seriesAddContributionRow" style="margin-top:10px"><button type="button" class="publicationCompactAction" data-add-unassigned-contribution>＋ Beitrag hinzufügen</button></div>${releaseSection}${workSection}${unassignedCount?'':'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge oder Werke.</div>'}</div></div>`;
+    box.innerHTML=`<div class="seriesBrowseCard unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-unassigned-contribution>＋ Beitrag hinzufügen</button></div>${releaseSection}${workSection}</div></div>`;
    }else if(!selectedSeries){
     box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Rubriken.</div>';seriesWorkSelected.clear();
    }else{
