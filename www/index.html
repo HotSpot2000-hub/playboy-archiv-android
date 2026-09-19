@@ -4690,7 +4690,7 @@ let profileSeriesBrowseId='';
 function titleBelongsToProfileModel(t,modelId){
  return (state.archive||[]).some(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(modelId)&&(sh.links||[]).includes(t.id));
 }
-function shootingPreviewParts(sh){const media=shootingMedia(sh),photos=media.filter(x=>!(x.mimeType||'').startsWith('video/')),videos=media.filter(x=>(x.mimeType||'').startsWith('video/'));return {media,photos,videos,cover:photos[0]||null,video:videos[0]||null}}
+function shootingPreviewParts(sh){const media=shootingMedia(sh),photos=media.filter(x=>!(x.mimeType||'').startsWith('video/')).sort(mediaNaturalCompare),videos=media.filter(x=>(x.mimeType||'').startsWith('video/')).sort(mediaNaturalCompare);return {media,photos,videos,cover:photos[0]||null,video:videos[0]||null}}
 function shootingMediaSummary(sh){
  const p=shootingPreviewParts(sh);
 
@@ -11388,7 +11388,8 @@ function renderArchive(options={}){
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
      const parts=seriesContributionDisplayParts(release);
-     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,[],true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(release.id)}">Löschen</button></div></div></div>`;
+     const photoCount=releaseGalleryPhotoCount(galleries);
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(release.id)}">Löschen</button></div></div></div>`;
     }).join('');
     const workCards=unassignedWorks.map(work=>{
      const sh=linkedObjects(work.id,'shoot')[0]||null;
@@ -11411,7 +11412,8 @@ function renderArchive(options={}){
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
      const parts=seriesContributionDisplayParts(release);
-     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
+     const photoCount=releaseGalleryPhotoCount(galleries);
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
     }).join('');
     const legacyShoots=seriesShootingsAll(selectedSeries).filter(sh=>managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
     const migrationHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="legacyMigrationHead"><div class="legacyMigrationLabel">Alte Direktzuordnungen</div><span class="legacyMigrationBadge">${legacyShoots.length} · Umstellung erforderlich</span></div><p class="legacyMigrationHelp">Diese Shootings sind noch direkt mit der Rubrik verbunden und noch keine Beiträge. Hier wird noch nichts automatisch geändert.</p><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
@@ -11467,7 +11469,8 @@ function renderArchive(options={}){
      const contributionHtml=contributions.map(release=>{
        const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
        const parts=titleContributionDisplayParts(release);
-       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
+       const photoCount=releaseGalleryPhotoCount(galleries);
+       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
      }).join('');
      const legacyShoots=relatedObjects(t.id,'shoot').filter(sh=>managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
      const legacyHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="legacyMigrationHead"><div class="legacyMigrationLabel">Alte Direktzuordnungen</div><span class="legacyMigrationBadge">${legacyShoots.length} · Umstellung erforderlich</span></div><p class="legacyMigrationHelp">Diese Shootings sind noch direkt mit dem Titel verbunden und noch keine Beiträge. Hier wird noch nichts automatisch geändert.</p><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
@@ -12240,6 +12243,9 @@ function seriesContributionDisplayTitle(release){
  const parts=seriesContributionDisplayParts(release);
  return `${parts.model} • ${parts.label}`;
 }
+function releaseGalleryPhotoCount(galleries){
+ return new Set(galleries.flatMap(gallery=>galleryPhotoMedia(gallery)).map(photo=>photo.id)).size;
+}
 function seriesContributionPreviewHtml(release,galleries,videos,openGallery=false){
  const leadGallery=galleries[0]||null;
  const leadPhotos=leadGallery?galleryPhotoMedia(leadGallery):[];
@@ -12920,10 +12926,10 @@ async function mediaIsPortrait(mediaId){
 async function preferredShootingCoverId(initialMediaId){
  const media=(state.archive||[]).find(a=>a.id===initialMediaId&&a.type==='media');
  if(!media)return initialMediaId;
- const shoot=relatedObjects(media.id,'shoot')[0];
+ const shoot=relatedObjects(media.id,'shoot')[0]||(state.archive||[]).find(item=>item&&item.type==='shoot'&&shootingMedia(item).some(entry=>entry.id===media.id));
  if(!shoot)return initialMediaId;
  if(shootingCoverChoiceCache.has(shoot.id))return shootingCoverChoiceCache.get(shoot.id);
- const photos=shootingMedia(shoot).filter(x=>!(x.mimeType||'').startsWith('video/'));
+ const photos=shootingMedia(shoot).filter(x=>!(x.mimeType||'').startsWith('video/')).sort(mediaNaturalCompare);
  let chosen=photos[0]?.id||initialMediaId;
  for(const photo of photos){
    if(await mediaIsPortrait(photo.id)){chosen=photo.id;break}
