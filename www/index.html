@@ -110,7 +110,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 
 .archiveTabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.archiveTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px}.archiveTabs button.active{background:#171717;color:#fff}
-.managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}@media(max-width:520px){.managementTools{grid-template-columns:1fr}}
+.managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}.managementModelSelection{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.managementModelSelection:empty{display:none}.managementModelChip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:#eee7ef;padding:6px 9px;font:inherit;font-size:12px;font-weight:700}.managementModelChip span{font-size:15px;line-height:1;color:#777}@media(max-width:520px){.managementTools{grid-template-columns:1fr}.managementModelSelection{grid-column:1}}
 .managementAreaFilter{grid-column:1/-1;margin:0}.managementAreaFilter.hidden{display:none!important}
 .archiveItem{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:9px}.linkChip{display:inline-block;background:#eee7ef;border-radius:999px;padding:4px 8px;margin:4px 3px 0 0;font-size:12px}.mediaThumb{position:relative;aspect-ratio:2/3;background:#eee;border-radius:10px;overflow:hidden;margin-top:8px}.mediaThumb img{width:100%;height:100%;object-fit:cover}
 
@@ -2308,6 +2308,7 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div class="managementTools">
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
 <div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
+<div id="managementModelSelection" class="managementModelSelection" aria-label="Ausgewählte Models"></div>
 <select id="managementAreaFilter" class="managementAreaFilter hidden" aria-label="Archivbereich filtern"></select>
   <div class="archiveTabs managementNav">
    <button class="active" data-archive-tab="publication">Print</button>
@@ -8973,7 +8974,7 @@ function openPublicationDetail(id){
  rememberRecentArchive(id);
  const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');
  if(!pub){toast('Publikation nicht gefunden.');return}
- const mid=managementSelectedModelId(); const series=linkedObjects(pub.id,'series').filter(s=>!mid||seriesBelongsToModel(s,mid));
+ const mids=managementSelectedModelIds(); const series=linkedObjects(pub.id,'series').filter(s=>managementMatchesAllModels(s,mids));
  const box=document.getElementById('publicationDetailContent');
  box.innerHTML=`<div class="publicationDetailSummary">
   <div class="detailHero">
@@ -9221,11 +9222,11 @@ function modelTodoMissing(m){
  return missing;
 }
 function todoManagementModelMatch(kind,obj){
- const mid=managementSelectedModelId();
- if(!mid)return true;
- if(kind==='model')return obj.id===mid;
- if(kind==='shoot')return shootingModelIds(obj).includes(mid);
- if(kind==='series')return seriesShootingsAll(obj).some(sh=>shootingModelIds(sh).includes(mid));
+ const mids=managementSelectedModelIds();
+ if(!mids.length)return true;
+ if(kind==='model')return mids.length===1&&obj.id===mids[0];
+ if(kind==='shoot')return mids.every(mid=>shootingModelIds(obj).includes(mid));
+ if(kind==='series')return managementMatchesAllModels(obj,mids);
  return true;
 }
 function buildTodoRows(){
@@ -10572,16 +10573,24 @@ let managementShootingFilter='all';
 const mediaWorkSelected=new Set();
 const seriesWorkSelected=new Set();
 
+function managementReleaseModelIds(release){
+ const ids=[...releaseModelIds(release),...(release?.printModelIds||[])];
+ const shoot=(state.archive||[]).find(a=>a&&a.type==='shoot'&&a.id===release?.printShootingId);
+ if(shoot)ids.push(...shootingModelIds(shoot));
+ return [...new Set(ids.filter(id=>(state.models||[]).some(m=>m.id===id)))];
+}
 function seriesBelongsToModel(series,modelId){
  if(series.type!=='series')return false;
  if(series.modelId===modelId)return true;
  const linkedShoots=seriesShootingsAll(series);
- return linkedShoots.some(sh=>shootingBelongsToModel(sh,modelId));
+ if(linkedShoots.some(sh=>shootingBelongsToModel(sh,modelId)))return true;
+ return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'series').some(sr=>sr.id===series.id)&&managementReleaseModelIds(release).includes(modelId));
 }
 function publicationBelongsToModel(pub,modelId){
  if(pub.type!=='publication')return false;
  if((pub.coverModelIds||[]).includes(modelId))return true;
  if(pub.modelId===modelId)return true;
+ if(publicationContributions(pub).some(release=>managementReleaseModelIds(release).includes(modelId)))return true;
  const linkedSeries=linkedObjects(pub.id,'series');
  return linkedSeries.some(s=>seriesBelongsToModel(s,modelId));
 }
@@ -10637,13 +10646,10 @@ function archiveBelongsToModel(a,modelId){
  if(a.type==='shoot')return shootingBelongsToModel(a,modelId);
  if(a.type==='series')return seriesBelongsToModel(a,modelId);
  if(a.type==='publication')return publicationBelongsToModel(a,modelId);
- if(a.type==='release'){
-   const releaseSeries=linkedObjects(a.id,'series');
-   if(releaseSeries.some(s=>seriesBelongsToModel(s,modelId)))return true;
-   const releaseTitles=linkedObjects(a.id,'title');
-   if(releaseTitles.some(t=>(state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&shootingBelongsToModel(sh,modelId))))return true;
-   const releaseWorksLinked=[...linkedObjects(a.id,'gallery'),...linkedObjects(a.id,'video')];
-   return releaseWorksLinked.some(work=>archiveBelongsToModel(work,modelId));
+ if(a.type==='release')return managementReleaseModelIds(a).includes(modelId);
+ if(a.type==='title'){
+  if((state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(a.id)&&shootingBelongsToModel(sh,modelId)))return true;
+  return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'title').some(t=>t.id===a.id)&&managementReleaseModelIds(release).includes(modelId));
  }
  if(a.type==='gallery'){
    if(a.modelsMode==='custom')return (a.modelIds||[]).includes(modelId);
@@ -10666,11 +10672,28 @@ function archiveBelongsToModel(a,modelId){
  return a.modelId===modelId;
 }
 
-let managementModelId='all';
+const managementModelIds=new Set();
 let managementArea='all';
 let managementSearch='';
 let managementSearchOpen=false;
-function managementSelectedModelId(){return managementModelId&&managementModelId!=='all'?managementModelId:null}
+function managementSelectedModelIds(){return [...managementModelIds].filter(id=>(state.models||[]).some(m=>m.id===id))}
+function managementMatchesAllModels(a,ids=managementSelectedModelIds()){
+ if(!ids.length)return true;
+ if(a.type==='series'){
+  if(seriesShootingsAll(a).some(sh=>ids.every(id=>shootingModelIds(sh).includes(id))))return true;
+  return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'series').some(sr=>sr.id===a.id)&&ids.every(id=>managementReleaseModelIds(release).includes(id)));
+ }
+ if(a.type==='title'){
+  if((state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(a.id)&&ids.every(id=>shootingModelIds(sh).includes(id))))return true;
+  return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'title').some(t=>t.id===a.id)&&ids.every(id=>managementReleaseModelIds(release).includes(id)));
+ }
+ if(a.type==='publication'){
+  if(ids.every(id=>(a.coverModelIds||[]).includes(id)))return true;
+  if(publicationContributions(a).some(release=>ids.every(id=>managementReleaseModelIds(release).includes(id))))return true;
+  return linkedObjects(a.id,'series').some(series=>managementMatchesAllModels(series,ids));
+ }
+ return ids.every(id=>archiveBelongsToModel(a,id));
+}
 function managementAreaAllows(a){
  if(!a||!archiveAreaSupportsType(a.type)||managementArea==='all')return true;
  if(managementArea==='unassigned')return !a.archiveArea;
@@ -10697,22 +10720,21 @@ function managementMatchesSearch(a){
  return hay.includes(q);
 }
 function managementArchive(type){
- const mid=managementSelectedModelId();
- return (state.archive||[]).filter(a=>a.type===type&&managementAreaAllows(a)&&(!mid||archiveBelongsToModel(a,mid))&&managementMatchesSearch(a));
+ const mids=managementSelectedModelIds();
+ return (state.archive||[]).filter(a=>a.type===type&&managementAreaAllows(a)&&managementMatchesAllModels(a,mids)&&managementMatchesSearch(a));
 }
 function renderManagementTools(){
  const picker=document.getElementById('managementModelPicker');
  const box=document.getElementById('managementModelSuggestions');
- if(!picker||!box)return;
+ const selection=document.getElementById('managementModelSelection');
+ if(!picker||!box||!selection)return;
 
  const models=alphabeticalModels(state.models||[]);
- const selected=managementSelectedModelId()
-  ?(state.models||[]).find(m=>m.id===managementModelId)
-  :null;
-
- const desired=selected?.name||'Alle Models';
-
- if(document.activeElement!==picker)picker.value=desired;
+ const selectedIds=managementSelectedModelIds();
+ if(document.activeElement!==picker)picker.value='';
+ picker.placeholder=selectedIds.length?'Weiteres Model hinzufügen':'Alle Models';
+ selection.innerHTML=selectedIds.map(id=>{const m=(state.models||[]).find(x=>x.id===id);return `<button type="button" class="managementModelChip" data-remove-management-model="${esc(id)}">${esc(m?.name||'Model')} <span aria-hidden="true">×</span></button>`}).join('');
+ selection.querySelectorAll('[data-remove-management-model]').forEach(btn=>btn.onclick=()=>{managementModelIds.delete(btn.dataset.removeManagementModel);renderArchive()});
 
  function hideSuggestions(){
   box.innerHTML='';
@@ -10728,7 +10750,7 @@ function renderManagementTools(){
   }
 
   const matches=models
-   .filter(m=>String(m.name||'').toLocaleLowerCase('de-DE').includes(q))
+   .filter(m=>!managementModelIds.has(m.id)&&String(m.name||'').toLocaleLowerCase('de-DE').includes(q))
    .slice(0,5);
 
   if(!matches.length){
@@ -10746,9 +10768,9 @@ function renderManagementTools(){
    btn.onpointerdown=e=>{
     e.preventDefault();
     const m=matches[i];
-    managementModelId=m.id;
+    managementModelIds.add(m.id);
     state.currentModelId=m.id;
-    picker.value=m.name||'';
+    picker.value='';
     hideSuggestions();
     save();
     renderArchive();
@@ -10760,9 +10782,7 @@ function renderManagementTools(){
   const v=String(picker.value||'').trim();
 
   if(!v){
-   managementModelId='all';
    hideSuggestions();
-   renderArchive();
    return;
   }
 
@@ -10772,11 +10792,9 @@ function renderManagementTools(){
  picker.onchange=()=>{
   const v=String(picker.value||'').trim();
 
-  if(!v||v.toLocaleLowerCase('de-DE')==='alle models'){
-   managementModelId='all';
-   picker.value='Alle Models';
+  if(!v){
+   picker.value='';
    hideSuggestions();
-   renderArchive();
   }
  };
 }
@@ -11153,7 +11171,7 @@ function renderArchive(){
       }).join('')
     : '<div class="small" style="margin-top:10px">Noch keine konkreten Veröffentlichungen.</div>';
  }else if(archiveTab==='publication'){
-   const mid=managementSelectedModelId();
+   const mids=managementSelectedModelIds();
    const q=String(managementSearch||'').trim().toLocaleLowerCase('de-DE');
    const area=managementArea;
    let availablePrintSeries=printSeriesObjects();
@@ -11176,7 +11194,7 @@ function renderArchive(){
        (!sr._legacy&&pub.printSeriesId===sr.id)||
        (String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===String(sr.title||'').trim().toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===(sr.archiveArea||''))
      ));
-     if(mid)pubs=pubs.filter(pub=>publicationBelongsToModel(pub,mid));
+     if(mids.length)pubs=pubs.filter(pub=>managementMatchesAllModels(pub,mids));
      if(q){
        const seriesHit=[sr.title,archiveAreaLabel(sr.archiveArea)].filter(Boolean).join(' ').toLocaleLowerCase('de-DE').includes(q);
        if(!seriesHit)pubs=pubs.filter(managementMatchesSearch);
@@ -11191,7 +11209,7 @@ function renderArchive(){
      });
      return {sr,pubs};
    }).filter(Boolean);
-   if(mid)seriesRows=seriesRows.filter(row=>row.pubs.length);
+   if(mids.length)seriesRows=seriesRows.filter(row=>row.pubs.length);
    if(!window.managementPrintSeriesBrowseId)window.managementPrintSeriesBrowseId='';
    const validPrintBrowse=seriesRows.some(row=>row.sr.id===window.managementPrintSeriesBrowseId);
    if(!validPrintBrowse)window.managementPrintSeriesBrowseId=seriesRows[0]?.sr.id||'';
@@ -11200,7 +11218,7 @@ function renderArchive(){
    let unassignedPrintIssues=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&!publicationPrintSeriesObject(pub));
    if(area==='unassigned')unassignedPrintIssues=unassignedPrintIssues.filter(pub=>!pub.archiveArea);
    else if(area&&area!=='all')unassignedPrintIssues=unassignedPrintIssues.filter(pub=>pub.archiveArea===area);
-   if(mid)unassignedPrintIssues=unassignedPrintIssues.filter(pub=>publicationBelongsToModel(pub,mid));
+   if(mids.length)unassignedPrintIssues=unassignedPrintIssues.filter(pub=>managementMatchesAllModels(pub,mids));
    if(q)unassignedPrintIssues=unassignedPrintIssues.filter(managementMatchesSearch);
    unassignedPrintIssues.sort((a,b)=>String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{sensitivity:'base',numeric:true}));
    box.innerHTML=(seriesRows.length||unassignedPrintIssues.length)?`<div class="publicationManageList">${selectedPrintSeriesRows.map(({sr,pubs})=>{
@@ -11295,7 +11313,6 @@ function renderArchive(){
       }).join('')}</div>`
     : '<div class="small">Noch keine passenden Videos.</div>');
  }else if(archiveTab==='series'){
-   const mid=managementSelectedModelId();
    const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
    const showUnassignedSeriesArea=managementArea==='all'||managementArea==='unassigned';
    const unassignedReleases=showUnassignedSeriesArea
@@ -11368,8 +11385,9 @@ function renderArchive(){
    const classOrder=['coed','cyber-girl','playmate','special-edition'];
    const levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
    const levelOrder=['week','month','year'];
-   const managementMid=managementSelectedModelId();
-   const allTitles=(state.archive||[]).filter(a=>a.type==='title'&&managementAreaAllows(a)&&managementMatchesSearch(a));
+   const managementMids=managementSelectedModelIds();
+   const managementMid=managementMids[0]||'';
+   const allTitles=managementArchive('title');
    const classes=classOrder.filter(c=>allTitles.some(t=>t.titleClass===c));
    if(!classes.includes(titleBrowseClass))titleBrowseClass=classes[0]||'';
    const levels=levelOrder.filter(l=>allTitles.some(t=>t.titleClass===titleBrowseClass&&t.titleLevel===l));
@@ -11380,13 +11398,13 @@ function renderArchive(){
    const cards=visible.map(t=>{
      const titleName=titleNameFor(t.titleClass,t.titleLevel)||t.title||'Titel';
      const period=modelTitleWhen(t)||'Zeitraum offen';
-     const contributions=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id)&&(!managementMid||releaseModelIds(r).includes(managementMid))&&managementMatchesSearch(r)).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||'')));
+     const contributions=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id)&&managementMids.every(mid=>managementReleaseModelIds(r).includes(mid))&&managementMatchesSearch(r)).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||'')));
      const contributionHtml=contributions.map(release=>{
        const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
        const parts=titleContributionDisplayParts(release);
        return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
      }).join('');
-     const legacyShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&(!managementMid||shootingModelIds(sh).includes(managementMid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
+     const legacyShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
      const legacyHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="titleLegacyLabel">Bisher direkt zugeordnete Shootings</div><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
        const parts=shootingPreviewParts(sh);
        const display=managementShootingDisplayParts(sh);
