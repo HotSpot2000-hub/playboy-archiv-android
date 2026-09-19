@@ -110,7 +110,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 
 .archiveTabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.archiveTabs button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 11px}.archiveTabs button.active{background:#171717;color:#fff}
-.managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}.managementModelSelection{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}.managementModelSelection:empty{display:none}.managementModelChip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:#eee7ef;padding:6px 9px;font:inherit;font-size:12px;font-weight:700}.managementModelChip span{font-size:15px;line-height:1;color:#777}@media(max-width:520px){.managementTools{grid-template-columns:1fr}.managementModelSelection{grid-column:1}}
+.managementTools{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin:8px 0 10px}.managementTools input{margin:0}.managementTools .managementModelPicker{font-weight:700}@media(max-width:520px){.managementTools{grid-template-columns:1fr}}
 .managementAreaFilter{grid-column:1/-1;margin:0}.managementAreaFilter.hidden{display:none!important}
 .archiveItem{border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:9px}.linkChip{display:inline-block;background:#eee7ef;border-radius:999px;padding:4px 8px;margin:4px 3px 0 0;font-size:12px}.mediaThumb{position:relative;aspect-ratio:2/3;background:#eee;border-radius:10px;overflow:hidden;margin-top:8px}.mediaThumb img{width:100%;height:100%;object-fit:cover}
 
@@ -199,21 +199,6 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px}
 .publicationIssueActions{margin-top:10px;justify-content:flex-start;flex-wrap:wrap}
 .publicationIssueActions button{flex:0 0 auto;min-height:0;padding:8px 10px;border-radius:10px;background:#fff;font:inherit;font-size:12px;line-height:normal}
-.publicationArticleArea{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
-.publicationArticleHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
-.publicationArticleHead h3{margin:0}
-.publicationArticleArea .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
-.publicationArticleArea .seriesContributionCard{display:grid;grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;margin-top:9px;padding:10px;min-height:168px}
-.publicationArticleArea .seriesContributionPreview{width:100%;aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#eee;display:grid;place-items:center}
-.publicationArticleArea .seriesContributionBody{padding:2px 2px 2px 0;text-align:center}
-.publicationArticleSummary{margin-top:9px;font-size:12px;line-height:1.4;color:var(--muted);text-align:left;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;cursor:pointer}
-.publicationArticleSummary.expanded{display:block;overflow:visible}
-.publicationArticleArea .itemActions{justify-content:center;gap:7px}
-.publicationArticleArea .publicationCompactAction{flex:0 0 auto!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
-.printArticleShootingPicker{display:grid;gap:9px;max-height:48vh;overflow:auto;padding:2px}
-.managementShootingFilters{display:flex;gap:7px;margin:0 0 10px;flex-wrap:wrap}
-.managementShootingFilters button{min-height:0;padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;font:inherit;font-size:12px}
-.managementShootingFilters button.active{background:#171717;color:#fff;border-color:#171717}
 @media(max-width:430px){
  .publicationManageHead{padding:10px;gap:8px}
  .publicationIssueCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
@@ -1110,6 +1095,23 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
  .mediaWorkShootPanel .shootPanelActions .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}
 }
 
+/* v168 mobile shooting multi-select */
+.shootingSelectBtn,.shootSelectionFab{display:none}
+@media(max-width:700px){
+ .shootingCardStandalone{position:relative}
+ .shootingSelectBtn{display:grid;position:absolute;right:8px;bottom:8px;z-index:4;width:40px;height:40px;border:1px solid rgba(0,0,0,.16);border-radius:50%;background:rgba(255,255,255,.94);font-size:18px;place-items:center;-webkit-tap-highlight-color:transparent}
+ .shootingCardStandalone.selected{box-shadow:0 0 0 2px #171717 inset;background:#fafaf8}
+ .shootingCardStandalone.selected .shootingSelectBtn{background:#171717;color:#fff;border-color:#171717}
+ .shootSelectionFab.visible{display:block;position:fixed;right:14px;bottom:calc(78px + env(safe-area-inset-bottom));z-index:64;border:0;border-radius:999px;background:#171717;color:#fff;padding:11px 14px;min-height:44px;font:inherit;font-size:13px;font-weight:700;box-shadow:0 8px 22px rgba(0,0,0,.22)}
+ .shootSelectionMenu{display:none}
+ .shootSelectionMenu.mobileOpen{display:grid;position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:65;grid-template-columns:1fr 1fr;gap:8px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+ .shootSelectionMenu button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:11px;line-height:1.2;padding:9px 10px}
+ .shootSelectionMenu .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}
+ .shootSeriesPanel{display:none}
+ .shootSeriesPanel.mobileOpen{display:block;position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:66;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}
+ .shootSeriesPanel label{margin-top:0}.shootSeriesPanel select{width:100%}.shootSeriesActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.shootSeriesActions button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:11px}.shootSeriesActions .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}.shootTitlePanel{display:none}.shootTitlePanel.mobileOpen{display:block;position:fixed;left:12px;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));z-index:67;padding:12px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)}.shootTitlePanel label{margin-top:0}.shootTitlePanel select{width:100%}.shootTitleFilterRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.shootTitleActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.shootTitleActions button{min-height:44px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:11px}.shootTitleActions .primaryAction{background:#171717;color:#fff;border-color:#171717;font-weight:700}
+}
+
 /* v169 mobile series multi-select */
 .seriesSelectBtn,.seriesSelectionFab{display:none}
 @media(max-width:700px){
@@ -1294,8 +1296,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesBrowseCard .publicationCompactAction{background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
 .seriesBrowseCardHead .seriesBrowseIcon{font-size:20px}.seriesBrowseCardHead .seriesBrowseTitle{font-weight:700;flex:1;min-width:0;display:flex;justify-content:center}.seriesBrowseTitleButton{display:inline-flex;align-items:center;justify-content:center;gap:6px;max-width:100%;border:0;background:transparent;padding:2px 0;font:inherit;font-weight:700;color:inherit;text-align:center;cursor:pointer}.seriesBrowseTitleButton .chev{font-size:11px;color:var(--muted)}.seriesBrowsePicker{position:absolute;left:42px;right:12px;top:calc(100% - 4px);z-index:24;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.14);padding:6px;display:grid;gap:2px;max-height:260px;overflow:auto}.seriesBrowsePicker.hidden{display:none}.seriesBrowsePicker button{width:100%;border:0;background:transparent;border-radius:8px;padding:9px 10px;font:inherit;text-align:left}.seriesBrowsePicker button.active{background:#171717;color:#fff}
 .seriesBrowseCardBody{padding:10px;background:var(--bg)}
-.seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard,.managementWorkList .seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;overflow:visible;background:#f8f3f8;margin-top:9px;min-height:168px;padding:10px}
-.seriesBrowseCard .seriesContributionPreview,.managementTitleContributions .seriesContributionPreview,.managementWorkList .seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border:0;overflow:hidden;align-self:stretch;display:grid;place-items:center;border-radius:12px}
+.seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard{display:grid;grid-template-columns:minmax(108px,34%) minmax(0,1fr);gap:12px;border:1px solid #e6dce8;border-radius:14px;overflow:visible;background:#f8f3f8;margin-top:9px;min-height:168px;padding:10px}
+.seriesBrowseCard .seriesContributionPreview,.managementTitleContributions .seriesContributionPreview{grid-column:1;grid-row:1;width:100%;aspect-ratio:2/3;background:#eee;border:0;overflow:hidden;align-self:stretch;display:grid;place-items:center;border-radius:12px}
 .seriesContributionPreview{border-radius:12px}
 .seriesContributionPreview img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
 .shootingCover img,.workReleaseChoicePreview img{border-radius:12px}
@@ -1305,22 +1307,16 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .seriesContributionMeta{margin-top:8px;font-size:12px;color:var(--muted)}
 .seriesContributionBody .itemActions{justify-content:center;flex-wrap:wrap}
 .seriesContributionBody .itemActions button{flex:1 1 88px}
-.seriesBrowseCard .seriesContributionBody,.managementTitleContributions .seriesContributionBody,.managementWorkList .seriesContributionBody{padding:2px 2px 2px 0}
-.seriesBrowseCard .seriesContributionBody .itemActions,.managementTitleContributions .seriesContributionBody .itemActions,.managementWorkList .seriesContributionBody .itemActions{justify-content:center;gap:7px}
-.seriesBrowseCard .seriesContributionBody .publicationCompactAction,.managementTitleContributions .seriesContributionBody .publicationCompactAction,.managementWorkList .seriesContributionBody .publicationCompactAction{flex:0 0 auto!important}
+.seriesBrowseCard .seriesContributionBody,.managementTitleContributions .seriesContributionBody{padding:2px 2px 2px 0}
+.seriesBrowseCard .seriesContributionBody .itemActions,.managementTitleContributions .seriesContributionBody .itemActions{justify-content:center;gap:7px}
+.seriesBrowseCard .seriesContributionBody .publicationCompactAction,.managementTitleContributions .seriesContributionBody .publicationCompactAction{flex:0 0 auto!important}
 .seriesBrowseCard .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
 .managementTitleContributions .seriesAddContributionRow{display:flex;justify-content:flex-start;margin:0 0 10px}
-.managementTitleContributions .publicationCompactAction,.managementWorkList .publicationCompactAction{background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
-.managementWorkList{display:grid;gap:10px}
-.managementWorkList .seriesContributionCard{margin-top:0}
-.managementWorkList .seriesContributionPreview{align-self:start}
-.managementWorkList .managementWorkDetails{display:grid;gap:4px}
-.managementWorkList .managementWorkName{font-size:14px;font-weight:700;line-height:1.3;text-align:center}
-.managementWorkList .managementWorkCount{margin-top:8px;font-size:12px;color:var(--muted);text-align:center}
+.managementTitleContributions .publicationCompactAction{background:#fff!important;border:1px solid var(--line)!important;box-shadow:none!important}
 .publicationManageCard.seriesBrowseCard{margin-top:0}
 @media(max-width:430px){
  .seriesBrowseCardHead{padding:10px;gap:8px}
- .seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard,.managementWorkList .seriesContributionCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
+ .seriesBrowseCard .seriesContributionCard,.managementTitleContributions .seriesContributionCard{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px}
 }
 
 .workReleasePicker{display:grid;gap:9px;margin-top:8px;max-height:48vh;overflow:auto;padding:2px}
@@ -1338,13 +1334,6 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .workReleaseChoice.selected .workReleaseChoiceMark::after{content:"";width:12px;height:12px;border-radius:50%;background:#178f82}
 .workReleaseChoice.none{grid-template-columns:1fr;min-height:70px}
 .workReleaseChoice.none .workReleaseChoiceBody{padding-left:14px}
-.workRelationTabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 8px}
-.workRelationTabs button{min-height:42px;border:1px solid var(--line);border-radius:12px;background:#fff;font:inherit;font-weight:700}
-.workRelationTabs button.active{background:#171717;color:#fff;border-color:#171717}
-.workRelationPanel.hidden{display:none}
-.releaseRelationWarning{margin-top:8px;padding:10px 12px;border:1px solid #c98932;border-radius:12px;background:#fff4df;color:#6e4308;font-size:12px;line-height:1.35}
-.workShootingPicker{display:grid;gap:9px;margin-top:8px;max-height:48vh;overflow:auto;padding:2px}
-.workShootingChoice .workReleaseChoicePreview{position:relative}
 .unassignedSeriesWorkArea{border:1px dashed #a995ad;border-radius:14px;background:#f6f0f7;overflow:hidden}
 .unassignedSeriesWorkArea .seriesBrowseCardHead{background:#f0e6f2}
 .unassignedSeriesWorkArea .seriesBrowseCardBody{padding:12px}
@@ -1570,92 +1559,53 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   gap:10px;
   margin-top:10px;
 }
-[data-collapse-key="career-archive"] .managementShootingBrowseCard .managementShootingsList{margin-top:0}
 [data-collapse-key="career-archive"] .managementShootingsList .shootingCardStandalone{
   display:grid!important;
   grid-template-columns:minmax(118px,36%) minmax(0,1fr)!important;
-  grid-template-rows:auto auto!important;
-  gap:12px;
+  grid-template-rows:1fr auto!important;
   align-items:stretch;
-  border:1px solid #e6dce8;
+  border:1px solid var(--line);
   border-radius:14px;
-  overflow:visible;
-  background:#f8f3f8;
-  min-height:168px;
-  padding:10px;
+  overflow:hidden;
+  background:#fff;
+  min-height:178px;
 }
 [data-collapse-key="career-archive"] .managementShootingsList .shootingCover{
   grid-column:1;
   grid-row:1 / span 2;
   width:100%;
-  height:auto!important;
-  min-height:0!important;
-  aspect-ratio:2/3!important;
-  align-self:start;
-  border:0;
-  border-radius:12px;
-  overflow:hidden;
-}
-[data-collapse-key="career-archive"] .managementShootingsList .shootingCover>.small{
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-items:center;
-  padding:12px;
-  text-align:center;
+  height:100%!important;
+  min-height:178px!important;
+  aspect-ratio:auto!important;
+  border-right:1px solid var(--line);
 }
 [data-collapse-key="career-archive"] .managementShootingsList .shootingBody{
   grid-column:2;
   grid-row:1;
-  padding:2px 2px 2px 0!important;
+  padding:12px!important;
   display:flex;
   flex-direction:column;
   justify-content:center;
   min-width:0;
-  text-align:center;
 }
 [data-collapse-key="career-archive"] .managementShootingsList .shootingBody b{
   font-size:14px;
   line-height:1.25;
   margin-bottom:5px;
 }
-[data-collapse-key="career-archive"] .managementShootingsList .managementShootingMediaCount{
-  margin-top:8px;
-  font-size:12px;
-  color:var(--muted);
-}
-[data-collapse-key="career-archive"] .managementShootingsList .managementShootingModels{
-  margin-top:5px;
-  font-size:14px;
-  line-height:1.3;
-}
 [data-collapse-key="career-archive"] .managementShootingsList .seriesCardActions{
   grid-column:2;
   grid-row:2;
-  display:flex;
-  justify-content:center;
-  gap:7px;
-  width:auto!important;
+  width:100%!important;
   margin:0!important;
-  border:0;
-  align-self:start;
-}
-[data-collapse-key="career-archive"] .managementShootingsList .seriesCardActions button{
-  flex:0 0 auto!important;
-  width:auto!important;
-  border:1px solid var(--line)!important;
-  border-radius:10px!important;
-  background:#fff!important;
-  box-shadow:none!important;
-  padding:7px 10px!important;
+  border-top:1px solid var(--line);
 }
 @media(max-width:460px){
   [data-collapse-key="career-archive"] .managementShootingsList .shootingCardStandalone{
-    grid-template-columns:minmax(104px,38%) minmax(0,1fr)!important;
-    gap:10px;
+    grid-template-columns:minmax(112px,38%) minmax(0,1fr)!important;
   }
   [data-collapse-key="career-archive"] .managementShootingsList .shootingBody{
-    padding:2px 2px 2px 0!important;
+    padding:10px!important;
   }
 }
 
@@ -2303,20 +2253,20 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <section id="managementView" class="hidden">
 <div class="card collapseCard" data-collapse-key="career-archive">
- <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Print, Titel, Rubriken, Medien, Shootings und Import verwalten.</div></div><span class="collapseIcon">⌄</span></button>
+ <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Titel, Rubriken, Galerien, Videos, Shootings und Medien verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
 <div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
-<div id="managementModelSelection" class="managementModelSelection" aria-label="Ausgewählte Models"></div>
 <select id="managementAreaFilter" class="managementAreaFilter hidden" aria-label="Archivbereich filtern"></select>
   <div class="archiveTabs managementNav">
    <button class="active" data-archive-tab="publication">Print</button>
    <button data-archive-tab="title">Titel</button>
    <button data-archive-tab="series">Rubriken</button>
-   <button data-archive-tab="gallery" data-archive-group="media">Medien</button>
+   <button data-archive-tab="gallery">Galerien</button>
+   <button data-archive-tab="video">Videos</button>
    <button data-archive-tab="shoot">Shootings</button>
-   <button data-archive-tab="media">Import</button>
+   <button data-archive-tab="media">Medien</button>
   </div>
   <div id="mediaWorkflowTabs" class="mediaWorkflowTabs hidden">
    <button type="button" class="active" data-media-work-tab="new">Neu / zu prüfen<span class="mediaWorkflowCount" data-media-work-count="new">0</span></button>
@@ -2449,10 +2399,14 @@ body.archiveFilterOpen .bottom{display:none!important}
 
 <button type="button" id="inboxSelectionFab" class="inboxSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <button type="button" id="mediaWorkSelectionFab" class="mediaWorkSelectionFab" aria-expanded="false">Auswahl (0)</button>
+<button type="button" id="shootSelectionFab" class="shootSelectionFab" aria-expanded="false">Auswahl (0)</button>
+<div id="shootSelectionMenu" class="shootSelectionMenu"><button type="button" id="shootAssignSeriesBtn" class="primaryAction">Rubrik zuordnen</button><button type="button" id="shootAssignTitleBtn">Titel zuordnen</button><button type="button" id="shootSelectAllBtn">Alle auswählen</button><button type="button" id="shootClearBtn">Auswahl aufheben</button></div>
+<div id="shootSeriesPanel" class="shootSeriesPanel"><label for="shootSeriesSelect">Ausgewählte Shootings einer Rubrik zuordnen</label><select id="shootSeriesSelect"></select><div class="shootSeriesActions"><button type="button" id="shootSeriesCancel">Abbrechen</button><button type="button" id="shootSeriesConfirm" class="primaryAction">Zuordnen</button></div></div>
+<div id="shootTitlePanel" class="shootTitlePanel"><label>Ausgewählte Shootings einem Titel zuordnen</label><div class="shootTitleFilterRow"><select id="shootTitleClassFilter" aria-label="Titelklasse"></select><select id="shootTitleLevelFilter" aria-label="Titelstufe"></select></div><select id="shootTitleSelect"></select><div class="shootTitleActions"><button type="button" id="shootTitleCancel">Abbrechen</button><button type="button" id="shootTitleConfirm" class="primaryAction">Zuordnen</button></div></div>
 <button type="button" id="seriesSelectionFab" class="seriesSelectionFab" aria-expanded="false">Auswahl (0)</button>
 <div id="seriesSelectionMenu" class="seriesSelectionMenu"><button type="button" id="seriesAssignPublicationBtn" class="primaryAction">Publikation zuordnen</button><button type="button" id="seriesSelectAllBtn">Alle auswählen</button><button type="button" id="seriesClearBtn">Auswahl aufheben</button></div>
 <div id="seriesPublicationPanel" class="seriesPublicationPanel"><label for="seriesPublicationSelect">Ausgewählte Rubriken einer Publikation zuordnen</label><select id="seriesPublicationSelect"></select><div class="seriesPublicationActions"><button type="button" id="seriesPublicationCancel">Abbrechen</button><button type="button" id="seriesPublicationConfirm" class="primaryAction">Zuordnen</button></div></div>
-<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignPublicationCoverBtn">Als Cover zuordnen</button><button type="button" id="mediaWorkAssignPublicationPdfBtn">Als PDF zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
+<div id="mediaWorkSelectionMenu" class="mediaWorkSelectionMenu"><button type="button" id="mediaWorkAssignGalleryBtn" class="primaryAction">Galerie zuordnen</button><button type="button" id="mediaWorkAssignVideoBtn">Video zuordnen</button><button type="button" id="mediaWorkAssignPublicationCoverBtn">Als Cover zuordnen</button><button type="button" id="mediaWorkAssignPublicationPdfBtn">Als PDF zuordnen</button><button type="button" id="mediaWorkAssignShootBtn">Shooting zuordnen</button><button type="button" id="mediaWorkMoveBtn">Fürs Archiv behalten</button><button type="button" id="mediaWorkReturnInboxBtn">Zur Inbox</button><button type="button" id="mediaWorkSelectAllBtn">Alle auswählen</button><button type="button" id="mediaWorkClearBtn">Auswahl aufheben</button></div>
 <div id="mediaWorkGalleryPanel" class="mediaWorkShootPanel hidden">
  <div class="shootFinderHead"><div><b>Galerie auswählen</b><div class="small">Ausgewählte Fotos direkt einer Galerie zuordnen</div></div><button type="button" id="mediaWorkGalleryCancel">Schließen</button></div>
  <div id="mediaWorkGalleryResults" class="mediaWorkTargetResults"></div>
@@ -2470,6 +2424,12 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label for="mediaWorkPublicationSelect">Ausgabe</label>
  <select id="mediaWorkPublicationSelect"></select>
  <div class="shootPanelActions"><button type="button" id="mediaWorkPublicationCancelBottom">Abbrechen</button><button type="button" id="mediaWorkPublicationConfirm" class="primaryAction">Zuordnen</button></div>
+</div>
+<div id="mediaWorkShootPanel" class="mediaWorkShootPanel">
+ <div class="shootFinderHead"><div><b>Shooting auswählen</b><div class="small">Ausgewählte Medien einem Shooting zuordnen</div></div><button type="button" id="mediaWorkShootCancel">Schließen</button></div>
+ <input id="mediaWorkShootSearch" type="search" placeholder="Model, Shooting, Datum oder Publikation suchen">
+ <div class="shootFinderFilters"><select id="mediaWorkShootModelFilter"><option value="">Alle Models</option></select><select id="mediaWorkShootYearFilter"><option value="">Alle Jahre</option></select></div>
+ <div id="mediaWorkShootRecent"></div><div id="mediaWorkShootResults" class="shootFinderResults"></div>
 </div>
 <div class="bottom"><div class="nav"><button id="profileBtn">Profil</button><button id="spotBtn">Archiv</button><button id="researchBtn">Research</button><button id="managementBtn">Verwaltung</button><button id="inboxBtn">Inbox</button><button id="peopleBtn">Personen</button></div></div>
 
@@ -2584,26 +2544,20 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Fotograf(en)</label>
  <div id="archiveEditShootPhotographers"></div>
 </div>
-<div id="archiveEditWorkRelationsWrap" class="hidden">
- <label>Zuordnung</label>
- <div class="workRelationTabs" role="tablist" aria-label="Zuordnung auswählen">
-  <button type="button" id="archiveEditShootingRelationTab" class="active" role="tab" aria-selected="true">Shooting</button>
-  <button type="button" id="archiveEditReleaseRelationTab" role="tab" aria-selected="false">Beitrag</button>
- </div>
- <div id="archiveEditShootingRelationPanel" class="workRelationPanel">
 <div id="archiveEditGalleryShootWrap" class="hidden">
  <label>Shooting</label>
- <select id="archiveEditGalleryShoot" class="hidden" aria-hidden="true">
+ <select id="archiveEditGalleryShoot">
   <option value="">Shooting noch nicht bekannt</option>
  </select>
+ <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
 </div>
 <div id="archiveEditVideoShootWrap" class="hidden">
  <label>Shooting</label>
- <select id="archiveEditVideoShoot" class="hidden" aria-hidden="true">
+ <select id="archiveEditVideoShoot">
   <option value="">Shooting noch nicht bekannt</option>
  </select>
+ <div class="small" style="margin-top:5px">Das Shooting kann nachträglich zugeordnet, geändert oder wieder entfernt werden.</div>
 </div>
-<div id="archiveEditWorkShootingPicker" class="workShootingPicker"></div>
 <div id="archiveEditGalleryModelsWrap" class="hidden">
  <label>Models in dieser Galerie</label>
  <div class="small">Standardmäßig werden alle Models des Shootings übernommen. Models abwählen, die in dieser Galerie nicht vorkommen.</div>
@@ -2623,16 +2577,6 @@ body.archiveFilterOpen .bottom{display:none!important}
  <label>Fotograf(en) dieses Videos</label>
  <div class="small">Standardmäßig werden alle Fotograf(en) des Shootings übernommen. Fotograf(en) abwählen, die für dieses Video nicht gelten.</div>
  <div id="archiveEditVideoPhotographers" class="shootModelSelector"></div>
-</div>
-</div>
-<div id="archiveEditReleaseRelationPanel" class="workRelationPanel hidden">
-<div id="archiveEditWorkReleaseWrap" class="hidden">
- <label>Beitrag <span class="small">(optional)</span></label>
- <select id="archiveEditWorkRelease" class="hidden" aria-hidden="true"><option value="">Noch keinem Beitrag zugeordnet</option></select>
- <div id="archiveEditWorkReleasePicker" class="workReleasePicker"></div>
- <div class="small" style="margin-top:6px">Vorschau, Model und Rubrik helfen bei der eindeutigen Auswahl. Das Werk bleibt eigenständig; der Beitrag kann später geändert oder entfernt werden.</div>
-</div>
-</div>
 </div>
 <div id="archiveEditAreaWrap" class="hidden">
  <label>Archivbereich</label>
@@ -2677,9 +2621,6 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Cover-Models <span class="small">(optional)</span></label>
   <div class="small">Nur Coverangabe. Daraus wird kein Beitrag und kein Shooting abgeleitet.</div>
   <div id="archiveEditCoverModels" class="shootModelSelector"></div>
-  <label>Cover-Fotograf(en) <span class="small">(optional)</span></label>
-  <div class="small">Nur Coverangabe. Keine automatische Übertragung auf Artikel oder Shootings.</div>
-  <div id="archiveEditCoverPhotographers" class="shootModelSelector"></div>
   <label>Physischer Bestand</label>
   <select id="archiveEditStockStatus">
    <option value="none">Nicht vorhanden</option>
@@ -2687,37 +2628,23 @@ body.archiveFilterOpen .bottom{display:none!important}
    <option value="owned">Im Bestand</option>
   </select>
  </div>
+<div id="archiveEditWorkReleaseWrap" class="hidden">
+ <label>Beitrag <span class="small">(optional)</span></label>
+ <select id="archiveEditWorkRelease" class="hidden" aria-hidden="true"><option value="">Noch keinem Beitrag zugeordnet</option></select>
+ <div id="archiveEditWorkReleasePicker" class="workReleasePicker"></div>
+ <div class="small" style="margin-top:6px">Vorschau, Model und Rubrik helfen bei der eindeutigen Auswahl. Das Werk bleibt eigenständig; der Beitrag kann später geändert oder entfernt werden.</div>
+</div>
 <div id="archiveEditReleaseFieldsWrap" class="hidden">
  <label>Individueller Name <span class="small">(optional)</span></label>
  <input id="archiveEditReleaseName" placeholder="z. B. Divine Morning">
  <div class="hidden" aria-hidden="true">
   <input id="archiveEditContributionNumber" type="number" min="1" step="1" inputmode="numeric">
  </div>
- <div id="archiveEditReleasePublicationContext" class="releaseRelationWarning hidden"></div>
- <div id="archiveEditReleaseRelationControls">
-  <label id="archiveEditReleaseRelationModeLabel">Veröffentlichungskontext</label>
-  <select id="archiveEditReleaseRelationMode">
-   <option value="none">Keine Zuordnung</option>
-   <option value="series">Rubrik</option>
-   <option value="title">Titel</option>
-   <option value="both">Rubrik und Titel</option>
-  </select>
-  <div id="archiveEditReleaseSeriesWrap" class="hidden"><label>Rubrik</label><select id="archiveEditReleaseSeries"><option value="">Bitte Rubrik wählen</option></select></div>
-  <div id="archiveEditReleaseTitleWrap" class="hidden"><label>Titel</label><select id="archiveEditReleaseTitle"><option value="">Bitte Titel wählen</option></select></div>
-  <div id="archiveEditReleaseRelationWarning" class="releaseRelationWarning hidden">Warnung: Dieser Beitrag wird gleichzeitig einer Rubrik und einem Titel zugeordnet. Diesen Ausnahmefall bitte nur verwenden, wenn beide Veröffentlichungskontexte tatsächlich gelten.</div>
-  <div id="archiveEditReleaseRelationHelp" class="small" style="margin-top:6px">Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.</div>
- </div>
- <div id="archiveEditPrintArticleFields" class="hidden">
-  <label>Seiten / Fundstelle</label>
-  <input id="archiveEditPrintArticlePages" placeholder="z. B. 1–7">
-  <label>Models</label>
-  <div id="archiveEditPrintArticleModels" class="shootModelSelector"></div>
-  <label>Kurzer deutscher Erklärungstext <span class="small">(optional)</span></label>
-  <textarea id="archiveEditPrintArticleSummary" placeholder="Kurze inhaltliche Beschreibung des Artikels"></textarea>
-  <label>Shooting <span class="small">(optional)</span></label>
-  <div class="small">Entstehungsdatum, Fotograf und Ort werden aus dem Shooting übernommen.</div>
-  <input id="archiveEditPrintArticleShooting" type="hidden"><div id="archiveEditPrintArticleShootingPicker" class="printArticleShootingPicker" style="margin-top:8px"></div>
- </div>
+ <label>Rubrik <span class="small">(optional)</span></label>
+ <select id="archiveEditReleaseSeries"><option value="">Nicht zugeordnet</option></select>
+ <label>Titel <span class="small">(optional)</span></label>
+ <select id="archiveEditReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
+ <div class="small" style="margin-top:6px">Wenn die Rubrik noch nicht sicher bekannt ist, bleibt der Beitrag neutral unter „Nicht zugeordnet“. Ein Titel kann unabhängig davon gesetzt werden.</div>
 </div>
  <button class="btn primary" id="saveArchiveEditBtn">Änderungen speichern</button>
  <button class="btn" id="cancelArchiveEditBtn">Abbrechen</button>
@@ -2792,9 +2719,6 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Cover-Models <span class="small">(optional)</span></label>
   <div class="small">Nur Coverangabe. Daraus wird kein Beitrag und kein Shooting abgeleitet.</div>
   <div id="publicationCoverModels" class="shootModelSelector"></div>
-  <label>Cover-Fotograf(en) <span class="small">(optional)</span></label>
-  <div class="small">Nur Coverangabe. Keine automatische Übertragung auf Artikel oder Shootings.</div>
-  <div id="publicationCoverPhotographers" class="shootModelSelector"></div>
   <label>Physischer Bestand</label>
   <select id="publicationStockStatus">
    <option value="none">Nicht vorhanden</option>
@@ -2809,23 +2733,12 @@ body.archiveFilterOpen .bottom{display:none!important}
   <div id="archiveContributionNumberWrap" class="hidden" aria-hidden="true">
    <input id="archiveContributionNumber" type="number" min="1" step="1" inputmode="numeric">
   </div>
- <div id="archiveReleaseContextWrap">
+  <div id="archiveReleaseContextWrap">
    <label>Rubrik <span class="small">(optional)</span></label>
    <select id="archiveReleaseSeries"><option value="">Nicht zugeordnet</option></select>
    <label>Titel <span class="small">(optional)</span></label>
    <select id="archiveReleaseTitle"><option value="">Kein Titel zugeordnet</option></select>
    <div class="small" style="margin-top:6px">Rubrik und Titel sind die Veröffentlichungskontexte des Beitrags.</div>
-  </div>
-  <div id="archivePrintArticleFields" class="hidden">
-   <label>Seiten / Fundstelle</label>
-   <input id="archivePrintArticlePages" placeholder="z. B. 1–7">
-   <label>Models</label>
-   <div id="archivePrintArticleModels" class="shootModelSelector"></div>
-   <label>Kurzer deutscher Erklärungstext <span class="small">(optional)</span></label>
-   <textarea id="archivePrintArticleSummary" placeholder="Kurze inhaltliche Beschreibung des Artikels"></textarea>
-   <label>Shooting <span class="small">(optional)</span></label>
-   <div class="small">Entstehungsdatum, Fotograf und Ort werden aus dem Shooting übernommen.</div>
-   <input id="archivePrintArticleShooting" type="hidden"><div id="archivePrintArticleShootingPicker" class="printArticleShootingPicker" style="margin-top:8px"></div>
   </div>
  </div>
  <div id="archiveWorkReleaseWrap" class="hidden">
@@ -3368,8 +3281,6 @@ function normalizeArchiveObjectV6(a){
   a.issuePeriod=String(a.issuePeriod||a.date||'').trim();
   if(!Array.isArray(a.coverModelIds))a.coverModelIds=[];
   a.coverModelIds=[...new Set(a.coverModelIds.filter(Boolean))];
-  if(!Array.isArray(a.coverPhotographerIds))a.coverPhotographerIds=[];
-  a.coverPhotographerIds=[...new Set(a.coverPhotographerIds.filter(Boolean))];
   const validStock=new Set(['none','ordered','owned']);
   a.stockStatus=validStock.has(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
   a.owned=a.stockStatus==='owned';
@@ -8982,14 +8893,13 @@ function openPublicationDetail(id){
  rememberRecentArchive(id);
  const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');
  if(!pub){toast('Publikation nicht gefunden.');return}
- const mids=managementSelectedModelIds(); const series=linkedObjects(pub.id,'series').filter(s=>managementMatchesAllModels(s,mids));
+ const mid=managementSelectedModelId(); const series=linkedObjects(pub.id,'series').filter(s=>!mid||seriesBelongsToModel(s,mid));
  const box=document.getElementById('publicationDetailContent');
  box.innerHTML=`<div class="publicationDetailSummary">
   <div class="detailHero">
    <div class="small">Ausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
    <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}</div>
    ${publicationCoverModelNames(pub).length?`<div class="small" style="margin-top:7px"><b>Cover:</b> ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
-   ${publicationCoverPhotographerNames(pub).length?`<div class="small" style="margin-top:5px"><b>Cover-Foto:</b> ${esc(publicationCoverPhotographerNames(pub).join(' + '))}</div>`:''}
    ${pub.note?`<div class="publicationDetailNote">${esc(pub.note)}</div>`:''}${renderCredits(pub.credits||[])}
   </div>
   <div class="publicationDetailAssets">
@@ -9001,12 +8911,11 @@ function openPublicationDetail(id){
    </div>
   </div>
  </div>
- ${publicationArticleAreaHtml(pub)}
   <div class="relationBlock"><div class="publicationDetailSeriesHead"><h3>Enthaltene Rubriken</h3><span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
    ${series.length?`<div class="seriesGrid">${series.map(s=>{
       const media=seriesMedia(s),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
       return `<div class="seriesCard">
-       <div class="seriesCover" data-open-series="${s.id}" ${cover?`data-series-cover="${cover.id}"`:''}><div class="small">${cover?'Lade Vorschau …':'Noch kein Medium'}</div></div>
+       <div class="seriesCover" data-open-series="${s.id}" ${cover?`data-series-cover="${cover.id}"`:''}>${shootingCoverContent(sh)}</div>
        <div class="seriesCardBody" data-open-series="${s.id}"><b>${esc(s.title)}</b><div class="small">${media.length} Medien · Öffnen</div></div>
       </div>`;
     }).join('')}</div>`:'<div class="small">Noch keine Rubrik mit dieser Publikation verknüpft.</div>'}
@@ -9016,16 +8925,8 @@ function openPublicationDetail(id){
  box.querySelectorAll('[data-open-pdf]').forEach(x=>x.onclick=()=>openPublicationPdf(x.dataset.openPdf));
  box.querySelectorAll('[data-clear-publication-cover]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationCover,'cover'));
  box.querySelectorAll('[data-clear-publication-pdf]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationPdf,'pdf'));
- box.querySelectorAll('[data-add-publication-contribution]').forEach(x=>x.onclick=()=>openPublicationContribution(x.dataset.addPublicationContribution));
- box.querySelectorAll('[data-edit-archive]').forEach(x=>x.onclick=()=>openArchiveEdit(x.dataset.editArchive));
- box.querySelectorAll('[data-unlink-publication-contribution]').forEach(x=>x.onclick=()=>unlinkPublicationContribution(x.dataset.unlinkPublicationContribution,x.dataset.publicationId,true));
- box.querySelectorAll('[data-publication-article-summary]').forEach(x=>{
-  const toggle=()=>{x.classList.toggle('expanded');x.setAttribute('aria-expanded',x.classList.contains('expanded')?'true':'false')};
-  x.onclick=toggle;
-  x.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}};
- });
  hydratePublicationCovers(box);
- hydrateShootingCovers(box);hydrateSeriesCovers(box);hydrateReleaseGalleryCovers(box);hydrateMediaThumbs(box);bindInteractiveMedia(box);
+ hydrateShootingCovers(box);hydrateSeriesCovers(box);
 }
 function bindSummaryEditable(id,key){
  const el=document.getElementById(id);if(!el)return;
@@ -9101,14 +9002,6 @@ function shootingDisplayLabel(sh){
  const models=shootingModelNames(sh);
  return `${models.join(' + ')||'Ohne Model'} • Shooting • Nr. ${shootingNumber(sh)}`;
 }
-function managementShootingDisplayParts(sh){
- const ids=shootingModelIds(sh);
- const key=shootingModelKey(ids);
- const models=shootingModelNames(sh).join(' + ')||'Model noch nicht bekannt';
- const peers=key?(state.archive||[]).filter(x=>x&&x.type==='shoot'&&shootingModelKey(shootingModelIds(x))===key):[];
- const title=peers.length<2?'Shooting':`Shooting • Nr. ${shootingNumber(sh)}`;
- return {title,models};
-}
 function shootingBelongsToModel(sh,id){return sh.type==='shoot'&&shootingModelIds(sh).includes(id)}
 function modelSelector(selected=[],edit=false){
  const cls=edit?'editShootModelCheck':'shootModelCheck';
@@ -9117,22 +9010,6 @@ function modelSelector(selected=[],edit=false){
 function publicationCoverModelSelector(selected=[],edit=false){
  const cls=edit?'editPublicationCoverModelCheck':'publicationCoverModelCheck';
  return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
-}
-function publicationCoverPhotographerSelector(selected=[],edit=false){
- const photographers=(state.people||[]).filter(isPhotographerPerson).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','de',{sensitivity:'base'}));
- if(!photographers.length)return '<div class="small">Noch keine Fotografen angelegt.</div>';
- const cls=edit?'editPublicationCoverPhotographerCheck':'publicationCoverPhotographerCheck';
- return photographers.map(p=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(p.id)}" style="width:auto" ${selected.includes(p.id)?'checked':''}> ${esc(p.name)}</label>`).join('');
-}
-function printArticleModelSelector(selected=[],edit=false){
- const cls=edit?'editPrintArticleModelCheck':'printArticleModelCheck';
- return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
-}
-function printArticlePhotographerSelector(selected=[],edit=false){
- const photographers=(state.people||[]).filter(isPhotographerPerson).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','de',{sensitivity:'base'}));
- if(!photographers.length)return '<div class="small">Noch keine Fotografen angelegt.</div>';
- const cls=edit?'editPrintArticlePhotographerCheck':'printArticlePhotographerCheck';
- return photographers.map(p=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(p.id)}" style="width:auto" ${selected.includes(p.id)?'checked':''}> ${esc(p.name)}</label>`).join('');
 }
 function printSeriesObjects(){
  return (state.archive||[]).filter(a=>a&&a.type==='printSeries').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
@@ -9182,7 +9059,6 @@ function publicationStockBadge(pub){
  return `<span class="stockBadge${cls}">${icon}${esc(publicationStockLabel(pub))}</span>`;
 }
 function publicationCoverModelNames(pub){return (pub?.coverModelIds||[]).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean)}
-function publicationCoverPhotographerNames(pub){return (pub?.coverPhotographerIds||[]).map(id=>personById(id)?.name).filter(Boolean)}
 function modelChips(ids=[]){
  const ms=ids.map(id=>state.models.find(m=>m.id===id)).filter(Boolean);
  return ms.length?`<div class="creditRow relationshipRow"><span class="creditChip relationshipGroup" title="Models"><span class="relationshipIcon">👤</span><span class="relationshipNames">${ms.map(m=>`<button type="button" class="relationshipName relationshipLink" data-open-related-model="${esc(m.id)}">${esc(m.name)}</button>`).join('')}</span></span></div>`:'';
@@ -9238,11 +9114,11 @@ function modelTodoMissing(m){
  return missing;
 }
 function todoManagementModelMatch(kind,obj){
- const mids=managementSelectedModelIds();
- if(!mids.length)return true;
- if(kind==='model')return mids.length===1&&obj.id===mids[0];
- if(kind==='shoot')return mids.every(mid=>shootingModelIds(obj).includes(mid));
- if(kind==='series')return managementMatchesAllModels(obj,mids);
+ const mid=managementSelectedModelId();
+ if(!mid)return true;
+ if(kind==='model')return obj.id===mid;
+ if(kind==='shoot')return shootingModelIds(obj).includes(mid);
+ if(kind==='series')return seriesShootingsAll(obj).some(sh=>shootingModelIds(sh).includes(mid));
  return true;
 }
 function buildTodoRows(){
@@ -10246,8 +10122,7 @@ if(preview&&l==='week'){
  const a=(state.archive||[]).find(x=>x.id===id);
  if(!a)return;
  document.getElementById('archiveEditId').value=id;
- const releasePublication=a.type==='release'?linkedObjects(a.id,'publication')[0]||null:null;
- document.getElementById('archiveEditTitle').textContent=a.type==='release'?(releasePublication?'Artikel bearbeiten':'Beitrag bearbeiten'):a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':a.type==='printSeries'?'Reihe bearbeiten':'Archiv-Eintrag bearbeiten';
+ document.getElementById('archiveEditTitle').textContent=a.type==='release'?'Beitrag bearbeiten':a.type==='series'?'Rubrik bearbeiten':a.type==='shoot'?'Shooting bearbeiten':a.type==='title'?'Titel bearbeiten':a.type==='publication'?'Printausgabe bearbeiten':a.type==='printSeries'?'Reihe bearbeiten':'Archiv-Eintrag bearbeiten';
  document.getElementById('archiveEditName').value=a.title||a.fileName||'';
  document.getElementById('archiveEditDate').value=a.date||'';
  const isShoot=a.type==='shoot';
@@ -10274,7 +10149,15 @@ if(preview&&l==='week'){
  galleryShootWrap.classList.toggle('hidden',!isGallery);
  videoShootWrap.classList.toggle('hidden',!isVideo);
  if(isGallery||isVideo){
-  fillWorkShootingSelector(isGallery?'archiveEditGalleryShoot':'archiveEditVideoShoot',a);
+  const currentShootId=(isGallery?galleryShootings(a):videoShootings(a))[0]?.id||'';
+  const shoots=(state.archive||[]).filter(x=>x&&x.type==='shoot').slice().sort(sortShootingsNatural);
+  const options='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>{
+   const modelNames=shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+   const details=[sh.date||'',sh.location||''].filter(Boolean).join(' · ');
+   return `<option value="${esc(sh.id)}" ${sh.id===currentShootId?'selected':''}>${esc(shootingDisplayLabel(sh))}${details?` · ${esc(details)}`:''}</option>`;
+  }).join('');
+  if(isGallery)galleryShootSelect.innerHTML=options;
+  if(isVideo)videoShootSelect.innerHTML=options;
  }else{
   galleryShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
   videoShootSelect.innerHTML='<option value="">Shooting noch nicht bekannt</option>';
@@ -10333,44 +10216,10 @@ document.getElementById('archiveEditDate').oninput=()=>{
  document.getElementById('archiveEditOwnershipWrap').classList.toggle('hidden',!isPublication);
  document.getElementById('archiveEditReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
  if(isRelease){document.getElementById('archiveEditReleaseName').value=a.name||'';document.getElementById('archiveEditContributionNumber').value=Number(a.contributionNumber)>0?String(Number(a.contributionNumber)):'';}
- const editPrintArticleFields=document.getElementById('archiveEditPrintArticleFields');
- editPrintArticleFields.classList.toggle('hidden',!(isRelease&&releasePublication));
- if(isRelease&&releasePublication){
-  document.getElementById('archiveEditPrintArticlePages').value=a.printPages||'';
-  document.getElementById('archiveEditPrintArticleModels').innerHTML=printArticleModelSelector(a.printModelIds||[],true);
-  document.getElementById('archiveEditPrintArticleSummary').value=a.printSummaryDe||'';
-  configurePrintArticleSource('archiveEdit',a);
- }else{
-  document.getElementById('archiveEditPrintArticleModels').innerHTML='';
-  document.getElementById('archiveEditPrintArticleShootingPicker').innerHTML='';
- }
  const workReleaseWrap=document.getElementById('archiveEditWorkReleaseWrap');
  workReleaseWrap.classList.toggle('hidden',!(isGallery||isVideo));
  if(isGallery||isVideo)fillWorkReleaseSelector('archiveEditWorkRelease',a);
- const workRelationsWrap=document.getElementById('archiveEditWorkRelationsWrap');
- const shootingRelationTab=document.getElementById('archiveEditShootingRelationTab');
- const releaseRelationTab=document.getElementById('archiveEditReleaseRelationTab');
- const shootingRelationPanel=document.getElementById('archiveEditShootingRelationPanel');
- const releaseRelationPanel=document.getElementById('archiveEditReleaseRelationPanel');
- workRelationsWrap.classList.toggle('hidden',!(isGallery||isVideo));
- const showWorkRelation=kind=>{
-  const shootingActive=kind==='shooting';
-  shootingRelationTab.classList.toggle('active',shootingActive);
-  releaseRelationTab.classList.toggle('active',!shootingActive);
-  shootingRelationTab.setAttribute('aria-selected',shootingActive?'true':'false');
-  releaseRelationTab.setAttribute('aria-selected',shootingActive?'false':'true');
-  shootingRelationPanel.classList.toggle('hidden',!shootingActive);
-  releaseRelationPanel.classList.toggle('hidden',shootingActive);
- };
- if(isGallery||isVideo){
-  shootingRelationTab.onclick=()=>showWorkRelation('shooting');
-  releaseRelationTab.onclick=()=>showWorkRelation('release');
-  showWorkRelation('shooting');
- }else{
-  shootingRelationTab.onclick=null;
-  releaseRelationTab.onclick=null;
- }
- if(isRelease){fillReleaseSelectors('archiveEditReleaseSeries','archiveEditReleaseTitle',a);configureEditReleaseRelationMode(a)}
+ if(isRelease)fillReleaseSelectors('archiveEditReleaseSeries','archiveEditReleaseTitle',a);
  document.getElementById('archiveEditTitleFields').classList.toggle('hidden',a.type!=='title');
  const shootModelsWrap=document.getElementById('archiveEditShootModelsWrap');
  const shootModelsBox=document.getElementById('archiveEditShootModels');
@@ -10381,11 +10230,9 @@ document.getElementById('archiveEditDate').oninput=()=>{
   document.getElementById('archiveEditIssueNumber').value=a.issueNumber||'';
   document.getElementById('archiveEditIssuePeriod').value=a.issuePeriod||a.date||'';
   document.getElementById('archiveEditCoverModels').innerHTML=publicationCoverModelSelector(a.coverModelIds||[],true);
-  document.getElementById('archiveEditCoverPhotographers').innerHTML=publicationCoverPhotographerSelector(a.coverPhotographerIds||[],true);
   document.getElementById('archiveEditStockStatus').value=['none','ordered','owned'].includes(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
  }else{
   document.getElementById('archiveEditCoverModels').innerHTML='';
-  document.getElementById('archiveEditCoverPhotographers').innerHTML='';
  }
  if(a.type==='title'){document.getElementById('archiveEditTitleClass').value=a.titleClass||'coed';fillEditTitleLevels();document.getElementById('archiveEditTitleLevel').value=a.titleLevel||titleLevelsForClass(a.titleClass||'coed')[0]?.[0]||'month';refreshEditTitlePeriod();if(a.titleLevel==='week'){setTitleWeekDate('archiveEditTitle',a.titlePeriod||'');if(a.titlePeriod){const parts=a.titlePeriod.split('-').map(Number);document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||String(Math.ceil(parts[2]/7));document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||String(parts[1]);}else{document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||'';document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||'';}}document.getElementById('archiveEditTitleMonth').value=a.titleLevel==='month'?(a.titlePeriod||''):'';document.getElementById('archiveEditTitleYear').value=a.titleLevel==='year'?(a.titleYear||''):'';refreshEditTitlePeriod();} 
     openOverlay('archiveEditPane');
@@ -10418,7 +10265,6 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.title=publicationDisplayTitle({...a,printSeries,issueNumber});
    a.date=issuePeriod;
    a.coverModelIds=[...document.querySelectorAll('#archiveEditCoverModels .editPublicationCoverModelCheck:checked')].map(x=>x.value);
-   a.coverPhotographerIds=[...document.querySelectorAll('#archiveEditCoverPhotographers .editPublicationCoverPhotographerCheck:checked')].map(x=>x.value);
    a.stockStatus=document.getElementById('archiveEditStockStatus').value;
    a.owned=a.stockStatus==='owned';
    delete a.modelId;
@@ -10428,21 +10274,9 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    const contributionNumber=Number(document.getElementById('archiveEditContributionNumber').value)||0;
    if(contributionNumber>0)a.contributionNumber=contributionNumber;else delete a.contributionNumber;
    if(!a.modelId&&state.currentModelId)a.modelId=state.currentModelId;
-   const mode=document.getElementById('archiveEditReleaseRelationMode').value;
-   const seriesId=['series','both'].includes(mode)?document.getElementById('archiveEditReleaseSeries').value:'';
-   const titleId=['title','both'].includes(mode)?document.getElementById('archiveEditReleaseTitle').value:'';
-   if(mode==='series'&&!seriesId){toast('Bitte eine Rubrik wählen.');return}
-   if(mode==='title'&&!titleId){toast('Bitte einen Titel wählen.');return}
-   if(mode==='both'&&(!seriesId||!titleId)){toast('Bitte für „Rubrik und Titel“ beide Zuordnungen wählen.');return}
+   const seriesId=document.getElementById('archiveEditReleaseSeries').value;
+   const titleId=document.getElementById('archiveEditReleaseTitle').value;
    setReleaseRelations(a,seriesId,titleId);
-   if(linkedObjects(a.id,'publication')[0]){
-    a.printPages=document.getElementById('archiveEditPrintArticlePages').value.trim();
-    a.printModelIds=[...document.querySelectorAll('#archiveEditPrintArticleModels .editPrintArticleModelCheck:checked')].map(x=>x.value);
-    a.printSummaryDe=document.getElementById('archiveEditPrintArticleSummary').value.trim();
-    a.printShootingId=document.getElementById('archiveEditPrintArticleShooting').value;
-    delete a.printPhotoIds;
-    delete a.printGalleryBrowseId;
-   }
  }
  if(a.type==='shoot'){
    const selected=[...document.querySelectorAll('#archiveEditShootModels .editShootModelCheck:checked')].map(x=>x.value);
@@ -10588,28 +10422,20 @@ const UNASSIGNED_SERIES_BROWSE_ID='__unassigned__';
 let globalSeriesBrowseId='';
 let titleBrowseClass='';let titleBrowseLevel='';
 let mediaWorkTab='new';let archiveMediaTypeFilter='Alle';
-let managementShootingFilter='all';
 const mediaWorkSelected=new Set();
+const shootWorkSelected=new Set();
 const seriesWorkSelected=new Set();
 
-function managementReleaseModelIds(release){
- const ids=[...releaseModelIds(release),...(release?.printModelIds||[])];
- const shoot=(state.archive||[]).find(a=>a&&a.type==='shoot'&&a.id===release?.printShootingId);
- if(shoot)ids.push(...shootingModelIds(shoot));
- return [...new Set(ids.filter(id=>(state.models||[]).some(m=>m.id===id)))];
-}
 function seriesBelongsToModel(series,modelId){
  if(series.type!=='series')return false;
  if(series.modelId===modelId)return true;
  const linkedShoots=seriesShootingsAll(series);
- if(linkedShoots.some(sh=>shootingBelongsToModel(sh,modelId)))return true;
- return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'series').some(sr=>sr.id===series.id)&&managementReleaseModelIds(release).includes(modelId));
+ return linkedShoots.some(sh=>shootingBelongsToModel(sh,modelId));
 }
 function publicationBelongsToModel(pub,modelId){
  if(pub.type!=='publication')return false;
  if((pub.coverModelIds||[]).includes(modelId))return true;
  if(pub.modelId===modelId)return true;
- if(publicationContributions(pub).some(release=>managementReleaseModelIds(release).includes(modelId)))return true;
  const linkedSeries=linkedObjects(pub.id,'series');
  return linkedSeries.some(s=>seriesBelongsToModel(s,modelId));
 }
@@ -10665,10 +10491,13 @@ function archiveBelongsToModel(a,modelId){
  if(a.type==='shoot')return shootingBelongsToModel(a,modelId);
  if(a.type==='series')return seriesBelongsToModel(a,modelId);
  if(a.type==='publication')return publicationBelongsToModel(a,modelId);
- if(a.type==='release')return managementReleaseModelIds(a).includes(modelId);
- if(a.type==='title'){
-  if((state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(a.id)&&shootingBelongsToModel(sh,modelId)))return true;
-  return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'title').some(t=>t.id===a.id)&&managementReleaseModelIds(release).includes(modelId));
+ if(a.type==='release'){
+   const releaseSeries=linkedObjects(a.id,'series');
+   if(releaseSeries.some(s=>seriesBelongsToModel(s,modelId)))return true;
+   const releaseTitles=linkedObjects(a.id,'title');
+   if(releaseTitles.some(t=>(state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&shootingBelongsToModel(sh,modelId))))return true;
+   const releaseWorksLinked=[...linkedObjects(a.id,'gallery'),...linkedObjects(a.id,'video')];
+   return releaseWorksLinked.some(work=>archiveBelongsToModel(work,modelId));
  }
  if(a.type==='gallery'){
    if(a.modelsMode==='custom')return (a.modelIds||[]).includes(modelId);
@@ -10691,28 +10520,11 @@ function archiveBelongsToModel(a,modelId){
  return a.modelId===modelId;
 }
 
-const managementModelIds=new Set();
+let managementModelId='all';
 let managementArea='all';
 let managementSearch='';
 let managementSearchOpen=false;
-function managementSelectedModelIds(){return [...managementModelIds].filter(id=>(state.models||[]).some(m=>m.id===id))}
-function managementMatchesAllModels(a,ids=managementSelectedModelIds()){
- if(!ids.length)return true;
- if(a.type==='series'){
-  if(seriesShootingsAll(a).some(sh=>ids.every(id=>shootingModelIds(sh).includes(id))))return true;
-  return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'series').some(sr=>sr.id===a.id)&&ids.every(id=>managementReleaseModelIds(release).includes(id)));
- }
- if(a.type==='title'){
-  if((state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(a.id)&&ids.every(id=>shootingModelIds(sh).includes(id))))return true;
-  return (state.archive||[]).some(release=>release&&release.type==='release'&&linkedObjects(release.id,'title').some(t=>t.id===a.id)&&ids.every(id=>managementReleaseModelIds(release).includes(id)));
- }
- if(a.type==='publication'){
-  if(ids.every(id=>(a.coverModelIds||[]).includes(id)))return true;
-  if(publicationContributions(a).some(release=>ids.every(id=>managementReleaseModelIds(release).includes(id))))return true;
-  return linkedObjects(a.id,'series').some(series=>managementMatchesAllModels(series,ids));
- }
- return ids.every(id=>archiveBelongsToModel(a,id));
-}
+function managementSelectedModelId(){return managementModelId&&managementModelId!=='all'?managementModelId:null}
 function managementAreaAllows(a){
  if(!a||!archiveAreaSupportsType(a.type)||managementArea==='all')return true;
  if(managementArea==='unassigned')return !a.archiveArea;
@@ -10735,25 +10547,26 @@ function managementMatchesSearch(a){
  const modelNames=[];
  if(a.type==='shoot')shootingModelIds(a).forEach(id=>{const m=(state.models||[]).find(x=>x.id===id);if(m)modelNames.push(m.name||'')});
  else (state.models||[]).forEach(m=>{if(archiveBelongsToModel(a,m.id))modelNames.push(m.name||'')});
- const hay=[a.title,a.fileName,a.date,a.note,a.titlePeriod,a.titleYear,a.printSeries,a.issueNumber,a.issuePeriod,archiveAreaLabel(a.archiveArea),...publicationCoverModelNames(a),...publicationCoverPhotographerNames(a),...modelNames,...linked.map(x=>x.title||x.fileName||'')].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
+ const hay=[a.title,a.fileName,a.date,a.note,a.titlePeriod,a.titleYear,a.printSeries,a.issueNumber,a.issuePeriod,archiveAreaLabel(a.archiveArea),...publicationCoverModelNames(a),...modelNames,...linked.map(x=>x.title||x.fileName||'')].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
  return hay.includes(q);
 }
 function managementArchive(type){
- const mids=managementSelectedModelIds();
- return (state.archive||[]).filter(a=>a.type===type&&managementAreaAllows(a)&&managementMatchesAllModels(a,mids)&&managementMatchesSearch(a));
+ const mid=managementSelectedModelId();
+ return (state.archive||[]).filter(a=>a.type===type&&managementAreaAllows(a)&&(!mid||archiveBelongsToModel(a,mid))&&managementMatchesSearch(a));
 }
 function renderManagementTools(){
  const picker=document.getElementById('managementModelPicker');
  const box=document.getElementById('managementModelSuggestions');
- const selection=document.getElementById('managementModelSelection');
- if(!picker||!box||!selection)return;
+ if(!picker||!box)return;
 
  const models=alphabeticalModels(state.models||[]);
- const selectedIds=managementSelectedModelIds();
- if(document.activeElement!==picker)picker.value='';
- picker.placeholder=selectedIds.length?'Weiteres Model hinzufügen':'Alle Models';
- selection.innerHTML=selectedIds.map(id=>{const m=(state.models||[]).find(x=>x.id===id);return `<button type="button" class="managementModelChip" data-remove-management-model="${esc(id)}">${esc(m?.name||'Model')} <span aria-hidden="true">×</span></button>`}).join('');
- selection.querySelectorAll('[data-remove-management-model]').forEach(btn=>btn.onclick=()=>{managementModelIds.delete(btn.dataset.removeManagementModel);renderArchive()});
+ const selected=managementSelectedModelId()
+  ?(state.models||[]).find(m=>m.id===managementModelId)
+  :null;
+
+ const desired=selected?.name||'Alle Models';
+
+ if(document.activeElement!==picker)picker.value=desired;
 
  function hideSuggestions(){
   box.innerHTML='';
@@ -10769,7 +10582,7 @@ function renderManagementTools(){
   }
 
   const matches=models
-   .filter(m=>!managementModelIds.has(m.id)&&String(m.name||'').toLocaleLowerCase('de-DE').includes(q))
+   .filter(m=>String(m.name||'').toLocaleLowerCase('de-DE').includes(q))
    .slice(0,5);
 
   if(!matches.length){
@@ -10787,9 +10600,9 @@ function renderManagementTools(){
    btn.onpointerdown=e=>{
     e.preventDefault();
     const m=matches[i];
-    managementModelIds.add(m.id);
+    managementModelId=m.id;
     state.currentModelId=m.id;
-    picker.value='';
+    picker.value=m.name||'';
     hideSuggestions();
     save();
     renderArchive();
@@ -10801,7 +10614,9 @@ function renderManagementTools(){
   const v=String(picker.value||'').trim();
 
   if(!v){
+   managementModelId='all';
    hideSuggestions();
+   renderArchive();
    return;
   }
 
@@ -10811,22 +10626,16 @@ function renderManagementTools(){
  picker.onchange=()=>{
   const v=String(picker.value||'').trim();
 
-  if(!v){
-   picker.value='';
+  if(!v||v.toLocaleLowerCase('de-DE')==='alle models'){
+   managementModelId='all';
+   picker.value='Alle Models';
    hideSuggestions();
+   renderArchive();
   }
  };
 }
 function modelArchive(type){
  return managementArchive(type);
-}
-function mediaWorkflowStatus(media){
- if(media.workflowStatus==='keep')return 'keep';
- const assigned=(media.links||[]).some(id=>{
-  const target=(state.archive||[]).find(item=>item.id===id);
-  return target&&['shoot','gallery','video','publication'].includes(target.type);
- });
- return assigned?'assigned':'new';
 }
 function archiveName(id){const x=(state.archive||[]).find(a=>a.id===id);return x?x.title:''}
 
@@ -11061,23 +10870,15 @@ function managementContextConfig(){
   gallery:{title:'Galerien',add:'＋ Galerie',placeholder:'Galerie, Model oder Shooting suchen …'},
   video:{title:'Videos',add:'＋ Video',placeholder:'Video, Model oder Shooting suchen …'},
   shoot:{title:'Shootings',add:'＋ Shooting',placeholder:'Shooting, Model oder Datum suchen …'},
-  media:{title:'Import',add:'＋ Medien',placeholder:'Dateiname, Model oder Verknüpfung suchen …'}
+  media:{title:'Medien',add:'＋ Medien',placeholder:'Dateiname, Model oder Verknüpfung suchen …'}
  }[archiveTab]||null;
-}
-function managementMediaBrowseHtml(kind,content){
- const current=kind==='video'?'Videos':'Galerien';
- return `<div class="seriesBrowseCard managementMediaBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▧</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementMediaTitleButton" aria-expanded="false">${current} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementMediaPicker"><button type="button" class="${kind==='gallery'?'active':''}" data-management-media-tab="gallery">Galerien</button><button type="button" class="${kind==='video'?'active':''}" data-management-media-tab="video">Videos</button></div></div><div class="seriesBrowseCardBody">${content}</div></div>`;
-}
-function managementShootingBrowseHtml(content){
- return `<div class="seriesBrowseCard managementShootingBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">◉</span><div class="seriesBrowseTitle">Shootings</div></div><div class="seriesBrowseCardBody"><div class="managementShootingFilters" role="group" aria-label="Shootings filtern"><button type="button" class="${managementShootingFilter==='all'?'active':''}" data-management-shooting-filter="all">Alle</button><button type="button" class="${managementShootingFilter==='without-media'?'active':''}" data-management-shooting-filter="without-media">Ohne Medien</button></div>${content}</div></div>`;
 }
 function renderManagementContextTools(){
  const host=document.getElementById('managementContextTools');if(!host)return;
  const cfg=managementContextConfig();
  if(!cfg){host.innerHTML='';return}
- const contextTitle=archiveTab==='gallery'||archiveTab==='video'?'Medien':cfg.title;
  host.innerHTML=`<div class="globalModelsHeader managementContextHeader">
-  <div><h2>${esc(contextTitle)}</h2></div>
+  <div><h2>${esc(cfg.title)}</h2></div>
   <div class="seriesOverviewTools">
    <button class="btn" type="button" id="managementContextSearchBtn" aria-expanded="${managementSearchOpen?'true':'false'}">🔍 Suche</button>
    <button class="btn" type="button" id="managementContextAddBtn">${esc(cfg.add)}</button>
@@ -11101,7 +10902,8 @@ function renderManagementContextTools(){
  };
  if(input)input.oninput=()=>{
    managementSearch=input.value||'';
-   renderArchive({preserveContextTools:true});
+   renderArchive();
+   setTimeout(()=>{const x=document.getElementById('managementContextSearchInput');if(x){x.focus();x.setSelectionRange(x.value.length,x.value.length)}},0);
  };
  if(close)close.onclick=()=>{managementSearch='';managementSearchOpen=false;renderArchive()};
  if(add)add.onclick=()=>{
@@ -11111,13 +10913,13 @@ function renderManagementContextTools(){
    refreshArchiveForm();
  };
 }
-function renderArchive(options={}){
+function renderArchive(){
  if(archiveTab==='release')archiveTab='series';
  renderPinnedArchive();
  renderRecentArchive();
  renderManagementTools();
  renderManagementAreaFilter();
- if(!options.preserveContextTools)renderManagementContextTools();
+ renderManagementContextTools();
  const raLimit=document.getElementById('recentArchiveLimit');
  if(raLimit){
   raLimit.value=String(getRecentArchiveLimit());
@@ -11130,9 +10932,6 @@ function renderArchive(options={}){
  }
  const box=document.getElementById('archiveList'); if(!box)return;
  let items=managementArchive(archiveTab);
- if(archiveTab==='shoot'&&managementShootingFilter==='without-media'){
-  items=items.filter(sh=>{const parts=shootingPreviewParts(sh);return !parts.photos.length&&!parts.videos.length});
- }
  if(archiveTab==='media'){
    const seen=new Set();
    items=items.filter(a=>{
@@ -11145,11 +10944,12 @@ function renderArchive(options={}){
  const mediaTypeFilters=document.getElementById('archiveMediaTypeFilters');
  if(mediaTypeFilters)mediaTypeFilters.classList.toggle('hidden',archiveTab!=='media');
  if(archiveTab==='media'){
+   const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&(x.type==='shoot'||x.type==='gallery'||x.type==='video'||x.type==='publication');})?'assigned':'new';
    const kindOf=a=>{const mt=String(a.mimeType||'').toLowerCase();return mt.startsWith('image/')?'Foto':mt.startsWith('video/')?'Video':mt.includes('pdf')?'PDF':'Datei'};
-   const counts={new:0,keep:0,assigned:0};items.forEach(a=>counts[mediaWorkflowStatus(a)]++);
+   const counts={new:0,keep:0,assigned:0};items.forEach(a=>counts[statusOf(a)]++);
    document.querySelectorAll('[data-media-work-count]').forEach(el=>el.textContent=counts[el.dataset.mediaWorkCount]||0);
    document.querySelectorAll('[data-media-work-tab]').forEach(b=>b.classList.toggle('active',b.dataset.mediaWorkTab===mediaWorkTab));
-   items=items.filter(a=>mediaWorkflowStatus(a)===mediaWorkTab);
+   items=items.filter(a=>statusOf(a)===mediaWorkTab);
    const typeCounts={Alle:items.length,Foto:0,Video:0,PDF:0,Datei:0};items.forEach(a=>typeCounts[kindOf(a)]++);
    document.querySelectorAll('[data-archive-media-count]').forEach(el=>el.textContent=typeCounts[el.dataset.archiveMediaCount]||0);
    document.querySelectorAll('[data-archive-media-filter]').forEach(b=>b.classList.toggle('active',b.dataset.archiveMediaFilter===archiveMediaTypeFilter));
@@ -11189,7 +10989,7 @@ function renderArchive(options={}){
       }).join('')
     : '<div class="small" style="margin-top:10px">Noch keine konkreten Veröffentlichungen.</div>';
  }else if(archiveTab==='publication'){
-   const mids=managementSelectedModelIds();
+   const mid=managementSelectedModelId();
    const q=String(managementSearch||'').trim().toLocaleLowerCase('de-DE');
    const area=managementArea;
    let availablePrintSeries=printSeriesObjects();
@@ -11212,7 +11012,7 @@ function renderArchive(options={}){
        (!sr._legacy&&pub.printSeriesId===sr.id)||
        (String(pub.printSeries||'').trim().toLocaleLowerCase('de-DE')===String(sr.title||'').trim().toLocaleLowerCase('de-DE')&&(pub.archiveArea||'')===(sr.archiveArea||''))
      ));
-     if(mids.length)pubs=pubs.filter(pub=>managementMatchesAllModels(pub,mids));
+     if(mid)pubs=pubs.filter(pub=>publicationBelongsToModel(pub,mid));
      if(q){
        const seriesHit=[sr.title,archiveAreaLabel(sr.archiveArea)].filter(Boolean).join(' ').toLocaleLowerCase('de-DE').includes(q);
        if(!seriesHit)pubs=pubs.filter(managementMatchesSearch);
@@ -11227,7 +11027,7 @@ function renderArchive(options={}){
      });
      return {sr,pubs};
    }).filter(Boolean);
-   if(mids.length)seriesRows=seriesRows.filter(row=>row.pubs.length);
+   if(mid)seriesRows=seriesRows.filter(row=>row.pubs.length);
    if(!window.managementPrintSeriesBrowseId)window.managementPrintSeriesBrowseId='';
    const validPrintBrowse=seriesRows.some(row=>row.sr.id===window.managementPrintSeriesBrowseId);
    if(!validPrintBrowse)window.managementPrintSeriesBrowseId=seriesRows[0]?.sr.id||'';
@@ -11236,13 +11036,12 @@ function renderArchive(options={}){
    let unassignedPrintIssues=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&!publicationPrintSeriesObject(pub));
    if(area==='unassigned')unassignedPrintIssues=unassignedPrintIssues.filter(pub=>!pub.archiveArea);
    else if(area&&area!=='all')unassignedPrintIssues=unassignedPrintIssues.filter(pub=>pub.archiveArea===area);
-   if(mids.length)unassignedPrintIssues=unassignedPrintIssues.filter(pub=>managementMatchesAllModels(pub,mids));
+   if(mid)unassignedPrintIssues=unassignedPrintIssues.filter(pub=>publicationBelongsToModel(pub,mid));
    if(q)unassignedPrintIssues=unassignedPrintIssues.filter(managementMatchesSearch);
    unassignedPrintIssues.sort((a,b)=>String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{sensitivity:'base',numeric:true}));
    box.innerHTML=(seriesRows.length||unassignedPrintIssues.length)?`<div class="publicationManageList">${selectedPrintSeriesRows.map(({sr,pubs})=>{
      const issueCards=pubs.length?pubs.map(pub=>{
        const coverModels=publicationCoverModelNames(pub);
-       const coverPhotographers=publicationCoverPhotographerNames(pub);
        const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
        return `<div class="publicationIssueCard">
         <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
@@ -11252,7 +11051,6 @@ function renderArchive(options={}){
          </button>
          <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
          ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-         ${coverPhotographers.length?`<div class="small publicationManageModels">Cover-Foto: ${esc(coverPhotographers.join(' + '))}</div>`:''}
          <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
          <div class="itemActions publicationIssueActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
         </div>
@@ -11277,7 +11075,6 @@ function renderArchive(options={}){
     </div>
     <div class="publicationSeriesBody">${unassignedPrintIssues.map(pub=>{
       const coverModels=publicationCoverModelNames(pub);
-      const coverPhotographers=publicationCoverPhotographerNames(pub);
       const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
       return `<div class="publicationIssueCard">
        <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
@@ -11287,7 +11084,6 @@ function renderArchive(options={}){
         </button>
         <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
         ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-        ${coverPhotographers.length?`<div class="small publicationManageModels">Cover-Foto: ${esc(coverPhotographers.join(' + '))}</div>`:''}
         <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
        </div>
@@ -11295,46 +11091,64 @@ function renderArchive(options={}){
     }).join('')}</div>
    </div>`:''}</div>`:'<div class="small" style="margin-top:10px">Noch keine Reihe in dieser Auswahl.</div>';
  }else if(archiveTab==='gallery'){
-   box.innerHTML=managementMediaBrowseHtml('gallery',items.length
-    ? `<div class="managementWorkList">${items.slice().reverse().map(g=>{
+   box.innerHTML=items.length
+    ? items.slice().reverse().map(g=>{
+       const context=galleryCreationContext(g);
+       const shoots=context.shoots;
+       const inheritedModelIds=g.modelsMode==='custom'?(g.modelIds||[]):galleryInheritedModelIds(g);
+       const inheritedCreditIds=g.creditsMode==='custom'?(g.credits||[]):galleryInheritedCredits(g);
+       const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+       const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const photos=galleryPhotoMedia(g);
-       const firstPhoto=photos[0]||null;
-       const preview=firstPhoto
-        ?`<div class="seriesContributionPreview" data-media-id="${esc(firstPhoto.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small">Lade Vorschau …</div></div>`
-        :'<div class="seriesContributionPreview"><div class="small">Noch kein Foto</div></div>';
-       return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
-        <div class="managementWorkDetails">
-        <div class="managementWorkName">${esc(managementWorkDisplayName(g))}</div>
-        <div class="managementWorkCount">${photos.length} ${photos.length===1?'Foto':'Fotos'}</div>
-        </div>
+       return `<div class="archiveItem">
+        <b>${esc(workDisplayLabel(g))}</b>
+        <div class="small" style="margin-top:7px">Beitrag: ${esc(workRelease(g)?releaseDisplayTitle(workRelease(g)):'noch nicht zugeordnet')}</div>
+        ${g.note?`<div class="small" style="margin-top:6px;white-space:pre-wrap">${esc(g.note)}</div>`:''}
+        <div class="small" style="margin-top:7px">${shoots.length
+          ?`Shooting: ${shoots.map(sh=>esc(shootingDisplayLabel(sh))).join(' · ')}`
+          :'Shooting noch nicht bekannt'}</div>
+        ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
+        ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
+        ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        ${photos.length?`<div class="small" style="margin-top:4px">Fotos: ${photos.length}</div><div class="galleryPhotoGrid">${photos.map(photo=>`<div class="mediaThumb" data-media-id="${esc(photo.id)}" data-gallery-ids="${esc(photos.map(x=>x.id).join(','))}"><div class="small" style="padding:8px">Lade …</div></div>`).join('')}</div>`:''}
         <div class="itemActions">
-         <button type="button" class="publicationCompactAction" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
-         <button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(g.id)}">Löschen</button>
+         <button type="button" data-edit-archive="${esc(g.id)}">Bearbeiten</button>
+         <button type="button" class="deleteBtn" data-delete-archive="${esc(g.id)}">Löschen</button>
         </div>
-       </div></div>`;
-      }).join('')}</div>`
-    : '<div class="small">Noch keine passenden Galerien.</div>');
+       </div>`;
+      }).join('')
+    : '<div class="small" style="margin-top:10px">Noch keine passenden Galerien.</div>';
  }else if(archiveTab==='video'){
-   box.innerHTML=managementMediaBrowseHtml('video',items.length
-    ? `<div class="managementWorkList">${items.slice().reverse().map(v=>{
+   box.innerHTML=items.length
+    ? items.slice().reverse().map(v=>{
+       const context=videoCreationContext(v);
+       const shoots=context.shoots;
+       const inheritedModelIds=v.modelsMode==='custom'?(v.modelIds||[]):videoInheritedModelIds(v);
+       const inheritedCreditIds=v.creditsMode==='custom'?(v.credits||[]):videoInheritedCredits(v);
+       const modelNames=inheritedModelIds.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+       const photographers=inheritedCreditIds.map(personById).filter(isPhotographerPerson);
        const media=videoMedia(v);
-       const firstVideo=media[0]||null;
-       const preview=firstVideo
-        ?`<div class="seriesContributionPreview" data-media-id="${esc(firstVideo.id)}"><div class="small">Lade Video …</div></div>`
-        :'<div class="seriesContributionPreview"><div class="small">Noch kein Video</div></div>';
-       return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody">
-        <div class="managementWorkDetails">
-        <div class="managementWorkName">${esc(managementWorkDisplayName(v))}</div>
-        <div class="managementWorkCount">${media.length} ${media.length===1?'Video':'Videos'}</div>
-        </div>
+       return `<div class="archiveItem">
+        <b>${esc(workDisplayLabel(v))}</b>
+        <div class="small" style="margin-top:7px">Beitrag: ${esc(workRelease(v)?releaseDisplayTitle(workRelease(v)):'noch nicht zugeordnet')}</div>
+        <div class="small" style="margin-top:4px">${shoots.length
+          ?`Shooting: ${shoots.map(sh=>esc(shootingDisplayLabel(sh))).join(' · ')}`
+          :'Shooting noch nicht bekannt'}</div>
+        ${context.date?`<div class="small" style="margin-top:4px">Datum: ${esc(context.date)}</div>`:''}
+        ${context.location?`<div class="small" style="margin-top:4px">Ort: ${esc(context.location)}</div>`:''}
+        ${modelNames.length?`<div class="small" style="margin-top:4px">Models: ${esc(modelNames.join(' + '))}</div>`:''}
+        ${photographers.length?`<div class="small" style="margin-top:4px">Fotograf(en): ${esc(photographers.map(p=>p.name).join(' + '))}</div>`:''}
+        ${media.length?`<div class="small" style="margin-top:4px">Videodatei: ${media.length}</div><div class="galleryPhotoGrid">${media.map(m=>`<div class="mediaThumb" data-media-id="${esc(m.id)}"><div class="small" style="padding:8px">Lade …</div></div>`).join('')}</div>`:''}
         <div class="itemActions">
-         <button type="button" class="publicationCompactAction" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
-         <button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(v.id)}">Löschen</button>
+         <button type="button" data-edit-archive="${esc(v.id)}">Bearbeiten</button>
+         <button type="button" class="deleteBtn" data-delete-archive="${esc(v.id)}">Löschen</button>
         </div>
-       </div></div>`;
-      }).join('')}</div>`
-    : '<div class="small">Noch keine passenden Videos.</div>');
+       </div>`;
+      }).join('')
+    : '<div class="small" style="margin-top:10px">Noch keine passenden Videos.</div>';
  }else if(archiveTab==='series'){
+   const mid=managementSelectedModelId();
    const modelSeries=managementArchive('series').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
    const showUnassignedSeriesArea=managementArea==='all'||managementArea==='unassigned';
    const unassignedReleases=showUnassignedSeriesArea
@@ -11380,36 +11194,39 @@ function renderArchive(options={}){
     box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">${esc(selectedSeries.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="titleBrowseActions"><button type="button" class="publicationCompactAction" data-edit-management-series="${esc(selectedSeries.id)}">Bearbeiten</button><button type="button" class="titleDeleteX publicationCompactAction" data-delete-management-series="${esc(selectedSeries.id)}" aria-label="Rubrik löschen" title="Rubrik löschen">×</button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-series-contribution="${esc(selectedSeries.id)}">＋ Beitrag hinzufügen</button></div>${releaseCards||'<div class="seriesEmptyState small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
    }
  }else if(archiveTab==='shoot'){
-   box.innerHTML=managementShootingBrowseHtml(items.length
+   box.innerHTML=items.length
     ? `<div class="shootingGridStandalone managementShootingsList">${items.slice().reverse().map(sh=>{
         const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
-        const parts=shootingPreviewParts(sh);
-        const display=managementShootingDisplayParts(sh);
-        return `<div class="shootingCardStandalone">
+        const assignedSeries=linkedObjects(sh.id,'series');
+        const seriesStatus=assignedSeries.length
+          ? `<div class="creditRow shootingSeriesChips relationshipRow"><span class="creditChip relationshipGroup" title="Rubrik"><span class="relationshipIcon">▣</span><span class="relationshipNames">${assignedSeries.map(s=>`<button type="button" class="relationshipName relationshipLink" data-open-related-series="${esc(s.id)}">${esc(s.title||'Ohne Titel')}</button>`).join('')}</span></span></div>`
+          : '<div class="small shootingSeriesStatus">Noch keiner Rubrik zugeordnet</div>';
+        const assignedTitles=(sh.links||[]).map(id=>(state.archive||[]).find(a=>a.id===id&&a.type==='title')).filter(Boolean);
+        const titleStatus=assignedTitles.length?`<div class="shootingTitleBlock"><div class="shootingTitleTrophy" aria-hidden="true">🏆</div><div class="shootingTitleList">${assignedTitles.map(t=>`<div class="shootingTitleItem"><span class="shootingTitleName">${esc(t.title||'Titel')}</span>${t.titlePeriod||t.titleYear?`<span class="shootingTitleWhen">${esc(modelTitleWhen(t))}</span>`:''}</div>`).join('')}</div></div>`:'';
+        return `<div class="shootingCardStandalone ${shootWorkSelected.has(sh.id)?'selected':''}">
          <div class="shootingCover" data-open-shooting-standalone="${sh.id}" ${cover?`data-shooting-cover="${cover.id}"`:''}>
-          ${shootingCoverContent(sh)}
+          ${shootingCoverContent(sh)}<button type="button" class="shootingSelectBtn" data-shoot-work-select="${sh.id}" aria-label="${shootWorkSelected.has(sh.id)?'Aus Auswahl entfernen':'Shooting auswählen'}">${shootWorkSelected.has(sh.id)?'✓':'○'}</button>
          </div>
          <div class="shootingBody" data-open-shooting-standalone="${sh.id}">
-          <b>${esc(display.title)}</b>
-          <div class="managementShootingModels">${esc(display.models)}</div>
-          <div class="managementShootingMediaCount">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</div>
+          <b>${esc(shootingDisplayLabel(sh))}</b>
+          ${shootingMediaSummary(sh)}
+          ${seriesStatus}${titleStatus}${modelChips(shootingModelIds(sh))}${renderShootingPhotographers(sh.credits||[])}
          </div>
          <div class="seriesCardActions">
           ${archivePinHtml(sh.id)}
-          <button type="button" class="publicationCompactAction" data-edit-archive="${sh.id}">Bearbeiten</button>
-          <button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${sh.id}">Löschen</button>
+          <button type="button" data-edit-archive="${sh.id}">Bearbeiten</button>
+          <button type="button" class="deleteBtn" data-delete-archive="${sh.id}">Löschen</button>
          </div>
         </div>`;
       }).join('')}</div>`
-    : `<div class="small">${managementShootingFilter==='without-media'?'Keine Shootings ohne Medien.':'Noch keine passenden Shootings.'}</div>`);
+    : '<div class="small" style="margin-top:10px">Noch keine passenden Shootings.</div>';
  }else if(archiveTab==='title'){
    const classNames={coed:'Coed','special-edition':'SE Model',playmate:'Playmate','cyber-girl':'Cyber Girl'};
    const classOrder=['coed','cyber-girl','playmate','special-edition'];
    const levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
    const levelOrder=['week','month','year'];
-   const managementMids=managementSelectedModelIds();
-   const managementMid=managementMids[0]||'';
-   const allTitles=managementArchive('title');
+   const managementMid=managementSelectedModelId();
+   const allTitles=(state.archive||[]).filter(a=>a.type==='title'&&managementAreaAllows(a)&&managementMatchesSearch(a));
    const classes=classOrder.filter(c=>allTitles.some(t=>t.titleClass===c));
    if(!classes.includes(titleBrowseClass))titleBrowseClass=classes[0]||'';
    const levels=levelOrder.filter(l=>allTitles.some(t=>t.titleClass===titleBrowseClass&&t.titleLevel===l));
@@ -11420,19 +11237,16 @@ function renderArchive(options={}){
    const cards=visible.map(t=>{
      const titleName=titleNameFor(t.titleClass,t.titleLevel)||t.title||'Titel';
      const period=modelTitleWhen(t)||'Zeitraum offen';
-     const contributions=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id)&&managementMids.every(mid=>managementReleaseModelIds(r).includes(mid))&&managementMatchesSearch(r)).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||'')));
+     const contributions=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id)&&(!managementMid||releaseModelIds(r).includes(managementMid))&&managementMatchesSearch(r)).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||'')));
      const contributionHtml=contributions.map(release=>{
        const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
        const parts=titleContributionDisplayParts(release);
-       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
+       const galleryAccess=galleries.map(g=>`<button type="button" data-open-release-work="${esc(g.id)}">${esc(workDisplayLabel(g))}</button>`).join('');
+       const videoAccess=videos.map(v=>`<button type="button" data-open-release-work="${esc(v.id)}">${esc(workDisplayLabel(v))}</button>`).join('');
+       return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${(galleryAccess||videoAccess)?`<div class="itemActions">${galleryAccess}${videoAccess}</div>`:''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-contribution="${esc(release.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div></div>`;
      }).join('');
-     const legacyShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
-     const legacyHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="titleLegacyLabel">Bisher direkt zugeordnete Shootings</div><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
-       const parts=shootingPreviewParts(sh);
-       const display=managementShootingDisplayParts(sh);
-       const mid=managementMid&&shootingModelIds(sh).includes(managementMid)?managementMid:(shootingModelIds(sh)[0]||'');
-       return `<div class="shootingCardStandalone" data-open-title-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(display.title)}</b><div class="managementShootingModels">${esc(display.models)}</div><div class="managementShootingMediaCount">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" class="publicationCompactAction" data-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-title-shooting="${esc(sh.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div>`;
-     }).join('')}</div></div>`:'';
+     const legacyShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&(sh.links||[]).includes(t.id)&&(!managementMid||shootingModelIds(sh).includes(managementMid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
+     const legacyHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="titleLegacyLabel">Bisher direkt zugeordnete Shootings</div><div class="shootingGridStandalone">${legacyShoots.map(sh=>{const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;const mid=managementMid&&shootingModelIds(sh).includes(managementMid)?managementMid:(shootingModelIds(sh)[0]||'');return `<div class="shootingCardStandalone" data-open-title-shooting="${esc(sh.id)}" data-model-id="${esc(mid)}"><div class="shootingCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${shootingCoverContent(sh)}</div><div class="shootingBody"><b>${esc(shootingDisplayLabel(sh))}</b><div class="titleShootingMeta">${sh.date?`<div class="small">${esc(sh.date)}</div>`:''}${shootingMediaSummary(sh)}${renderShootingPhotographers(sh.credits||[])}</div></div><div class="seriesCardActions">${archivePinHtml(sh.id)}<button type="button" data-edit-archive="${esc(sh.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-unlink-title-shooting="${esc(sh.id)}" data-title-id="${esc(t.id)}">Lösen</button></div></div>`}).join('')}</div></div>`:'';
      return `<div class="titleBrowseCard"><div class="titleBrowseHead managementTitleHead"><button type="button" class="titleTrophy" data-edit-title="${esc(t.id)}" aria-label="Titel bearbeiten" title="Titel bearbeiten">🏆</button><div class="titleBrowseHeading"><div class="titleBrowseName">${esc(titleName)}</div><div class="titleBrowsePeriod">${esc(period)}</div></div><div class="titleBrowseActions"><button type="button" class="publicationCompactAction" data-edit-title="${esc(t.id)}">Bearbeiten</button><button type="button" class="titleDeleteX publicationCompactAction" data-delete-title="${esc(t.id)}" aria-label="Titel löschen" title="Titel löschen">×</button></div></div><div class="titleContributionArea managementTitleContributions"><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-title-contribution="${esc(t.id)}">＋ Beitrag hinzufügen</button></div>${contributionHtml||'<div class="small">Noch kein Beitrag diesem Titel zugeordnet.</div>'}</div>${legacyHtml}</div>`;
    }).join('');
    box.innerHTML=classes.length?`<div class="titleManagementScope"><div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards||'<div class="small">Keine Einträge in dieser Stufe.</div>'}</div></div>`:'<div class="small" style="margin-top:10px">Noch keine Titel im Archiv.</div>';
@@ -11448,11 +11262,7 @@ function renderArchive(options={}){
      </div>`;
    }).join('')}</div>`:`<div class="small" style="margin-top:10px">${emptyLabel}</div>`;
  }
- document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveGroup==='media'?(archiveTab==='gallery'||archiveTab==='video'):b.dataset.archiveTab===archiveTab));
- const managementMediaTitleButton=box.querySelector('#managementMediaTitleButton'),managementMediaPicker=box.querySelector('#managementMediaPicker');
- if(managementMediaTitleButton&&managementMediaPicker)managementMediaTitleButton.onclick=e=>{e.stopPropagation();const opening=managementMediaPicker.classList.contains('hidden');managementMediaPicker.classList.toggle('hidden');managementMediaTitleButton.setAttribute('aria-expanded',opening?'true':'false')};
- box.querySelectorAll('[data-management-media-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();archiveTab=x.dataset.managementMediaTab;managementSearch='';managementSearchOpen=false;renderArchive()});
- box.querySelectorAll('[data-management-shooting-filter]').forEach(x=>x.onclick=e=>{e.stopPropagation();managementShootingFilter=x.dataset.managementShootingFilter||'all';renderArchive()});
+ document.querySelectorAll('[data-archive-tab]').forEach(b=>b.classList.toggle('active',b.dataset.archiveTab===archiveTab));
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
  box.querySelectorAll('[data-series-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.seriesWorkSelect;if(seriesWorkSelected.has(id))seriesWorkSelected.delete(id);else seriesWorkSelected.add(id);renderArchive()});
  const srFab=document.getElementById('seriesSelectionFab'),srMenu=document.getElementById('seriesSelectionMenu');
@@ -11512,12 +11322,16 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  box.querySelectorAll('[data-open-shooting-standalone]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openShootingStandalone,null));
  box.querySelectorAll('[data-open-release-work]').forEach(x=>x.onclick=e=>{e.stopPropagation();const work=(state.archive||[]).find(a=>a.id===x.dataset.openReleaseWork&&(a.type==='gallery'||a.type==='video'));if(!work)return;archiveTab=work.type;managementSearch='';managementSearchOpen=false;renderArchive();setTimeout(()=>{const btn=[...document.querySelectorAll('[data-edit-archive]')].find(b=>b.dataset.editArchive===work.id);btn?.closest('.archiveItem')?.scrollIntoView({behavior:'smooth',block:'center'})},0)});
  box.querySelectorAll('[data-release-video-quick]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingVideoQuick(x.dataset.releaseVideoQuick)});
+ box.querySelectorAll('[data-shoot-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.shootWorkSelect;if(shootWorkSelected.has(id))shootWorkSelected.delete(id);else shootWorkSelected.add(id);renderArchive()});
+ const swFab=document.getElementById('shootSelectionFab'),swMenu=document.getElementById('shootSelectionMenu');
+ if(swFab){swFab.classList.toggle('visible',archiveTab==='shoot'&&shootWorkSelected.size>0);swFab.textContent=`Auswahl (${shootWorkSelected.size})`;if(!shootWorkSelected.size){swFab.setAttribute('aria-expanded','false');swMenu&&swMenu.classList.remove('mobileOpen')}}
  box.querySelectorAll('[data-edit-archive]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.editArchive)});
  box.querySelectorAll('[data-media-work-select]').forEach(x=>x.onclick=e=>{e.stopPropagation();const id=x.dataset.mediaWorkSelect;if(mediaWorkSelected.has(id))mediaWorkSelected.delete(id);else mediaWorkSelected.add(id);renderArchive()});
  const mwFab=document.getElementById('mediaWorkSelectionFab'),mwMenu=document.getElementById('mediaWorkSelectionMenu'),mwMove=document.getElementById('mediaWorkMoveBtn');
  if(mwFab){mwFab.classList.toggle('visible',archiveTab==='media'&&mediaWorkSelected.size>0);mwFab.textContent=`Auswahl (${mediaWorkSelected.size})`;if(!mediaWorkSelected.size){mwFab.setAttribute('aria-expanded','false');mwMenu&&mwMenu.classList.remove('mobileOpen')}}
  if(mwMove)mwMove.textContent=mediaWorkTab==='keep'?'Zurück zu Neu':'Fürs Archiv behalten';
  const mwReturn=document.getElementById('mediaWorkReturnInboxBtn');if(mwReturn)mwReturn.style.display=mediaWorkTab==='assigned'?'none':'';
+ const mwAssignShoot=document.getElementById('mediaWorkAssignShootBtn');if(mwAssignShoot)mwAssignShoot.style.display=mediaWorkTab==='new'?'':'none';
  const mwAssignCover=document.getElementById('mediaWorkAssignPublicationCoverBtn');if(mwAssignCover)mwAssignCover.style.display=mediaWorkTab==='new'?'':'none';
  const mwAssignPdf=document.getElementById('mediaWorkAssignPublicationPdfBtn');if(mwAssignPdf)mwAssignPdf.style.display=mediaWorkTab==='new'?'':'none';
  box.querySelectorAll('[data-media-keep]').forEach(x=>x.onclick=e=>{e.stopPropagation();const a=(state.archive||[]).find(o=>o.id===x.dataset.mediaKeep);if(!a)return;a.workflowStatus='keep';save();renderArchive();toast('Medium wird nur beim Model behalten.')});
@@ -11549,16 +11363,118 @@ document.getElementById('seriesPublicationConfirm').onclick=()=>{
  pub.links=pub.links||[];seriesWorkSelected.forEach(id=>{const sr=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!sr)return;sr.links=sr.links||[];if(!sr.links.includes(pubId))sr.links.push(pubId);if(!pub.links.includes(id))pub.links.push(id);changed++});
  if(!save())return;seriesWorkSelected.clear();document.getElementById('seriesPublicationPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Rubrik der Publikation zugeordnet.':`${changed} Rubriken der Publikation zugeordnet.`);
 };
+document.getElementById('shootSelectionFab').onclick=()=>{const menu=document.getElementById('shootSelectionMenu');menu.classList.toggle('mobileOpen');document.getElementById('shootSelectionFab').setAttribute('aria-expanded',menu.classList.contains('mobileOpen')?'true':'false')};
+document.getElementById('shootSelectAllBtn').onclick=()=>{modelArchive('shoot').forEach(sh=>shootWorkSelected.add(sh.id));renderArchive()};
+document.getElementById('shootClearBtn').onclick=()=>{shootWorkSelected.clear();document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');renderArchive()};
+document.getElementById('shootAssignSeriesBtn').onclick=()=>{
+ if(!shootWorkSelected.size)return;
+ // A management model filter limits the shootings being worked on, not the possible target series.
+ const series=(state.archive||[]).filter(a=>a.type==='series').slice().sort((a,b)=>(a.title||'').localeCompare(b.title||''));
+ if(!series.length){toast('Bitte zuerst eine Rubrik anlegen.');return}
+ document.getElementById('shootSeriesSelect').innerHTML=series.map(x=>`<option value="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</option>`).join('');
+ document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');document.getElementById('shootSeriesPanel').classList.add('mobileOpen');
+};
+document.getElementById('shootSeriesCancel').onclick=()=>document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');
+document.getElementById('shootSeriesConfirm').onclick=()=>{
+ const seriesId=document.getElementById('shootSeriesSelect').value;const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');if(!series||!shootWorkSelected.size)return;let changed=0;
+ series.links=series.links||[];shootWorkSelected.forEach(id=>{const sh=(state.archive||[]).find(a=>a.id===id&&a.type==='shoot');if(!sh)return;sh.links=sh.links||[];if(!sh.links.includes(seriesId))sh.links.push(seriesId);if(!series.links.includes(id))series.links.push(id);changed++});
+ if(!save())return;shootWorkSelected.clear();document.getElementById('shootSeriesPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Shooting der Rubrik zugeordnet.':`${changed} Shootings der Rubrik zugeordnet.`);
+};
+document.getElementById('shootAssignTitleBtn').onclick=()=>{
+ if(!shootWorkSelected.size)return;
+ const selectedShoots=(state.archive||[]).filter(a=>a.type==='shoot'&&shootWorkSelected.has(a.id));
+ if(!selectedShoots.length)return;
+ const titleClassNames={coed:'Coed','cyber-girl':'Cyber Girl',playmate:'Playmate','special-edition':'SE Model'};
+ const titleLevelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
+ const classOrder=['coed','cyber-girl','playmate','special-edition'],levelOrder=['week','month','year'];
+ const titles=(state.archive||[]).filter(t=>t.type==='title').slice();
+ if(!titles.length){toast('Bitte zuerst einen Titel anlegen.');return}
+ const classFilter=document.getElementById('shootTitleClassFilter'),levelFilter=document.getElementById('shootTitleLevelFilter'),titleSelect=document.getElementById('shootTitleSelect');
+ const classes=classOrder.filter(c=>titles.some(t=>t.titleClass===c));
+ classFilter.innerHTML=classes.map(c=>`<option value="${esc(c)}">${esc(titleClassNames[c]||c)}</option>`).join('');
+ const refreshLevels=()=>{
+  const cls=classFilter.value;
+  const levels=levelOrder.filter(l=>titles.some(t=>t.titleClass===cls&&t.titleLevel===l));
+  const previous=levelFilter.value;
+  levelFilter.innerHTML=levels.map(l=>`<option value="${esc(l)}">${esc(titleLevelNames[l]||l)}</option>`).join('');
+  if(levels.includes(previous))levelFilter.value=previous;
+  refreshTitles();
+ };
+ const refreshTitles=()=>{
+  const visible=titles.filter(t=>t.titleClass===classFilter.value&&t.titleLevel===levelFilter.value).sort(sortTitlesChronological);
+  titleSelect.innerHTML=visible.map(t=>{const exact=/^\d{4}-\d{2}-\d{2}$/.test(t.titlePeriod||'')?t.titlePeriod.split('-').reverse().join('.'):'';const monthWeek=t.titleLevel==='week'&&exact?monthWeekLabel(t.titlePeriod).replace(/ /g,'\u00A0'):'';const iso=t.titleLevel==='week'&&exact?isoWeekLabel(t.titlePeriod).replace(/ /g,'\u00A0'):'';const when=[monthWeek,exact,iso].filter(Boolean).join(' · ')||modelTitleWhen(t);return `<option value="${esc(t.id)}">${esc(when)}</option>`}).join(''); 
+ };
+ classFilter.onchange=refreshLevels;levelFilter.onchange=refreshTitles;
+ refreshLevels();
+ document.getElementById('shootSelectionMenu').classList.remove('mobileOpen');
+ document.getElementById('shootTitlePanel').classList.add('mobileOpen');
+};
+document.getElementById('shootTitleCancel').onclick=()=>document.getElementById('shootTitlePanel').classList.remove('mobileOpen');
+document.getElementById('shootTitleConfirm').onclick=()=>{
+ const titleId=document.getElementById('shootTitleSelect').value;
+ const title=(state.archive||[]).find(a=>a.id===titleId&&a.type==='title');
+ if(!title||!shootWorkSelected.size)return;
+ const selectedShoots=(state.archive||[]).filter(a=>a.type==='shoot'&&shootWorkSelected.has(a.id));
+ let changed=0;
+ selectedShoots.forEach(sh=>{
+   sh.links=sh.links||[];
+   if(!sh.links.includes(titleId)){sh.links.push(titleId);changed++}
+ });
+ if(!save())return;
+ shootWorkSelected.clear();
+ document.getElementById('shootTitlePanel').classList.remove('mobileOpen');
+ renderArchive();
+ toast(changed===1?'Shooting dem Titel zugeordnet.':`${changed} Shootings dem Titel zugeordnet.`);
+};
 document.getElementById('mediaWorkSelectionFab').onclick=()=>{const menu=document.getElementById('mediaWorkSelectionMenu');menu.classList.toggle('mobileOpen');document.getElementById('mediaWorkSelectionFab').setAttribute('aria-expanded',menu.classList.contains('mobileOpen')?'true':'false')};
+document.getElementById('mediaWorkSelectAllBtn').onclick=()=>{const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&x.type==='shoot';})?'assigned':'new';const seen=new Set();modelArchive('media').filter(a=>{const k=a.fingerprint||`${a.fileName||''}|${a.size||''}|${a.mimeType||''}|${(a.links||[]).slice().sort().join(',')}`;if(seen.has(k))return false;seen.add(k);return statusOf(a)===mediaWorkTab}).forEach(a=>mediaWorkSelected.add(a.id));renderArchive()};
 document.getElementById('mediaWorkSelectAllBtn').onclick=()=>{
  const items=modelArchive('media');
+ const statusOf=a=>a.workflowStatus==='keep'?'keep':(a.links||[]).some(id=>{const x=(state.archive||[]).find(o=>o.id===id);return x&&x.type==='shoot';})?'assigned':'new';
  const seen=new Set();
  items.filter(a=>{const k=a.fingerprint||`${a.fileName||''}|${a.size||''}|${a.mimeType||''}|${(a.links||[]).slice().sort().join(',')}`;if(seen.has(k))return false;seen.add(k);return true;})
-   .filter(a=>mediaWorkflowStatus(a)===mediaWorkTab)
+   .filter(a=>statusOf(a)===mediaWorkTab)
    .forEach(a=>mediaWorkSelected.add(a.id));
  renderArchive();
 };
 
+const MEDIA_RECENT_SHOOTS_KEY='spotlightRecentAssignedShootings';
+function mediaRecentShootIds(){try{return JSON.parse(localStorage.getItem(MEDIA_RECENT_SHOOTS_KEY)||'[]').filter(Boolean).slice(0,5)}catch(_){return []}}
+function rememberMediaShoot(id){let ids=mediaRecentShootIds().filter(x=>x!==id);ids.unshift(id);localStorage.setItem(MEDIA_RECENT_SHOOTS_KEY,JSON.stringify(ids.slice(0,5)))}
+function shootFinderModelNames(sh){return shootingModelIds(sh).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean)}
+function shootFinderPublicationNames(sh){
+ const series=(state.archive||[]).filter(x=>x.type==='series'&&(sh.links||[]).includes(x.id));
+ const pubs=(state.archive||[]).filter(x=>x.type==='publication'&&series.some(sr=>(sr.links||[]).includes(x.id)));
+ return pubs.map(x=>x.title||'').filter(Boolean);
+}
+function shootFinderYear(sh){const m=String(sh.date||'').match(/\b(19|20)\d{2}\b/);return m?m[0]:''}
+function shootFinderCard(sh){
+ const media=shootingMedia(sh),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null,models=shootFinderModelNames(sh),pubs=shootFinderPublicationNames(sh);
+ return `<button type="button" class="shootFinderCard" data-media-shoot-pick="${esc(sh.id)}"><div class="shootFinderCover" ${cover?`data-shooting-cover="${esc(cover.id)}"`:''}>${cover?'<div class="small">Lade …</div>':'<div class="small">Kein Bild</div>'}</div><div class="shootFinderBody"><b>${esc(shootingDisplayLabel(sh))}</b><div class="shootFinderMeta">${models.length?esc(models.join(', ')):'Ohne Model'}${sh.date?' · '+esc(sh.date):''}${pubs.length?'<br>'+esc(pubs.join(', ')):''}</div></div></button>`;
+}
+function renderMediaShootFinder(){
+ const q=String(document.getElementById('mediaWorkShootSearch').value||'').trim().toLocaleLowerCase('de-DE');
+ const mf=document.getElementById('mediaWorkShootModelFilter').value,yf=document.getElementById('mediaWorkShootYearFilter').value;
+ let shoots=(state.archive||[]).filter(a=>a.type==='shoot').slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''),'de',{numeric:true})||String(a.title||'').localeCompare(String(b.title||''),'de'));
+ shoots=shoots.filter(sh=>{
+  const mids=shootingModelIds(sh),year=shootFinderYear(sh),hay=[shootingDisplayLabel(sh),sh.title,sh.date,...shootFinderModelNames(sh),...shootFinderPublicationNames(sh)].join(' ').toLocaleLowerCase('de-DE');
+  return (!mf||mids.includes(mf))&&(!yf||year===yf)&&(!q||hay.includes(q));
+ });
+ const recentIds=mediaRecentShootIds(),recent=recentIds.map(id=>shoots.find(sh=>sh.id===id)).filter(Boolean);
+ const recentBox=document.getElementById('mediaWorkShootRecent'),results=document.getElementById('mediaWorkShootResults');
+ recentBox.innerHTML=recent.length?`<div class="shootFinderSectionTitle">Zuletzt verwendet</div><div class="shootFinderResults">${recent.map(shootFinderCard).join('')}</div>`:'';
+ results.innerHTML=`<div class="shootFinderSectionTitle">${shoots.length} ${shoots.length===1?'Shooting':'Shootings'}</div>${shoots.map(shootFinderCard).join('')||'<div class="small">Keine passenden Shootings gefunden.</div>'}`;
+ document.querySelectorAll('[data-media-shoot-pick]').forEach(b=>b.onclick=()=>assignSelectedMediaToShoot(b.dataset.mediaShootPick));
+ hydrateShootingCovers(document.getElementById('mediaWorkShootPanel'));
+}
+function assignSelectedMediaToShoot(shootId){
+ const shoot=(state.archive||[]).find(a=>a.id===shootId&&a.type==='shoot');if(!shoot||!mediaWorkSelected.size)return;
+ const label=shootingDisplayLabel(shoot);
+ if(!confirm(`${mediaWorkSelected.size} ${mediaWorkSelected.size===1?'Medium':'Medien'} „${label}“ zuordnen?`))return;
+ let changed=0;(state.archive||[]).forEach(a=>{if(a.type!=='media'||!mediaWorkSelected.has(a.id))return;a.links=a.links||[];if(!a.links.includes(shootId))a.links.push(shootId);delete a.workflowStatus;changed++});
+ shoot.links=shoot.links||[];mediaWorkSelected.forEach(id=>{if(!shoot.links.includes(id))shoot.links.push(id)});
+ if(!save())return;rememberMediaShoot(shootId);mediaWorkSelected.clear();document.getElementById('mediaWorkShootPanel').classList.remove('mobileOpen');renderArchive();toast(changed===1?'Medium dem Shooting zugeordnet.':`${changed} Medien dem Shooting zugeordnet.`);
+}
 function mediaGalleryOptionLabel(gallery){
  const context=galleryCreationContext(gallery);
  const modelNames=galleryInheritedModelIds(gallery).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
@@ -11795,6 +11711,20 @@ document.getElementById('mediaWorkPublicationConfirm').onclick=()=>assignSelecte
 document.getElementById('mediaWorkPublicationCancel').onclick=closeMediaPublicationPanel;
 document.getElementById('mediaWorkPublicationCancelBottom').onclick=closeMediaPublicationPanel;
 
+document.getElementById('mediaWorkAssignShootBtn').onclick=()=>{
+ if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
+ const shoots=(state.archive||[]).filter(a=>a.type==='shoot');
+ if(!shoots.length){toast('Noch kein Shooting im Archiv vorhanden.');return}
+ const modelSel=document.getElementById('mediaWorkShootModelFilter'),yearSel=document.getElementById('mediaWorkShootYearFilter');
+ const mids=[...new Set(shoots.flatMap(sh=>shootingModelIds(sh)))];modelSel.innerHTML='<option value="">Alle Models</option>'+alphabeticalModels((state.models||[]).filter(m=>mids.includes(m.id))).map(m=>`<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
+ const years=[...new Set(shoots.map(shootFinderYear).filter(Boolean))].sort((a,b)=>b.localeCompare(a));yearSel.innerHTML='<option value="">Alle Jahre</option>'+years.map(y=>`<option>${esc(y)}</option>`).join('');
+ document.getElementById('mediaWorkShootSearch').value='';modelSel.value='';yearSel.value='';
+ document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');document.getElementById('mediaWorkShootPanel').classList.add('mobileOpen');renderMediaShootFinder();
+};
+document.getElementById('mediaWorkShootSearch').oninput=renderMediaShootFinder;
+document.getElementById('mediaWorkShootModelFilter').onchange=renderMediaShootFinder;
+document.getElementById('mediaWorkShootYearFilter').onchange=renderMediaShootFinder;
+document.getElementById('mediaWorkShootCancel').onclick=()=>document.getElementById('mediaWorkShootPanel').classList.remove('mobileOpen');
 document.getElementById('mediaWorkClearBtn').onclick=()=>{mediaWorkSelected.clear();document.getElementById('mediaWorkSelectionMenu').classList.remove('mobileOpen');renderArchive()};
 document.getElementById('mediaWorkReturnInboxBtn').onclick=async()=>{
  if(!mediaWorkSelected.size)return;
@@ -11861,22 +11791,6 @@ function releaseWorkNumberKey(type){return type==='gallery'?'nextGalleryNumber':
 function releaseWorks(release,type){
  return linkedObjects(release.id,type).filter(w=>w&&w.type===type);
 }
-function publicationContributions(pub){
- return linkedObjects(pub.id,'release').filter(release=>release&&release.type==='release');
-}
-function unlinkPublicationContribution(releaseId,publicationId,reopenDetail=false){
- const release=(state.archive||[]).find(a=>a.id===releaseId&&a.type==='release');
- const publication=(state.archive||[]).find(a=>a.id===publicationId&&a.type==='publication');
- if(!release||!publication||!linkedObjects(release.id,'publication').some(pub=>pub.id===publication.id))return;
- if(!confirm('Artikel wirklich von dieser Ausgabe lösen? Der Artikel sowie zugeordnete Galerien und Videos bleiben im Archiv.'))return;
- release.links=(release.links||[]).filter(id=>id!==publication.id);
- publication.links=(publication.links||[]).filter(id=>id!==release.id);
- if(save()){
-  renderArchive();
-  if(reopenDetail)openPublicationDetail(publication.id);
-  toast('Artikel von der Ausgabe gelöst.');
- }
-}
 function assignWorkReleaseNumber(work,release){
  if(!work||!release||(work.type!=='gallery'&&work.type!=='video'))return;
  const key=releaseWorkNumberKey(work.type);
@@ -11905,22 +11819,6 @@ function workDisplayLabel(work){
  const n=stored||peers.indexOf(work)+1;
  return `${work.type==='gallery'?'Galerie':'Video'} • Nr. ${n}`;
 }
-function managementWorkModelIds(work){
- if(work?.type==='gallery')return work.modelsMode==='custom'?(work.modelIds||[]):galleryInheritedModelIds(work);
- if(work?.type==='video')return work.modelsMode==='custom'?(work.modelIds||[]):videoInheritedModelIds(work);
- return [];
-}
-function managementWorkDisplayName(work){
- const ids=[...new Set(managementWorkModelIds(work).filter(Boolean))];
- const names=ids.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
- const base=names.join(' + ')||'Model noch nicht bekannt';
- const key=shootingModelKey(ids);
- if(!key)return base;
- const peers=(state.archive||[]).filter(x=>x&&x.type===work.type&&shootingModelKey(managementWorkModelIds(x))===key).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
- if(peers.length<2)return base;
- const index=peers.findIndex(x=>x.id===work.id);
- return `${base} • Nr. ${index>=0?index+1:1}`;
-}
 function releaseSeriesContextLabel(release){
  const series=linkedObjects(release.id,'series')[0]||null;
  return series?releaseRelationLabel(series):'Nicht zugeordnet';
@@ -11938,56 +11836,6 @@ function workReleaseChoiceHtml(release,current){
  const parts=seriesContributionDisplayParts(release);
  const titleContext=releaseTitleContextLabel(release);
  return `<button type="button" class="workReleaseChoice ${release.id===current?'selected':''}" data-work-release-choice="${esc(release.id)}">${seriesContributionPreviewHtml(release,galleries,videos).replace('seriesContributionPreview','workReleaseChoicePreview')}<span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(parts.model)}</span>${parts.label?`<span class="workReleaseChoiceLabel">${esc(parts.label)}</span>`:''}${titleContext?`<span class="workReleaseChoiceContext">Titel: ${esc(titleContext)}</span>`:''}<span class="workReleaseChoiceContext">Rubrik: ${esc(releaseSeriesContextLabel(release))}</span><span class="workReleaseChoiceMeta">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
-}
-function workShootingChoiceHtml(shoot,current){
- const parts=shootingPreviewParts(shoot);
- const display=managementShootingDisplayParts(shoot);
- const context=[shoot.date?germanDateLabel(shoot.date):'',shoot.location||''].filter(Boolean).join(' · ');
- return `<button type="button" class="workReleaseChoice workShootingChoice ${shoot.id===current?'selected':''}" data-work-shooting-choice="${esc(shoot.id)}"><span class="workReleaseChoicePreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</span><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(display.models)}</span><span class="workReleaseChoiceLabel">${esc(display.title)}</span>${context?`<span class="workReleaseChoiceContext">${esc(context)}</span>`:''}<span class="workReleaseChoiceMeta">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
-}
-function containsAllModelIds(candidateIds=[],requiredIds=[]){
- const candidate=new Set(candidateIds.filter(Boolean));
- return requiredIds.every(id=>candidate.has(id));
-}
-function printArticleMatchingShootings(modelIds=[]){
- if(!modelIds.length)return [];
- return (state.archive||[]).filter(a=>a&&a.type==='shoot'&&containsAllModelIds(shootingModelIds(a),modelIds)).slice().sort(sortShootingsNatural);
-}
-function configurePrintArticleSource(prefix,release=null){
- const shootingRoot=document.getElementById(prefix+'PrintArticleShootingPicker');
- const shootingInput=document.getElementById(prefix+'PrintArticleShooting');
- const modelsRoot=document.getElementById(prefix+'PrintArticleModels');
- if(!shootingRoot||!shootingInput||!modelsRoot)return;
- const modelCheckClass=prefix==='archiveEdit'?'.editPrintArticleModelCheck':'.printArticleModelCheck';
- const modelIds=[...modelsRoot.querySelectorAll(`${modelCheckClass}:checked`)].map(x=>x.value);
- const allowedShootings=printArticleMatchingShootings(modelIds);
- const requestedShooting=release?.printShootingId||'';
- const currentShooting=allowedShootings.some(sh=>sh.id===requestedShooting)?requestedShooting:'';
- const none=`<button type="button" class="workReleaseChoice none ${currentShooting?'':'selected'}" data-print-article-shooting=""><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">Kein Shooting zugeordnet</span><span class="workReleaseChoiceContext">Artikel bleibt ohne Shootingzuordnung.</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
- shootingRoot.innerHTML=none+(modelIds.length?(allowedShootings.length?allowedShootings.map(sh=>workShootingChoiceHtml(sh,currentShooting).replaceAll('data-work-shooting-choice','data-print-article-shooting')).join(''):'<div class="small">Kein Shooting enthält alle gewählten Models.</div>'):'<div class="small">Zuerst mindestens ein Model im Artikel auswählen.</div>');
- shootingInput.value=currentShooting;
- shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(btn=>btn.onclick=()=>{
-  const id=btn.dataset.printArticleShooting||'';shootingInput.value=id;
-  shootingRoot.querySelectorAll('[data-print-article-shooting]').forEach(x=>x.classList.toggle('selected',x===btn));
- });
- modelsRoot.querySelectorAll(modelCheckClass).forEach(check=>check.onchange=()=>configurePrintArticleSource(prefix,{printShootingId:shootingInput.value}));
- hydrateShootingCovers(shootingRoot);
-}
-function fillWorkShootingSelector(selectId,work){
- const sel=document.getElementById(selectId);if(!sel)return;
- const current=(work?.type==='gallery'?galleryShootings(work):videoShootings(work))[0]?.id||'';
- const shoots=(state.archive||[]).filter(a=>a&&a.type==='shoot').slice().sort(sortShootingsNatural);
- sel.innerHTML='<option value="">Shooting noch nicht bekannt</option>'+shoots.map(sh=>`<option value="${esc(sh.id)}">${esc(shootingDisplayLabel(sh))}</option>`).join('');
- sel.value=current;
- const picker=document.getElementById('archiveEditWorkShootingPicker');if(!picker)return;
- const none=`<button type="button" class="workReleaseChoice none ${current?'':'selected'}" data-work-shooting-choice=""><span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">Shooting noch nicht bekannt</span><span class="workReleaseChoiceContext">Werk ohne Shootingzuordnung belassen</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
- picker.innerHTML=none+shoots.map(sh=>workShootingChoiceHtml(sh,current)).join('');
- picker.querySelectorAll('[data-work-shooting-choice]').forEach(btn=>btn.onclick=()=>{
-  sel.value=btn.dataset.workShootingChoice||'';
-  picker.querySelectorAll('.workReleaseChoice').forEach(x=>x.classList.toggle('selected',x===btn));
-  if(typeof sel.onchange==='function')sel.onchange();
- });
- hydrateShootingCovers(picker);
 }
 function fillWorkReleaseSelector(selectId,work){
  const sel=document.getElementById(selectId);if(!sel)return;
@@ -12067,40 +11915,6 @@ function titleContributionDisplayParts(release){
  const number=visibleTitleContributionNumber(release);
  return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
 }
-function publicationContributionPeers(release){
- const publicationId=linkedObjects(release.id,'publication')[0]?.id||'';
- const key=releaseModelKey(release);
- if(!publicationId||!key)return [];
- return (state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'publication').some(pub=>pub.id===publicationId)&&releaseModelKey(r)===key).sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
-}
-function publicationContributionDisplayParts(release){
- const explicitIds=(release?.printModelIds||[]).filter(Boolean);
- const modelNames=(explicitIds.length?explicitIds:releaseModelIds(release)).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
- const name=String(release?.name||'').trim();
- const peers=publicationContributionPeers(release);
- const stored=Number(release?.contributionNumber)||0;
- const number=peers.length<2?0:(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored)?stored:peers.findIndex(r=>r.id===release.id)+1);
- return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
-}
-function publicationArticlePreviewHtml(release){
- const shoot=(state.archive||[]).find(a=>a&&a.id===release?.printShootingId&&a.type==='shoot');
- if(shoot){const parts=shootingPreviewParts(shoot);return `<div class="seriesContributionPreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</div>`}
- return '<div class="seriesContributionPreview"><div class="small" style="padding:8px">Noch keine Vorschau</div></div>';
-}
-function publicationArticleAreaHtml(pub){
- const releases=publicationContributions(pub).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
- const cards=releases.map(release=>{
-  const parts=publicationContributionDisplayParts(release);
-  const shoot=(state.archive||[]).find(a=>a&&a.id===release.printShootingId&&a.type==='shoot')||null;
-  const photographers=shoot?(shoot.credits||[]).map(personById).filter(isPhotographerPerson).map(p=>p.name).filter(Boolean):[];
-  const context=[photographers.length?`📷 ${photographers.join(' + ')}`:'',shoot?.location||''].filter(Boolean).join(' · ');
-  const shootingDate=shoot?.date?(/^\d{4}-\d{2}-\d{2}$/.test(shoot.date)?germanDateLabel(shoot.date):shoot.date):'';
-  const sourceLabel=shoot?[`Shooting • Nr. ${shootingNumber(shoot)}`,shootingDate].filter(Boolean).join(' · '):'';
-  const finding=release.printPages?`Seiten: ${release.printPages}`:'';
-  return `<div class="seriesContributionCard">${publicationArticlePreviewHtml(release)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}${sourceLabel?`<div class="seriesContributionMeta">${esc(sourceLabel)}</div>`:''}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
- }).join('');
- return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
-}
 function releaseContextIds(release){
  return {
   seriesId:linkedObjects(release.id,'series')[0]?.id||'',
@@ -12146,13 +11960,10 @@ function nextSeriesContributionNumber(seriesId,modelId,excludeReleaseId=''){
 }
 let seriesContributionCreateId='';
 let titleContributionCreateId='';
-let publicationContributionCreateId='';
 function openSeriesContribution(seriesId){
  const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');
  if(!series)return;
  seriesContributionCreateId=seriesId;
- titleContributionCreateId='';
- publicationContributionCreateId='';
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
  document.getElementById('archiveTitle').value='';
@@ -12177,7 +11988,6 @@ function openTitleContribution(titleId){
  if(!title)return;
  seriesContributionCreateId='';
  titleContributionCreateId=titleId;
- publicationContributionCreateId='';
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
  document.getElementById('archiveTitle').value='';
@@ -12191,31 +12001,6 @@ function openTitleContribution(titleId){
  document.getElementById('archivePaneTitle').textContent='Beitrag hinzufügen';
  const modelHint=document.getElementById('archiveContributionModelHint');
  modelHint.textContent='Models werden automatisch aus den Shootings der zugeordneten Galerien und Videos übernommen.';
- modelHint.classList.remove('hidden');
- document.getElementById('archiveTypeWrap').classList.add('hidden');
- document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
- document.getElementById('archiveContributionNumberWrap').classList.add('hidden');
- openOverlay('archivePane');
-}
-function openPublicationContribution(publicationId){
- const publication=(state.archive||[]).find(a=>a.id===publicationId&&a.type==='publication');
- if(!publication)return;
- seriesContributionCreateId='';
- titleContributionCreateId='';
- publicationContributionCreateId=publicationId;
- pendingMediaFiles=[];
- document.getElementById('archiveType').value='release';
- document.getElementById('archiveTitle').value='';
- document.getElementById('archiveDate').value='';
- document.getElementById('archiveNote').value='';
- document.getElementById('archiveReleaseName').value='';
- document.getElementById('archiveContributionNumber').value='';
- document.getElementById('archiveShootLocation').value='';
- document.getElementById('archiveFile').value='';
- refreshArchiveForm();
- document.getElementById('archivePaneTitle').textContent='Artikel hinzufügen';
- const modelHint=document.getElementById('archiveContributionModelHint');
- modelHint.textContent='Models, Fotograf, Ort und Entstehungsjahr werden als Heftangaben gespeichert. Eine spätere Shootingzuordnung darf diese Angaben nur vorschlagen, nicht überschreiben.';
  modelHint.classList.remove('hidden');
  document.getElementById('archiveTypeWrap').classList.add('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
@@ -12244,33 +12029,6 @@ function fillReleaseSelectors(seriesSelectId,titleSelectId,release){
  seriesSelect.value=selectedSeriesId;
  titleSelect.value=selectedTitleId;
 }
-function configureEditReleaseRelationMode(release){
- const mode=document.getElementById('archiveEditReleaseRelationMode');
- const seriesWrap=document.getElementById('archiveEditReleaseSeriesWrap');
- const titleWrap=document.getElementById('archiveEditReleaseTitleWrap');
- const warning=document.getElementById('archiveEditReleaseRelationWarning');
- const controls=document.getElementById('archiveEditReleaseRelationControls');
- const publicationContext=document.getElementById('archiveEditReleasePublicationContext');
- const modeLabel=document.getElementById('archiveEditReleaseRelationModeLabel');
- const help=document.getElementById('archiveEditReleaseRelationHelp');
- const publication=linkedObjects(release.id,'publication')[0]||null;
- const hasSeries=Boolean(linkedObjects(release.id,'series')[0]);
- const hasTitle=Boolean(linkedObjects(release.id,'title')[0]);
- publicationContext.classList.toggle('hidden',!publication);
- publicationContext.textContent=publication?`Printausgabe: ${publicationDisplayTitle(publication)} · ${publicationPeriodLabel(publication)||'Zeitraum offen'}`:'';
- controls.classList.toggle('hidden',Boolean(publication)&&!hasSeries&&!hasTitle);
- modeLabel.textContent=publication?'Bestehende ältere Zusatzzuordnung':'Veröffentlichungskontext';
- help.textContent=publication?'Diese Rubrik-/Titelverknüpfung stammt aus dem bisherigen Stand. Zum kontrollierten Bereinigen „Keine Zuordnung“ wählen und speichern. Die Printausgabe bleibt erhalten.':'Standardmäßig gehört ein Beitrag entweder zu einer Rubrik oder zu einem Titel. „Rubrik und Titel“ ist ein bewusster Ausnahmefall.';
- mode.value=hasSeries&&hasTitle?'both':hasSeries?'series':hasTitle?'title':'none';
- const refresh=()=>{
-  const value=mode.value;
-  seriesWrap.classList.toggle('hidden',!['series','both'].includes(value));
-  titleWrap.classList.toggle('hidden',!['title','both'].includes(value));
-  warning.classList.toggle('hidden',value!=='both');
- };
- mode.onchange=refresh;
- refresh();
-}
 function setReleaseRelations(release,seriesId,titleId){
  const selected=[seriesId,titleId].filter(Boolean);
  const oldRelationIds=(release.links||[]).filter(id=>{const x=(state.archive||[]).find(a=>a.id===id);return x&&(x.type==='series'||x.type==='title')});
@@ -12296,7 +12054,6 @@ function openPrintIssueForSeries(seriesId='',archiveArea=''){
 function openArchive(){
  seriesContributionCreateId='';
  titleContributionCreateId='';
- publicationContributionCreateId='';
  pendingMediaFiles=[];
  document.getElementById('archiveTypeWrap').classList.remove('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.remove('hidden');
@@ -12322,18 +12079,6 @@ function refreshArchiveForm(){
  document.getElementById('archiveFileWrap').classList.toggle('hidden',!isMedia);
  document.getElementById('publicationOwnershipWrap').classList.toggle('hidden',type!=='publication');
  document.getElementById('archiveReleaseFieldsWrap').classList.toggle('hidden',!isRelease);
- const printArticleFields=document.getElementById('archivePrintArticleFields');
- const isPrintArticle=isRelease&&Boolean(publicationContributionCreateId);
- printArticleFields.classList.toggle('hidden',!isPrintArticle);
- if(isPrintArticle){
-  document.getElementById('archivePrintArticlePages').value='';
-  document.getElementById('archivePrintArticleModels').innerHTML=printArticleModelSelector([],false);
-  document.getElementById('archivePrintArticleSummary').value='';
-  configurePrintArticleSource('archive',null);
- }else{
-  document.getElementById('archivePrintArticleModels').innerHTML='';
-  document.getElementById('archivePrintArticleShootingPicker').innerHTML='';
- }
  document.getElementById('archiveWorkReleaseWrap').classList.toggle('hidden',!(isGallery||isVideo));
  document.getElementById('archiveGalleryShootWrap').classList.toggle('hidden',!isGallery);
  document.getElementById('archiveVideoShootWrap').classList.toggle('hidden',!isVideo);
@@ -12373,11 +12118,9 @@ function refreshArchiveForm(){
   document.getElementById('publicationIssueNumber').value='';
   document.getElementById('publicationIssuePeriod').value='';
   document.getElementById('publicationCoverModels').innerHTML=publicationCoverModelSelector([],false);
-  document.getElementById('publicationCoverPhotographers').innerHTML=publicationCoverPhotographerSelector([],false);
   document.getElementById('publicationStockStatus').value='none';
  }else{
   document.getElementById('publicationCoverModels').innerHTML='';
-  document.getElementById('publicationCoverPhotographers').innerHTML='';
  }
  renderMediaQueue();
 }
@@ -12401,7 +12144,7 @@ document.getElementById('archiveFile').onchange=e=>{
 };
 document.getElementById('addMoreMediaBtn').onclick=()=>document.getElementById('archiveFile').click();
 
-document.getElementById('cancelArchiveBtn').onclick=()=>{seriesContributionCreateId='';titleContributionCreateId='';publicationContributionCreateId='';closeOverlay()};
+document.getElementById('cancelArchiveBtn').onclick=()=>{seriesContributionCreateId='';closeOverlay()};
 document.getElementById('saveArchiveBtn').onclick=async()=>{
  const type=document.getElementById('archiveType').value;
  const links=[];
@@ -12417,8 +12160,6 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  function finish(count=1,targetTab=type){
    if(!save())return;archiveTab=targetTab;document.getElementById('archiveFile').value='';pendingMediaFiles=[];
    seriesContributionCreateId='';
-   titleContributionCreateId='';
-   publicationContributionCreateId='';
    closeOverlay();render();renderArchive();
    toast(count>1?`${count} Medien importiert.`:'Archiv-Eintrag gespeichert.');
  }
@@ -12455,27 +12196,17 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    return;
  }
  if(type==='release'){
-  const targetPublicationId=publicationContributionCreateId;
   const name=document.getElementById('archiveReleaseName').value.trim();
-  const seriesId=seriesContributionCreateId||(!titleContributionCreateId&&!publicationContributionCreateId?document.getElementById('archiveReleaseSeries').value:'');
-  const titleId=titleContributionCreateId||(!seriesContributionCreateId&&!publicationContributionCreateId?document.getElementById('archiveReleaseTitle').value:'');
+  const seriesId=seriesContributionCreateId||(!titleContributionCreateId?document.getElementById('archiveReleaseSeries').value:'');
+  const titleId=titleContributionCreateId||(!seriesContributionCreateId?document.getElementById('archiveReleaseTitle').value:'');
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
-  if(publicationContributionCreateId)links.push(publicationContributionCreateId);
   const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
   const contributionNumber=enteredNumber>0?enteredNumber:0;
   const item={id:'A-'+Date.now(),type:'release',name,title:'',date:'',note:'',links:[...links],credits:[],tags:[],at:new Date().toISOString()};
-  if(targetPublicationId){
-   item.printPages=document.getElementById('archivePrintArticlePages').value.trim();
-   item.printModelIds=[...document.querySelectorAll('#archivePrintArticleModels .printArticleModelCheck:checked')].map(x=>x.value);
-   item.printSummaryDe=document.getElementById('archivePrintArticleSummary').value.trim();
-   item.printShootingId=document.getElementById('archivePrintArticleShooting').value;
-  }
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
   item.title=releaseDisplayTitle(item);
-  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':targetPublicationId?'publication':type);
-  if(targetPublicationId)openPublicationDetail(targetPublicationId);
-  return;
+  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':type);titleContributionCreateId='';return;
  }
  if(type==='title'){
   const cls=document.getElementById('titleClass').value,level=document.getElementById('titleLevel').value;
@@ -12527,8 +12258,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
   const stockStatus=document.getElementById('publicationStockStatus').value;
   const coverModelIds=[...document.querySelectorAll('#publicationCoverModels .publicationCoverModelCheck:checked')].map(x=>x.value);
-  const coverPhotographerIds=[...document.querySelectorAll('#publicationCoverPhotographers .publicationCoverPhotographerCheck:checked')].map(x=>x.value);
-  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeriesId,printSeries,issueNumber,coverModelIds,coverPhotographerIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea:printSeriesObj.archiveArea||archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeriesId,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea:printSeriesObj.archiveArea||archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
   item.title=publicationDisplayTitle(item);
   linkItem(item);
   finish();
@@ -12617,10 +12347,7 @@ function seriesPublications(series){
 }
 
 function shootingMedia(shoot){
- const direct=relatedObjects(shoot.id,'media');
- const galleryMedia=relatedObjects(shoot.id,'gallery').flatMap(galleryPhotoMedia);
- const videos=relatedObjects(shoot.id,'video').flatMap(videoMedia);
- const media=[...direct,...galleryMedia,...videos];
+ const media=linkedObjects(shoot.id,'media');
  const seen=new Set();
  return media.filter(x=>{
    const k=x.fingerprint||`${x.fileName||''}|${x.size||''}|${x.mimeType||''}|${x.id}`;
@@ -12628,10 +12355,6 @@ function shootingMedia(shoot){
  }).sort((a,b)=>String(a.fileName||a.title||'').localeCompare(
    String(b.fileName||b.title||''),'de',{numeric:true,sensitivity:'base'}
  ));
-}
-function shootingHasDirectMediaLink(shoot,mediaId){
- const media=(state.archive||[]).find(item=>item.id===mediaId&&item.type==='media');
- return Boolean(media&&((shoot.links||[]).includes(mediaId)||(media.links||[]).includes(shoot.id)));
 }
 
 
@@ -12791,7 +12514,9 @@ async function hydrateShootingCovers(root=document){
    const blob=await getMedia(preferredId);
    if(blob&&blob.type&&blob.type.startsWith('image/')){
     const url=URL.createObjectURL(blob);
+    const selectBtn=node.querySelector('.shootingSelectBtn');
     node.innerHTML=`<img src="${url}" alt="Shooting-Vorschau">`;
+    if(selectBtn)node.appendChild(selectBtn);
    }else node.innerHTML='<div class="small">Kein Vorschaubild</div>';
   }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
  }
@@ -12849,7 +12574,7 @@ function openShootingDetail(id,seriesId,context=null){
  ${detailMedia.length
    ? `<div class="gallery">${detailMedia.map(x=>`<div class="galleryItem">
        <div class="mediaThumb" data-media-id="${x.id}"><div class="small" style="padding:10px">Lade Medium …</div></div>
-       <div class="galleryCaption"><b>${esc(x.fileName||'Medium')}</b><div class="videoMeta">${x.mimeType&&x.mimeType.startsWith('video/')?'Video':'Foto'}</div>${activeMainView==='management'&&shootingHasDirectMediaLink(sh,x.id)?`<button type="button" class="shootingMediaUnlink" data-unlink-shooting-media="${esc(x.id)}">Direkte Zuordnung lösen</button>`:''}</div>
+       <div class="galleryCaption"><b>${esc(x.fileName||'Medium')}</b><div class="videoMeta">${x.mimeType&&x.mimeType.startsWith('video/')?'Video':'Foto'}</div>${activeMainView==='management'?`<button type="button" class="shootingMediaUnlink" data-unlink-shooting-media="${esc(x.id)}">Aus Shooting entfernen</button>`:''}</div>
       </div>`).join('')}</div>`
    : presentationMode&&videos.length
      ? '<div class="small">Dieses Shooting enthält keine Fotos. Das Video lässt sich über das ▶︎-Symbol der Shootingkarte öffnen.</div>'
