@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-19
-Referenz-Commit: `ff7fda772782d6c863b63de51060716f91413657`
+Referenz-Commit: `658faf1029eb12718c136f27ca8578aab5dc054f`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `ff7fda772782d6c863b63de51060716f91413657`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `ff7fda772782d6c863b63de51060716f91413657`
+- Aktuell berücksichtigter Code: `658faf1029eb12718c136f27ca8578aab5dc054f`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -200,9 +200,11 @@ Referenzfall:
 
 ### Ausgaben
 
-Technischer Typ bleibt vorerst `publication`. Grunddaten: Reihe, Ausgabennummer, Zeitraum, Archivbereich, Cover-Models, physischer Bestandsstatus (`Nicht vorhanden`, `Bestellt`, `Im Bestand`).
+Technischer Typ bleibt vorerst `publication`. Grunddaten: Reihe, Ausgabennummer, Zeitraum, Archivbereich, Cover-Models, Cover-Fotograf(en), physischer Bestandsstatus (`Nicht vorhanden`, `Bestellt`, `Im Bestand`).
 
 Cover-Models sind Metadaten der Ausgabe und erzeugen keinen Beitrag bzw. keinen Nachweis für einen Inhalt im Heft. Verwaltungsdarstellung: Reihe als übergeordneter Kopf; Ausgabennummer und Zeitraum in einer Zeile. Mehrmonatige Zeiträume werden in der Verwaltung platzsparend angezeigt, z. B. `Jul./Aug. 2002`, ohne die gespeicherten Grunddaten zu verändern.
+
+Cover-Fotograf(en) werden als eigene optionale ID-Liste direkt an der Ausgabe gespeichert. Sie erscheinen auf Ausgabekarte und Detailansicht als `Cover-Foto: …`, sind über die Verwaltungssuche auffindbar und werden weder in allgemeine Credits geschrieben noch auf Artikel oder Shootings übertragen. Anlegen, Bearbeiten, erneutes Öffnen, Anzeige und Suche sind auf dem Android-Gerät bestätigt.
 
 ### Cover und PDF
 
@@ -239,8 +241,6 @@ Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbe
 - Cover/PDF, Reihenlogik, Bestand und vorhandene Beziehungen blieben unverändert;
 - kein Schema-Bump und keine automatische Migration.
 
-Noch offen bleibt die eigene Erfassung von Cover-Fotograf(en) an der Ausgabe.
-
 ### Print-Design -- vollständig gerätetest-bestätigt
 
 Der Print/Reihen-Bereich bleibt die bestätigte Referenz für Ausgabekarten:
@@ -266,6 +266,7 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Mehrfachauswahl verwendet eine echte UND-Verknüpfung: Ein gemeinsames Shooting beziehungsweise ein gemeinsamer Beitrag muss alle gewählten Models enthalten; getrennte Einzelvorkommen gelten nicht als gemeinsamer Treffer.
 - Die UND-Filterung gilt für Print, Titel, Rubriken, Medien, Shootings und Import einschließlich ihrer inneren Karten und Container.
 - Model-Mehrfachfilter, Suche, Archivbereich und `Shootings → Ohne Medien` bleiben miteinander kombinierbar. Auswahl, Entfernen und Ergebnisfilterung sind auf dem Android-Gerät bestätigt.
+- Die Suchfelder der Verwaltungsbereiche behalten während der Eingabe dasselbe aktive Eingabefeld; nur die Ergebnisliste wird neu aufgebaut. Dadurch bleiben Android-Tastatur und Cursor beim Tippen stabil. Für Print, Titel, Rubriken, Medien, Shootings und Import gerätetest-bestätigt.
 - Archivbereich darunter als Auswahlfeld.
 - Haupttabs horizontal: `Print`, `Titel`, `Rubriken`, `Medien`, `Shootings`, `Import`.
 - Der Haupttab `Medien` zeigt oben die feste Bereichsüberschrift und darunter den auberginefarbenen Auswahlkopf `Galerien` / `Videos`; `Import` bleibt fachlich und funktional getrennt. Diese Struktur ist gerätetest-bestätigt.
@@ -288,7 +289,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
-- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten; Cover-Fotograf(en) fehlen noch.
+- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -310,13 +311,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Print: Cover-Fotograf(en) als eigene Angabe der Ausgabe ergänzen.**
+**Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.**
 
 Vorgehen:
-1. Cover-Fotograf(en) direkt an der konkreten Printausgabe erfassen und bearbeiten können.
-2. Die Angabe als Cover-Metadatum behandeln; daraus weder Artikel noch Shooting erzeugen.
-3. Cover-Fotograf(en) nicht automatisch auf Artikel oder deren Shootings übertragen.
-4. Bestehende Cover-/PDF-Zuordnungen, Bestandsstatus, Cover-Models und Artikel unverändert halten.
-5. Danach die Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.
+1. Zuerst den aktuellen Aufbau und die vorhandenen Filter der Übersicht mit der bestätigten Verwaltung vergleichen.
+2. Print, Titel, Rubriken, Medien und Shootings fachlich eindeutig darstellen, ohne `release` als konkurrierenden Hauptbereich einzuführen.
+3. Archivbereiche als bewussten Filter/Kontext berücksichtigen; keine automatische Zuordnung aus Datum oder Titelklasse ableiten.
+4. Die Umstellung in kleine, separat gerätetestbare Schritte teilen.
+5. Bestehende Verwaltungs-, Medien-, Shooting-, Print- und Profillogik unverändert halten.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
