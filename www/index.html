@@ -11101,8 +11101,7 @@ function renderManagementContextTools(){
  };
  if(input)input.oninput=()=>{
    managementSearch=input.value||'';
-   renderArchive();
-   setTimeout(()=>{const x=document.getElementById('managementContextSearchInput');if(x){x.focus();x.setSelectionRange(x.value.length,x.value.length)}},0);
+   renderArchive({preserveContextTools:true});
  };
  if(close)close.onclick=()=>{managementSearch='';managementSearchOpen=false;renderArchive()};
  if(add)add.onclick=()=>{
@@ -11112,13 +11111,13 @@ function renderManagementContextTools(){
    refreshArchiveForm();
  };
 }
-function renderArchive(){
+function renderArchive(options={}){
  if(archiveTab==='release')archiveTab='series';
  renderPinnedArchive();
  renderRecentArchive();
  renderManagementTools();
  renderManagementAreaFilter();
- renderManagementContextTools();
+ if(!options.preserveContextTools)renderManagementContextTools();
  const raLimit=document.getElementById('recentArchiveLimit');
  if(raLimit){
   raLimit.value=String(getRecentArchiveLimit());
