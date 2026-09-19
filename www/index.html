@@ -2677,6 +2677,9 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Cover-Models <span class="small">(optional)</span></label>
   <div class="small">Nur Coverangabe. Daraus wird kein Beitrag und kein Shooting abgeleitet.</div>
   <div id="archiveEditCoverModels" class="shootModelSelector"></div>
+  <label>Cover-Fotograf(en) <span class="small">(optional)</span></label>
+  <div class="small">Nur Coverangabe. Keine automatische Übertragung auf Artikel oder Shootings.</div>
+  <div id="archiveEditCoverPhotographers" class="shootModelSelector"></div>
   <label>Physischer Bestand</label>
   <select id="archiveEditStockStatus">
    <option value="none">Nicht vorhanden</option>
@@ -2789,6 +2792,9 @@ body.archiveFilterOpen .bottom{display:none!important}
   <label>Cover-Models <span class="small">(optional)</span></label>
   <div class="small">Nur Coverangabe. Daraus wird kein Beitrag und kein Shooting abgeleitet.</div>
   <div id="publicationCoverModels" class="shootModelSelector"></div>
+  <label>Cover-Fotograf(en) <span class="small">(optional)</span></label>
+  <div class="small">Nur Coverangabe. Keine automatische Übertragung auf Artikel oder Shootings.</div>
+  <div id="publicationCoverPhotographers" class="shootModelSelector"></div>
   <label>Physischer Bestand</label>
   <select id="publicationStockStatus">
    <option value="none">Nicht vorhanden</option>
@@ -3362,6 +3368,8 @@ function normalizeArchiveObjectV6(a){
   a.issuePeriod=String(a.issuePeriod||a.date||'').trim();
   if(!Array.isArray(a.coverModelIds))a.coverModelIds=[];
   a.coverModelIds=[...new Set(a.coverModelIds.filter(Boolean))];
+  if(!Array.isArray(a.coverPhotographerIds))a.coverPhotographerIds=[];
+  a.coverPhotographerIds=[...new Set(a.coverPhotographerIds.filter(Boolean))];
   const validStock=new Set(['none','ordered','owned']);
   a.stockStatus=validStock.has(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
   a.owned=a.stockStatus==='owned';
@@ -8981,6 +8989,7 @@ function openPublicationDetail(id){
    <div class="small">Ausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
    <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}</div>
    ${publicationCoverModelNames(pub).length?`<div class="small" style="margin-top:7px"><b>Cover:</b> ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
+   ${publicationCoverPhotographerNames(pub).length?`<div class="small" style="margin-top:5px"><b>Cover-Foto:</b> ${esc(publicationCoverPhotographerNames(pub).join(' + '))}</div>`:''}
    ${pub.note?`<div class="publicationDetailNote">${esc(pub.note)}</div>`:''}${renderCredits(pub.credits||[])}
   </div>
   <div class="publicationDetailAssets">
@@ -9109,6 +9118,12 @@ function publicationCoverModelSelector(selected=[],edit=false){
  const cls=edit?'editPublicationCoverModelCheck':'publicationCoverModelCheck';
  return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
 }
+function publicationCoverPhotographerSelector(selected=[],edit=false){
+ const photographers=(state.people||[]).filter(isPhotographerPerson).slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','de',{sensitivity:'base'}));
+ if(!photographers.length)return '<div class="small">Noch keine Fotografen angelegt.</div>';
+ const cls=edit?'editPublicationCoverPhotographerCheck':'publicationCoverPhotographerCheck';
+ return photographers.map(p=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(p.id)}" style="width:auto" ${selected.includes(p.id)?'checked':''}> ${esc(p.name)}</label>`).join('');
+}
 function printArticleModelSelector(selected=[],edit=false){
  const cls=edit?'editPrintArticleModelCheck':'printArticleModelCheck';
  return alphabeticalModels(state.models||[]).map(m=>`<label style="font-weight:400;display:block;padding:4px 0"><input type="checkbox" class="${cls}" value="${esc(m.id)}" style="width:auto" ${selected.includes(m.id)?'checked':''}> ${esc(m.name)}</label>`).join('');
@@ -9167,6 +9182,7 @@ function publicationStockBadge(pub){
  return `<span class="stockBadge${cls}">${icon}${esc(publicationStockLabel(pub))}</span>`;
 }
 function publicationCoverModelNames(pub){return (pub?.coverModelIds||[]).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean)}
+function publicationCoverPhotographerNames(pub){return (pub?.coverPhotographerIds||[]).map(id=>personById(id)?.name).filter(Boolean)}
 function modelChips(ids=[]){
  const ms=ids.map(id=>state.models.find(m=>m.id===id)).filter(Boolean);
  return ms.length?`<div class="creditRow relationshipRow"><span class="creditChip relationshipGroup" title="Models"><span class="relationshipIcon">👤</span><span class="relationshipNames">${ms.map(m=>`<button type="button" class="relationshipName relationshipLink" data-open-related-model="${esc(m.id)}">${esc(m.name)}</button>`).join('')}</span></span></div>`:'';
@@ -10365,9 +10381,11 @@ document.getElementById('archiveEditDate').oninput=()=>{
   document.getElementById('archiveEditIssueNumber').value=a.issueNumber||'';
   document.getElementById('archiveEditIssuePeriod').value=a.issuePeriod||a.date||'';
   document.getElementById('archiveEditCoverModels').innerHTML=publicationCoverModelSelector(a.coverModelIds||[],true);
+  document.getElementById('archiveEditCoverPhotographers').innerHTML=publicationCoverPhotographerSelector(a.coverPhotographerIds||[],true);
   document.getElementById('archiveEditStockStatus').value=['none','ordered','owned'].includes(a.stockStatus)?a.stockStatus:(a.owned?'owned':'none');
  }else{
   document.getElementById('archiveEditCoverModels').innerHTML='';
+  document.getElementById('archiveEditCoverPhotographers').innerHTML='';
  }
  if(a.type==='title'){document.getElementById('archiveEditTitleClass').value=a.titleClass||'coed';fillEditTitleLevels();document.getElementById('archiveEditTitleLevel').value=a.titleLevel||titleLevelsForClass(a.titleClass||'coed')[0]?.[0]||'month';refreshEditTitlePeriod();if(a.titleLevel==='week'){setTitleWeekDate('archiveEditTitle',a.titlePeriod||'');if(a.titlePeriod){const parts=a.titlePeriod.split('-').map(Number);document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||String(Math.ceil(parts[2]/7));document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||String(parts[1]);}else{document.getElementById('archiveEditTitleMonthWeek').value=a.titleMonthWeek||'';document.getElementById('archiveEditTitleWeekMonth').value=a.titleMonthWeekMonth||'';}}document.getElementById('archiveEditTitleMonth').value=a.titleLevel==='month'?(a.titlePeriod||''):'';document.getElementById('archiveEditTitleYear').value=a.titleLevel==='year'?(a.titleYear||''):'';refreshEditTitlePeriod();} 
     openOverlay('archiveEditPane');
@@ -10400,6 +10418,7 @@ document.getElementById('saveArchiveEditBtn').onclick=async()=>{
    a.title=publicationDisplayTitle({...a,printSeries,issueNumber});
    a.date=issuePeriod;
    a.coverModelIds=[...document.querySelectorAll('#archiveEditCoverModels .editPublicationCoverModelCheck:checked')].map(x=>x.value);
+   a.coverPhotographerIds=[...document.querySelectorAll('#archiveEditCoverPhotographers .editPublicationCoverPhotographerCheck:checked')].map(x=>x.value);
    a.stockStatus=document.getElementById('archiveEditStockStatus').value;
    a.owned=a.stockStatus==='owned';
    delete a.modelId;
@@ -10716,7 +10735,7 @@ function managementMatchesSearch(a){
  const modelNames=[];
  if(a.type==='shoot')shootingModelIds(a).forEach(id=>{const m=(state.models||[]).find(x=>x.id===id);if(m)modelNames.push(m.name||'')});
  else (state.models||[]).forEach(m=>{if(archiveBelongsToModel(a,m.id))modelNames.push(m.name||'')});
- const hay=[a.title,a.fileName,a.date,a.note,a.titlePeriod,a.titleYear,a.printSeries,a.issueNumber,a.issuePeriod,archiveAreaLabel(a.archiveArea),...publicationCoverModelNames(a),...modelNames,...linked.map(x=>x.title||x.fileName||'')].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
+ const hay=[a.title,a.fileName,a.date,a.note,a.titlePeriod,a.titleYear,a.printSeries,a.issueNumber,a.issuePeriod,archiveAreaLabel(a.archiveArea),...publicationCoverModelNames(a),...publicationCoverPhotographerNames(a),...modelNames,...linked.map(x=>x.title||x.fileName||'')].filter(Boolean).join(' ').toLocaleLowerCase('de-DE');
  return hay.includes(q);
 }
 function managementArchive(type){
@@ -11224,6 +11243,7 @@ function renderArchive(){
    box.innerHTML=(seriesRows.length||unassignedPrintIssues.length)?`<div class="publicationManageList">${selectedPrintSeriesRows.map(({sr,pubs})=>{
      const issueCards=pubs.length?pubs.map(pub=>{
        const coverModels=publicationCoverModelNames(pub);
+       const coverPhotographers=publicationCoverPhotographerNames(pub);
        const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
        return `<div class="publicationIssueCard">
         <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
@@ -11233,6 +11253,7 @@ function renderArchive(){
          </button>
          <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
          ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
+         ${coverPhotographers.length?`<div class="small publicationManageModels">Cover-Foto: ${esc(coverPhotographers.join(' + '))}</div>`:''}
          <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
          <div class="itemActions publicationIssueActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
         </div>
@@ -11257,6 +11278,7 @@ function renderArchive(){
     </div>
     <div class="publicationSeriesBody">${unassignedPrintIssues.map(pub=>{
       const coverModels=publicationCoverModelNames(pub);
+      const coverPhotographers=publicationCoverPhotographerNames(pub);
       const issueLabel=String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe';
       return `<div class="publicationIssueCard">
        <button type="button" class="publicationManageCover" data-open-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button>
@@ -11266,6 +11288,7 @@ function renderArchive(){
         </button>
         <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
         ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
+        ${coverPhotographers.length?`<div class="small publicationManageModels">Cover-Foto: ${esc(coverPhotographers.join(' + '))}</div>`:''}
         <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
        </div>
@@ -12351,9 +12374,11 @@ function refreshArchiveForm(){
   document.getElementById('publicationIssueNumber').value='';
   document.getElementById('publicationIssuePeriod').value='';
   document.getElementById('publicationCoverModels').innerHTML=publicationCoverModelSelector([],false);
+  document.getElementById('publicationCoverPhotographers').innerHTML=publicationCoverPhotographerSelector([],false);
   document.getElementById('publicationStockStatus').value='none';
  }else{
   document.getElementById('publicationCoverModels').innerHTML='';
+  document.getElementById('publicationCoverPhotographers').innerHTML='';
  }
  renderMediaQueue();
 }
@@ -12503,7 +12528,8 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(!issuePeriod){toast('Bitte einen Zeitraum / eine Ausgabe eingeben.');return}
   const stockStatus=document.getElementById('publicationStockStatus').value;
   const coverModelIds=[...document.querySelectorAll('#publicationCoverModels .publicationCoverModelCheck:checked')].map(x=>x.value);
-  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeriesId,printSeries,issueNumber,coverModelIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea:printSeriesObj.archiveArea||archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
+  const coverPhotographerIds=[...document.querySelectorAll('#publicationCoverPhotographers .publicationCoverPhotographerCheck:checked')].map(x=>x.value);
+  const item={id:'A-'+Date.now(),type:'publication',title:'',date:issuePeriod,issuePeriod,printSeriesId,printSeries,issueNumber,coverModelIds,coverPhotographerIds,stockStatus,owned:stockStatus==='owned',hasPdf:false,archiveArea:printSeriesObj.archiveArea||archiveArea,note,links:[],credits:[],tags:[],at:new Date().toISOString()};
   item.title=publicationDisplayTitle(item);
   linkItem(item);
   finish();
