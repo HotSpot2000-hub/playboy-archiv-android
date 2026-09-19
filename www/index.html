@@ -10569,7 +10569,11 @@ async function deleteArchiveItem(id){
   if(issues.length){toast(`Reihe kann nicht gelöscht werden: ${issues.length} ${issues.length===1?'Ausgabe ist':'Ausgaben sind'} noch zugeordnet.`);return}
  }
  const label=a.title||a.fileName||'diesen Eintrag';
- if(!window.confirm(`${label} wirklich löschen?`))return;
+ const releaseWorksCount=a.type==='release'?[...linkedObjects(a.id,'gallery'),...linkedObjects(a.id,'video')].length:0;
+ const deleteQuestion=a.type==='release'
+  ?`${label} wirklich löschen?${releaseWorksCount?' Zugeordnete Galerien und Videos bleiben im Archiv und sind anschließend keinem Beitrag zugeordnet.':''}`
+  :`${label} wirklich löschen?`;
+ if(!window.confirm(deleteQuestion))return;
  if(a.type==='media'){
   (state.archive||[]).filter(pub=>pub&&pub.type==='publication').forEach(pub=>{
    if(pub.coverMediaId===a.id)pub.coverMediaId='';
@@ -11386,17 +11390,17 @@ function renderArchive(options={}){
     const releaseCards=unassignedReleases.map(release=>{
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
-     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Rubrik: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button></div></div>`;
+     return `<div class="archiveItem"><b>${esc(releaseDisplayTitle(release))}</b><div class="small" style="margin-top:7px">Veröffentlichungskontext: Nicht zugeordnet</div><div class="small" style="margin-top:4px">${galleries.length} ${galleries.length===1?'Galerie':'Galerien'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div><div class="itemActions"><button type="button" data-edit-archive="${esc(release.id)}">Beitrag bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(release.id)}">Löschen</button></div></div>`;
     }).join('');
     const workCards=unassignedWorks.map(work=>{
      const sh=linkedObjects(work.id,'shoot')[0]||null;
      const preview=work.type==='gallery'
       ?`<div class="seriesContributionPreview" data-release-gallery-cover="${esc(work.id)}"><div class="small">${galleryPhotoMedia(work).length?'Lade Vorschau …':'Noch kein Foto'}</div></div>`
       :(()=>{const media=videoMedia(work)[0]||null;return `<div class="seriesContributionPreview"${media?` data-media-id="${esc(media.id)}"`:''}><div class="small">${media?'Lade Video …':'Noch kein Video'}</div></div>`})();
-     return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(sh?shootingDisplayLabel(sh):'Shooting noch nicht bekannt')}</div><div class="seriesContributionLabel">${work.type==='gallery'?'Galerie':'Video'}</div><div class="seriesContributionMeta">Noch keinem Beitrag zugeordnet</div><div class="itemActions"><button type="button" data-edit-archive="${esc(work.id)}">${work.type==='gallery'?'Galerie':'Video'} bearbeiten</button></div></div></div>`;
+     return `<div class="seriesContributionCard">${preview}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(sh?shootingDisplayLabel(sh):'Shooting noch nicht bekannt')}</div><div class="seriesContributionLabel">${work.type==='gallery'?'Galerie':'Video'}</div><div class="seriesContributionMeta">Noch keinem Beitrag zugeordnet</div><div class="itemActions"><button type="button" data-edit-archive="${esc(work.id)}">${work.type==='gallery'?'Galerie':'Video'} bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(work.id)}">Löschen</button></div></div></div>`;
     }).join('');
-    const releaseSection=unassignedReleases.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Beiträge ohne Veröffentlichungskontext</div>${releaseCards}`:'';
-    const workSection=unassignedWorks.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Galerien / Videos ohne Beitrag</div>${workCards}`:'';
+    const releaseSection=unassignedReleases.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Beiträge ohne Veröffentlichungskontext · ${unassignedReleases.length}</div>${releaseCards}`:'';
+    const workSection=unassignedWorks.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Galerien / Videos ohne Beitrag · ${unassignedWorks.length}</div>${workCards}`:'';
     box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedCount} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small">Beiträge ohne Rubrik, Titel oder Printausgabe sowie Galerien und Videos, die noch keinem Beitrag zugeordnet sind. Dieser Arbeitsbereich ist keine bearbeitbare Rubrik.</div>${releaseSection}${workSection}${unassignedCount?'':'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge oder Werke.</div>'}</div></div>`;
    }else if(!selectedSeries){
     box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Rubriken.</div>';seriesWorkSelected.clear();
