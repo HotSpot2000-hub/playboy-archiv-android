@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-19
-Referenz-Commit: `658faf1029eb12718c136f27ca8578aab5dc054f`
+Referenz-Commit: `46bbf64db6c36036d159b8bf2b0c6b7566655d86`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,15 +18,17 @@ Referenz-Commit: `658faf1029eb12718c136f27ca8578aab5dc054f`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `658faf1029eb12718c136f27ca8578aab5dc054f`
-- Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
+- Aktuell berücksichtigter Code: `46bbf64db6c36036d159b8bf2b0c6b7566655d86`
+- Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
 - Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
 - Rubriken-Übertragung auf die Print-Designsprache einschließlich anschließendem Feinschliff gerätetest-bestätigt.
 - Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag`, die indirekte Shooting-Medienauflösung, der bereinigte Importworkflow sowie der neue Beitrags-Zuordnungsmodus sind gerätetest-bestätigt.
-- Keine automatische Legacy-Migration; kein Schema-Bump.
+- Direkte Rubrik-/Titel→Shooting-Altzuordnungen werden getrennt von echten Beiträgen als `Umstellung erforderlich` ausgewiesen. Eine einzeln bestätigte Migration kann daraus einen echten Beitrag mit ausgewählten freien Galerien/Videos erzeugen und entfernt erst anschließend genau diese Altzuordnung.
+- Importworkflow-Korrektur gerätetest-bestätigt: Bereits einem Shooting zugeordnete Fotos können zusätzlich einer Galerie zugeordnet werden; vollständig unzugeordnete Dateien können auch bei `Alle Models` zurück in die Inbox verschoben werden.
+- Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
 
@@ -62,7 +64,8 @@ Aktueller gerätetest-bestätigter Verwaltungsstand:
 - bei genau einem Shooting derselben exakten Modelkombination erscheint `Shooting`, ab mehreren `Shooting • Nr. 1`, `Shooting • Nr. 2`, ...;
 - Shootings bleiben eigenständige Entstehungskontexte ohne direkte Archivbereichszuordnung;
 - neue direkte Zuordnungen `Shooting → Rubrik/Titel` wurden einschließlich der dadurch funktionslosen Mehrfachauswahl entfernt;
-- vorhandene Legacy-Verknüpfungen zu Rubriken/Titeln bleiben lesbar und können weiterhin gelöst werden; keine Migration oder Löschung.
+- vorhandene Legacy-Verknüpfungen zu Rubriken/Titeln bleiben lesbar und werden in den jeweiligen Verwaltungsbereichen ausdrücklich als `Umstellung erforderlich` gekennzeichnet;
+- die kontrollierte Einzelmigration erzeugt nur mit mindestens einer ausgewählten, noch freien Galerie beziehungsweise einem freien Video einen echten Beitrag und entfernt erst nach erfolgreichem Speichern genau die betroffene Direktzuordnung;
 - Shootingvorschau und Medienanzahl berücksichtigen sowohl direkt verknüpfte Legacy-Dateien als auch Fotos/Videos aus den zugeordneten Galerie-/Videoobjekten;
 - identische Dateien werden dabei mit der bestehenden Medienidentität nur einmal gezählt;
 - die korrekte Anzeige für neue Testdaten mit `Datei → Galerie/Video → Shooting` ist auf dem Android-Gerät bestätigt.
@@ -97,9 +100,12 @@ Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `fb9ff5a5370f42684
 - bestehende Galerie- und Videozuordnungen wurden jeweils mit dem visuellen Umschalter geprüft; Shooting- und Beitragskarte zeigen die korrekten Beziehungen;
 - `Shooting zuordnen` wurde aus dem Import entfernt; der zugehörige Dialog und direkte Schreibcode sind nicht mehr vorhanden;
 - die Importtabs und `Alle auswählen` verwenden dieselbe Statuslogik und erkennen Zuordnungen zu Galerie, Video, Printausgabe sowie direkte Legacy-Shootingbeziehungen;
+- unter `Import → Zugeordnet` können Shooting-Fotos zusätzlich einer Galerie zugeordnet werden, ohne ihre Shootingbeziehung zu verlieren;
+- `Zur Inbox` funktioniert für vollständig unzugeordnete Dateien auch bei aktivem Filter `Alle Models`; Dateien mit irgendeiner bestehenden Shooting-, Galerie-, Video- oder Printzuordnung bleiben geschützt;
 - im Shootingdetail erscheint `Direkte Zuordnung lösen` ausschließlich bei einer tatsächlichen direkten Legacy-Datei↔Shooting-Beziehung; indirekte Dateien aus Galerie/Video erhalten keine wirkungslose Löseaktion;
 - zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
 - der gesamte aktuelle Galerie-/Video-Kartenfeinschliff ist auf dem Android-Gerät bestätigt.
+- Galeriezuordnung aus `Zugeordnet` und Rückgabe unzugeordneter Dateien in die Inbox sind auf dem Android-Gerät bestätigt.
 
 ## Beitrag (`release`)
 
@@ -142,6 +148,15 @@ Aktuell bestätigte Rubrik-Darstellung:
 
 Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
+Aktueller Migrationsstand:
+- echte Beiträge und direkte Rubrik→Shooting-Altzuordnungen werden in der Verwaltung getrennt dargestellt;
+- Altzuordnungen erscheinen als `Alte Direktzuordnungen` mit Zähler `Umstellung erforderlich` und gelten ausdrücklich nicht als Beiträge;
+- `In Beitrag überführen` bietet ausschließlich Galerien/Videos des betreffenden Shootings an, die noch keinem Beitrag zugeordnet sind;
+- die ausgewählten Werke werden einem neu erzeugten echten Beitrag der festen Rubrik zugeordnet; bereits anderweitig zugeordnete Werke werden nicht verändert;
+- ohne auswählbares Werk entsteht kein leerer Beitrag;
+- die alte Direktzuordnung wird erst nach erfolgreichem Speichern entfernt; bei Speicherfehler wird der Ausgangszustand wiederhergestellt;
+- der erste reale Durchlauf wurde mit einer Titelzuordnung und einer neu angelegten Galerie erfolgreich auf dem Android-Gerät getestet. Die Rubrikmigration verwendet denselben Schreibweg, soll aber weiterhin einzeln kontrolliert werden.
+
 ## Titel -- Etappe 5a funktional stabil, Beitragskarten gerätetest-bestätigt
 
 Hierarchie: **Titel → Beitrag → Galerie/Video**.
@@ -150,7 +165,7 @@ Vorhandene Titel-Tabs bleiben fachlich bestätigt: erste Ebene z. B. `Coed`, `Cy
 
 Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge zeigen Modelableitung aus Galerie/Video → Shooting, individuellen Namen/Nummer sowie die Medienanzahl. Direkte Galerie-/Video-Sprungbuttons werden wie bei Rubriken nicht angezeigt. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
 
-Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen bleiben unter `Bisher direkt zugeordnete Shootings` sichtbar und werden nicht automatisch migriert.
+Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen werden getrennt als `Alte Direktzuordnungen` / `Umstellung erforderlich` angezeigt und können einzeln kontrolliert in echte Beiträge überführt werden.
 
 Aktueller visueller Stand in Commit `8e627b13187d9f317634b2b7e6178883496f7ce0`:
 - der kompakte auberginefarbene Titelkopf mit mittiger Titel-/Zeitraumdarstellung sowie `Bearbeiten` und quadratischem `×` ist gerätetest-bestätigt;
@@ -158,9 +173,9 @@ Aktueller visueller Stand in Commit `8e627b13187d9f317634b2b7e6178883496f7ce0`:
 - die echte Titel-Beitragskarte entspricht optisch der bestätigten Rubrik-Beitragskarte und ist auf dem Android-Gerät bestätigt;
 - Medienvorschau und Medienanzahl bleiben sichtbar; die überflüssigen direkten Galerie-/Video-Sprungbuttons wurden wie bei Rubriken entfernt, ohne Beziehungen oder Medien zu verändern;
 - `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen;
-- der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet nun dieselbe 2:3-Vorschau, helle Kartenfarbe, Shooting-/Modelanzeige, Medienanzahl und kompakte Buttonfamilie wie der Shooting-Haupttab;
-- Darstellung, `Bearbeiten` und die Sicherheitsabfrage von `Lösen` sind separat auf dem Android-Gerät bestätigt;
-- sämtliche Legacy-Beziehungen blieben unverändert; beim Test wurde die Löseabfrage abgebrochen und keine Beziehung entfernt.
+- der frühere sichtbare Legacy-Bereich ist nun ein eindeutig gekennzeichneter Migrationsbereich; `Prüfen` öffnet das Shooting und `In Beitrag überführen` startet die kontrollierte Einzelmigration;
+- eine reale Titel-Altzuordnung wurde erfolgreich in einen echten Beitrag mit einer Galerie überführt; anschließend war genau diese Direktzuordnung entfernt;
+- die Galerie enthielt beim Test noch keine Fotos und zeigte deshalb fachlich korrekt `1 Galerie · 0 Videos` am Beitrag sowie `0 Fotos` an der Galerie.
 - Titel-Fachlogik, Beziehungen und Schema wurden nicht verändert.
 
 ## Titelhierarchien -- vorerst fachlich geklärt
@@ -276,8 +291,9 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
 - Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
-- Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen`, echte Beitragskarten und Legacy-Shootingkarten sind visuell angeglichen und gerätetest-bestätigt.
+- Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen`, echte Beitragskarten und die als Migrationsfälle gekennzeichneten Shootingkarten sind visuell angeglichen und gerätetest-bestätigt.
 - Shooting-Haupttab und der visuelle Galerie-/Video-Zuordnungswähler `Shooting | Beitrag` sind gerätetest-bestätigt.
+- Rubriken und Titel trennen echte Beiträge jetzt sichtbar von alten Direktzuordnungen. Die kontrollierte Einzelmigration und der ergänzte Importweg `Zugeordnet → Galerie zuordnen` sind gerätetest-bestätigt.
 
 ## Weitere stabile Funktionen
 
@@ -288,7 +304,8 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 ## Risiken / offene Punkte
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
-- Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
+- Direkte Rubrik-/Titel→Shooting-Altzuordnungen müssen weiterhin einzeln geprüft und migriert werden. Es gibt bewusst keine automatische Massenmigration.
+- Ein Teil der Altshootings besitzt noch keine freie Galerie beziehungsweise kein freies Video; daraus wird absichtlich noch kein leerer Beitrag erzeugt.
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
@@ -311,13 +328,14 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.**
+**Zuerst die Verwaltungsdaten vollständig und kontrolliert auf die neue Beitragslogik umstellen. Die Übersicht bleibt bis dahin ausdrücklich zurückgestellt.**
 
 Vorgehen:
-1. Zuerst den aktuellen Aufbau und die vorhandenen Filter der Übersicht mit der bestätigten Verwaltung vergleichen.
-2. Print, Titel, Rubriken, Medien und Shootings fachlich eindeutig darstellen, ohne `release` als konkurrierenden Hauptbereich einzuführen.
-3. Archivbereiche als bewussten Filter/Kontext berücksichtigen; keine automatische Zuordnung aus Datum oder Titelklasse ableiten.
-4. Die Umstellung in kleine, separat gerätetestbare Schritte teilen.
-5. Bestehende Verwaltungs-, Medien-, Shooting-, Print- und Profillogik unverändert halten.
+1. Altzuordnungen einzeln prüfen; bei Bedarf zuerst eine passende Galerie beziehungsweise ein Video anlegen und dem richtigen Shooting zuordnen.
+2. Bereits vorhandene Shooting-Fotos unter `Import → Zugeordnet` auswählen und bei Bedarf zusätzlich der Galerie zuordnen; die Shootingbeziehung bleibt erhalten.
+3. Anschließend `In Beitrag überführen` verwenden, nur die fachlich passenden freien Werke auswählen und genau einen Fall speichern.
+4. Nach jedem Fall prüfen: echter Beitrag sichtbar, Modelableitung korrekt, Galerie-/Videoanzahl korrekt, Vorschau nur bei tatsächlich enthaltenem Medium, genau eine Altzuordnung weniger.
+5. Rubriken und Titel vollständig bereinigen; danach auch die übrigen Verwaltungsbereiche auf verbliebene alte Schreib-/Leselogik prüfen.
+6. Erst wenn die Verwaltung ausschließlich sauber nachvollziehbare Beitragsdaten verwendet, die Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.
 
-Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
+Keine Massenmigration und keine automatische Zusammenfassung nur aufgrund gleicher Models oder Shootings.
