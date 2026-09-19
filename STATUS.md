@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-18
-Referenz-Commit: `708ab35dd0f5148af28dc2f4422d12e37a886754`
+Stand: 2026-09-19
+Referenz-Commit: `d6a3b718f93c8534aa72f421502bb92f9852ffef`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `708ab35dd0f5148af28dc2f4422d12e37a886754`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `708ab35dd0f5148af28dc2f4422d12e37a886754`
+- Aktuell berücksichtigter Code: `d6a3b718f93c8534aa72f421502bb92f9852ffef`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -66,6 +66,8 @@ Aktueller gerätetest-bestätigter Verwaltungsstand:
 - Shootingvorschau und Medienanzahl berücksichtigen sowohl direkt verknüpfte Legacy-Dateien als auch Fotos/Videos aus den zugeordneten Galerie-/Videoobjekten;
 - identische Dateien werden dabei mit der bestehenden Medienidentität nur einmal gezählt;
 - die korrekte Anzeige für neue Testdaten mit `Datei → Galerie/Video → Shooting` ist auf dem Android-Gerät bestätigt.
+- Im Verwaltungsbereich kann zwischen `Alle` und `Ohne Medien` gefiltert werden; `Ohne Medien` zeigt ausschließlich Shootings, deren berechnete Medienanzahl `0 Fotos · 0 Videos` beträgt.
+- Der Filter berücksichtigt damit direkte Legacy-Medien ebenso wie indirekte Medien aus Galerie/Video, ist mit Suche und Model-Filter kombinierbar und verändert keine Zuordnungen. Gerätetest bestätigt.
 
 ## Galerie / Video
 
@@ -224,20 +226,20 @@ Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbe
 - der Artikeleditor zeigt die konkrete Printausgabe;
 - saubere Printartikel besitzen keine zusätzliche Rubrik-/Titelwahl mehr, da die Ausgabe ihr eindeutiger Veröffentlichungskontext ist;
 - vorhandene ältere Zusatzverknüpfungen werden nicht automatisch gelöscht: Nur in diesem Fall erscheint einmalig ein gekennzeichneter Bereinigungsbereich, über den bewusst `Keine Zuordnung` gewählt werden kann; die Printzuordnung bleibt dabei erhalten;
-- Seiten/Fundstelle, ausdrücklich gespeicherte Models, Fotograf(en), optionaler Ort und ein deutscher Erklärungstext können beim Anlegen und Bearbeiten erfasst werden und bleiben vollständig vorausgewählt;
-- die Artikelkarte zeigt diese Heftangaben kompakt neben der festen 2:3-Vorschau;
+- Seiten/Fundstelle, ausdrücklich gespeicherte Models und ein deutscher Erklärungstext können beim Anlegen und Bearbeiten erfasst werden und bleiben vollständig vorausgewählt;
+- jeder Artikel kann genau einem vorhandenen Shooting zugeordnet werden; angeboten werden nur Shootings, die alle ausdrücklich gewählten Artikel-Models enthalten;
+- einzelne Fotos und Galerien werden Artikeln bewusst nicht direkt zugeordnet;
+- die feste 2:3-Vorschau sowie Fotograf(en), Ort und Entstehungsdatum werden ausschließlich aus dem zugeordneten Shooting abgeleitet;
+- die Artikelkarte zeigt die Seiten separat und darunter die kompakten Shootingdaten, z. B. `📷 Mizuno · Los Angeles` sowie `Shooting • Nr. 1 · 1995 (?)`;
 - der deutsche Erklärungstext ist standardmäßig auf vier Zeilen begrenzt und lässt sich durch Antippen vollständig ein- und wieder ausklappen;
-- Galerie-/Videozahlen werden im Printartikel nicht mehr angezeigt; die künftige Medienangabe soll nur die tatsächlich ausgewählten Fotos berücksichtigen;
-- ein optionales Entstehungsjahr steht direkt hinter der Seitenangabe, z. B. `Seiten: 1–7 · Entstehung: 1995 (?)`;
-- die Unsicherheit des Jahres wird ausdrücklich gespeichert und kann nach Bestätigung entfernt werden; die ursprüngliche, nicht automatisch interpretierte Quellenangabe, z. B. `95(1)`, bleibt separat erhalten;
-- Heftangaben werden durch eine spätere Shootingzuordnung höchstens vorgeschlagen und dürfen nicht automatisch überschrieben werden;
-- ein eingetragener Artikel ohne Foto und ohne ermittelbares Shooting erhält `🔎 Recherche`;
-- sobald mindestens ein Artikel Recherchebedarf hat, trägt auch die gesamte Ausgabe `🔎 Recherche` neben dem unabhängigen physischen Bestandsstatus;
-- die Recherchemarkierung verschwindet automatisch, sobald kein eingetragener Artikel mehr diese Bedingung erfüllt;
+- Galerie-/Videozahlen werden im Printartikel nicht angezeigt;
+- Printartikel und Printausgaben besitzen keine eigene Recherchemarkierung mehr; der Arbeitsbedarf wird zentral über `Shootings → Ohne Medien` ermittelt;
+- vorhandene ältere Artikel-Metadaten für Fotograf, Ort und Entstehungsjahr werden nicht automatisch in Shootings übertragen; automatische Mehrfachnutzung oder Datenüberschreibung findet nicht statt;
+- beim erneuten Speichern eines Artikels werden noch vorhandene direkte Foto-/Galeriezuordnungen am Artikel entfernt, die Mediendateien selbst bleiben erhalten;
 - Cover/PDF, Reihenlogik, Bestand und vorhandene Beziehungen blieben unverändert;
 - kein Schema-Bump und keine automatische Migration.
 
-Noch offen sind die gezielte Auswahl einzelner vorhandener Fotos, deren Vollbildanzeige sowie eine ausdrückliche Shootingzuordnung als Rückfall, wenn kein Foto vorliegt. Ebenfalls offen bleibt die eigene Erfassung von Cover-Fotograf(en) an der Ausgabe.
+Noch offen bleibt die eigene Erfassung von Cover-Fotograf(en) an der Ausgabe.
 
 ### Print-Design -- vollständig gerätetest-bestätigt
 
@@ -283,7 +285,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
-- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel** einschließlich der fachlichen Artikeldaten; gezielte Foto-/Shootingzuordnung und Cover-Fotograf(en) fehlen noch.
+- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten; Cover-Fotograf(en) fehlen noch.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -300,19 +302,18 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 - Model-Filter als Beitragsidentität;
 - Galerie-/Video-Nummer als sichtbare Veröffentlichungsidentität;
 - Cover/PDF als eigener Datei-Upload direkt im Printformular.
+- direkte Foto- oder Galeriezuordnung am Printartikel; Artikel referenzieren ausschließlich ein Shooting.
+- eigene Recherchemarkierungen an Printartikeln und Printausgaben; Recherchebedarf wird über Shootings ohne Medien sichtbar.
 
 ## Nächster Schritt
 
-**Etappe 6b.3: Printartikel mit Foto oder Shooting belegen.**
+**Verwaltung: globalen Model-Filter kontrolliert auf Mehrfachauswahl erweitern.**
 
 Vorgehen:
-1. Vorhandene Fotos gezielt und einzeln aus Galerien auswählbar machen; mehrere ausgewählte Fotos dürfen gespeichert werden, die Artikelkarte zeigt nur eine 2:3-Vorschau.
-2. Auf der Artikelkarte ausschließlich die Zahl der tatsächlich ausgewählten Fotos anzeigen; keine Galerie-/Videozählung zurückbringen.
-3. Antippen der Vorschau öffnet die ausgewählten Fotos in der bestehenden Vollbildansicht.
-4. Wenn kein Foto zugeordnet werden kann, eine ausdrückliche Shootingzuordnung als nachvollziehbaren Rückfall ermöglichen.
-5. Models, Fotograf, Ort und Entstehungsjahr aus dem gewählten Shooting höchstens vorschlagen; gespeicherte Heftangaben nicht automatisch überschreiben.
-6. `🔎 Recherche` nur dann auflösen, wenn mindestens ein ausgewähltes Foto oder ein ausdrücklich zugeordnetes Shooting vorhanden ist.
-7. Danach Cover-Fotograf(en) als eigene Ausgaben-/Coverangabe ergänzen und nicht automatisch auf Artikel übertragen.
-8. Bestehende Cover-/PDF-Zuordnungen, Reihenlogik, physische Bestandsdaten und gerätetest-bestätigte Artikelangaben unverändert halten.
+1. Mehrere Models im Verwaltungsfilter auswählbar machen.
+2. Bei mehreren ausgewählten Models nur Objekte anzeigen, die alle gewählten Models enthalten (UND-Verknüpfung).
+3. Zuerst die Verwaltungsbereiche mit echten Beispieldaten prüfen; keine fachlichen Modelbeziehungen verändern.
+4. Danach Cover-Fotograf(en) als eigene Ausgaben-/Coverangabe ergänzen und nicht automatisch auf Artikel übertragen.
+5. Bestehende Print-, Shooting-, Medien-, Beitrags- und Bereichslogik unverändert halten.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
