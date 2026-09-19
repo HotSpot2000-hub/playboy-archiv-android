@@ -11401,7 +11401,7 @@ function renderArchive(options={}){
     }).join('');
     const releaseSection=unassignedReleases.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Beiträge ohne Veröffentlichungskontext · ${unassignedReleases.length}</div>${releaseCards}`:'';
     const workSection=unassignedWorks.length?`<div class="small" style="font-weight:800;margin:10px 0 6px">Galerien / Videos ohne Beitrag · ${unassignedWorks.length}</div>${workCards}`:'';
-    box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedCount} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small">Beiträge ohne Rubrik, Titel oder Printausgabe sowie Galerien und Videos, die noch keinem Beitrag zugeordnet sind. Dieser Arbeitsbereich ist keine bearbeitbare Rubrik.</div>${releaseSection}${workSection}${unassignedCount?'':'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge oder Werke.</div>'}</div></div>`;
+    box.innerHTML=`<div class="unassignedSeriesWorkArea"><div class="seriesBrowseCardHead"><div class="seriesBrowseTitle"><div class="unassignedSeriesBadge">Arbeitsbereich</div><button type="button" class="seriesBrowseTitleButton" id="managementSeriesTitleButton" aria-expanded="false">Nicht zugeordnet · ${unassignedCount} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="managementSeriesPicker">${tabs}</div></div><div class="seriesBrowseCardBody"><div class="small">Eigenständige Beiträge ohne Rubrik, Titel oder Printausgabe sowie Galerien und Videos, die noch keinem Beitrag zugeordnet sind. Dieser Arbeitsbereich ersetzt die frühere separate Individuals-Logik und ist keine bearbeitbare Rubrik.</div><div class="seriesAddContributionRow" style="margin-top:10px"><button type="button" class="publicationCompactAction" data-add-unassigned-contribution>＋ Beitrag hinzufügen</button></div>${releaseSection}${workSection}${unassignedCount?'':'<div class="small" style="margin-top:8px;font-weight:700">Keine nicht zugeordneten Beiträge oder Werke.</div>'}</div></div>`;
    }else if(!selectedSeries){
     box.innerHTML='<div class="small" style="margin-top:10px">Noch keine passenden Rubriken.</div>';seriesWorkSelected.clear();
    }else{
@@ -11547,6 +11547,7 @@ function renderArchive(options={}){
  const managementSeriesTitleBtn=box.querySelector('#managementSeriesTitleButton'),managementSeriesPicker=box.querySelector('#managementSeriesPicker');
   if(managementSeriesTitleBtn&&managementSeriesPicker)managementSeriesTitleBtn.onclick=e=>{e.stopPropagation();const opening=managementSeriesPicker.classList.contains('hidden');managementSeriesPicker.classList.toggle('hidden');managementSeriesTitleBtn.setAttribute('aria-expanded',opening?'true':'false')};
 box.querySelectorAll('[data-add-series-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openSeriesContribution(x.dataset.addSeriesContribution)});
+box.querySelectorAll('[data-add-unassigned-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openUnassignedContribution()});
 box.querySelectorAll('[data-add-title-contribution]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openTitleContribution(x.dataset.addTitleContribution)});
 box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openArchiveEdit(x.dataset.editManagementSeries)}); box.querySelectorAll('[data-delete-management-series]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const id=x.dataset.deleteManagementSeries;const s=(state.archive||[]).find(a=>a.id===id&&a.type==='series');if(!s)return;const label=s.title||'Rubrik';if(!window.confirm(`${label} wirklich löschen? Die zugeordneten Shootings und Medien bleiben im Archiv.`))return;state.archive=(state.archive||[]).filter(a=>a.id!==id);state.archive.forEach(a=>{a.links=(a.links||[]).filter(link=>link!==id)});if(modelSeriesBrowseId===id)modelSeriesBrowseId='';if(globalSeriesBrowseId===id)globalSeriesBrowseId='';if(save()){render();renderArchive();toast('Rubrik gelöscht.')}});
   box.querySelectorAll('[data-model-series-tab]').forEach(x=>x.onclick=e=>{e.stopPropagation();modelSeriesBrowseId=x.dataset.modelSeriesTab;renderArchive()});
@@ -12265,12 +12266,14 @@ function nextSeriesContributionNumber(seriesId,modelId,excludeReleaseId=''){
 let seriesContributionCreateId='';
 let titleContributionCreateId='';
 let publicationContributionCreateId='';
+let unassignedContributionCreate=false;
 function openSeriesContribution(seriesId){
  const series=(state.archive||[]).find(a=>a.id===seriesId&&a.type==='series');
  if(!series)return;
  seriesContributionCreateId=seriesId;
  titleContributionCreateId='';
  publicationContributionCreateId='';
+ unassignedContributionCreate=false;
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
  document.getElementById('archiveTitle').value='';
@@ -12296,6 +12299,7 @@ function openTitleContribution(titleId){
  seriesContributionCreateId='';
  titleContributionCreateId=titleId;
  publicationContributionCreateId='';
+ unassignedContributionCreate=false;
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
  document.getElementById('archiveTitle').value='';
@@ -12321,6 +12325,7 @@ function openPublicationContribution(publicationId){
  seriesContributionCreateId='';
  titleContributionCreateId='';
  publicationContributionCreateId=publicationId;
+ unassignedContributionCreate=false;
  pendingMediaFiles=[];
  document.getElementById('archiveType').value='release';
  document.getElementById('archiveTitle').value='';
@@ -12334,6 +12339,30 @@ function openPublicationContribution(publicationId){
  document.getElementById('archivePaneTitle').textContent='Artikel hinzufügen';
  const modelHint=document.getElementById('archiveContributionModelHint');
  modelHint.textContent='Models, Fotograf, Ort und Entstehungsjahr werden als Heftangaben gespeichert. Eine spätere Shootingzuordnung darf diese Angaben nur vorschlagen, nicht überschreiben.';
+ modelHint.classList.remove('hidden');
+ document.getElementById('archiveTypeWrap').classList.add('hidden');
+ document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
+ document.getElementById('archiveContributionNumberWrap').classList.add('hidden');
+ openOverlay('archivePane');
+}
+function openUnassignedContribution(){
+ seriesContributionCreateId='';
+ titleContributionCreateId='';
+ publicationContributionCreateId='';
+ unassignedContributionCreate=true;
+ pendingMediaFiles=[];
+ document.getElementById('archiveType').value='release';
+ document.getElementById('archiveTitle').value='';
+ document.getElementById('archiveDate').value='';
+ document.getElementById('archiveNote').value='';
+ document.getElementById('archiveReleaseName').value='';
+ document.getElementById('archiveContributionNumber').value='';
+ document.getElementById('archiveShootLocation').value='';
+ document.getElementById('archiveFile').value='';
+ refreshArchiveForm();
+ document.getElementById('archivePaneTitle').textContent='Eigenständigen Beitrag hinzufügen';
+ const modelHint=document.getElementById('archiveContributionModelHint');
+ modelHint.textContent='Galerien und Videos werden anschließend über „Bearbeiten → Beitrag“ zugeordnet. Models folgen aus den zugehörigen Shootings.';
  modelHint.classList.remove('hidden');
  document.getElementById('archiveTypeWrap').classList.add('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.add('hidden');
@@ -12415,6 +12444,7 @@ function openArchive(){
  seriesContributionCreateId='';
  titleContributionCreateId='';
  publicationContributionCreateId='';
+ unassignedContributionCreate=false;
  pendingMediaFiles=[];
  document.getElementById('archiveTypeWrap').classList.remove('hidden');
  document.getElementById('archiveReleaseContextWrap').classList.remove('hidden');
@@ -12519,7 +12549,7 @@ document.getElementById('archiveFile').onchange=e=>{
 };
 document.getElementById('addMoreMediaBtn').onclick=()=>document.getElementById('archiveFile').click();
 
-document.getElementById('cancelArchiveBtn').onclick=()=>{seriesContributionCreateId='';titleContributionCreateId='';publicationContributionCreateId='';closeOverlay()};
+document.getElementById('cancelArchiveBtn').onclick=()=>{seriesContributionCreateId='';titleContributionCreateId='';publicationContributionCreateId='';unassignedContributionCreate=false;closeOverlay()};
 document.getElementById('saveArchiveBtn').onclick=async()=>{
  const type=document.getElementById('archiveType').value;
  const links=[];
@@ -12537,6 +12567,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
    seriesContributionCreateId='';
    titleContributionCreateId='';
    publicationContributionCreateId='';
+   unassignedContributionCreate=false;
    closeOverlay();render();renderArchive();
    toast(count>1?`${count} Medien importiert.`:'Archiv-Eintrag gespeichert.');
  }
@@ -12575,8 +12606,9 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
  if(type==='release'){
   const targetPublicationId=publicationContributionCreateId;
   const name=document.getElementById('archiveReleaseName').value.trim();
-  const seriesId=seriesContributionCreateId||(!titleContributionCreateId&&!publicationContributionCreateId?document.getElementById('archiveReleaseSeries').value:'');
-  const titleId=titleContributionCreateId||(!seriesContributionCreateId&&!publicationContributionCreateId?document.getElementById('archiveReleaseTitle').value:'');
+  if(unassignedContributionCreate&&!name){toast('Bitte einen Namen für den eigenständigen Beitrag eingeben.');return}
+  const seriesId=seriesContributionCreateId||(!titleContributionCreateId&&!publicationContributionCreateId&&!unassignedContributionCreate?document.getElementById('archiveReleaseSeries').value:'');
+  const titleId=titleContributionCreateId||(!seriesContributionCreateId&&!publicationContributionCreateId&&!unassignedContributionCreate?document.getElementById('archiveReleaseTitle').value:'');
   if(seriesId)links.push(seriesId);if(titleId)links.push(titleId);
   if(publicationContributionCreateId)links.push(publicationContributionCreateId);
   const enteredNumber=Number(document.getElementById('archiveContributionNumber').value)||0;
@@ -12591,7 +12623,7 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
   if(contributionNumber>0)item.contributionNumber=contributionNumber;
   linkItem(item);
   item.title=releaseDisplayTitle(item);
-  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':targetPublicationId?'publication':type);
+  finish(1,seriesContributionCreateId?'series':titleContributionCreateId?'title':targetPublicationId?'publication':unassignedContributionCreate?'series':type);
   if(targetPublicationId)openPublicationDetail(targetPublicationId);
   return;
  }
