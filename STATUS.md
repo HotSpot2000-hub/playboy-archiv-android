@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-19
-Referenz-Commit: `d6a3b718f93c8534aa72f421502bb92f9852ffef`
+Referenz-Commit: `ff7fda772782d6c863b63de51060716f91413657`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `d6a3b718f93c8534aa72f421502bb92f9852ffef`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `d6a3b718f93c8534aa72f421502bb92f9852ffef`
+- Aktuell berücksichtigter Code: `ff7fda772782d6c863b63de51060716f91413657`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der separate Legacy-Shootingbereich sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -262,7 +262,10 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 
 ## Verwaltung -- aktueller UI-Stand
 
-- Model-Filter ganz oben.
+- Model-Filter ganz oben; mehrere Models können nacheinander ausgewählt und als einzeln entfernbare Chips angezeigt werden.
+- Mehrfachauswahl verwendet eine echte UND-Verknüpfung: Ein gemeinsames Shooting beziehungsweise ein gemeinsamer Beitrag muss alle gewählten Models enthalten; getrennte Einzelvorkommen gelten nicht als gemeinsamer Treffer.
+- Die UND-Filterung gilt für Print, Titel, Rubriken, Medien, Shootings und Import einschließlich ihrer inneren Karten und Container.
+- Model-Mehrfachfilter, Suche, Archivbereich und `Shootings → Ohne Medien` bleiben miteinander kombinierbar. Auswahl, Entfernen und Ergebnisfilterung sind auf dem Android-Gerät bestätigt.
 - Archivbereich darunter als Auswahlfeld.
 - Haupttabs horizontal: `Print`, `Titel`, `Rubriken`, `Medien`, `Shootings`, `Import`.
 - Der Haupttab `Medien` zeigt oben die feste Bereichsüberschrift und darunter den auberginefarbenen Auswahlkopf `Galerien` / `Videos`; `Import` bleibt fachlich und funktional getrennt. Diese Struktur ist gerätetest-bestätigt.
@@ -307,13 +310,13 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Verwaltung: globalen Model-Filter kontrolliert auf Mehrfachauswahl erweitern.**
+**Print: Cover-Fotograf(en) als eigene Angabe der Ausgabe ergänzen.**
 
 Vorgehen:
-1. Mehrere Models im Verwaltungsfilter auswählbar machen.
-2. Bei mehreren ausgewählten Models nur Objekte anzeigen, die alle gewählten Models enthalten (UND-Verknüpfung).
-3. Zuerst die Verwaltungsbereiche mit echten Beispieldaten prüfen; keine fachlichen Modelbeziehungen verändern.
-4. Danach Cover-Fotograf(en) als eigene Ausgaben-/Coverangabe ergänzen und nicht automatisch auf Artikel übertragen.
-5. Bestehende Print-, Shooting-, Medien-, Beitrags- und Bereichslogik unverändert halten.
+1. Cover-Fotograf(en) direkt an der konkreten Printausgabe erfassen und bearbeiten können.
+2. Die Angabe als Cover-Metadatum behandeln; daraus weder Artikel noch Shooting erzeugen.
+3. Cover-Fotograf(en) nicht automatisch auf Artikel oder deren Shootings übertragen.
+4. Bestehende Cover-/PDF-Zuordnungen, Bestandsstatus, Cover-Models und Artikel unverändert halten.
+5. Danach die Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.
 
 Print, Rubriken, Titelbeiträge, Medienkarten, Shootingkarten und die visuellen Zuordnungswähler bleiben die gerätetest-bestätigte Referenz.
