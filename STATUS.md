@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-19
-Referenz-Commit: `46bbf64db6c36036d159b8bf2b0c6b7566655d86`
+Referenz-Commit: `a963f1f176653bc43158ccf67d19c07418808997`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `46bbf64db6c36036d159b8bf2b0c6b7566655d86`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `46bbf64db6c36036d159b8bf2b0c6b7566655d86`
+- Aktuell berücksichtigter Code: `a963f1f176653bc43158ccf67d19c07418808997`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -28,6 +28,7 @@ Referenz-Commit: `46bbf64db6c36036d159b8bf2b0c6b7566655d86`
 - Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag`, die indirekte Shooting-Medienauflösung, der bereinigte Importworkflow sowie der neue Beitrags-Zuordnungsmodus sind gerätetest-bestätigt.
 - Direkte Rubrik-/Titel→Shooting-Altzuordnungen werden getrennt von echten Beiträgen als `Umstellung erforderlich` ausgewiesen. Eine einzeln bestätigte Migration kann daraus einen echten Beitrag mit ausgewählten freien Galerien/Videos erzeugen und entfernt erst anschließend genau diese Altzuordnung.
 - Importworkflow-Korrektur gerätetest-bestätigt: Bereits einem Shooting zugeordnete Fotos können zusätzlich einer Galerie zugeordnet werden; vollständig unzugeordnete Dateien können auch bei `Alle Models` zurück in die Inbox verschoben werden.
+- Galerie-/Videodarstellung in der Verwaltung gerätetest-bestätigt: natürliche Dateisortierung, erste Hochformataufnahme als Vorschau, separate reine Foto-Galeriekarte, einzelne Fotos daraus im Fullscreen und Videos ausschließlich über separate ▶︎-Aktionen.
 - Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -106,6 +107,11 @@ Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `fb9ff5a5370f42684
 - zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
 - der gesamte aktuelle Galerie-/Video-Kartenfeinschliff ist auf dem Android-Gerät bestätigt.
 - Galeriezuordnung aus `Zugeordnet` und Rückgabe unzugeordneter Dateien in die Inbox sind auf dem Android-Gerät bestätigt.
+- Galerie- und Videodateien werden nach Dateinamen natürlich sortiert (`1, 2, 10` statt `1, 10, 2`).
+- Die Verwaltung verwendet für Galerie-/Beitragsvorschauen die erste vorhandene Hochformataufnahme; das gespeicherte Medium und seine Reihenfolge werden dadurch nicht verändert.
+- Antippen einer Verwaltungsvorschau öffnet zuerst eine eigene Galeriekarte mit ausschließlich allen Fotos dieser Galerie; ein einzelnes Foto öffnet anschließend die vorhandene Fullscreen-Galerie.
+- Videos werden nicht in der Galeriekarte angezeigt. Sie stehen auf der Beitragskarte als separate ▶︎-Aktionen bereit und öffnen direkt den Fullscreen-Videoplayer.
+- `Diashow`, `Alle` und `×` wurden in der immersiven Fullscreen-Fotoansicht näher an den oberen Rand gesetzt; auch das Video-`×` verwendet die neue obere Position. Gerätetest bestätigt.
 
 ## Beitrag (`release`)
 
