@@ -1357,6 +1357,9 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 
 .seriesBrowseCardBody .seriesBrowseModel{padding:0 0 12px;border-top:0}
 .seriesBrowseCardBody .seriesBrowseModel+.seriesBrowseModel{padding-top:12px;border-top:1px solid var(--line)}
+.managementContributionModelGroup>.seriesBrowseModelName{cursor:default}
+.managementContributionCards{display:grid;gap:10px}
+.managementContributionCards .seriesContributionCard{margin-top:0}
 .seriesBrowseCardBody .shootingGridStandalone{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
 .seriesBrowseCard .shootingCardStandalone{display:grid!important;grid-template-columns:minmax(118px,36%) minmax(0,1fr)!important;grid-template-rows:1fr auto!important;align-items:stretch;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg);min-height:178px}
 .seriesBrowseCard .shootingCardStandalone .shootingCover{grid-column:1;grid-row:1 / span 2;width:100%;height:100%!important;min-height:178px!important;aspect-ratio:auto!important;border-right:1px solid var(--line)}
@@ -11384,13 +11387,13 @@ function renderArchive(options={}){
    const tabs=unassignedTab+modelSeries.map(sr=>`<button type="button" class="${sr.id===modelSeriesBrowseId?'active':''}" data-model-series-tab="${esc(sr.id)}">${esc(sr.title||'Rubrik ohne Titel')}</button>`).join('');
    if(modelSeriesBrowseId===UNASSIGNED_SERIES_BROWSE_ID){
     seriesWorkSelected.clear();
-    const releaseCards=unassignedReleases.map(release=>{
+    const releaseCards=managementContributionGroups(unassignedReleases,release=>{
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
      const parts=seriesContributionDisplayParts(release);
      const photoCount=releaseGalleryPhotoCount(galleries);
-     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(release.id)}">Löschen</button></div></div></div>`;
-    }).join('');
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody">${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-delete-archive="${esc(release.id)}">Löschen</button></div></div></div>`;
+    });
     const workCards=unassignedWorks.map(work=>{
      const sh=linkedObjects(work.id,'shoot')[0]||null;
      const preview=work.type==='gallery'
@@ -11408,13 +11411,13 @@ function renderArchive(options={}){
     const managementMids=managementSelectedModelIds();
     const managementMid=managementMids[0]||'';
     const seriesReleases=managementArchive('release').filter(release=>linkedObjects(release.id,'series').some(sr=>sr.id===selectedSeries.id)).slice().sort((a,b)=>releaseDisplayTitle(a).localeCompare(releaseDisplayTitle(b),'de',{sensitivity:'base'}));
-    const releaseCards=seriesReleases.map(release=>{
+    const releaseCards=managementContributionGroups(seriesReleases,release=>{
      const galleries=releaseWorks(release,'gallery');
      const videos=releaseWorks(release,'video');
      const parts=seriesContributionDisplayParts(release);
      const photoCount=releaseGalleryPhotoCount(galleries);
-     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div><div class="seriesContributionLabel">${esc(parts.label)}</div><div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
-    }).join('');
+     return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody">${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-series-contribution="${esc(release.id)}" data-series-id="${esc(selectedSeries.id)}">Lösen</button></div></div></div>`;
+    });
     const legacyShoots=seriesShootingsAll(selectedSeries).filter(sh=>managementMids.every(mid=>shootingModelIds(sh).includes(mid))&&managementMatchesSearch(sh)).slice().sort(sortShootingsNatural);
     const migrationHtml=legacyShoots.length?`<div class="titleLegacyShootings"><div class="legacyMigrationHead"><div class="legacyMigrationLabel">Alte Direktzuordnungen</div><span class="legacyMigrationBadge">${legacyShoots.length} · Umstellung erforderlich</span></div><p class="legacyMigrationHelp">Diese Shootings sind noch direkt mit der Rubrik verbunden und noch keine Beiträge. Hier wird noch nichts automatisch geändert.</p><div class="shootingGridStandalone managementShootingsList">${legacyShoots.map(sh=>{
       const parts=shootingPreviewParts(sh);
@@ -12245,6 +12248,19 @@ function seriesContributionDisplayTitle(release){
 }
 function releaseGalleryPhotoCount(galleries){
  return new Set(galleries.flatMap(gallery=>galleryPhotoMedia(gallery)).map(photo=>photo.id)).size;
+}
+function managementContributionGroups(releases,renderCard){
+ const groups=new Map();
+ releases.forEach(release=>{
+  const parts=seriesContributionDisplayParts(release);
+  const key=releaseModelKey(release)||'__without_model__';
+  if(!groups.has(key))groups.set(key,{label:parts.model,releases:[]});
+  groups.get(key).releases.push(release);
+ });
+ return [...groups.values()]
+  .sort((a,b)=>a.label.localeCompare(b.label,'de',{numeric:true,sensitivity:'base'}))
+  .map(group=>`<div class="seriesBrowseModel managementContributionModelGroup"><div class="seriesBrowseModelName">${esc(group.label)}</div><div class="managementContributionCards">${group.releases.map(renderCard).join('')}</div></div>`)
+  .join('');
 }
 function seriesContributionPreviewHtml(release,galleries,videos,openGallery=false){
  const leadGallery=galleries[0]||null;
