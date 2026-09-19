@@ -10838,13 +10838,15 @@ function renderManagementTools(){
 function modelArchive(type){
  return managementArchive(type);
 }
-function mediaWorkflowStatus(media){
- if(media.workflowStatus==='keep')return 'keep';
- const assigned=(media.links||[]).some(id=>{
+function mediaHasArchiveAssignment(media){
+ return (media?.links||[]).some(id=>{
   const target=(state.archive||[]).find(item=>item.id===id);
   return target&&['shoot','gallery','video','publication'].includes(target.type);
  });
- return assigned?'assigned':'new';
+}
+function mediaWorkflowStatus(media){
+ if(media.workflowStatus==='keep')return 'keep';
+ return mediaHasArchiveAssignment(media)?'assigned':'new';
 }
 function archiveName(id){const x=(state.archive||[]).find(a=>a.id===id);return x?x.title:''}
 
@@ -11667,7 +11669,7 @@ function assignSelectedMediaToGallery(galleryId){
  toast(changed===1?'Foto der Galerie zugeordnet.':`${changed} Fotos der Galerie zugeordnet.`);
 }
 document.getElementById('mediaWorkAssignGalleryBtn').onclick=()=>{
- if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
+ if(!mediaWorkSelected.size||!['new','assigned'].includes(mediaWorkTab))return;
  const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
  if(selected.some(a=>!String(a.mimeType||'').toLowerCase().startsWith('image/'))){
   toast('Bitte für die Galerie-Zuordnung nur Fotos auswählen.');
@@ -11725,7 +11727,7 @@ function assignSelectedMediaToVideo(videoId){
  toast('Videodatei dem Video zugeordnet.');
 }
 document.getElementById('mediaWorkAssignVideoBtn').onclick=()=>{
- if(!mediaWorkSelected.size||mediaWorkTab!=='new')return;
+ if(!mediaWorkSelected.size||!['new','assigned'].includes(mediaWorkTab))return;
  const selected=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
  if(selected.length!==1||!String(selected[0].mimeType||'').toLowerCase().startsWith('video/')){
   toast('Bitte genau eine Videodatei auswählen.');
@@ -11827,7 +11829,9 @@ document.getElementById('mediaWorkClearBtn').onclick=()=>{mediaWorkSelected.clea
 document.getElementById('mediaWorkReturnInboxBtn').onclick=async()=>{
  if(!mediaWorkSelected.size)return;
  if(mediaWorkTab==='assigned'){toast('Zugeordnete Medien bleiben vorerst im Archiv.');return}
- const selected=(state.archive||[]).filter(a=>a.type==='media'&&a.modelId===state.currentModelId&&mediaWorkSelected.has(a.id));
+ const chosen=(state.archive||[]).filter(a=>a.type==='media'&&mediaWorkSelected.has(a.id));
+ if(chosen.some(mediaHasArchiveAssignment)){toast('Nur vollständig unzugeordnete Dateien können zurück in die Inbox verschoben werden.');return}
+ const selected=chosen.filter(a=>!mediaHasArchiveAssignment(a));
  if(!selected.length)return;
  const oldArchive=[...(state.archive||[])];
  const oldInbox=inboxLoad();
