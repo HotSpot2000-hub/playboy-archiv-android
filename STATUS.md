@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-19
-Referenz-Commit: `57798195356d10e8e3c215fd8530a68da9179fb4`
+Stand: 2026-09-20
+Referenz-Commit: `ad2846817d337c0b82796ddcf131dd60b8f32d58`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `57798195356d10e8e3c215fd8530a68da9179fb4`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `57798195356d10e8e3c215fd8530a68da9179fb4`
+- Aktuell berücksichtigter Code: `ad2846817d337c0b82796ddcf131dd60b8f32d58`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -31,8 +31,10 @@ Referenz-Commit: `57798195356d10e8e3c215fd8530a68da9179fb4`
 - Galerie-/Videodarstellung in der Verwaltung gerätetest-bestätigt: natürliche Dateisortierung, erste Hochformataufnahme als Vorschau, separate reine Foto-Galeriekarte, einzelne Fotos daraus im Fullscreen und Videos ausschließlich über separate ▶︎-Aktionen.
 - Der Rubrik-Arbeitsbereich `Nicht zugeordnet` zählt Beiträge nur noch dann, wenn weder Rubrik noch Titel noch Printausgabe verknüpft ist; Titelbeiträge und Printartikel werden nicht mehr fälschlich erfasst.
 - Beiträge ohne Veröffentlichungskontext und Galerien/Videos ohne Beitrag besitzen getrennte Teilzähler und können nach Sicherheitsabfrage einzeln gelöscht werden. Elf tatsächlich verwaiste Beiträge wurden damit auf dem Gerät identifiziert und bewusst entfernt.
-- `Nicht zugeordnet` ersetzt zugleich die frühere separate Individuals-Logik für fachlich gültige eigenständige Beiträge ohne Rubrik, Titel oder Printausgabe. Solche Beiträge können direkt dort mit verpflichtendem Namen angelegt werden; Galerien und Videos lassen sich ihnen anschließend regulär zuordnen.
+- `Nicht zugeordnet` ersetzt zugleich die frühere separate Individuals-Logik für fachlich gültige eigenständige Beiträge ohne Rubrik, Titel oder Printausgabe. Solche Beiträge können direkt dort mit optionalem Namen angelegt werden; Galerien und Videos lassen sich ihnen anschließend regulär zuordnen.
 - Der reale Testfall `Bed Time` wurde als eigenständiger Beitrag angelegt und erfolgreich mit zwei Videos desselben Shootings verbunden. Er bleibt bewusst ohne Veröffentlichungskontext und wird nicht als verwaister Datensatz behandelt.
+- Ehemalige Individuals besitzen nun einen eigenen kontrollierten Migrationsweg: freie Galerien/Videos werden pro Shooting unter `Bisherige Individuals` gebündelt und über `In Beitrag überführen` einem neuen eigenständigen Beitrag zugeordnet, ohne Shooting, Werke oder Dateien zu kopieren.
+- Der reale Fall April Katherine wurde mit leerem individuellen Namen erfolgreich überführt: Die vorhandene Galerie wurde übernommen, danach erschien genau ein eigenständiger Beitrag mit `34 Fotos · 0 Videos`.
 - Der Verwaltungsumbau ist funktional vorerst abgeschlossen. Die noch ausstehenden Arbeiten betreffen die kontrollierte Überführung der tatsächlichen Archivdaten, nicht eine weitere parallele Zuordnungslogik.
 - Keine automatische Massenmigration; kein Schema-Bump.
 
@@ -313,6 +315,9 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - `Rubriken → Nicht zugeordnet` ist jetzt ein präziser Arbeitsbereich: Beiträge benötigen dort das vollständige Fehlen von Rubrik, Titel und Printausgabe; Galerien/Videos werden separat nur ohne Beitrag gezählt.
 - Beide Gruppen zeigen eigene Anzahlen und besitzen manuelle Löschaktionen. Beim Löschen eines Beitrags bleiben Galerien, Videos und Mediendateien erhalten und werden lediglich wieder als unzugeordnet sichtbar. Anzeige, Sicherheitsabfrage und Löschung wurden auf dem Android-Gerät bestätigt.
 - Eigenständige Beiträge können unter `Nicht zugeordnet` direkt angelegt werden. Die reguläre Medien→Beitrag-Zuordnung bündelt anschließend auch mehrere Videos zu einem nachvollziehbaren Beitrag, ohne eine künstliche Rubrik zu erzeugen.
+- Noch nicht überführte ehemalige Individuals erscheinen dort shootingweise als `Bisherige Individuals · Umstellung erforderlich`. `Prüfen` öffnet das Shooting; `In Beitrag überführen` bietet ausschließlich seine noch freien Galerien/Videos an und wählt sie kontrollierbar voraus.
+- Beim Speichern wird nur der fehlende kontextlose Beitrag ergänzt. Shooting, Galerie, Video und Mediendateien bleiben unverändert; bereits einem Beitrag zugeordnete Werke werden ausgeschlossen. Ein leerer Beitrag ohne ausgewähltes Werk wird verhindert.
+- Ein individueller Name ist auch für eigenständige Beiträge optional. Ein einzelner unbenannter Beitrag derselben Modelkombination bleibt ohne Nummer; mehrere unbenannte Beiträge erhalten automatisch `Nr. 1`, `Nr. 2`, ... .
 - Rubrik-, Titel- und eigenständige Beitragskarten zeigen `Fotos · Videos`; reine Videobeiträge besitzen eine 2:3-Videovorschau. Shootingkarten wählen das erste natürlich sortierte Hochformatfoto auch dann, wenn die Datei nur über `Foto → Galerie → Shooting` indirekt verbunden ist.
 - Rubrikbeiträge sind nach Model beziehungsweise exakter Modelkombination gruppiert; die Karte wiederholt den Modelnamen nicht. Die vorhandene Regel „ein Beitrag ohne Nummer, mehrere Beiträge als Nr. 1, Nr. 2, ...“ bleibt bestehen.
 
@@ -330,6 +335,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
 - Die Verwaltungsfunktionen sind vorerst vollständig umgebaut; die vorhandenen Archivdaten müssen dennoch weiterhin Fall für Fall überführt und kontrolliert werden.
+- Die Individuals-Migration ist gerätetest-bestätigt; weitere frühere Individuals sollen denselben kontrollierten Einzelweg verwenden und nicht manuell als Kopien neu aufgebaut werden.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
 
@@ -353,9 +359,9 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 **Die Verwaltungsfunktionen sind vorerst abgeschlossen. Jetzt die Verwaltungsdaten vollständig und kontrolliert auf die neue Beitragslogik umstellen. Die Übersicht bleibt bis dahin ausdrücklich zurückgestellt.**
 
 Vorgehen:
-1. Altzuordnungen einzeln prüfen; bei Bedarf zuerst eine passende Galerie beziehungsweise ein Video anlegen und dem richtigen Shooting zuordnen.
+1. Altzuordnungen und `Bisherige Individuals` einzeln prüfen; bei Bedarf zuerst eine passende Galerie beziehungsweise ein Video anlegen und dem richtigen Shooting zuordnen.
 2. Bereits vorhandene Shooting-Fotos unter `Import → Zugeordnet` auswählen und bei Bedarf zusätzlich der Galerie zuordnen; die Shootingbeziehung bleibt erhalten.
-3. Anschließend `In Beitrag überführen` verwenden, nur die fachlich passenden freien Werke auswählen und genau einen Fall speichern.
+3. Anschließend `In Beitrag überführen` verwenden, nur die fachlich passenden freien Werke auswählen und genau einen Fall speichern. Bei ehemaligen Individuals bleibt der Name optional und es wird keine Shooting-Verknüpfung entfernt.
 4. Nach jedem Fall prüfen: echter Beitrag sichtbar, Modelableitung korrekt, Galerie-/Videoanzahl korrekt, Vorschau nur bei tatsächlich enthaltenem Medium, genau eine Altzuordnung weniger.
 5. Rubriken und Titel vollständig bereinigen; danach auch die übrigen Verwaltungsbereiche auf verbliebene alte Schreib-/Leselogik prüfen.
 6. Erst wenn die Verwaltung ausschließlich sauber nachvollziehbare Beitragsdaten verwendet, die Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.
