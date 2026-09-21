@@ -1768,6 +1768,15 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   font-size:11px;
   cursor:pointer;
 }
+.shootingMediaHead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.shootingMediaHead h3{margin:0}
+.shootingMediaHeadActions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.shootingMediaBulkUnlink{margin:0;border:1px solid #d9b2ae;background:#fff;border-radius:999px;padding:6px 9px;font-size:11px}
+.shootingMediaTransfer{margin:0;border:1px solid #87aaa6;background:#fff;color:#176c66;border-radius:999px;padding:6px 9px;font:inherit;font-size:11px;cursor:pointer}
+.directMediaTransferIntro{margin:0 0 14px;color:#666;line-height:1.35}
+.directMediaTransferSection{margin:16px 0}
+.directMediaTransferSection h3{margin:0 0 8px}
+.directMediaTransferChoices{display:grid;gap:8px}
 
 .globalModelBodyStats{
   display:flex;
@@ -2739,6 +2748,12 @@ body.archiveFilterOpen .bottom{display:none!important}
 <div id="shootingDetailPane" class="hidden">
  <div id="shootingDetailContent"></div>
  <button class="btn" id="closeShootingDetail">Zurück</button>
+</div>
+
+<div id="directMediaTransferPane" class="hidden">
+ <div id="directMediaTransferContent"></div>
+ <button class="btn primary" id="saveDirectMediaTransferBtn">Medien überführen</button>
+ <button class="btn" id="cancelDirectMediaTransferBtn">Abbrechen</button>
 </div>
 
 <div id="seriesDetailPane" class="hidden">
@@ -5018,7 +5033,7 @@ document.getElementById('profileRatingIncomplete').textContent=
  renderArchive();
 }
 function openOverlay(pane){
- ['timelinePane','researchPane','researchImportPane','factPromotionPane','bioDraftPane','personPane','publicationDetailPane','shootingDetailPane','archiveEditPane','seriesDetailPane','galleryDetailPane','legacyMigrationPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+ ['timelinePane','researchPane','researchImportPane','factPromotionPane','bioDraftPane','personPane','publicationDetailPane','shootingDetailPane','directMediaTransferPane','archiveEditPane','seriesDetailPane','galleryDetailPane','legacyMigrationPane','archivePane','profileEditPane','evidenceFormPane','revisionPane','modelPane','plusPane'].forEach(id=>document.getElementById(id).classList.add('hidden'));
  document.getElementById(pane).classList.remove('hidden');
  document.getElementById('overlay').classList.add('open');
 }
@@ -12819,6 +12834,60 @@ function shootingHasDirectMediaLink(shoot,mediaId){
  const media=(state.archive||[]).find(item=>item.id===mediaId&&item.type==='media');
  return Boolean(media&&((shoot.links||[]).includes(mediaId)||(media.links||[]).includes(shoot.id)));
 }
+function shootingDirectMedia(shoot){
+ return (state.archive||[]).filter(item=>item&&item.type==='media'&&((shoot.links||[]).includes(item.id)||(item.links||[]).includes(shoot.id))).sort(mediaNaturalCompare);
+}
+
+let directMediaTransferState=null;
+function directMediaTransferChoiceHtml(work,kind,selected){
+ const amount=kind==='gallery'?galleryPhotoMedia(work).length:videoMedia(work).length;
+ const singular=kind==='gallery'?'Foto':'Video';
+ const plural=kind==='gallery'?'Fotos':'Videos';
+ return `<button type="button" class="workReleaseChoice ${selected?'selected':''}" data-direct-media-target="${esc(work.id)}" data-direct-media-kind="${esc(kind)}">${legacyMigrationWorkPreviewHtml(work)}<span class="workReleaseChoiceBody"><span class="workReleaseChoiceModel">${esc(managementWorkDisplayName(work))}</span><span class="workReleaseChoiceLabel">${esc(workDisplayLabel(work))}</span><span class="workReleaseChoiceMeta">${amount} ${amount===1?singular:plural}</span></span><span class="workReleaseChoiceMark" aria-hidden="true"></span></button>`;
+}
+function updateDirectMediaTransferSaveState(){
+ const button=document.getElementById('saveDirectMediaTransferBtn');
+ if(!button||!directMediaTransferState)return;
+ button.disabled=Boolean((directMediaTransferState.photoIds.length&&!directMediaTransferState.galleryId)||(directMediaTransferState.videoIds.length&&!directMediaTransferState.videoId));
+}
+function openDirectMediaTransfer(shootId){
+ const shoot=(state.archive||[]).find(item=>item&&item.id===shootId&&item.type==='shoot');
+ if(!shoot)return;
+ const direct=shootingDirectMedia(shoot);
+ const photos=direct.filter(item=>!(item.mimeType||'').startsWith('video/'));
+ const videos=direct.filter(item=>(item.mimeType||'').startsWith('video/'));
+ if(!direct.length){toast('Keine direkte Medienzuordnung mehr vorhanden.');openShootingDetail(shoot.id,returnSeriesId,returnShootingContext);return}
+ const galleries=relatedObjects(shoot.id,'gallery').sort((a,b)=>managementWorkDisplayName(a).localeCompare(managementWorkDisplayName(b),'de',{numeric:true,sensitivity:'base'}));
+ const videoWorks=relatedObjects(shoot.id,'video').sort((a,b)=>managementWorkDisplayName(a).localeCompare(managementWorkDisplayName(b),'de',{numeric:true,sensitivity:'base'}));
+ const missing=[];
+ if(photos.length&&!galleries.length)missing.push('eine Galerie für die Fotos');
+ if(videos.length&&!videoWorks.length)missing.push('ein Video-Ziel für die Videos');
+ if(missing.length){alert(`Die Überführung wurde abgebrochen. Lege zuerst ${missing.join(' und ')} an und verknüpfe das Ziel mit diesem Shooting.`);return}
+ directMediaTransferState={
+  shootId:shoot.id,
+  directIds:direct.map(item=>item.id),
+  photoIds:photos.map(item=>item.id),
+  videoIds:videos.map(item=>item.id),
+  galleryId:galleries.length===1?galleries[0].id:'',
+  videoId:videoWorks.length===1?videoWorks[0].id:'',
+  seriesId:returnSeriesId,
+  context:returnShootingContext
+ };
+ const box=document.getElementById('directMediaTransferContent');
+ box.innerHTML=`<div class="detailHero"><div class="small">Shooting</div><h2>${esc(shootingDisplayLabel(shoot))}</h2></div><p class="directMediaTransferIntro">Die direkten Medien werden zuerst den ausgewählten Werken zugeordnet. Erst wenn alles gespeichert wurde, werden die bisherigen Direktzuordnungen zum Shooting entfernt.</p>${photos.length?`<section class="directMediaTransferSection"><h3>${countLabel(photos.length,'Foto','Fotos')} → Galerie</h3><div class="directMediaTransferChoices">${galleries.map(work=>directMediaTransferChoiceHtml(work,'gallery',work.id===directMediaTransferState.galleryId)).join('')}</div></section>`:''}${videos.length?`<section class="directMediaTransferSection"><h3>${countLabel(videos.length,'Video','Videos')} → Video</h3><div class="directMediaTransferChoices">${videoWorks.map(work=>directMediaTransferChoiceHtml(work,'video',work.id===directMediaTransferState.videoId)).join('')}</div></section>`:''}`;
+ box.querySelectorAll('[data-direct-media-target]').forEach(button=>button.onclick=()=>{
+  if(!directMediaTransferState)return;
+  const kind=button.dataset.directMediaKind;
+  const id=button.dataset.directMediaTarget;
+  if(kind==='gallery')directMediaTransferState.galleryId=id;else directMediaTransferState.videoId=id;
+  box.querySelectorAll(`[data-direct-media-kind="${kind}"]`).forEach(item=>item.classList.toggle('selected',item===button));
+  updateDirectMediaTransferSaveState();
+ });
+ openOverlay('directMediaTransferPane');
+ const overlaySheet=document.querySelector('#overlay .sheet');if(overlaySheet)overlaySheet.scrollTop=0;
+ hydrateReleaseGalleryCovers(box);hydrateMediaThumbs(box);
+ updateDirectMediaTransferSaveState();
+}
 
 
 function directSeriesMedia(series){
@@ -13026,6 +13095,7 @@ function openShootingDetail(id,seriesId,context=null){
  const media=shootingMedia(sh);
  const photos=media.filter(x=>!(x.mimeType||'').startsWith('video/'));
  const videos=media.filter(x=>(x.mimeType||'').startsWith('video/'));
+ const directMedia=shootingDirectMedia(sh);
  // Presentation areas show a photo gallery only. Videos remain directly accessible
  // from the play symbol on the shooting card. Management keeps the complete media set.
  const presentationSources=new Set(['global-series','model-series','global-title','global-shootings','profile-shootings','profile']);
@@ -13042,7 +13112,7 @@ function openShootingDetail(id,seriesId,context=null){
    ${sh.location?`<div class="small">📍 ${esc(sh.location)}</div>`:''}
    <div>${esc(sh.note||'')}</div>${modelChips(shootingModelIds(sh))}${renderCredits(sh.credits||[])}
  </div>
- <div class="relationBlock"><h3>${presentationMode?'Fotos':'Medien'} · ${detailMedia.length}</h3>
+ <div class="relationBlock"><div class="shootingMediaHead"><h3>${presentationMode?'Fotos':'Medien'} · ${detailMedia.length}</h3>${activeMainView==='management'&&directMedia.length?`<div class="shootingMediaHeadActions"><button type="button" class="shootingMediaTransfer" data-transfer-direct-shooting-media>Direkte Medien überführen · ${directMedia.length}</button><button type="button" class="shootingMediaUnlink shootingMediaBulkUnlink" data-unlink-all-shooting-media>Alle direkten lösen · ${directMedia.length}</button></div>`:''}</div>
  ${detailMedia.length
    ? `<div class="gallery">${detailMedia.map(x=>`<div class="galleryItem">
        <div class="mediaThumb" data-media-id="${x.id}"><div class="small" style="padding:10px">Lade Medium …</div></div>
@@ -13072,8 +13142,80 @@ function openShootingDetail(id,seriesId,context=null){
    item.links=(item.links||[]).filter(link=>link!==sh.id);
    if(save()){toast('Medium aus dem Shooting entfernt.');openShootingDetail(sh.id,returnSeriesId,returnShootingContext);}
  });
+ const transferDirectBtn=box.querySelector('[data-transfer-direct-shooting-media]');
+ if(transferDirectBtn)transferDirectBtn.onclick=e=>{
+  e.preventDefault();e.stopPropagation();openDirectMediaTransfer(sh.id);
+ };
+ const unlinkAllBtn=box.querySelector('[data-unlink-all-shooting-media]');
+ if(unlinkAllBtn)unlinkAllBtn.onclick=e=>{
+  e.preventDefault();e.stopPropagation();
+  const items=shootingDirectMedia(sh);
+  if(!items.length){toast('Keine direkte Medienzuordnung mehr vorhanden.');openShootingDetail(sh.id,returnSeriesId,returnShootingContext);return}
+  if(!confirm(`Alle ${items.length} direkten Medienzuordnungen aus diesem Shooting lösen? Die Dateien sowie ihre Galerie- und Videozuordnungen bleiben erhalten.`))return;
+  const shootLinks=[...(sh.links||[])];
+  const mediaLinks=items.map(item=>({item,links:[...(item.links||[])]}));
+  const ids=new Set(items.map(item=>item.id));
+  sh.links=(sh.links||[]).filter(link=>!ids.has(link));
+  items.forEach(item=>{item.links=(item.links||[]).filter(link=>link!==sh.id)});
+  if(!save()){
+   sh.links=shootLinks;
+   mediaLinks.forEach(({item,links})=>{item.links=links});
+   toast('Die direkten Zuordnungen konnten nicht gelöst werden. Es wurde nichts verändert.');return;
+  }
+  toast(`${items.length} direkte Medienzuordnungen gelöst.`);
+  openShootingDetail(sh.id,returnSeriesId,returnShootingContext);
+ };
  hydrateMediaThumbs(box);bindInteractiveMedia(box);
 }
+document.getElementById('cancelDirectMediaTransferBtn').onclick=()=>{
+ const transfer=directMediaTransferState;
+ directMediaTransferState=null;
+ if(transfer){openShootingDetail(transfer.shootId,transfer.seriesId,transfer.context);return}
+ closeOverlay();
+};
+document.getElementById('saveDirectMediaTransferBtn').onclick=()=>{
+ const transfer=directMediaTransferState;
+ if(!transfer)return;
+ const shoot=(state.archive||[]).find(item=>item&&item.id===transfer.shootId&&item.type==='shoot');
+ if(!shoot){toast('Shooting nicht gefunden.');return}
+ const direct=shootingDirectMedia(shoot);
+ const currentIds=direct.map(item=>item.id).sort();
+ const expectedIds=[...transfer.directIds].sort();
+ if(currentIds.length!==expectedIds.length||currentIds.some((id,index)=>id!==expectedIds[index])){
+  alert('Die direkten Medienzuordnungen haben sich inzwischen geändert. Die Auswahl wird neu geladen.');
+  openDirectMediaTransfer(shoot.id);return;
+ }
+ const photos=direct.filter(item=>!(item.mimeType||'').startsWith('video/'));
+ const videos=direct.filter(item=>(item.mimeType||'').startsWith('video/'));
+ const gallery=photos.length?(state.archive||[]).find(item=>item&&item.id===transfer.galleryId&&item.type==='gallery'):null;
+ const videoWork=videos.length?(state.archive||[]).find(item=>item&&item.id===transfer.videoId&&item.type==='video'):null;
+ const galleryIsTarget=gallery&&relatedObjects(shoot.id,'gallery').some(item=>item.id===gallery.id);
+ const videoIsTarget=videoWork&&relatedObjects(shoot.id,'video').some(item=>item.id===videoWork.id);
+ if((photos.length&&!galleryIsTarget)||(videos.length&&!videoIsTarget)){
+  alert('Ein ausgewähltes Ziel ist nicht mehr mit diesem Shooting verknüpft. Die Überführung wurde abgebrochen.');
+  openDirectMediaTransfer(shoot.id);return;
+ }
+ const touched=[shoot,...direct,...[gallery,videoWork].filter(Boolean)];
+ const snapshots=new Map(touched.map(item=>[item.id,[...(item.links||[])]]));
+ const link=(a,b)=>{
+  a.links=a.links||[];b.links=b.links||[];
+  if(!a.links.includes(b.id))a.links.push(b.id);
+  if(!b.links.includes(a.id))b.links.push(a.id);
+ };
+ photos.forEach(item=>link(item,gallery));
+ videos.forEach(item=>link(item,videoWork));
+ const directIds=new Set(direct.map(item=>item.id));
+ shoot.links=(shoot.links||[]).filter(id=>!directIds.has(id));
+ direct.forEach(item=>{item.links=(item.links||[]).filter(id=>id!==shoot.id)});
+ if(!save()){
+  touched.forEach(item=>{item.links=[...(snapshots.get(item.id)||[])]});
+  toast('Die Medien konnten nicht überführt werden. Es wurde nichts verändert.');return;
+ }
+ const count=direct.length;
+ directMediaTransferState=null;
+ toast(`${count} ${count===1?'direktes Medium':'direkte Medien'} überführt.`);
+ openShootingDetail(shoot.id,transfer.seriesId,transfer.context);
+};
 document.getElementById('closeShootingDetail').onclick=()=>{
  if(returnSeriesId){const id=returnSeriesId;returnSeriesId=null;returnShootingContext=null;openSeriesDetail(id);return}
  if(returnShootingContext?.source==='title'){
