@@ -10648,24 +10648,36 @@ const seriesWorkSelected=new Set();
 
 function managementMigrationProgress(){
  const archive=state.archive||[];
- const releases=archive.filter(item=>item&&item.type==='release'&&!linkedObjects(item.id,'publication').length);
+ const byId=new Map(archive.filter(Boolean).map(item=>[item.id,item]));
+ const relations=new Map(archive.filter(Boolean).map(item=>[item.id,new Set()]));
+ archive.forEach(item=>{
+  if(!item)return;
+  (item.links||[]).forEach(linkId=>{
+   if(!byId.has(linkId))return;
+   relations.get(item.id).add(linkId);
+   relations.get(linkId).add(item.id);
+  });
+ });
+ const linkedByType=(item,type)=>(item.links||[]).map(id=>byId.get(id)).filter(candidate=>candidate?.type===type);
+ const relatedByType=(item,type)=>[...(relations.get(item.id)||[])].map(id=>byId.get(id)).filter(candidate=>candidate?.type===type);
+ const releases=archive.filter(item=>item&&item.type==='release'&&!linkedByType(item,'publication').length);
  let completed=0;
  releases.forEach(release=>{
-  const contexts=[...linkedObjects(release.id,'series'),...linkedObjects(release.id,'title')];
+  const contexts=[...linkedByType(release,'series'),...linkedByType(release,'title')];
   if(contexts.length){completed+=contexts.length;return}
-  if(releaseWorks(release,'gallery').length||releaseWorks(release,'video').length)completed++;
+  if(linkedByType(release,'gallery').length||linkedByType(release,'video').length)completed++;
  });
  const pendingContextKeys=new Set();
  archive.filter(item=>item&&item.type==='series').forEach(series=>{
-  relatedObjects(series.id,'shoot').forEach(shoot=>pendingContextKeys.add(`series:${series.id}:${shoot.id}`));
+  relatedByType(series,'shoot').forEach(shoot=>pendingContextKeys.add(`series:${series.id}:${shoot.id}`));
  });
  archive.filter(item=>item&&item.type==='title').forEach(title=>{
-  relatedObjects(title.id,'shoot').forEach(shoot=>pendingContextKeys.add(`title:${title.id}:${shoot.id}`));
+  relatedByType(title,'shoot').forEach(shoot=>pendingContextKeys.add(`title:${title.id}:${shoot.id}`));
  });
- const freeWorks=archive.filter(item=>item&&(item.type==='gallery'||item.type==='video')&&!workRelease(item));
+ const freeWorks=archive.filter(item=>item&&(item.type==='gallery'||item.type==='video')&&!linkedByType(item,'release').length);
  const pendingIndividuals=new Set();
- freeWorks.forEach(work=>relatedObjects(work.id,'shoot').forEach(shoot=>{
-  if(!relatedObjects(shoot.id,'series').length&&!relatedObjects(shoot.id,'title').length)pendingIndividuals.add(shoot.id);
+ freeWorks.forEach(work=>relatedByType(work,'shoot').forEach(shoot=>{
+  if(!relatedByType(shoot,'series').length&&!relatedByType(shoot,'title').length)pendingIndividuals.add(shoot.id);
  }));
  const pending=pendingContextKeys.size+pendingIndividuals.size;
  const total=completed+pending;
