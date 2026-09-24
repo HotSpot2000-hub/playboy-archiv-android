@@ -3984,6 +3984,7 @@ function resetSearchesInView(view){
 }
 let activeMainView='';
 function hideMainViews(){
+ if(typeof invalidatePreviewWork==='function')invalidatePreviewWork();
  activeMainView='';
  ['inboxView','peopleView','researchView','profileView','modelsView','titlesView','seriesView','publicationsView','shootingsView','archiveView','managementView'].forEach(id=>{
    const view=document.getElementById(id);
@@ -8522,7 +8523,16 @@ async function renderInbox(){
  list.querySelectorAll('[data-inbox-video-open]').forEach(el=>el.onclick=async e=>{e.stopPropagation();const item=inboxLoad().find(x=>x.id===el.dataset.inboxVideoOpen);if(!item||item.kind!=='Video')return;try{const blob=await getMedia('inbox:'+item.id);if(!blob){toast('Video ist nicht mehr im lokalen Speicher.');return}openVideoFromBlob(blob,item.name)}catch(err){console.error(err);toast('Video konnte nicht geöffnet werden.')}});
  list.querySelectorAll('[data-inbox-pdf-open]').forEach(el=>el.onclick=async e=>{e.stopPropagation();const item=inboxLoad().find(x=>x.id===el.dataset.inboxPdfOpen);if(!item||item.kind!=='PDF')return;try{const blob=await getMedia('inbox:'+item.id);if(!blob){toast('PDF ist nicht mehr im lokalen Speicher.');return}const url=URL.createObjectURL(blob);const opened=window.open(url,'_blank');if(!opened){URL.revokeObjectURL(url);toast('PDF konnte nicht geöffnet werden.');return}setTimeout(()=>URL.revokeObjectURL(url),60000)}catch(err){console.error(err);toast('PDF konnte nicht geöffnet werden.')}});
  list.querySelectorAll('[data-inbox-delete]').forEach(b=>b.onclick=async e=>{e.preventDefault();e.stopPropagation();const item=inboxLoad().find(x=>x.id===b.dataset.inboxDelete);if(!item)return;if(!confirm(`„${item.name}“ wirklich aus der Inbox löschen?`))return;try{await deleteMediaBlob('inbox:'+item.id);inboxSelected.delete(item.id);inboxSave(inboxLoad().filter(x=>x.id!==item.id));await renderInbox();toast('Datei aus der Inbox gelöscht.')}catch(e){console.error(e);toast('Datei konnte nicht gelöscht werden.')}});
- for(const x of shown){if(x.kind!=='Foto')continue;try{const f=await getMedia('inbox:'+x.id),el=list.querySelector(`[data-inbox-preview="${CSS.escape(x.id)}"]`);if(f&&el){const u=URL.createObjectURL(f);const selectBtn=el.querySelector('.inboxSelectBtn');el.innerHTML=`<img src="${u}" alt="">`;if(selectBtn)el.appendChild(selectBtn);el.querySelector('img').onload=()=>URL.revokeObjectURL(u)}}catch(e){console.error(e)}}
+ for(const x of shown){
+  if(x.kind!=='Foto')continue;
+  const el=list.querySelector(`[data-inbox-preview="${CSS.escape(x.id)}"]`);if(!el)continue;
+  schedulePreview(el,async()=>{
+   try{
+    const f=await getMedia('inbox:'+x.id);if(!f||!previewNodeActive(el))return;
+    const selectBtn=el.querySelector('.inboxSelectBtn');setPreviewImage(el,f,'',selectBtn);
+   }catch(e){console.error(e)}
+  });
+ }
 }
 function allResearchItems(){
  const out=[];
@@ -8959,43 +8969,112 @@ async function importInboxFiles(files){
  if(added.length){inboxSave([...added,...items]);await renderInbox();toast(`${added.length} ${added.length===1?'Datei':'Dateien'} in die Inbox importiert.`)}
 }
 
+const pendingPreviewNodes=new Set();
+const previewLoaders=new WeakMap();
+let previewObserver=null;
+let previewGeneration=0;
+function previewNodeActive(node){
+ return Boolean(node?.isConnected&&Number(node.dataset.previewGeneration)===previewGeneration);
+}
+function invalidatePreviewWork(){
+ previewGeneration++;
+ if(previewObserver)previewObserver.disconnect();
+ for(const node of pendingPreviewNodes){
+  node.removeAttribute('data-preview-pending');
+  previewLoaders.delete(node);
+ }
+ pendingPreviewNodes.clear();
+}
+function prunePendingPreviews(){
+ for(const node of pendingPreviewNodes){
+  if(node.isConnected)continue;
+  if(previewObserver)previewObserver.unobserve(node);
+  pendingPreviewNodes.delete(node);
+  previewLoaders.delete(node);
+ }
+}
+function runPreviewLoader(node){
+ if(previewObserver)previewObserver.unobserve(node);
+ pendingPreviewNodes.delete(node);
+ node.removeAttribute('data-preview-pending');
+ node.dataset.previewLoaded='1';
+ const loader=previewLoaders.get(node);
+ previewLoaders.delete(node);
+ if(!loader||!previewNodeActive(node))return;
+ Promise.resolve(loader()).catch(error=>console.error(error));
+}
+function schedulePreview(node,loader){
+ if(!node||node.dataset.previewPending==='1'||node.dataset.previewLoaded==='1')return;
+ prunePendingPreviews();
+ node.dataset.previewPending='1';
+ node.dataset.previewGeneration=String(previewGeneration);
+ previewLoaders.set(node,loader);
+ pendingPreviewNodes.add(node);
+ if(!('IntersectionObserver' in window)){runPreviewLoader(node);return}
+ if(!previewObserver){
+  previewObserver=new IntersectionObserver(entries=>{
+   entries.forEach(entry=>{if(entry.isIntersecting)runPreviewLoader(entry.target)});
+  },{root:null,rootMargin:'320px 0px',threshold:0.01});
+ }
+ previewObserver.observe(node);
+}
+function setPreviewImage(node,blob,alt='Vorschau',preserveNode=null){
+ if(!previewNodeActive(node)||!blob)return;
+ const url=URL.createObjectURL(blob);
+ const image=document.createElement('img');
+ image.alt=alt;
+ let released=false;
+ const release=()=>{if(released)return;released=true;URL.revokeObjectURL(url)};
+ image.addEventListener('load',release,{once:true});
+ image.addEventListener('error',release,{once:true});
+ node.replaceChildren(image);
+ if(preserveNode)node.appendChild(preserveNode);
+ image.src=url;
+}
+
 async function hydrateMediaThumbs(root=document){
  const nodes=[...root.querySelectorAll('[data-media-id]')];
  for(const node of nodes){
-  try{
-   const blob=await getMedia(node.dataset.mediaId);
-   if(!blob){node.innerHTML='<div class="small" style="padding:10px">Datei nicht im lokalen Medienspeicher</div>';continue}
-   const selectBtn=node.querySelector('.mediaWorkSelectBtn');
-   if(blob.type&&blob.type.startsWith('image/')){
-    const url=URL.createObjectURL(blob);
-    node.innerHTML=`<img src="${url}" alt="">`;
-    node.dataset.mediaKind='image';
-   }else if(blob.type&&blob.type.startsWith('video/')){
-    node.innerHTML='<div class="videoPlaceholder">▶</div>';
-    node.dataset.mediaKind='video';
-   }else if(blob.type==='application/pdf'){
-    node.innerHTML='<div class="small" style="padding:10px">📄 PDF</div>';
-    node.dataset.mediaKind='pdf';
-   }else{
-    node.innerHTML='<div class="small" style="padding:10px">Datei</div>';
-    node.dataset.mediaKind='file';
-   }
-   if(selectBtn)node.appendChild(selectBtn);
-  }catch(e){console.error(e);node.innerHTML='<div class="small" style="padding:10px">Medienfehler</div>'}
+  schedulePreview(node,async()=>{
+   try{
+    const blob=await getMedia(node.dataset.mediaId);
+    if(!previewNodeActive(node))return;
+    if(!blob){node.innerHTML='<div class="small" style="padding:10px">Datei nicht im lokalen Medienspeicher</div>';return}
+    const selectBtn=node.querySelector('.mediaWorkSelectBtn');
+    if(blob.type&&blob.type.startsWith('image/')){
+     setPreviewImage(node,blob,'',selectBtn);
+     node.dataset.mediaKind='image';
+    }else if(blob.type&&blob.type.startsWith('video/')){
+     node.innerHTML='<div class="videoPlaceholder">▶</div>';
+     node.dataset.mediaKind='video';
+     if(selectBtn)node.appendChild(selectBtn);
+    }else if(blob.type==='application/pdf'){
+     node.innerHTML='<div class="small" style="padding:10px">📄 PDF</div>';
+     node.dataset.mediaKind='pdf';
+     if(selectBtn)node.appendChild(selectBtn);
+    }else{
+     node.innerHTML='<div class="small" style="padding:10px">Datei</div>';
+     node.dataset.mediaKind='file';
+     if(selectBtn)node.appendChild(selectBtn);
+    }
+   }catch(e){console.error(e);if(previewNodeActive(node))node.innerHTML='<div class="small" style="padding:10px">Medienfehler</div>'}
+  });
  }
  bindInteractiveMedia(root);
 }
 async function hydratePublicationCovers(root=document){
  const nodes=[...root.querySelectorAll('[data-publication-cover]')];
  for(const node of nodes){
-  try{
-   const pub=(state.archive||[]).find(a=>a.id===node.dataset.publicationCover&&a.type==='publication');
-   let blob=pub?.coverMediaId?await getMedia(pub.coverMediaId):null;
-   if(!blob)blob=await getMedia('cover:'+node.dataset.publicationCover);
-   if(blob&&blob.type&&blob.type.startsWith('image/')){
-    node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Cover">`;
-   }else node.innerHTML='<div class="small">Kein Cover</div>';
-  }catch(e){node.innerHTML='<div class="small">Kein Cover</div>'}
+  schedulePreview(node,async()=>{
+   try{
+    const pub=(state.archive||[]).find(a=>a.id===node.dataset.publicationCover&&a.type==='publication');
+    let blob=pub?.coverMediaId?await getMedia(pub.coverMediaId):null;
+    if(!blob)blob=await getMedia('cover:'+node.dataset.publicationCover);
+    if(!previewNodeActive(node))return;
+    if(blob&&blob.type&&blob.type.startsWith('image/'))setPreviewImage(node,blob,'Cover');
+    else node.innerHTML='<div class="small">Kein Cover</div>';
+   }catch(e){if(previewNodeActive(node))node.innerHTML='<div class="small">Kein Cover</div>'}
+  });
  }
 }
 async function openPublicationPdf(id){
@@ -9109,15 +9188,16 @@ document.getElementById('closePublicationDetail').onclick=closeOverlay;
 async function hydrateSeriesCovers(root=document){
  const nodes=[...root.querySelectorAll('[data-series-cover]')];
  for(const node of nodes){
-   try{
-     const blob=await getMedia(node.dataset.seriesCover);
-     if(blob&&blob.type&&blob.type.startsWith('image/')){
-       const url=URL.createObjectURL(blob);
-       const selectBtn=node.querySelector('.seriesSelectBtn');
-       node.innerHTML=`<img src="${url}" alt="Serienvorschau">`;
-       if(selectBtn)node.appendChild(selectBtn);
-     }else node.innerHTML='<div class="small">Kein Vorschaubild</div>';
-   }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+   schedulePreview(node,async()=>{
+    try{
+      const blob=await getMedia(node.dataset.seriesCover);
+      if(!previewNodeActive(node))return;
+      if(blob&&blob.type&&blob.type.startsWith('image/')){
+        const selectBtn=node.querySelector('.seriesSelectBtn');
+        setPreviewImage(node,blob,'Serienvorschau',selectBtn);
+      }else node.innerHTML='<div class="small">Kein Vorschaubild</div>';
+    }catch(e){console.error(e);if(previewNodeActive(node))node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+   });
  }
 }
 
@@ -11719,22 +11799,27 @@ function selectMediaWorkTarget(kind,id){
 }
 async function hydrateMediaWorkTargetCovers(root=document){
  for(const node of root.querySelectorAll('[data-media-gallery-cover]')){
-  try{
-   const g=(state.archive||[]).find(a=>a.id===node.dataset.mediaGalleryCover&&a.type==='gallery'),photos=g?galleryPhotoMedia(g):[];
-   if(!photos.length){node.innerHTML='<div class="small">Noch kein Foto</div>';continue}
-   let chosen=photos[0];for(const photo of photos){if(await mediaIsPortrait(photo.id)){chosen=photo;break}}
-   const blob=await getMedia(chosen.id);
-   node.innerHTML=blob&&blob.type?.startsWith('image/')?`<img src="${URL.createObjectURL(blob)}" alt="Galerie-Vorschau">`:'<div class="small">Keine Vorschau</div>';
-  }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+  schedulePreview(node,async()=>{
+   try{
+    const g=(state.archive||[]).find(a=>a.id===node.dataset.mediaGalleryCover&&a.type==='gallery'),photos=g?galleryPhotoMedia(g):[];
+    if(!photos.length){if(previewNodeActive(node))node.innerHTML='<div class="small">Noch kein Foto</div>';return}
+    let chosen=photos[0];for(const photo of photos){if(!previewNodeActive(node))return;if(await mediaIsPortrait(photo.id)){chosen=photo;break}}
+    const blob=await getMedia(chosen.id);
+    if(!previewNodeActive(node))return;
+    if(blob&&blob.type?.startsWith('image/'))setPreviewImage(node,blob,'Galerie-Vorschau');
+    else node.innerHTML='<div class="small">Keine Vorschau</div>';
+   }catch(e){console.error(e);if(previewNodeActive(node))node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+  });
  }
  for(const node of root.querySelectorAll('[data-media-video-cover]')){
-  try{
-   const v=(state.archive||[]).find(a=>a.id===node.dataset.mediaVideoCover&&a.type==='video');
-   const files=v?linkedObjects(v.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/')):[];
-   if(!files.length){node.innerHTML='<div class="small">Noch kein Video</div>';continue}
-   const blob=await getMedia(files[0].id);
-   node.innerHTML=blob?`<video src="${URL.createObjectURL(blob)}" muted preload="metadata"></video>`:'<div class="small">Keine Vorschau</div>';
-  }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+  schedulePreview(node,async()=>{
+   try{
+    const v=(state.archive||[]).find(a=>a.id===node.dataset.mediaVideoCover&&a.type==='video');
+    const files=v?linkedObjects(v.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/')):[];
+    if(!previewNodeActive(node))return;
+    node.innerHTML=files.length?'<div class="videoPlaceholder">▶</div>':'<div class="small">Noch kein Video</div>';
+   }catch(e){console.error(e);if(previewNodeActive(node))node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+  });
  }
 }
 function closeMediaGalleryPanel(){
@@ -13094,32 +13179,40 @@ async function preferredShootingCoverId(initialMediaId){
 async function hydrateShootingCovers(root=document){
  const nodes=[...root.querySelectorAll('[data-shooting-cover]')];
  for(const node of nodes){
-  try{
-   const preferredId=await preferredShootingCoverId(node.dataset.shootingCover);
-   const blob=await getMedia(preferredId);
-   if(blob&&blob.type&&blob.type.startsWith('image/')){
-    const url=URL.createObjectURL(blob);
-    node.innerHTML=`<img src="${url}" alt="Shooting-Vorschau">`;
-   }else node.innerHTML='<div class="small">Kein Vorschaubild</div>';
-  }catch(e){console.error(e);node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+  schedulePreview(node,async()=>{
+   try{
+    const preferredId=await preferredShootingCoverId(node.dataset.shootingCover);
+    if(!previewNodeActive(node))return;
+    const blob=await getMedia(preferredId);
+    if(!previewNodeActive(node))return;
+    if(blob&&blob.type&&blob.type.startsWith('image/'))setPreviewImage(node,blob,'Shooting-Vorschau');
+    else node.innerHTML='<div class="small">Kein Vorschaubild</div>';
+   }catch(e){console.error(e);if(previewNodeActive(node))node.innerHTML='<div class="small">Vorschau nicht verfügbar</div>'}
+  });
  }
  bindShootingVideoQuick(root);
 }
 async function hydrateReleaseGalleryCovers(root=document){
  const nodes=[...root.querySelectorAll('[data-release-gallery-cover]')];
  for(const node of nodes){
-  try{
-   const gallery=(state.archive||[]).find(a=>a.id===node.dataset.releaseGalleryCover&&a.type==='gallery');
-   const photos=gallery?galleryPhotoMedia(gallery):[];
-   if(!photos.length){node.innerHTML='<div class="small" style="padding:8px">Kein Foto</div>';continue}
-   let chosen=photos[0];
-   for(const photo of photos){if(await mediaIsPortrait(photo.id)){chosen=photo;break}}
-   const blob=await getMedia(chosen.id);
-   if(blob&&blob.type&&blob.type.startsWith('image/')){
-    node.innerHTML=`<img src="${URL.createObjectURL(blob)}" alt="Beitragsvorschau">`;
-    if(!node.dataset.openGalleryDetail){node.dataset.mediaId=chosen.id;node.dataset.galleryIds=photos.map(x=>x.id).join(',')}
-   }else node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>';
-  }catch(e){console.error(e);node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>'}
+  schedulePreview(node,async()=>{
+   try{
+    const gallery=(state.archive||[]).find(a=>a.id===node.dataset.releaseGalleryCover&&a.type==='gallery');
+    const photos=gallery?galleryPhotoMedia(gallery):[];
+    if(!photos.length){if(previewNodeActive(node))node.innerHTML='<div class="small" style="padding:8px">Kein Foto</div>';return}
+    let chosen=photos[0];
+    for(const photo of photos){if(!previewNodeActive(node))return;if(await mediaIsPortrait(photo.id)){chosen=photo;break}}
+    const blob=await getMedia(chosen.id);
+    if(!previewNodeActive(node))return;
+    if(blob&&blob.type&&blob.type.startsWith('image/')){
+     setPreviewImage(node,blob,'Beitragsvorschau');
+     if(!node.dataset.openGalleryDetail){
+      node.dataset.mediaId=chosen.id;node.dataset.galleryIds=photos.map(x=>x.id).join(',');
+      bindInteractiveMedia(node.parentElement||root);
+     }
+    }else node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>';
+   }catch(e){console.error(e);if(previewNodeActive(node))node.innerHTML='<div class="small" style="padding:8px">Vorschau nicht verfügbar</div>'}
+  });
  }
  bindInteractiveMedia(root);
 }
@@ -13731,6 +13824,7 @@ function closeTransientUiForAndroidBack(){
 }
 function pauseForAppBackground(){
  androidAppWasPaused=true;
+ try{invalidatePreviewWork()}catch(_){}
  try{stopLightboxSlideshow()}catch(_){}
  try{if(videoPlayer&&!videoPlayer.paused)videoPlayer.pause()}catch(_){}
 }
@@ -13738,6 +13832,10 @@ function resumeFromAppBackground(){
  if(!androidAppWasPaused)return;
  androidAppWasPaused=false;
  try{renderPinnedProfiles();renderRecentProfiles();renderPinnedArchive();renderRecentArchive()}catch(_){}
+ try{
+  hydrateMediaThumbs(document);hydratePublicationCovers(document);hydrateSeriesCovers(document);
+  hydrateMediaWorkTargetCovers(document);hydrateShootingCovers(document);hydrateReleaseGalleryCovers(document);
+ }catch(_){}
 }
 function installCapacitorAppLifecycle(){
  const cap=window.Capacitor;
