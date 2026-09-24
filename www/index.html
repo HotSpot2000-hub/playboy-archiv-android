@@ -1799,13 +1799,6 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 #managementContextTools{margin-top:12px}
 .managementContextHeader{margin-bottom:0}
 #managementContextSearchPanel{margin-top:10px;margin-bottom:10px}
-.managementMigrationProgress{margin:0 0 14px;padding:12px 14px;border:1px solid #d7c4d9;border-radius:16px;background:#f7f0f7}
-.managementMigrationProgressHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.managementMigrationProgressTitle{font-weight:800}
-.managementMigrationProgressOpen{color:#6d566f;font-size:12px}
-.managementMigrationProgressTrack{height:9px;margin:8px 0 6px;border-radius:999px;background:#e1d4e2;overflow:hidden}
-.managementMigrationProgressBar{height:100%;border-radius:inherit;background:#59245e;transition:width .2s ease}
-.managementMigrationProgressMeta{color:#777;font-size:11px;line-height:1.3}
 
 .lightboxClose,.lightboxNav,.lightboxSlideshow,.lightboxDownloadAll,.lightboxCaption{
  transition:opacity .22s ease,visibility .22s ease;
@@ -2330,7 +2323,6 @@ body.archiveFilterOpen .bottom{display:none!important}
  <button class="collapseHead" type="button"><div><h2>Verwaltung</h2><div class="small">Print, Titel, Rubriken, Medien, Shootings und Import verwalten.</div></div><span class="collapseIcon">⌄</span></button>
  <div class="collapseBody">
   <div class="managementTools">
-<div id="managementMigrationProgress"></div>
 <input id="managementModelPicker" class="managementModelPicker" placeholder="Alle Models" autocomplete="off" aria-label="Model auswählen">
 <div id="managementModelSuggestions" class="locationSuggestions hidden"></div>
 <div id="managementModelSelection" class="managementModelSelection" aria-label="Ausgewählte Models"></div>
@@ -3908,6 +3900,7 @@ try{
 }catch(_){}
 function save(){
  if(typeof shootingCoverChoiceCache!=='undefined')shootingCoverChoiceCache.clear();
+ if(typeof invalidateArchiveRelationIndex==='function')invalidateArchiveRelationIndex();
  if(typeof invalidateArchiveFilterCache==='function')invalidateArchiveFilterCache();
  if(STARTUP_SAFE_MODE){
    console.warn('Startschutz aktiv: Speichern blockiert.');
@@ -10726,50 +10719,6 @@ let managementShootingFilter='all';
 const mediaWorkSelected=new Set();
 const seriesWorkSelected=new Set();
 
-function managementMigrationProgress(){
- const archive=state.archive||[];
- const byId=new Map(archive.filter(Boolean).map(item=>[item.id,item]));
- const relations=new Map(archive.filter(Boolean).map(item=>[item.id,new Set()]));
- archive.forEach(item=>{
-  if(!item)return;
-  (item.links||[]).forEach(linkId=>{
-   if(!byId.has(linkId))return;
-   relations.get(item.id).add(linkId);
-   relations.get(linkId).add(item.id);
-  });
- });
- const linkedByType=(item,type)=>(item.links||[]).map(id=>byId.get(id)).filter(candidate=>candidate?.type===type);
- const relatedByType=(item,type)=>[...(relations.get(item.id)||[])].map(id=>byId.get(id)).filter(candidate=>candidate?.type===type);
- const releases=archive.filter(item=>item&&item.type==='release'&&!linkedByType(item,'publication').length);
- let completed=0;
- releases.forEach(release=>{
-  const contexts=[...linkedByType(release,'series'),...linkedByType(release,'title')];
-  if(contexts.length){completed+=contexts.length;return}
-  if(linkedByType(release,'gallery').length||linkedByType(release,'video').length)completed++;
- });
- const pendingContextKeys=new Set();
- archive.filter(item=>item&&item.type==='series').forEach(series=>{
-  relatedByType(series,'shoot').forEach(shoot=>pendingContextKeys.add(`series:${series.id}:${shoot.id}`));
- });
- archive.filter(item=>item&&item.type==='title').forEach(title=>{
-  relatedByType(title,'shoot').forEach(shoot=>pendingContextKeys.add(`title:${title.id}:${shoot.id}`));
- });
- const freeWorks=archive.filter(item=>item&&(item.type==='gallery'||item.type==='video')&&!linkedByType(item,'release').length);
- const pendingIndividuals=new Set();
- freeWorks.forEach(work=>relatedByType(work,'shoot').forEach(shoot=>{
-  if(!relatedByType(shoot,'series').length&&!relatedByType(shoot,'title').length)pendingIndividuals.add(shoot.id);
- }));
- const pending=pendingContextKeys.size+pendingIndividuals.size;
- const total=completed+pending;
- const percent=total?(pending?Math.min(99,Math.round(completed/total*100)):100):100;
- return {completed,pending,total,percent};
-}
-function renderManagementMigrationProgress(){
- const host=document.getElementById('managementMigrationProgress');if(!host)return;
- const progress=managementMigrationProgress();
- host.innerHTML=`<div class="managementMigrationProgress" aria-label="Überführungsstand"><div class="managementMigrationProgressHead"><span class="managementMigrationProgressTitle">Überführung: ${progress.percent}&nbsp;%</span><span class="managementMigrationProgressOpen">${progress.pending?`noch ${countLabel(progress.pending,'Fall','Fälle')}`:'keine Altzuordnung mehr'}</span></div><div class="managementMigrationProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress.percent}"><div class="managementMigrationProgressBar" style="width:${progress.percent}%"></div></div><div class="managementMigrationProgressMeta">${progress.total?`${progress.completed} von ${progress.total} Zuordnungen verwenden die neue Beitragslogik.`:'Keine zu überführenden Zuordnungen vorhanden.'}</div></div>`;
-}
-
 function managementReleaseModelIds(release){
  const ids=[...releaseModelIds(release),...(release?.printModelIds||[])];
  const shoot=(state.archive||[]).find(a=>a&&a.type==='shoot'&&a.id===release?.printShootingId);
@@ -11300,7 +11249,6 @@ function renderArchive(options={}){
  renderRecentArchive();
  renderManagementTools();
  renderManagementAreaFilter();
- renderManagementMigrationProgress();
  if(!options.preserveContextTools)renderManagementContextTools();
  const raLimit=document.getElementById('recentArchiveLimit');
  if(raLimit){
@@ -12937,15 +12885,46 @@ document.getElementById('saveArchiveBtn').onclick=async()=>{
 };
 
 
+let archiveRelationIndex=null;
+function invalidateArchiveRelationIndex(){archiveRelationIndex=null}
+function getArchiveRelationIndex(){
+ const archive=state.archive||[];
+ if(archiveRelationIndex&&archiveRelationIndex.archive===archive&&archiveRelationIndex.length===archive.length)return archiveRelationIndex;
+ const byId=new Map();
+ const inverseIds=new Map();
+ archive.forEach(item=>{if(item?.id)byId.set(item.id,item)});
+ archive.forEach(item=>{
+  if(!item?.id)return;
+  (item.links||[]).forEach(linkId=>{
+   if(!byId.has(linkId))return;
+   if(!inverseIds.has(linkId))inverseIds.set(linkId,[]);
+   inverseIds.get(linkId).push(item.id);
+  });
+ });
+ archiveRelationIndex={archive,length:archive.length,byId,inverseIds,linked:new Map(),related:new Map()};
+ return archiveRelationIndex;
+}
 function linkedObjects(id,type){
- const obj=(state.archive||[]).find(a=>a.id===id); if(!obj)return [];
- return (obj.links||[]).map(x=>state.archive.find(a=>a.id===x)).filter(a=>a&&(!type||a.type===type));
+ const index=getArchiveRelationIndex();
+ const key=`${id}|${type||'*'}`;
+ if(index.linked.has(key))return index.linked.get(key);
+ const obj=index.byId.get(id);
+ const result=obj?(obj.links||[]).map(linkId=>index.byId.get(linkId)).filter(item=>item&&(!type||item.type===type)):[];
+ index.linked.set(key,result);
+ return result;
 }
 function relatedObjects(id,type){
- const direct=linkedObjects(id,type);
- const inverse=(state.archive||[]).filter(a=>(!type||a.type===type)&&(a.links||[]).includes(id));
+ const index=getArchiveRelationIndex();
+ const key=`${id}|${type||'*'}`;
+ if(index.related.has(key))return index.related.get(key);
  const seen=new Set();
- return [...direct,...inverse].filter(a=>{if(!a||seen.has(a.id))return false;seen.add(a.id);return true});
+ const result=[];
+ [...linkedObjects(id,type),...(index.inverseIds.get(id)||[]).map(inverseId=>index.byId.get(inverseId)).filter(item=>item&&(!type||item.type===type))].forEach(item=>{
+  if(!item||seen.has(item.id))return;
+  seen.add(item.id);result.push(item);
+ });
+ index.related.set(key,result);
+ return result;
 }
 function seriesShootingsAll(series){return relatedObjects(series.id,'shoot');}
 function seriesShootings(series){
