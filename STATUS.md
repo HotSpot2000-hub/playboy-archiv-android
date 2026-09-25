@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-25
-Referenz-Commit: `d9d4456374497cf091a170abc5192fdebb83836e`
+Referenz-Commit: `79fa39b12139655f7cb2f90a03d158a3365ad8df`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `d9d4456374497cf091a170abc5192fdebb83836e`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `d9d4456374497cf091a170abc5192fdebb83836e`
+- Aktuell berücksichtigter Code: `79fa39b12139655f7cb2f90a03d158a3365ad8df`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -39,6 +39,8 @@ Referenz-Commit: `d9d4456374497cf091a170abc5192fdebb83836e`
 - Die durch die neue getrennte Galerie-/Video-Logik entstandene Verzögerung im Medienbereich ist behoben. Ein gemeinsamer Beziehungsindex ersetzt wiederholte vollständige Archivdurchläufe; Dateilisten, Modelableitungen und die Nummerierung gleicher Modelkombinationen werden pro Datenstand wiederverwendet. Beide Optimierungsstufen sind auf dem Android-Gerät bestätigt; die Medienverwaltung reagiert wieder unmittelbar.
 - Medienvorschauen werden nur im sichtbaren beziehungsweise nahen Bereich geladen, temporäre Vorschau-URLs anschließend freigegeben und laufende Vorschauerzeugung beim Ansichtswechsel oder Wechsel in den Hintergrund beendet. Fullscreen-Foto- und Videowiedergabe bleiben unverändert.
 - Der Verwaltungsumbau einschließlich Datenüberführung und Leistungsoptimierung ist abgeschlossen.
+- Der abschließende visuelle Verwaltungsfeinschliff für Titel, Rubriken, Medien, Shootings und Print ist auf dem Android-Gerät bestätigt. Die Bereiche verwenden nun eine einheitliche Modelgruppierung, Kartenhierarchie und Foto-/Videodarstellung.
+- Der während der Migration auffällige Akkuverbrauch hat sich nach Abschluss der Überführung und den Vorschau-/Indexoptimierungen bei normaler Nutzung wieder normalisiert.
 - Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -100,7 +102,8 @@ Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `fb9ff5a5370f42684
 - `Import` bleibt als eigenständiger Haupttab mit seinem bisherigen Workflow und den Foto-/Video-/PDF-Filtern erhalten;
 - Galerie- und Videokarten verwenden eine einzelne 2:3-Vorschau in der gemeinsamen sehr hellen Kartenfarbe;
 - die redundante sichtbare Kartenbezeichnung `Galerie` beziehungsweise `Video` rechts neben der Vorschau wurde entfernt;
-- rechts neben der Vorschau stehen nur die aus den zugeordneten Shootings abgeleitete Modelbezeichnung, die Medienanzahl sowie `Bearbeiten` und `Löschen`;
+- oberhalb der Karten steht die aus den zugeordneten Shootings abgeleitete exakte Modelkombination als zentrierte Gruppenüberschrift; mehrere Models werden ohne Trennzeichen untereinander dargestellt;
+- rechts neben der Vorschau stehen die individuelle Bezeichnung beziehungsweise die bei mehreren Objekten derselben Modelkombination erforderliche Nummer, die Medienanzahl sowie `Bearbeiten` und `Löschen`;
 - existiert pro Medientyp nur eine Galerie beziehungsweise ein Video derselben exakten Model-Kombination, bleibt die Bezeichnung ohne Nummer; ab zwei Einträgen derselben Kombination werden sichtbar `Nr. 1`, `Nr. 2`, ... ergänzt;
 - Beitrag, Shooting, Datum, Ort, Fotografen und Notiz bleiben gespeichert und über `Bearbeiten` erreichbar, werden auf der kompakten Karte aber nicht mehr angezeigt;
 - beim Bearbeiten einer Galerie oder eines Videos steht ein gemeinsamer Umschalter `Shooting | Beitrag` zur Verfügung;
@@ -184,7 +187,7 @@ Hierarchie: **Titel → Beitrag → Galerie/Video**.
 
 Vorhandene Titel-Tabs bleiben fachlich bestätigt: erste Ebene z. B. `Coed`, `Cyber Girl`, `Playmate`, `SE Model`; zweite Ebene z. B. `of the Week`, `of the Month`, `of the Year`.
 
-Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge zeigen Modelableitung aus Galerie/Video → Shooting, individuellen Namen/Nummer sowie die Medienanzahl. Direkte Galerie-/Video-Sprungbuttons werden wie bei Rubriken nicht angezeigt. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
+Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge werden nach exakter Modelkombination gruppiert. Die zentrierte Gruppenüberschrift zeigt jedes Model ohne Trennzeichen in einer eigenen Zeile; die Karte wiederholt die Models nicht. In der Karte bleibt nur der individuelle Name beziehungsweise bei mehreren Beiträgen derselben Kombination die Nummer; die Medienanzahl bleibt sichtbar. Direkte Galerie-/Video-Sprungbuttons werden nicht angezeigt. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
 
 Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen werden getrennt als `Alte Direktzuordnungen` / `Umstellung erforderlich` angezeigt und können einzeln kontrolliert in echte Beiträge überführt werden.
 
@@ -276,6 +279,12 @@ Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbe
 - beim erneuten Speichern eines Artikels werden noch vorhandene direkte Foto-/Galeriezuordnungen am Artikel entfernt, die Mediendateien selbst bleiben erhalten;
 - Cover/PDF, Reihenlogik, Bestand und vorhandene Beziehungen blieben unverändert;
 - kein Schema-Bump und keine automatische Migration.
+- die redundante Ausgabenüberschrift oberhalb des Covers wurde entfernt, weil Ausgabennummer und Zeitraum bereits auf der Ausgabekarte sichtbar sind;
+- Cover und Artikel verwenden dasselbe zweispaltige Kartenraster mit gleich großer 2:3-Vorschau;
+- Antippen des Covers öffnet es in der vorhandenen Fullscreen-Fotoansicht;
+- Cover-Models und Cover-Fotografen erscheinen zentriert, ohne Trennzeichen und bei mehreren Namen jeweils untereinander;
+- Artikel zeigen ebenfalls Models und Fotografen untereinander; dazwischen stehen nur der Seitenbereich und – ausschließlich bei mehreren Shootings derselben exakten Modelkombination – `Nr. 1`, `Nr. 2`, ...;
+- die auf vier Zeilen begrenzte und aufklappbare Kurzinfo sowie `Bearbeiten` und `Lösen` bleiben erhalten.
 
 ### Print-Design -- vollständig gerätetest-bestätigt
 
@@ -285,6 +294,8 @@ Der Print/Reihen-Bereich bleibt die bestätigte Referenz für Ausgabekarten:
 - Ausgabennummer links und Zeitraum rechts in einer Zeile;
 - `＋ Ausgabe`, `×`, `Bearbeiten` und `Lösen` bilden eine gemeinsame Buttonfamilie;
 - `Lösen` trennt die Ausgabe von der Reihe, ohne die Ausgabe oder ihre Medien zu löschen.
+- Nur Ausgabennummer und kompakter Zeitraum behalten ihre links/rechts angeordnete gemeinsame Zeile. Archivbereich, Cover-Models, Cover-Fotografen, Bestands-/PDF-Kennzeichen und Aktionen sind horizontal zentriert.
+- Mehrere Cover-Models und Cover-Fotografen stehen ohne Trennzeichen jeweils untereinander; der bisherige dezente graue Schriftstil der Ausgabekarte bleibt erhalten.
 
 Der finale Buttonstandard wurde auf dem Android-Gerät ausdrücklich bestätigt.
 
@@ -325,6 +336,10 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Rubrikbeiträge sind nach Model beziehungsweise exakter Modelkombination gruppiert; die Karte wiederholt den Modelnamen nicht. Die vorhandene Regel „ein Beitrag ohne Nummer, mehrere Beiträge als Nr. 1, Nr. 2, ...“ bleibt bestehen.
 - Die Überführung steht bei `100 %` (`132 von 132`); es bestehen keine alten Direktzuordnungen oder bisherigen Individuals mehr. Der temporäre Fortschrittsblock wird deshalb nicht mehr angezeigt.
 - Der Medien-Tab verwendet indizierte Beziehungen und pro Datenstand zwischengespeicherte Werkberechnungen. Die zuvor mit wachsendem Archiv auftretende Verzögerung ist auf dem Android-Gerät behoben.
+- Titel, Rubriken, Medien und Shootings verwenden dieselbe zweistufige Modeldarstellung: exakte Modelkombination als zentrierte Gruppenüberschrift, darunter die zugehörigen Karten. Vor- und Nachnamen bleiben zusammen; mehrere Models stehen ohne Trennzeichen untereinander.
+- Karten zeigen eine vorhandene individuelle Bezeichnung oder – bei mehreren Objekten derselben Modelkombination – die erforderliche Nummer sowie die Medienanzahl. Bei genau einem unbenannten Objekt entfällt die Nummer weiterhin.
+- Die Fotoansicht ist in diesen Verwaltungsbereichen vereinheitlicht: Eine 2:3-Vorschau öffnet eine reine, natürlich sortierte Fotokarte ohne redundante Bezeichnung und Medienanzahl; einzelne Fotos wechseln von dort in die Fullscreenansicht. Videos erscheinen ausschließlich als separate runde ▶︎-Aktionen und nicht in der Fotokarte.
+- Der Printbereich ist ebenfalls abschließend angeglichen: zentrierte Ausgabemetadaten, gestapelte Model-/Fotografennamen sowie ein einheitliches Cover-/Artikelraster in der Detailansicht. Dieser Stand ist gerätetest-bestätigt.
 
 ## Weitere stabile Funktionen
 
@@ -337,7 +352,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
-- Der während der intensiven Migration beobachtete hohe Akkuverbrauch ist technisch durch Lazy Loading, Abbruch nicht mehr benötigter Vorschauen und die neuen Berechnungsindizes adressiert. Der Verbrauch bei normaler Nutzung nach abgeschlossener Migration sollte noch über einen längeren Zeitraum beobachtet werden.
+- Der während der intensiven Migration beobachtete hohe Akkuverbrauch ist technisch durch Lazy Loading, Abbruch nicht mehr benötigter Vorschauen und die neuen Berechnungsindizes adressiert. Nach abgeschlossener Migration hat sich der Akkuverbrauch bei normaler Nutzung wieder normalisiert.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
 
@@ -361,7 +376,6 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 **Die Verwaltung und ihre Datenüberführung sind abgeschlossen. Als nächstes kann die Übersicht kontrolliert auf die neue Beitrags-, Medien-, Print- und Bereichsstruktur umgebaut werden.**
 
 Vor dem Umbau der Übersicht:
-1. den Akkuverbrauch bei normaler Nutzung ohne Migrationsarbeiten beobachten;
-2. die neue Übersicht ausschließlich aus den bestätigten Beziehungen `Beitrag → Galerie/Video → Shooting` sowie `Rubrik/Titel/Printausgabe → Beitrag` ableiten;
-3. keine frühere Individuals- oder Direktzuordnungslogik wieder einführen;
-4. den Umbau bereichsweise und mit bestehenden echten Archivdaten prüfen.
+1. die neue Übersicht ausschließlich aus den bestätigten Beziehungen `Beitrag → Galerie/Video → Shooting` sowie `Rubrik/Titel/Printausgabe → Beitrag` ableiten;
+2. keine frühere Individuals- oder Direktzuordnungslogik wieder einführen;
+3. den Umbau bereichsweise und mit bestehenden echten Archivdaten prüfen.
