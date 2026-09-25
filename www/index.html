@@ -1134,15 +1134,22 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationDetailSummary{display:grid;gap:10px;margin-bottom:14px}
 .publicationDetailMeta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .publicationDetailNote{line-height:1.45;margin-top:2px}
-.publicationDetailAssets{display:grid;grid-template-columns:minmax(0,140px) 1fr;gap:12px;align-items:start;margin:12px 0 16px}
-.publicationDetailAssets .publicationCover{width:100%;max-width:none;margin:0!important}
-.publicationDetailActions{display:grid;gap:8px}
+.publicationDetailAssets{display:grid;grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px;align-items:stretch;margin:0 0 16px;border:1px solid #e6dce8;border-radius:14px;background:#f8f3f8;padding:10px;min-height:168px}
+.publicationDetailAssets .publicationCover{width:100%;max-width:none;margin:0!important;border-radius:12px;cursor:pointer}
+.publicationDetailCoverBody{min-width:0;padding:2px 2px 2px 0;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.publicationDetailCoverNames,.publicationArticleModelNames{display:grid;gap:2px;font-weight:700;font-size:14px;line-height:1.3;text-align:center}
+.publicationDetailCoverNames span,.publicationArticleModelNames span{white-space:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.publicationDetailCoverNames span::-webkit-scrollbar,.publicationArticleModelNames span::-webkit-scrollbar{display:none}
+.publicationDetailPhotographers,.publicationArticlePhotographers{display:grid;gap:2px;margin-top:8px;font-size:12px;color:var(--muted);line-height:1.35;text-align:center}
+.publicationDetailPhotographers span,.publicationArticlePhotographers span{white-space:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.publicationDetailPhotographers span::-webkit-scrollbar,.publicationArticlePhotographers span::-webkit-scrollbar{display:none}
+.publicationDetailActions{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:10px}
 .publicationDetailActions .btn{margin:0}
 .publicationDetailSeriesHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 @media(max-width:700px){
  .publicationDetailSummary .detailHero{margin-bottom:0;padding-bottom:10px}
  .publicationDetailSummary h2{margin:2px 0 4px;font-size:22px;line-height:1.15}
- .publicationDetailAssets{grid-template-columns:104px minmax(0,1fr);gap:10px;margin-top:10px}
+ .publicationDetailAssets{grid-template-columns:minmax(104px,38%) minmax(0,1fr);gap:10px;margin-top:0}
  .publicationDetailAssets .publicationCover{border-radius:12px}
  .publicationDetailActions .btn{min-height:42px;padding:9px 10px;font-size:12px}
  .publicationDetailSeriesHead h3{margin:0;font-size:16px}
@@ -9116,20 +9123,18 @@ function openPublicationDetail(id){
  if(!pub){toast('Publikation nicht gefunden.');return}
  const mids=managementSelectedModelIds(); const series=linkedObjects(pub.id,'series').filter(s=>managementMatchesAllModels(s,mids));
  const box=document.getElementById('publicationDetailContent');
+ const coverModels=publicationCoverModelNames(pub),coverPhotographers=publicationCoverPhotographerNames(pub);
  box.innerHTML=`<div class="publicationDetailSummary">
-  <div class="detailHero">
-   <div class="small">Ausgabe · ${esc(archiveAreaLabel(pub.archiveArea))}</div><h2>${esc(publicationDisplayTitle(pub))}</h2>
-   <div class="publicationDetailMeta"><span class="small">${esc(publicationPeriodLabel(pub)||'Zeitraum offen')}</span>${publicationStockBadge(pub)}</div>
-   ${publicationCoverModelNames(pub).length?`<div class="small" style="margin-top:7px"><b>Cover:</b> ${esc(publicationCoverModelNames(pub).join(' + '))}</div>`:''}
-   ${publicationCoverPhotographerNames(pub).length?`<div class="small" style="margin-top:5px"><b>Cover-Foto:</b> ${esc(publicationCoverPhotographerNames(pub).join(' + '))}</div>`:''}
-   ${pub.note?`<div class="publicationDetailNote">${esc(pub.note)}</div>`:''}${renderCredits(pub.credits||[])}
-  </div>
   <div class="publicationDetailAssets">
-   <div class="publicationCover" data-publication-cover="${pub.id}"><div class="small">Lade Cover …</div></div>
-   <div class="publicationDetailActions">
+   <div class="publicationCover" data-publication-cover="${pub.id}" data-open-publication-cover="${pub.id}" role="button" tabindex="0" aria-label="Cover im Vollbild öffnen"><div class="small">Lade Cover …</div></div>
+   <div class="publicationDetailCoverBody">
+    ${managementNamesStackHtml(coverModels,'Keine Models zugeordnet','publicationDetailCoverNames')}
+    ${managementNamesStackHtml(coverPhotographers.map(name=>`📷 ${name}`),'','publicationDetailPhotographers')}
+    <div class="publicationDetailActions">
     ${pub.pdfMediaId||pub.hasPdf?`<button class="btn" type="button" data-open-pdf="${pub.id}">📄 Scan / PDF öffnen</button>`:'<div class="small">Noch kein Scan / PDF hinterlegt.</div>'}
     ${pub.coverMediaId?`<button class="btn" type="button" data-clear-publication-cover="${pub.id}">Cover lösen</button>`:''}
     ${pub.pdfMediaId||pub.hasPdf?`<button class="btn" type="button" data-clear-publication-pdf="${pub.id}">PDF lösen</button>`:''}
+    </div>
    </div>
   </div>
  </div>
@@ -9146,6 +9151,10 @@ function openPublicationDetail(id){
  openOverlay('publicationDetailPane');
  box.querySelectorAll('[data-open-series]').forEach(x=>x.onclick=()=>openSeriesDetail(x.dataset.openSeries));
  box.querySelectorAll('[data-open-pdf]').forEach(x=>x.onclick=()=>openPublicationPdf(x.dataset.openPdf));
+ box.querySelectorAll('[data-open-publication-cover]').forEach(x=>{
+  const open=()=>openPublicationCoverFullscreen(x.dataset.openPublicationCover);
+  x.onclick=open;x.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}};
+ });
  box.querySelectorAll('[data-clear-publication-cover]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationCover,'cover'));
  box.querySelectorAll('[data-clear-publication-pdf]').forEach(x=>x.onclick=()=>clearPublicationMedia(x.dataset.clearPublicationPdf,'pdf'));
  box.querySelectorAll('[data-add-publication-contribution]').forEach(x=>x.onclick=()=>openPublicationContribution(x.dataset.addPublicationContribution));
@@ -12421,6 +12430,20 @@ function publicationContributionDisplayParts(release){
  const number=peers.length<2?0:(stored>0&&!peers.some(r=>r.id!==release.id&&Number(r.contributionNumber)===stored)?stored:peers.findIndex(r=>r.id===release.id)+1);
  return {model:modelNames.join(' + ')||'Model folgt aus dem Shooting',label:name||(number>0?`Nr. ${number}`:'')};
 }
+function managementNamesStackHtml(names=[],fallback='',className='publicationArticleModelNames'){
+ const values=[...new Set((names||[]).filter(Boolean))];
+ if(!values.length&&fallback)values.push(fallback);
+ return values.length?`<div class="${className}">${values.map(name=>`<span>${esc(name)}</span>`).join('')}</div>`:'';
+}
+async function openPublicationCoverFullscreen(id){
+ try{
+  const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');
+  let blob=pub?.coverMediaId?await getMedia(pub.coverMediaId):null;
+  if(!blob)blob=await getMedia('cover:'+id);
+  if(!blob||!(blob.type||'').startsWith('image/')){toast('Kein Cover gespeichert.');return}
+  openLightboxFromBlob(blob,publicationDisplayTitle(pub)||'Cover');
+ }catch(e){console.error(e);toast('Cover konnte nicht geöffnet werden.')}
+}
 function publicationArticlePreviewHtml(release){
  const shoot=(state.archive||[]).find(a=>a&&a.id===release?.printShootingId&&a.type==='shoot');
  if(shoot){const parts=shootingPreviewParts(shoot);return `<div class="seriesContributionPreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</div>`}
@@ -12429,14 +12452,13 @@ function publicationArticlePreviewHtml(release){
 function publicationArticleAreaHtml(pub){
  const releases=publicationContributions(pub).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
  const cards=releases.map(release=>{
-  const parts=publicationContributionDisplayParts(release);
   const shoot=(state.archive||[]).find(a=>a&&a.id===release.printShootingId&&a.type==='shoot')||null;
   const photographers=shoot?(shoot.credits||[]).map(personById).filter(isPhotographerPerson).map(p=>p.name).filter(Boolean):[];
-  const context=[photographers.length?`📷 ${photographers.join(' + ')}`:'',shoot?.location||''].filter(Boolean).join(' · ');
-  const shootingDate=shoot?.date?(/^\d{4}-\d{2}-\d{2}$/.test(shoot.date)?germanDateLabel(shoot.date):shoot.date):'';
-  const sourceLabel=shoot?[`Shooting • Nr. ${shootingNumber(shoot)}`,shootingDate].filter(Boolean).join(' · '):'';
-  const finding=release.printPages?`Seiten: ${release.printPages}`:'';
-  return `<div class="seriesContributionCard">${publicationArticlePreviewHtml(release)}<div class="seriesContributionBody"><div class="seriesContributionModel">${esc(parts.model)}</div>${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${context?`<div class="seriesContributionMeta">${esc(context)}</div>`:''}${sourceLabel?`<div class="seriesContributionMeta">${esc(sourceLabel)}</div>`:''}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  const explicitModelIds=(release.printModelIds||[]).filter(Boolean);
+  const modelNames=(explicitModelIds.length?explicitModelIds:(shoot?shootingModelIds(shoot):releaseModelIds(release))).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+  const shootingLabel=shoot?managementShootingCardLabel(shoot):'';
+  const finding=release.printPages?`Seiten ${release.printPages}`:'';
+  return `<div class="seriesContributionCard">${publicationArticlePreviewHtml(release)}<div class="seriesContributionBody">${managementNamesStackHtml(modelNames,'Model folgt aus dem Shooting')}${shootingLabel?`<div class="seriesContributionLabel">${esc(shootingLabel)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${managementNamesStackHtml(photographers.map(name=>`📷 ${name}`),'','publicationArticlePhotographers')}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
  }).join('');
  return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
