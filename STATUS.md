@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-20
-Referenz-Commit: `ad2846817d337c0b82796ddcf131dd60b8f32d58`
+Stand: 2026-09-25
+Referenz-Commit: `d9d4456374497cf091a170abc5192fdebb83836e`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `ad2846817d337c0b82796ddcf131dd60b8f32d58`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `ad2846817d337c0b82796ddcf131dd60b8f32d58`
+- Aktuell berücksichtigter Code: `d9d4456374497cf091a170abc5192fdebb83836e`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -35,7 +35,10 @@ Referenz-Commit: `ad2846817d337c0b82796ddcf131dd60b8f32d58`
 - Der reale Testfall `Bed Time` wurde als eigenständiger Beitrag angelegt und erfolgreich mit zwei Videos desselben Shootings verbunden. Er bleibt bewusst ohne Veröffentlichungskontext und wird nicht als verwaister Datensatz behandelt.
 - Ehemalige Individuals besitzen nun einen eigenen kontrollierten Migrationsweg: freie Galerien/Videos werden pro Shooting unter `Bisherige Individuals` gebündelt und über `In Beitrag überführen` einem neuen eigenständigen Beitrag zugeordnet, ohne Shooting, Werke oder Dateien zu kopieren.
 - Der reale Fall April Katherine wurde mit leerem individuellen Namen erfolgreich überführt: Die vorhandene Galerie wurde übernommen, danach erschien genau ein eigenständiger Beitrag mit `34 Fotos · 0 Videos`.
-- Der Verwaltungsumbau ist funktional vorerst abgeschlossen. Die noch ausstehenden Arbeiten betreffen die kontrollierte Überführung der tatsächlichen Archivdaten, nicht eine weitere parallele Zuordnungslogik.
+- Die kontrollierte Überführung der tatsächlichen Archivdaten ist abgeschlossen: `132 von 132` Zuordnungen verwenden die neue Beitragslogik, es besteht keine Altzuordnung mehr. Die nur während der Migration benötigte Fortschrittsanzeige wurde danach entfernt.
+- Die durch die neue getrennte Galerie-/Video-Logik entstandene Verzögerung im Medienbereich ist behoben. Ein gemeinsamer Beziehungsindex ersetzt wiederholte vollständige Archivdurchläufe; Dateilisten, Modelableitungen und die Nummerierung gleicher Modelkombinationen werden pro Datenstand wiederverwendet. Beide Optimierungsstufen sind auf dem Android-Gerät bestätigt; die Medienverwaltung reagiert wieder unmittelbar.
+- Medienvorschauen werden nur im sichtbaren beziehungsweise nahen Bereich geladen, temporäre Vorschau-URLs anschließend freigegeben und laufende Vorschauerzeugung beim Ansichtswechsel oder Wechsel in den Hintergrund beendet. Fullscreen-Foto- und Videowiedergabe bleiben unverändert.
+- Der Verwaltungsumbau einschließlich Datenüberführung und Leistungsoptimierung ist abgeschlossen.
 - Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
@@ -166,14 +169,14 @@ Aktuell bestätigte Rubrik-Darstellung:
 
 Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
-Aktueller Migrationsstand:
+Bestätigter Migrationsweg (inzwischen vollständig abgeschlossen):
 - echte Beiträge und direkte Rubrik→Shooting-Altzuordnungen werden in der Verwaltung getrennt dargestellt;
 - Altzuordnungen erscheinen als `Alte Direktzuordnungen` mit Zähler `Umstellung erforderlich` und gelten ausdrücklich nicht als Beiträge;
 - `In Beitrag überführen` bietet ausschließlich Galerien/Videos des betreffenden Shootings an, die noch keinem Beitrag zugeordnet sind;
 - die ausgewählten Werke werden einem neu erzeugten echten Beitrag der festen Rubrik zugeordnet; bereits anderweitig zugeordnete Werke werden nicht verändert;
 - ohne auswählbares Werk entsteht kein leerer Beitrag;
 - die alte Direktzuordnung wird erst nach erfolgreichem Speichern entfernt; bei Speicherfehler wird der Ausgangszustand wiederhergestellt;
-- der erste reale Durchlauf wurde mit einer Titelzuordnung und einer neu angelegten Galerie erfolgreich auf dem Android-Gerät getestet. Die Rubrikmigration verwendet denselben Schreibweg, soll aber weiterhin einzeln kontrolliert werden.
+- der erste reale Durchlauf wurde mit einer Titelzuordnung und einer neu angelegten Galerie erfolgreich auf dem Android-Gerät getestet; anschließend wurden alle realen Fälle einzeln kontrolliert über denselben Schreibweg abgeschlossen.
 
 ## Titel -- Etappe 5a funktional stabil, Beitragskarten gerätetest-bestätigt
 
@@ -320,6 +323,8 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Ein individueller Name ist auch für eigenständige Beiträge optional. Ein einzelner unbenannter Beitrag derselben Modelkombination bleibt ohne Nummer; mehrere unbenannte Beiträge erhalten automatisch `Nr. 1`, `Nr. 2`, ... .
 - Rubrik-, Titel- und eigenständige Beitragskarten zeigen `Fotos · Videos`; reine Videobeiträge besitzen eine 2:3-Videovorschau. Shootingkarten wählen das erste natürlich sortierte Hochformatfoto auch dann, wenn die Datei nur über `Foto → Galerie → Shooting` indirekt verbunden ist.
 - Rubrikbeiträge sind nach Model beziehungsweise exakter Modelkombination gruppiert; die Karte wiederholt den Modelnamen nicht. Die vorhandene Regel „ein Beitrag ohne Nummer, mehrere Beiträge als Nr. 1, Nr. 2, ...“ bleibt bestehen.
+- Die Überführung steht bei `100 %` (`132 von 132`); es bestehen keine alten Direktzuordnungen oder bisherigen Individuals mehr. Der temporäre Fortschrittsblock wird deshalb nicht mehr angezeigt.
+- Der Medien-Tab verwendet indizierte Beziehungen und pro Datenstand zwischengespeicherte Werkberechnungen. Die zuvor mit wachsendem Archiv auftretende Verzögerung ist auf dem Android-Gerät behoben.
 
 ## Weitere stabile Funktionen
 
@@ -330,12 +335,9 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 ## Risiken / offene Punkte
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
-- Direkte Rubrik-/Titel→Shooting-Altzuordnungen müssen weiterhin einzeln geprüft und migriert werden. Es gibt bewusst keine automatische Massenmigration.
-- Ein Teil der Altshootings besitzt noch keine freie Galerie beziehungsweise kein freies Video; daraus wird absichtlich noch kein leerer Beitrag erzeugt.
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
 - Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
-- Die Verwaltungsfunktionen sind vorerst vollständig umgebaut; die vorhandenen Archivdaten müssen dennoch weiterhin Fall für Fall überführt und kontrolliert werden.
-- Die Individuals-Migration ist gerätetest-bestätigt; weitere frühere Individuals sollen denselben kontrollierten Einzelweg verwenden und nicht manuell als Kopien neu aufgebaut werden.
+- Der während der intensiven Migration beobachtete hohe Akkuverbrauch ist technisch durch Lazy Loading, Abbruch nicht mehr benötigter Vorschauen und die neuen Berechnungsindizes adressiert. Der Verbrauch bei normaler Nutzung nach abgeschlossener Migration sollte noch über einen längeren Zeitraum beobachtet werden.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
 
@@ -356,14 +358,10 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Die Verwaltungsfunktionen sind vorerst abgeschlossen. Jetzt die Verwaltungsdaten vollständig und kontrolliert auf die neue Beitragslogik umstellen. Die Übersicht bleibt bis dahin ausdrücklich zurückgestellt.**
+**Die Verwaltung und ihre Datenüberführung sind abgeschlossen. Als nächstes kann die Übersicht kontrolliert auf die neue Beitrags-, Medien-, Print- und Bereichsstruktur umgebaut werden.**
 
-Vorgehen:
-1. Altzuordnungen und `Bisherige Individuals` einzeln prüfen; bei Bedarf zuerst eine passende Galerie beziehungsweise ein Video anlegen und dem richtigen Shooting zuordnen.
-2. Bereits vorhandene Shooting-Fotos unter `Import → Zugeordnet` auswählen und bei Bedarf zusätzlich der Galerie zuordnen; die Shootingbeziehung bleibt erhalten.
-3. Anschließend `In Beitrag überführen` verwenden, nur die fachlich passenden freien Werke auswählen und genau einen Fall speichern. Bei ehemaligen Individuals bleibt der Name optional und es wird keine Shooting-Verknüpfung entfernt.
-4. Nach jedem Fall prüfen: echter Beitrag sichtbar, Modelableitung korrekt, Galerie-/Videoanzahl korrekt, Vorschau nur bei tatsächlich enthaltenem Medium, genau eine Altzuordnung weniger.
-5. Rubriken und Titel vollständig bereinigen; danach auch die übrigen Verwaltungsbereiche auf verbliebene alte Schreib-/Leselogik prüfen.
-6. Erst wenn die Verwaltung ausschließlich sauber nachvollziehbare Beitragsdaten verwendet, die Übersicht kontrolliert an die neue Print-/Bereichsstruktur anpassen.
-
-Keine Massenmigration und keine automatische Zusammenfassung nur aufgrund gleicher Models oder Shootings.
+Vor dem Umbau der Übersicht:
+1. den Akkuverbrauch bei normaler Nutzung ohne Migrationsarbeiten beobachten;
+2. die neue Übersicht ausschließlich aus den bestätigten Beziehungen `Beitrag → Galerie/Video → Shooting` sowie `Rubrik/Titel/Printausgabe → Beitrag` ableiten;
+3. keine frühere Individuals- oder Direktzuordnungslogik wieder einführen;
+4. den Umbau bereichsweise und mit bestehenden echten Archivdaten prüfen.
