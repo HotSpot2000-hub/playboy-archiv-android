@@ -10741,7 +10741,7 @@ function publicationBelongsToModel(pub,modelId){
  return linkedSeries.some(s=>seriesBelongsToModel(s,modelId));
 }
 function galleryShootings(gallery){
- return (gallery?.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id&&x.type==='shoot')).filter(Boolean);
+ return gallery?.id?linkedObjects(gallery.id,'shoot'):[];
 }
 function galleryInheritedModelIds(gallery){
  const inherited=[...new Set(galleryShootings(gallery).flatMap(sh=>shootingModelIds(sh)))];
@@ -10765,13 +10765,25 @@ function mediaNaturalCompare(a,b){
  return String(a?.fileName||a?.title||'').localeCompare(String(b?.fileName||b?.title||''),'de',{numeric:true,sensitivity:'base'})||String(a?.id||'').localeCompare(String(b?.id||''));
 }
 function galleryPhotoMedia(gallery){
- return relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/')).sort(mediaNaturalCompare);
+ if(!gallery?.id)return [];
+ const index=getArchiveRelationIndex();
+ const key=`gallery:${gallery.id}`;
+ if(index.workMedia.has(key))return index.workMedia.get(key);
+ const photos=relatedObjects(gallery.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('image/')).sort(mediaNaturalCompare);
+ index.workMedia.set(key,photos);
+ return photos;
 }
 function videoMedia(video){
- return relatedObjects(video.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/')).sort(mediaNaturalCompare);
+ if(!video?.id)return [];
+ const index=getArchiveRelationIndex();
+ const key=`video:${video.id}`;
+ if(index.workMedia.has(key))return index.workMedia.get(key);
+ const videos=relatedObjects(video.id,'media').filter(m=>String(m.mimeType||'').toLowerCase().startsWith('video/')).sort(mediaNaturalCompare);
+ index.workMedia.set(key,videos);
+ return videos;
 }
 function videoShootings(video){
- return (video?.links||[]).map(id=>(state.archive||[]).find(x=>x.id===id&&x.type==='shoot')).filter(Boolean);
+ return video?.id?linkedObjects(video.id,'shoot'):[];
 }
 function videoInheritedModelIds(video){
  const inherited=[...new Set(videoShootings(video).flatMap(sh=>shootingModelIds(sh)))];
@@ -12071,20 +12083,43 @@ function workDisplayLabel(work){
  return `${work.type==='gallery'?'Galerie':'Video'} • Nr. ${n}`;
 }
 function managementWorkModelIds(work){
- if(work?.type==='gallery')return work.modelsMode==='custom'?(work.modelIds||[]):galleryInheritedModelIds(work);
- if(work?.type==='video')return work.modelsMode==='custom'?(work.modelIds||[]):videoInheritedModelIds(work);
- return [];
+ if(!work?.id||(work.type!=='gallery'&&work.type!=='video'))return [];
+ const index=getArchiveRelationIndex();
+ if(index.workModelIds.has(work.id))return index.workModelIds.get(work.id);
+ const ids=work.modelsMode==='custom'?(work.modelIds||[]):work.type==='gallery'?galleryInheritedModelIds(work):videoInheritedModelIds(work);
+ index.workModelIds.set(work.id,ids);
+ return ids;
 }
 function managementWorkDisplayName(work){
- const ids=[...new Set(managementWorkModelIds(work).filter(Boolean))];
- const names=ids.map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
- const base=names.join(' + ')||'Model noch nicht bekannt';
- const key=shootingModelKey(ids);
- if(!key)return base;
- const peers=(state.archive||[]).filter(x=>x&&x.type===work.type&&shootingModelKey(managementWorkModelIds(x))===key).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
- if(peers.length<2)return base;
- const index=peers.findIndex(x=>x.id===work.id);
- return `${base} • Nr. ${index>=0?index+1:1}`;
+ if(!work?.id)return 'Model noch nicht bekannt';
+ const index=getArchiveRelationIndex();
+ if(!index.workDisplayNames){
+  const namesByModelId=new Map((state.models||[]).filter(Boolean).map(model=>[model.id,model.name||'']));
+  const groups=new Map();
+  const records=[];
+  (state.archive||[]).forEach(item=>{
+   if(!item||(item.type!=='gallery'&&item.type!=='video'))return;
+   const ids=[...new Set(managementWorkModelIds(item).filter(Boolean))];
+   const names=ids.map(id=>namesByModelId.get(id)).filter(Boolean);
+   const base=names.join(' + ')||'Model noch nicht bekannt';
+   const modelKey=shootingModelKey(ids);
+   const record={item,base,groupKey:modelKey?`${item.type}|${modelKey}`:''};
+   records.push(record);
+   if(record.groupKey){
+    if(!groups.has(record.groupKey))groups.set(record.groupKey,[]);
+    groups.get(record.groupKey).push(record);
+   }
+  });
+  const displayNames=new Map();
+  records.forEach(record=>displayNames.set(record.item.id,record.base));
+  groups.forEach(group=>{
+   if(group.length<2)return;
+   group.sort((a,b)=>String(a.item.at||'').localeCompare(String(b.item.at||''))||String(a.item.id||'').localeCompare(String(b.item.id||'')));
+   group.forEach((record,position)=>displayNames.set(record.item.id,`${record.base} • Nr. ${position+1}`));
+  });
+  index.workDisplayNames=displayNames;
+ }
+ return index.workDisplayNames.get(work.id)||'Model noch nicht bekannt';
 }
 function releaseSeriesContextLabel(release){
  const series=linkedObjects(release.id,'series')[0]||null;
@@ -12901,7 +12936,7 @@ function getArchiveRelationIndex(){
    inverseIds.get(linkId).push(item.id);
   });
  });
- archiveRelationIndex={archive,length:archive.length,byId,inverseIds,linked:new Map(),related:new Map()};
+ archiveRelationIndex={archive,length:archive.length,byId,inverseIds,linked:new Map(),related:new Map(),workMedia:new Map(),workModelIds:new Map(),workDisplayNames:null};
  return archiveRelationIndex;
 }
 function linkedObjects(id,type){
