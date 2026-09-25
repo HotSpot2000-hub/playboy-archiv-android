@@ -4474,7 +4474,14 @@ function bindOverviewContributionMedia(box){
 }
 function overviewReleaseSearchText(release){
  const names=managementReleaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
- return normalizeSeriesSearch([releaseDisplayTitle(release),...names].join(' '));
+ const works=[...releaseWorks(release,'gallery'),...releaseWorks(release,'video')];
+ const shootings=[...new Map(works.flatMap(work=>linkedObjects(work.id,'shoot')).map(sh=>[sh.id,sh])).values()];
+ return normalizeSeriesSearch([releaseDisplayTitle(release),filterArchiveText(release),...names,...works.map(filterArchiveText),...shootings.map(filterArchiveText)].join(' '));
+}
+function overviewContextMatchesFreeSearch(context,releases=[]){
+ const raw=String(archiveFilter.text||'').trim();
+ if(!raw)return true;
+ return freeSearchMatchesText([filterArchiveText(context),...releases.map(overviewReleaseSearchText)].join(' '),raw);
 }
 function renderGlobalTitles(){
  const box=document.getElementById('globalTitleList');if(!box)return;setupTitleOverviewSearch();
@@ -4482,8 +4489,9 @@ function renderGlobalTitles(){
  const classNames={coed:'Coed','special-edition':'SE Model',playmate:'Playmate','cyber-girl':'Cyber Girl'},levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
  const q=titleSearchQuery();
  const allTitles=(state.archive||[]).filter(t=>t&&t.type==='title'&&overviewFilterAllowsTitle(t.id)).filter(t=>{
-  if(!q)return true;
   const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id));
+  if(!overviewContextMatchesFreeSearch(t,releases))return false;
+  if(!q)return true;
   return normalizeTitleSearch([titleNameFor(t.titleClass,t.titleLevel),modelTitleWhen(t),...releases.map(overviewReleaseSearchText)].join(' ')).includes(q);
  });
  const classes=classOrder.filter(c=>allTitles.some(t=>t.titleClass===c));if(!classes.includes(globalTitleBrowseClass))globalTitleBrowseClass=classes[0]||'';
@@ -4505,7 +4513,9 @@ function renderGlobalSeries(){
  const box=document.getElementById('globalSeriesList');if(!box)return;setupSeriesOverviewSearch();
  const q=seriesSearchQuery();
  const allSeries=(state.archive||[]).filter(sr=>sr&&sr.type==='series'&&overviewFilterAllowsSeries(sr.id)).filter(sr=>{
-  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));return !q||normalizeSeriesSearch([sr.title,...releases.map(overviewReleaseSearchText)].join(' ')).includes(q);
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));
+  if(!overviewContextMatchesFreeSearch(sr,releases))return false;
+  return !q||normalizeSeriesSearch([sr.title,...releases.map(overviewReleaseSearchText)].join(' ')).includes(q);
  }).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
  if(!allSeries.some(sr=>sr.id===globalSeriesBrowseId))globalSeriesBrowseId=allSeries[0]?.id||'';
  const sr=allSeries.find(x=>x.id===globalSeriesBrowseId);
@@ -4523,8 +4533,10 @@ function renderGlobalPublications(){
  const series=printSeriesObjects().slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
  const rows=series.map(sr=>{
   const pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&publicationPrintSeriesObject(pub)?.id===sr.id).filter(pub=>{
+   const releases=publicationContributions(pub);
+   if(!overviewContextMatchesFreeSearch(pub,releases)&&!freeSearchMatchesText(filterArchiveText(sr),archiveFilter.text))return false;
    if(!filterActive()&&!overviewPhotoFilterActive())return true;
-   const ids=[...(pub.coverModelIds||[]),...publicationContributions(pub).flatMap(managementReleaseModelIds)];
+   const ids=[...(pub.coverModelIds||[]),...releases.flatMap(managementReleaseModelIds)];
    return [...new Set(ids)].some(id=>overviewFilterAllowsModel(id));
   }).slice().sort((a,b)=>Number(a.issueNumber||0)-Number(b.issueNumber||0)||String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{numeric:true}));
   return {sr,pubs};
