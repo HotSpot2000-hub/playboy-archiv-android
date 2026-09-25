@@ -194,10 +194,13 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationIssueLine{display:flex!important;align-items:baseline;justify-content:space-between;gap:10px;margin:0!important}
 .publicationIssueLine b{display:block;font-size:16px;line-height:1.25;white-space:nowrap}
 .publicationIssueLine>span{display:block;margin:0!important;font-size:14px;line-height:1.25;text-align:right}
-.publicationManageArea{margin-top:8px;font-weight:700}
-.publicationManageModels{margin-top:5px;line-height:1.4}
-.publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:9px}
-.publicationIssueActions{margin-top:10px;justify-content:flex-start;flex-wrap:wrap}
+.publicationManageArea{margin-top:8px;font-weight:700;text-align:center}
+.publicationManageModels{display:grid;gap:2px;margin-top:5px;line-height:1.4;text-align:center;font-weight:400;color:var(--muted)}
+.publicationManageModels span{display:block;max-width:100%;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
+.publicationManageModels span::-webkit-scrollbar{display:none}
+.publicationManagePhotographers{margin-top:8px}
+.publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:9px}
+.publicationIssueActions{margin-top:10px;justify-content:center;flex-wrap:wrap}
 .publicationIssueActions button{flex:0 0 auto;min-height:0;padding:8px 10px;border-radius:10px;background:#fff;font:inherit;font-size:12px;line-height:normal}
 .publicationArticleArea{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 .publicationArticleHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
@@ -11435,8 +11438,8 @@ function renderArchive(options={}){
           <span class="publicationIssueLine"><b>${issueLabel}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span>
          </button>
          <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
-         ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-         ${coverPhotographers.length?`<div class="small publicationManageModels">Cover-Foto: ${esc(coverPhotographers.join(' + '))}</div>`:''}
+         ${managementNamesStackHtml(coverModels,'Cover-Models noch nicht erfasst','small publicationManageModels')}
+         ${managementNamesStackHtml(coverPhotographers.map(name=>`📷 ${name}`),'','small publicationManageModels publicationManagePhotographers')}
          <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
          <div class="itemActions publicationIssueActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-print-issue="${esc(pub.id)}" data-print-series-id="${esc(sr.id)}">Lösen</button></div>
         </div>
@@ -11470,8 +11473,8 @@ function renderArchive(options={}){
          <span class="publicationIssueLine"><b>${issueLabel}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span>
         </button>
         <div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>
-        ${coverModels.length?`<div class="small publicationManageModels">Cover: ${esc(coverModels.join(' + '))}</div>`:'<div class="small publicationManageModels">Cover-Models noch nicht erfasst</div>'}
-        ${coverPhotographers.length?`<div class="small publicationManageModels">Cover-Foto: ${esc(coverPhotographers.join(' + '))}</div>`:''}
+        ${managementNamesStackHtml(coverModels,'Cover-Models noch nicht erfasst','small publicationManageModels')}
+        ${managementNamesStackHtml(coverPhotographers.map(name=>`📷 ${name}`),'','small publicationManageModels publicationManagePhotographers')}
         <div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div>
         <div class="itemActions publicationIssueActions"><button type="button" data-edit-archive="${esc(pub.id)}">Bearbeiten</button><button type="button" class="deleteBtn" data-delete-archive="${esc(pub.id)}">Löschen</button></div>
        </div>
