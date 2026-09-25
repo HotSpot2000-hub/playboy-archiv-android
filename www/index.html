@@ -4521,15 +4521,18 @@ function renderGlobalSeries(){
 function renderGlobalPublications(){
  const box=document.getElementById('globalPublicationsList');if(!box)return;
  const series=printSeriesObjects().slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
- box.innerHTML=series.length?`<div class="publicationManageList">${series.map(sr=>{
+ const rows=series.map(sr=>{
   const pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&publicationPrintSeriesObject(pub)?.id===sr.id).filter(pub=>{
    if(!filterActive()&&!overviewPhotoFilterActive())return true;
    const ids=[...(pub.coverModelIds||[]),...publicationContributions(pub).flatMap(managementReleaseModelIds)];
    return [...new Set(ids)].some(id=>overviewFilterAllowsModel(id));
   }).slice().sort((a,b)=>Number(a.issueNumber||0)-Number(b.issueNumber||0)||String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{numeric:true}));
+  return {sr,pubs};
+ }).filter(row=>row.pubs.length);
+ box.innerHTML=rows.length?`<div class="publicationManageList">${rows.map(({sr,pubs})=>{
   const cards=pubs.map(pub=>{const models=publicationCoverModelNames(pub),photographers=publicationCoverPhotographerNames(pub);return `<div class="publicationIssueCard"><button type="button" class="publicationManageCover" data-global-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button><div class="publicationIssueBody"><button type="button" class="publicationIssueOpen" data-global-publication="${esc(pub.id)}"><span class="publicationIssueLine"><b>${String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe'}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span></button><div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>${managementNamesStackHtml(models,'Cover-Models noch nicht erfasst','small publicationManageModels')}${managementNamesStackHtml(photographers.map(name=>`📷 ${name}`),'','small publicationManageModels publicationManagePhotographers')}<div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div></div></div>`}).join('');
-  return `<div class="publicationManageCard seriesBrowseCard"><div class="publicationManageHead seriesBrowseCardHead"><span class="publicationManageIcon seriesBrowseIcon" aria-hidden="true">▤</span><div class="publicationSeriesHeading seriesBrowseTitle">${esc(sr.title||'Reihe')}</div><span class="overviewHeadSpacer" aria-hidden="true"></span></div><div class="publicationSeriesBody">${cards||'<div class="small">Noch keine Ausgabe in dieser Reihe.</div>'}</div></div>`;
- }).join('')}</div>`:'<div class="small">Noch keine Printreihen im Archiv.</div>';
+  return `<div class="publicationManageCard seriesBrowseCard"><div class="publicationManageHead seriesBrowseCardHead"><span class="publicationManageIcon seriesBrowseIcon" aria-hidden="true">▤</span><div class="publicationSeriesHeading seriesBrowseTitle">${esc(sr.title||'Reihe')}</div><span class="overviewHeadSpacer" aria-hidden="true"></span></div><div class="publicationSeriesBody">${cards}</div></div>`;
+ }).join('')}</div>`:'<div class="small">Keine Printausgabe entspricht der aktuellen Auswahl.</div>';
  box.querySelectorAll('[data-global-publication]').forEach(x=>x.onclick=()=>openPublicationDetail(x.dataset.globalPublication,{readOnly:true}));hydratePublicationCovers(box);
 }
 function individualSearchQuery(){const panel=document.getElementById('individualOverviewSearchPanel'),input=document.getElementById('individualOverviewSearchInput');return panel&&input&&!panel.classList.contains('hidden')?normalizeSeriesSearch(input.value):''}
