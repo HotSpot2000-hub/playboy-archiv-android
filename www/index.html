@@ -202,6 +202,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .publicationManageBadges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:9px}
 .publicationIssueActions{margin-top:10px;justify-content:center;flex-wrap:wrap}
 .publicationIssueActions button{flex:0 0 auto;min-height:0;padding:8px 10px;border-radius:10px;background:#fff;font:inherit;font-size:12px;line-height:normal}
+.overviewHeadSpacer{width:20px;flex:0 0 20px}
 .publicationArticleArea{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
 .publicationArticleHead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
 .publicationArticleHead h3{margin:0}
@@ -2236,7 +2237,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
 </div>
 <section id="modelsView">
-<div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+<div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
 <div class="card globalModelsCard">
  <div class="globalModelsHeader"><div><h2>Models</h2><div class="small">Alle Models im Archiv.</div></div><div class="modelOverviewTools"><button class="btn" id="modelOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addModelOverviewBtn">＋ Model</button></div></div>
  <div class="modelOverviewSortRow"><span class="small">Profilbild:</span><select id="modelOverviewPhotoFilter" aria-label="Models nach Profilbild filtern"><option value="all">Alle</option><option value="with">✓</option><option value="without">✕</option></select><span class="small">Sortierung:</span><select id="modelOverviewSort" aria-label="Models sortieren"><option value="name">A–Z</option><option value="rating-desc">% ↓</option></select></div>
@@ -2246,8 +2247,8 @@ body.archiveFilterOpen .bottom{display:none!important}
 </section>
 
 <section id="publicationsView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
- <div class="card"><h2>Publikationen</h2><div class="small">Alle Publikationen im Archiv.</div><div id="globalPublicationsList" class="globalBrowseGrid"></div></div>
+ <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" class="active" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="card"><div class="globalModelsHeader"><div><h2>Printausgaben</h2><div class="small">Alle Printreihen und Ausgaben im Archiv.</div></div></div><div id="globalPublicationsList"></div></div>
 </section>
 
 <section id="shootingsView" class="hidden">
@@ -2368,13 +2369,13 @@ body.archiveFilterOpen .bottom{display:none!important}
 </section>
 
 <section id="titlesView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="active" data-main-area="titles">Titel</button><button type="button" class="" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
- <div class="card"><div class="globalModelsHeader"><div><h2>Titel</h2><div class="small">Alle Titel im Archiv.</div></div><div class="titleOverviewTools"><button class="btn" id="titleOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addTitleOverviewBtn">＋ Titel</button></div></div><div id="titleOverviewSearchPanel" class="titleSearchPanel hidden"><div class="titleSearchRow"><input id="titleOverviewSearchInput" type="search" autocomplete="off" placeholder="Titel, Zeitraum oder Model suchen …" aria-label="Titel suchen"><button type="button" id="titleOverviewSearchClose" class="titleSearchClose" aria-label="Suche schließen">×</button></div><div id="titleOverviewSearchHint" class="titleSearchHint">Titelklasse, Titelstufe, Zeitpunkt oder Model eingeben.</div></div><div id="globalTitleList"></div></div>
+ <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" class="active" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="card"><div class="globalModelsHeader"><div><h2>Titel</h2><div class="small">Alle Titel im Archiv.</div></div><div class="titleOverviewTools"><button class="btn" id="titleOverviewSearchBtn" aria-expanded="false">🔍 Suche</button></div></div><div id="titleOverviewSearchPanel" class="titleSearchPanel hidden"><div class="titleSearchRow"><input id="titleOverviewSearchInput" type="search" autocomplete="off" placeholder="Titel, Zeitraum oder Model suchen …" aria-label="Titel suchen"><button type="button" id="titleOverviewSearchClose" class="titleSearchClose" aria-label="Suche schließen">×</button></div><div id="titleOverviewSearchHint" class="titleSearchHint">Titelklasse, Titelstufe, Zeitpunkt oder Model eingeben.</div></div><div id="globalTitleList"></div></div>
 </section>
 
 <section id="seriesView" class="hidden">
- <div class="archiveMainNav"><button type="button" class="" data-main-area="models">Models</button><button type="button" class="" data-main-area="titles">Titel</button><button type="button" class="active" data-main-area="series">Rubriken</button><button type="button" class="" data-main-area="shootings">Individuals</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
- <div class="card"><div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Alle Rubriken im Archiv.</div></div><div class="seriesOverviewTools"><button class="btn" id="seriesOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addSeriesOverviewBtn">＋ Rubrik</button></div></div><div id="seriesOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="seriesOverviewSearchInput" type="search" autocomplete="off" placeholder="Rubrik, Model oder Shooting suchen …" aria-label="Rubriken suchen"><button type="button" id="seriesOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Serienname, Model oder Shooting eingeben.</div></div><div id="globalSeriesList"></div></div>
+ <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" class="active" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="card"><div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Alle Rubriken im Archiv.</div></div><div class="seriesOverviewTools"><button class="btn" id="seriesOverviewSearchBtn" aria-expanded="false">🔍 Suche</button></div></div><div id="seriesOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="seriesOverviewSearchInput" type="search" autocomplete="off" placeholder="Rubrik, Model oder Beitrag suchen …" aria-label="Rubriken suchen"><button type="button" id="seriesOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Rubrik, Model oder Beitrag eingeben.</div></div><div id="globalSeriesList"></div></div>
 </section>
 
 <section id="peopleView" class="hidden">
@@ -4292,17 +4293,17 @@ function setupModelOverviewSearch(){
 }
   
 function overviewContentAvailability(){
- const shoots=(state.archive||[]).filter(a=>a.type==='shoot');
- const hasTitles=(state.archive||[]).some(t=>t.type==='title'&&shoots.some(sh=>(sh.links||[]).includes(t.id)||(t.links||[]).includes(sh.id)));
- const hasSeries=(state.archive||[]).some(sr=>sr.type==='series'&&seriesShootingsAll(sr).length>0);
- const hasIndividuals=shoots.some(sh=>shootingIsIndividual(sh));
- return {titles:hasTitles,series:hasSeries,shootings:hasIndividuals};
+ const releases=(state.archive||[]).filter(a=>a&&a.type==='release');
+ const hasTitles=(state.archive||[]).some(t=>t&&t.type==='title'&&releases.some(r=>linkedObjects(r.id,'title').some(x=>x.id===t.id)));
+ const hasSeries=(state.archive||[]).some(sr=>sr&&sr.type==='series'&&releases.some(r=>linkedObjects(r.id,'series').some(x=>x.id===sr.id)));
+ const hasPublications=(state.archive||[]).some(pub=>pub&&pub.type==='publication');
+ return {titles:hasTitles,series:hasSeries,publications:hasPublications};
 }
 function syncOverviewContentNav(){
  const available=overviewContentAvailability();
  document.querySelectorAll('[data-main-area="titles"]').forEach(b=>b.classList.toggle('hidden',!available.titles));
  document.querySelectorAll('[data-main-area="series"]').forEach(b=>b.classList.toggle('hidden',!available.series));
- document.querySelectorAll('[data-main-area="shootings"]').forEach(b=>b.classList.toggle('hidden',!available.shootings));
+ document.querySelectorAll('[data-main-area="publications"]').forEach(b=>b.classList.toggle('hidden',!available.publications));
  return available;
  if(typeof syncFilteredOverviewNav==='function' && !window.__syncingFilteredOverviewNav){
    window.__syncingFilteredOverviewNav=true;
@@ -4460,6 +4461,76 @@ function renderGlobalPublications(){
  const pubs=(state.archive||[]).filter(a=>a.type==='publication').slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
  box.innerHTML=pubs.length?pubs.map(pub=>{const mids=globalObjectModelIds(pub).filter(id=>(state.models||[]).some(m=>m.id===id));const names=mids.map(id=>state.models.find(m=>m.id===id)?.name).filter(Boolean);return `<div class="globalBrowseCard"><div class="publicationCover" data-global-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}"><div class="small">Lade Cover …</div></div><div class="globalBrowseBody" data-global-publication="${esc(pub.id)}"><b>${esc(publicationDisplayTitle(pub))}</b><div class="small">${esc(publicationPeriodLabel(pub)||'Ausgabe offen')}</div>${names.length?`<div class="globalBrowseModels">${esc(names.join(' · '))}</div>`:''}</div></div>`}).join(''):'<div class="small">Noch keine Publikationen im Archiv.</div>';
  box.querySelectorAll('[data-global-publication]').forEach(x=>x.onclick=()=>{const pub=(state.archive||[]).find(a=>a.id===x.dataset.globalPublication);const mid=globalObjectModelIds(pub)[0];if(mid){state.currentModelId=mid;save()}openPublicationDetail(x.dataset.globalPublication)});hydratePublicationCovers(box);
+}
+function overviewContributionCard(release,displayParts){
+ const galleries=releaseWorks(release,'gallery'),videos=releaseWorks(release,'video');
+ const parts=displayParts(release),photoCount=releaseGalleryPhotoCount(galleries);
+ return `<div class="seriesContributionCard">${seriesContributionPreviewHtml(release,galleries,videos,true)}<div class="seriesContributionBody">${parts.label?`<div class="seriesContributionLabel">${esc(parts.label)}</div>`:''}<div class="seriesContributionMeta">${photoCount} ${photoCount===1?'Foto':'Fotos'} · ${videos.length} ${videos.length===1?'Video':'Videos'}</div>${managementReleaseVideoButtons(videos)}</div></div>`;
+}
+function bindOverviewContributionMedia(box){
+ box.querySelectorAll('[data-open-gallery-detail]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openGalleryDetail(x.dataset.openGalleryDetail)});
+ box.querySelectorAll('[data-release-video-quick]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingVideoQuick(x.dataset.releaseVideoQuick)});
+ hydrateReleaseGalleryCovers(box);hydrateMediaThumbs(box);bindInteractiveMedia(box);
+}
+function overviewReleaseSearchText(release){
+ const names=managementReleaseModelIds(release).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
+ return normalizeSeriesSearch([releaseDisplayTitle(release),...names].join(' '));
+}
+function renderGlobalTitles(){
+ const box=document.getElementById('globalTitleList');if(!box)return;setupTitleOverviewSearch();
+ const classOrder=['coed','cyber-girl','playmate','special-edition'],levelOrder=['week','month','year'];
+ const classNames={coed:'Coed','special-edition':'SE Model',playmate:'Playmate','cyber-girl':'Cyber Girl'},levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
+ const q=titleSearchQuery();
+ const allTitles=(state.archive||[]).filter(t=>t&&t.type==='title'&&overviewFilterAllowsTitle(t.id)).filter(t=>{
+  if(!q)return true;
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id));
+  return normalizeTitleSearch([titleNameFor(t.titleClass,t.titleLevel),modelTitleWhen(t),...releases.map(overviewReleaseSearchText)].join(' ')).includes(q);
+ });
+ const classes=classOrder.filter(c=>allTitles.some(t=>t.titleClass===c));if(!classes.includes(globalTitleBrowseClass))globalTitleBrowseClass=classes[0]||'';
+ const levels=levelOrder.filter(l=>allTitles.some(t=>t.titleClass===globalTitleBrowseClass&&t.titleLevel===l));if(!levels.includes(globalTitleBrowseLevel))globalTitleBrowseLevel=levels[0]||'';
+ const visible=allTitles.filter(t=>t.titleClass===globalTitleBrowseClass&&t.titleLevel===globalTitleBrowseLevel).slice().sort(sortTitlesChronological);
+ const classTabs=classes.map(c=>`<button type="button" class="${c===globalTitleBrowseClass?'active':''}" data-global-title-class="${c}">${esc(classNames[c])}</button>`).join('');
+ const levelTabs=levels.map(l=>`<button type="button" class="${l===globalTitleBrowseLevel?'active':''}" data-global-title-level="${l}">${esc(levelNames[l])}</button>`).join('');
+ const cards=visible.map(t=>{
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(x=>x.id===t.id)).filter(r=>managementReleaseModelIds(r).every(id=>overviewFilterAllowsModel(id)));
+  const contributions=managementContributionGroups(releases,r=>overviewContributionCard(r,titleContributionDisplayParts),titleContributionDisplayParts);
+  return `<div class="titleBrowseCard" data-global-title-card="${esc(t.id)}"><div class="titleBrowseHead managementTitleHead"><span class="titleTrophy" aria-hidden="true">🏆</span><div class="titleBrowseHeading"><div class="titleBrowseName">${esc(titleNameFor(t.titleClass,t.titleLevel)||t.title||'Titel')}</div><div class="titleBrowsePeriod">${esc(modelTitleWhen(t)||'Zeitraum offen')}</div></div><span class="overviewHeadSpacer" aria-hidden="true"></span></div><div class="titleContributionArea managementTitleContributions">${contributions||'<div class="small">Noch kein Beitrag diesem Titel zugeordnet.</div>'}</div></div>`;
+ }).join('');
+ box.innerHTML=classes.length?`<div class="titleManagementScope"><div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards||'<div class="small">Keine Einträge in dieser Stufe.</div>'}</div></div>`:'<div class="small" style="margin-top:10px">Noch keine Titel im Archiv.</div>';
+ box.querySelectorAll('[data-global-title-class]').forEach(x=>x.onclick=()=>{globalTitleBrowseClass=x.dataset.globalTitleClass;globalTitleBrowseLevel='';renderGlobalTitles()});
+ box.querySelectorAll('[data-global-title-level]').forEach(x=>x.onclick=()=>{globalTitleBrowseLevel=x.dataset.globalTitleLevel;renderGlobalTitles()});
+ bindOverviewContributionMedia(box);
+}
+function renderGlobalSeries(){
+ const box=document.getElementById('globalSeriesList');if(!box)return;setupSeriesOverviewSearch();
+ const q=seriesSearchQuery();
+ const allSeries=(state.archive||[]).filter(sr=>sr&&sr.type==='series'&&overviewFilterAllowsSeries(sr.id)).filter(sr=>{
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));return !q||normalizeSeriesSearch([sr.title,...releases.map(overviewReleaseSearchText)].join(' ')).includes(q);
+ }).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
+ if(!allSeries.some(sr=>sr.id===globalSeriesBrowseId))globalSeriesBrowseId=allSeries[0]?.id||'';
+ const sr=allSeries.find(x=>x.id===globalSeriesBrowseId);
+ if(!sr){box.innerHTML=q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Rubrik gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Rubriken im Archiv.</div>';return}
+ const picker=allSeries.map(x=>`<button type="button" class="${x.id===globalSeriesBrowseId?'active':''}" data-global-series-pick="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</button>`).join('');
+ const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id)).filter(r=>managementReleaseModelIds(r).every(id=>overviewFilterAllowsModel(id)));
+ const contributions=managementContributionGroups(releases,r=>overviewContributionCard(r,seriesContributionDisplayParts),seriesContributionDisplayParts);
+ box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="globalSeriesTitleButton" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><span class="overviewHeadSpacer" aria-hidden="true"></span><div class="seriesBrowsePicker hidden" id="globalSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${contributions||'<div class="small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
+ const titleBtn=box.querySelector('#globalSeriesTitleButton'),pickBox=box.querySelector('#globalSeriesPicker');if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
+ box.querySelectorAll('[data-global-series-pick]').forEach(x=>x.onclick=e=>{e.stopPropagation();globalSeriesBrowseId=x.dataset.globalSeriesPick;renderGlobalSeries()});
+ bindOverviewContributionMedia(box);
+}
+function renderGlobalPublications(){
+ const box=document.getElementById('globalPublicationsList');if(!box)return;
+ const series=printSeriesObjects().slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
+ box.innerHTML=series.length?`<div class="publicationManageList">${series.map(sr=>{
+  const pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&publicationPrintSeriesObject(pub)?.id===sr.id).filter(pub=>{
+   if(!filterActive()&&!overviewPhotoFilterActive())return true;
+   const ids=[...(pub.coverModelIds||[]),...publicationContributions(pub).flatMap(managementReleaseModelIds)];
+   return [...new Set(ids)].some(id=>overviewFilterAllowsModel(id));
+  }).slice().sort((a,b)=>Number(a.issueNumber||0)-Number(b.issueNumber||0)||String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{numeric:true}));
+  const cards=pubs.map(pub=>{const models=publicationCoverModelNames(pub),photographers=publicationCoverPhotographerNames(pub);return `<div class="publicationIssueCard"><button type="button" class="publicationManageCover" data-global-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button><div class="publicationIssueBody"><button type="button" class="publicationIssueOpen" data-global-publication="${esc(pub.id)}"><span class="publicationIssueLine"><b>${String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe'}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span></button><div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>${managementNamesStackHtml(models,'Cover-Models noch nicht erfasst','small publicationManageModels')}${managementNamesStackHtml(photographers.map(name=>`📷 ${name}`),'','small publicationManageModels publicationManagePhotographers')}<div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div></div></div>`}).join('');
+  return `<div class="publicationManageCard seriesBrowseCard"><div class="publicationManageHead seriesBrowseCardHead"><span class="publicationManageIcon seriesBrowseIcon" aria-hidden="true">▤</span><div class="publicationSeriesHeading seriesBrowseTitle">${esc(sr.title||'Reihe')}</div><span class="overviewHeadSpacer" aria-hidden="true"></span></div><div class="publicationSeriesBody">${cards||'<div class="small">Noch keine Ausgabe in dieser Reihe.</div>'}</div></div>`;
+ }).join('')}</div>`:'<div class="small">Noch keine Printreihen im Archiv.</div>';
+ box.querySelectorAll('[data-global-publication]').forEach(x=>x.onclick=()=>openPublicationDetail(x.dataset.globalPublication,{readOnly:true}));hydratePublicationCovers(box);
 }
 function individualSearchQuery(){const panel=document.getElementById('individualOverviewSearchPanel'),input=document.getElementById('individualOverviewSearchInput');return panel&&input&&!panel.classList.contains('hidden')?normalizeSeriesSearch(input.value):''}
 function openNewIndividual(){archiveTab='shoot';openArchive();document.getElementById('archiveType').value='shoot';refreshArchiveForm()}
@@ -7628,17 +7699,14 @@ function overviewFilterAllowsShoot(id){
   return !!sh&&shootingModelIds(sh).some(mid=>overviewFilterAllowsModel(mid));
 }
 function overviewFilterAllowsTitle(id){
-  const archiveAllowed=!filterActive()||filteredContext().titleIds.has(id);
-  if(!archiveAllowed)return false;
-  if(!overviewPhotoFilterActive())return true;
-  return (state.archive||[]).some(sh=>sh.type==='shoot'&&(sh.links||[]).includes(id)&&overviewFilterAllowsShoot(sh.id));
+  if(!filterActive()&&!overviewPhotoFilterActive())return true;
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'title').some(t=>t.id===id));
+  return releases.some(r=>managementReleaseModelIds(r).some(mid=>overviewFilterAllowsModel(mid)));
 }
 function overviewFilterAllowsSeries(id){
-  const archiveAllowed=!filterActive()||filteredContext().seriesIds.has(id);
-  if(!archiveAllowed)return false;
-  if(!overviewPhotoFilterActive())return true;
-  const sr=(state.archive||[]).find(a=>a.id===id&&a.type==='series');
-  return !!sr&&seriesShootingsAll(sr).some(sh=>overviewFilterAllowsShoot(sh.id));
+  if(!filterActive()&&!overviewPhotoFilterActive())return true;
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(sr=>sr.id===id));
+  return releases.some(r=>managementReleaseModelIds(r).some(mid=>overviewFilterAllowsModel(mid)));
 }
 function syncFilteredOverviewNav(){
   const active=overviewCombinedFilterActive();
@@ -7754,11 +7822,14 @@ archiveFilter.ratingMin=Number.isFinite(rmin)?Math.max(0,Math.min(100,rmin)):nul
 archiveFilter.ratingMax=Number.isFinite(rmax)?Math.max(0,Math.min(100,rmax)):null;
   archiveFilter.video=document.getElementById('archiveFilterVideo').value;
 }
+function syncFilteredOverviewNav(){
+ return syncOverviewContentNav();
+}
 function rerenderFilteredOverviews(){
   renderGlobalModelOverview();
   renderGlobalTitles();
   renderGlobalSeries();
-  renderGlobalShootings();
+  renderGlobalPublications();
   requestAnimationFrame(()=>{
     syncFilteredOverviewNav();
     requestAnimationFrame(()=>syncFilteredOverviewNav());
@@ -9120,10 +9191,11 @@ async function clearPublicationMedia(id,role){
  openPublicationDetail(pub.id);
  toast(`${label} gelöst.`);
 }
-function openPublicationDetail(id){
+function openPublicationDetail(id,options={}){
  rememberRecentArchive(id);
  const pub=(state.archive||[]).find(a=>a.id===id&&a.type==='publication');
  if(!pub){toast('Publikation nicht gefunden.');return}
+ const readOnly=!!options.readOnly;
  const mids=managementSelectedModelIds(); const series=linkedObjects(pub.id,'series').filter(s=>managementMatchesAllModels(s,mids));
  const box=document.getElementById('publicationDetailContent');
  const coverModels=publicationCoverModelNames(pub),coverPhotographers=publicationCoverPhotographerNames(pub);
@@ -9135,13 +9207,13 @@ function openPublicationDetail(id){
     ${managementNamesStackHtml(coverPhotographers.map(name=>`📷 ${name}`),'','publicationDetailPhotographers')}
     <div class="publicationDetailActions">
     ${pub.pdfMediaId||pub.hasPdf?`<button class="btn" type="button" data-open-pdf="${pub.id}">📄 Scan / PDF öffnen</button>`:'<div class="small">Noch kein Scan / PDF hinterlegt.</div>'}
-    ${pub.coverMediaId?`<button class="btn" type="button" data-clear-publication-cover="${pub.id}">Cover lösen</button>`:''}
-    ${pub.pdfMediaId||pub.hasPdf?`<button class="btn" type="button" data-clear-publication-pdf="${pub.id}">PDF lösen</button>`:''}
+    ${!readOnly&&pub.coverMediaId?`<button class="btn" type="button" data-clear-publication-cover="${pub.id}">Cover lösen</button>`:''}
+    ${!readOnly&&(pub.pdfMediaId||pub.hasPdf)?`<button class="btn" type="button" data-clear-publication-pdf="${pub.id}">PDF lösen</button>`:''}
     </div>
    </div>
   </div>
  </div>
- ${publicationArticleAreaHtml(pub)}
+ ${publicationArticleAreaHtml(pub,readOnly)}
   <div class="relationBlock"><div class="publicationDetailSeriesHead"><h3>Enthaltene Rubriken</h3><span class="countPhrase">${countLabel(series.length,'Rubrik','Rubriken')}</span></div>
    ${series.length?`<div class="seriesGrid">${series.map(s=>{
       const media=seriesMedia(s),cover=media.find(x=>!(x.mimeType||'').startsWith('video/'))||null;
@@ -12452,7 +12524,7 @@ function publicationArticlePreviewHtml(release){
  if(shoot){const parts=shootingPreviewParts(shoot);return `<div class="seriesContributionPreview" ${parts.cover?`data-shooting-cover="${esc(parts.cover.id)}"`:''}>${shootingCoverContent(shoot)}</div>`}
  return '<div class="seriesContributionPreview"><div class="small" style="padding:8px">Noch keine Vorschau</div></div>';
 }
-function publicationArticleAreaHtml(pub){
+function publicationArticleAreaHtml(pub,readOnly=false){
  const releases=publicationContributions(pub).slice().sort((a,b)=>String(a.at||'').localeCompare(String(b.at||''))||String(a.id||'').localeCompare(String(b.id||'')));
  const cards=releases.map(release=>{
   const shoot=(state.archive||[]).find(a=>a&&a.id===release.printShootingId&&a.type==='shoot')||null;
@@ -12461,9 +12533,9 @@ function publicationArticleAreaHtml(pub){
   const modelNames=(explicitModelIds.length?explicitModelIds:(shoot?shootingModelIds(shoot):releaseModelIds(release))).map(id=>(state.models||[]).find(m=>m.id===id)?.name).filter(Boolean);
   const shootingLabel=shoot?managementShootingCardLabel(shoot):'';
   const finding=release.printPages?`Seiten ${release.printPages}`:'';
-  return `<div class="seriesContributionCard">${publicationArticlePreviewHtml(release)}<div class="seriesContributionBody">${managementNamesStackHtml(modelNames,'Model folgt aus dem Shooting')}${shootingLabel?`<div class="seriesContributionLabel">${esc(shootingLabel)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${managementNamesStackHtml(photographers.map(name=>`📷 ${name}`),'','publicationArticlePhotographers')}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div></div></div>`;
+  return `<div class="seriesContributionCard">${publicationArticlePreviewHtml(release)}<div class="seriesContributionBody">${managementNamesStackHtml(modelNames,'Model folgt aus dem Shooting')}${shootingLabel?`<div class="seriesContributionLabel">${esc(shootingLabel)}</div>`:''}${finding?`<div class="seriesContributionMeta">${esc(finding)}</div>`:''}${managementNamesStackHtml(photographers.map(name=>`📷 ${name}`),'','publicationArticlePhotographers')}${release.printSummaryDe?`<div class="publicationArticleSummary" data-publication-article-summary role="button" tabindex="0" aria-expanded="false" title="Text vollständig anzeigen">${esc(release.printSummaryDe)}</div>`:''}${readOnly?'':`<div class="itemActions"><button type="button" class="publicationCompactAction" data-edit-archive="${esc(release.id)}">Bearbeiten</button><button type="button" class="deleteBtn publicationCompactAction" data-unlink-publication-contribution="${esc(release.id)}" data-publication-id="${esc(pub.id)}">Lösen</button></div>`}</div></div>`;
  }).join('');
- return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div><div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
+ return `<div class="publicationArticleArea"><div class="publicationArticleHead"><h3>Artikel</h3><span class="countPhrase">${countLabel(releases.length,'Artikel','Artikel')}</span></div>${readOnly?'':`<div class="seriesAddContributionRow"><button type="button" class="publicationCompactAction" data-add-publication-contribution="${esc(pub.id)}">＋ Artikel hinzufügen</button></div>`}${cards||'<div class="seriesEmptyState small">Noch kein Artikel dieser Ausgabe zugeordnet.</div>'}</div>`;
 }
 function releaseContextIds(release){
  return {
