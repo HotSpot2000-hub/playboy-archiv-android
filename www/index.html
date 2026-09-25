@@ -846,7 +846,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   .publicationBody[data-open-publication],
   .seriesCover[data-open-series],
   .seriesCardBody[data-open-series],
-  .shootingCover[data-open-shooting-standalone],
+  .shootingCover[data-open-shooting-gallery],
   .shootingBody[data-open-shooting-standalone]{
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
@@ -856,7 +856,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
   .publicationBody[data-open-publication]:active,
   .seriesCover[data-open-series]:active,
   .seriesCardBody[data-open-series]:active,
-  .shootingCover[data-open-shooting-standalone]:active,
+  .shootingCover[data-open-shooting-gallery]:active,
   .shootingBody[data-open-shooting-standalone]:active{
     opacity:.86;
   }
@@ -11581,12 +11581,13 @@ function renderArchive(options={}){
         const parts=shootingPreviewParts(sh);
         const label=managementShootingCardLabel(sh);
         return `<div class="shootingCardStandalone">
-         <div class="shootingCover" data-open-shooting-standalone="${sh.id}" ${cover?`data-shooting-cover="${cover.id}"`:''}>
+         <div class="shootingCover" ${parts.photos.length?`data-open-shooting-gallery="${sh.id}"`:''} ${cover?`data-shooting-cover="${cover.id}"`:''}>
           ${shootingCoverContent(sh)}
          </div>
-         <div class="shootingBody" data-open-shooting-standalone="${sh.id}">
+         <div class="shootingBody">
           <b class="managementShootingCardLabel">${esc(label)}</b>
           <div class="managementShootingMediaCount">${countLabel(parts.photos.length,'Foto','Fotos')} · ${countLabel(parts.videos.length,'Video','Videos')}</div>
+          ${managementVideoFileButtons(parts.videos)}
          </div>
          <div class="seriesCardActions">
           ${archivePinHtml(sh.id)}
@@ -11708,7 +11709,7 @@ box.querySelectorAll('[data-edit-management-series]').forEach(x=>x.onclick=e=>{e
  box.querySelectorAll('[data-model-unlink-series-shooting]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();const sh=(state.archive||[]).find(a=>a.id===x.dataset.modelUnlinkSeriesShooting&&a.type==='shoot');if(!sh||!confirm('Shooting wirklich von dieser Rubrik lösen? Das Shooting selbst bleibt im Archiv.'))return;const sr=(state.archive||[]).find(a=>a.id===x.dataset.seriesId&&a.type==='series');sh.links=(sh.links||[]).filter(id=>id!==x.dataset.seriesId);if(sr)sr.links=(sr.links||[]).filter(id=>id!==sh.id);if(save()){renderArchive();toast('Shooting von der Rubrik gelöst.')}});
  box.querySelectorAll('[data-open-related-series]').forEach(x=>x.onclick=e=>{e.stopPropagation();openSeriesDetail(x.dataset.openRelatedSeries)});
  box.querySelectorAll('[data-open-related-publication]').forEach(x=>x.onclick=e=>{e.stopPropagation();openPublicationDetail(x.dataset.openRelatedPublication)});
- box.querySelectorAll('[data-open-shooting-standalone]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.openShootingStandalone,null));
+ box.querySelectorAll('[data-open-shooting-gallery]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingGalleryDetail(x.dataset.openShootingGallery)});
  box.querySelectorAll('[data-open-release-work]').forEach(x=>x.onclick=e=>{e.stopPropagation();const work=(state.archive||[]).find(a=>a.id===x.dataset.openReleaseWork&&(a.type==='gallery'||a.type==='video'));if(!work)return;archiveTab=work.type;managementSearch='';managementSearchOpen=false;renderArchive();setTimeout(()=>{const btn=[...document.querySelectorAll('[data-edit-archive]')].find(b=>b.dataset.editArchive===work.id);btn?.closest('.archiveItem')?.scrollIntoView({behavior:'smooth',block:'center'})},0)});
  box.querySelectorAll('[data-open-gallery-detail]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openGalleryDetail(x.dataset.openGalleryDetail)});
  box.querySelectorAll('[data-release-video-quick]').forEach(x=>x.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingVideoQuick(x.dataset.releaseVideoQuick)});
@@ -12492,6 +12493,9 @@ function seriesContributionPreviewHtml(release,galleries,videos,openGallery=fals
 }
 function managementReleaseVideoButtons(videos){
  const files=videos.flatMap(video=>videoMedia(video));
+ return managementVideoFileButtons(files);
+}
+function managementVideoFileButtons(files=[]){
  return files.length?`<div class="managementVideoButtons">${files.map((media,index)=>`<button type="button" class="managementVideoQuick" data-release-video-quick="${esc(media.id)}" aria-label="Video ${index+1} abspielen" title="Video ${index+1} abspielen">▶︎</button>`).join('')}</div>`:'';
 }
 function nextSeriesContributionNumber(seriesId,modelId,excludeReleaseId=''){
@@ -13300,10 +13304,18 @@ async function hydrateReleaseGalleryCovers(root=document){
 function openGalleryDetail(galleryId){
  const gallery=(state.archive||[]).find(a=>a&&a.id===galleryId&&a.type==='gallery');
  if(!gallery){toast('Galerie nicht gefunden.');return}
- const photos=galleryPhotoMedia(gallery);
+ openManagementPhotoGrid(galleryPhotoMedia(gallery),'Noch keine Fotos in dieser Galerie.');
+}
+function openShootingGalleryDetail(shootingId){
+ const shooting=(state.archive||[]).find(item=>item&&item.id===shootingId&&item.type==='shoot');
+ if(!shooting){toast('Shooting nicht gefunden.');return}
+ rememberRecentArchive(shooting.id);
+ openManagementPhotoGrid(shootingPreviewParts(shooting).photos,'Noch keine Fotos in diesem Shooting.');
+}
+function openManagementPhotoGrid(photos=[],emptyText='Noch keine Fotos vorhanden.'){
  const ids=photos.map(photo=>photo.id);
  const box=document.getElementById('galleryDetailContent');
- box.innerHTML=`<div class="galleryDetailHead"><h2>${esc(managementWorkDisplayName(gallery))}</h2><span>${countLabel(photos.length,'Foto','Fotos')}</span></div>${photos.length?`<div class="galleryDetailGrid">${photos.map(photo=>`<div class="mediaThumb" data-media-id="${esc(photo.id)}" data-gallery-ids="${esc(ids.join(','))}" aria-label="${esc(photo.fileName||'Foto')} öffnen"><div class="small" style="padding:8px">Lade Foto …</div></div>`).join('')}</div>`:'<div class="small">Noch keine Fotos in dieser Galerie.</div>'}`;
+ box.innerHTML=photos.length?`<div class="galleryDetailGrid">${photos.map(photo=>`<div class="mediaThumb" data-media-id="${esc(photo.id)}" data-gallery-ids="${esc(ids.join(','))}" aria-label="${esc(photo.fileName||'Foto')} öffnen"><div class="small" style="padding:8px">Lade Foto …</div></div>`).join('')}</div>`:`<div class="small">${esc(emptyText)}</div>`;
  openOverlay('galleryDetailPane');
  const sheet=document.querySelector('#overlay .sheet');if(sheet)sheet.scrollTop=0;
  hydrateMediaThumbs(box);
