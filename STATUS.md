@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-09-25
-Referenz-Commit: `79fa39b12139655f7cb2f90a03d158a3365ad8df`
+Referenz-Commit: `f6fb83ac98cbcad2e850bda3ad95145074aa3db5`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,7 +18,7 @@ Referenz-Commit: `79fa39b12139655f7cb2f90a03d158a3365ad8df`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `79fa39b12139655f7cb2f90a03d158a3365ad8df`
+- Aktuell berücksichtigter Code: `f6fb83ac98cbcad2e850bda3ad95145074aa3db5`
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -341,6 +341,19 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 - Die Fotoansicht ist in diesen Verwaltungsbereichen vereinheitlicht: Eine 2:3-Vorschau öffnet eine reine, natürlich sortierte Fotokarte ohne redundante Bezeichnung und Medienanzahl; einzelne Fotos wechseln von dort in die Fullscreenansicht. Videos erscheinen ausschließlich als separate runde ▶︎-Aktionen und nicht in der Fotokarte.
 - Der Printbereich ist ebenfalls abschließend angeglichen: zentrierte Ausgabemetadaten, gestapelte Model-/Fotografennamen sowie ein einheitliches Cover-/Artikelraster in der Detailansicht. Dieser Stand ist gerätetest-bestätigt.
 
+## Übersicht -- auf die neue Beitragslogik umgebaut und gerätetest-bestätigt
+
+- Die Hauptbereiche der Übersicht sind `Models`, `Titel`, `Rubriken` und `Printausgaben`; der frühere sichtbare Bereich `Individuals` ist entfernt.
+- `Models` bleibt die fachliche Grundansicht und wird auch bei aktiver Filterung immer als Bereich angeboten. Innerhalb der Ansicht erscheinen nur die Models, die der aktuellen Filterauswahl entsprechen.
+- Titel, Rubriken und Printausgaben werden ausschließlich aus den bestätigten Beziehungen `Veröffentlichungskontext → Beitrag → Galerie/Video → Shooting` abgeleitet. Frühere direkte Shooting-Zuordnungen und die alte Individuals-Logik werden nicht erneut als Übersichtsdaten verwendet.
+- Titel- und Rubrikenansicht übernehmen die bestätigte Karten- und Modelgruppierung aus der Verwaltung, sind jedoch reine Leseansichten ohne Bearbeiten-, Lösen-, Löschen- oder Hinzufügen-Aktionen.
+- Beitragsvorschauen öffnen weiterhin die reine Fotokarte beziehungsweise einzelne Videos über ihre separaten ▶︎-Aktionen.
+- Die Printübersicht zeigt nur tatsächlich vorhandene Reihen und Ausgaben. Leere Reihen werden nicht ausgegeben; Ausgabekarten und die geöffnete Detailansicht sind read-only, während Cover, Artikelvorschauen, Galerien und Videos weiterhin geöffnet werden können.
+- Der gemeinsame Archivfilter lässt sich auf Android zuverlässig über `Filter anwenden` bestätigen und schließt anschließend den Filterdialog.
+- Freitext wird kontextgenau ausgewertet: Eine Rubrik wie `Busty Babes` zeigt nur die zugehörigen Models und ausschließlich Beiträge dieser Rubrik; fachlich fremde Titel, Rubriken und Printausgaben desselben Models werden nicht mit ausgegeben.
+- `Models` bleibt im Navigationsstreifen immer sichtbar. `Titel`, `Rubriken` und `Printausgaben` erscheinen bei aktiver Filterung nur, wenn der jeweilige Bereich eigene Treffer enthält; fällt der aktuell geöffnete Bereich weg, wechselt die Übersicht automatisch in einen weiterhin passenden Bereich.
+- Die Kombination aus Model-Grundansicht, dynamischer Bereichsauswahl und kontextgenauer Filterung ist auf dem Android-Gerät bestätigt.
+
 ## Weitere stabile Funktionen
 
 SAF-Restore; permanente Signierung/Update-Installation; Foto-Pinch-Zoom; Video-Wiedergabe; Models, Titel, Rubriken, Shootings, Galerien, Videos, Beiträge, Medienverwaltung; Archivfilter/Suche/Bewertung/Profilbildfilter; Research mit `careerFacts`, `bioFacts`, `archiveFacts`, Korrekturlogik, Profilfakten, Bio-Generator, Import und Erschließungsgrad.
@@ -351,7 +364,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
-- Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
+- Der Umbau der Übersicht auf die neue Beitrags-, Print- und Bereichsstruktur ist abgeschlossen und gerätetest-bestätigt.
 - Der während der intensiven Migration beobachtete hohe Akkuverbrauch ist technisch durch Lazy Loading, Abbruch nicht mehr benötigter Vorschauen und die neuen Berechnungsindizes adressiert. Nach abgeschlossener Migration hat sich der Akkuverbrauch bei normaler Nutzung wieder normalisiert.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
@@ -373,9 +386,6 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Die Verwaltung und ihre Datenüberführung sind abgeschlossen. Als nächstes kann die Übersicht kontrolliert auf die neue Beitrags-, Medien-, Print- und Bereichsstruktur umgebaut werden.**
+**Verwaltung, Datenüberführung, Leistungsoptimierung und der Umbau der Übersicht sind abgeschlossen und auf dem Android-Gerät bestätigt.**
 
-Vor dem Umbau der Übersicht:
-1. die neue Übersicht ausschließlich aus den bestätigten Beziehungen `Beitrag → Galerie/Video → Shooting` sowie `Rubrik/Titel/Printausgabe → Beitrag` ableiten;
-2. keine frühere Individuals- oder Direktzuordnungslogik wieder einführen;
-3. den Umbau bereichsweise und mit bestehenden echten Archivdaten prüfen.
+Beim nächsten Arbeitsblock kann ein neuer fachlicher Schwerpunkt festgelegt werden. Bis dahin gilt der aktuelle Stand als sauberer Übergabepunkt; die bestätigte neue Beitragslogik und die kontextgenaue Übersicht dürfen bei späteren Erweiterungen nicht durch frühere Individuals- oder Direktzuordnungslogik umgangen werden.
