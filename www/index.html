@@ -7838,7 +7838,39 @@ archiveFilter.ratingMax=Number.isFinite(rmax)?Math.max(0,Math.min(100,rmax)):nul
   archiveFilter.video=document.getElementById('archiveFilterVideo').value;
 }
 function syncFilteredOverviewNav(){
- return syncOverviewContentNav();
+ if(!overviewCombinedFilterActive())return syncOverviewContentNav();
+
+ const visibility={
+  models:true,
+  titles:!!document.querySelector('#globalTitleList .titleBrowseCard'),
+  series:!!document.querySelector('#globalSeriesList .seriesBrowseCard'),
+  publications:!!document.querySelector('#globalPublicationsList .publicationIssueCard')
+ };
+
+ Object.entries(visibility).forEach(([area,visible])=>{
+  document.querySelectorAll(`[data-main-area="${area}"]`).forEach(b=>b.classList.toggle('hidden',!visible));
+ });
+
+ const currentArea=
+  !document.getElementById('modelsView')?.classList.contains('hidden')?'models':
+  !document.getElementById('titlesView')?.classList.contains('hidden')?'titles':
+  !document.getElementById('seriesView')?.classList.contains('hidden')?'series':
+  !document.getElementById('publicationsView')?.classList.contains('hidden')?'publications':'models';
+ if(visibility[currentArea]||window.__filterAreaRedirect)return visibility;
+
+ const nextArea=['models','titles','series','publications'].find(area=>visibility[area]);
+ if(nextArea){
+  window.__filterAreaRedirect=true;
+  try{
+   if(nextArea==='titles')showGlobalTitlesView();
+   else if(nextArea==='series')showGlobalSeriesView();
+   else if(nextArea==='publications')showGlobalPublicationsView();
+   else showModels();
+  }finally{
+   setTimeout(()=>{window.__filterAreaRedirect=false},0);
+  }
+ }
+ return visibility;
 }
 function rerenderFilteredOverviews(){
   renderGlobalModelOverview();
