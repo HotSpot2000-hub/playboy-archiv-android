@@ -1908,18 +1908,18 @@ body.archiveFilterOpen .bottom{display:none!important}
  align-items:flex-end;
  justify-content:center;
  background:rgba(0,0,0,.32);
- padding:0 0 calc(84px + env(safe-area-inset-bottom,0px));
+ padding:0;
  overflow:hidden;
 }
 #archiveFilterModal.hidden{display:none!important}
 .archiveFilterCard{
  width:min(520px,100%);
- max-height:calc(100dvh - 84px - env(safe-area-inset-bottom,0px));
+ max-height:88dvh;
  margin:0 auto;
  overflow-y:auto;
  background:#fff;
  border-radius:22px 22px 0 0;
- padding:0 16px 18px;
+ padding:0 16px calc(18px + env(safe-area-inset-bottom,0px));
  box-shadow:0 -8px 28px rgba(0,0,0,.18);
 }
 .archiveFilterHeader{
@@ -7843,6 +7843,7 @@ function applyArchiveFilter(){
   readArchiveFilterForm();
   updateFilterSummary();
   rerenderFilteredOverviews();
+  closeArchiveFilter();
 }
 function resetArchiveFilter(){
   invalidateArchiveFilterCache();
