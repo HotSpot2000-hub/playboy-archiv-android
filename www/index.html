@@ -2078,7 +2078,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="height"> Größenfilter inklusive Unter- und Obergrenze</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="photos"> Foto-Minimum/-Maximum filtert Shootings korrekt</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="video"> Video-/Kein-Video-Filter funktioniert</label>
-   <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="areas"> Leere Titel/Rubriken/Individuals werden ausgeblendet</label>
+   <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="areas"> Leere Titel/Rubriken/Printbereiche werden ausgeblendet</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="redirect"> Leerer aktueller Bereich springt automatisch zu Models</label>
    <label class="fact"><input type="checkbox" class="praxis11Check" data-praxis11="back"> Shooting-Zurück funktioniert oben und unten</label>
    <div id="praxis11Status" class="small" style="margin-top:8px">0 / 8 neue 1.1-Praxistests bestätigt.</div>
@@ -2237,7 +2237,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
 </div>
 <section id="modelsView">
-<div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+<div class="archiveMainNav"><button type="button" class="active" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Print</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
 <div class="card globalModelsCard">
  <div class="globalModelsHeader"><div><h2>Models</h2><div class="small">Alle Models im Archiv.</div></div><div class="modelOverviewTools"><button class="btn" id="modelOverviewSearchBtn" aria-expanded="false">🔍 Suche</button><button class="btn" id="addModelOverviewBtn">＋ Model</button></div></div>
  <div class="modelOverviewSortRow"><span class="small">Profilbild:</span><select id="modelOverviewPhotoFilter" aria-label="Models nach Profilbild filtern"><option value="all">Alle</option><option value="with">✓</option><option value="without">✕</option></select><span class="small">Sortierung:</span><select id="modelOverviewSort" aria-label="Models sortieren"><option value="name">A–Z</option><option value="rating-desc">% ↓</option></select></div>
@@ -2247,8 +2247,8 @@ body.archiveFilterOpen .bottom{display:none!important}
 </section>
 
 <section id="publicationsView" class="hidden">
- <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" class="active" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
- <div class="card"><div class="globalModelsHeader"><div><h2>Printausgaben</h2><div class="small">Alle Printreihen und Ausgaben im Archiv.</div></div></div><div id="globalPublicationsList"></div></div>
+ <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" class="active" data-main-area="publications">Print</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="card"><div class="globalModelsHeader"><div><h2>Print</h2><div class="small">Alle Printreihen und Ausgaben im Archiv.</div></div></div><div id="globalPublicationsList"></div></div>
 </section>
 
 <section id="shootingsView" class="hidden">
@@ -2369,12 +2369,12 @@ body.archiveFilterOpen .bottom{display:none!important}
 </section>
 
 <section id="titlesView" class="hidden">
- <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" class="active" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" class="active" data-main-area="titles">Titel</button><button type="button" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Print</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
  <div class="card"><div class="globalModelsHeader"><div><h2>Titel</h2><div class="small">Alle Titel im Archiv.</div></div><div class="titleOverviewTools"><button class="btn" id="titleOverviewSearchBtn" aria-expanded="false">🔍 Suche</button></div></div><div id="titleOverviewSearchPanel" class="titleSearchPanel hidden"><div class="titleSearchRow"><input id="titleOverviewSearchInput" type="search" autocomplete="off" placeholder="Titel, Zeitraum oder Model suchen …" aria-label="Titel suchen"><button type="button" id="titleOverviewSearchClose" class="titleSearchClose" aria-label="Suche schließen">×</button></div><div id="titleOverviewSearchHint" class="titleSearchHint">Titelklasse, Titelstufe, Zeitpunkt oder Model eingeben.</div></div><div id="globalTitleList"></div></div>
 </section>
 
 <section id="seriesView" class="hidden">
- <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" class="active" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Printausgaben</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
+ <div class="archiveMainNav"><button type="button" data-main-area="models">Models</button><button type="button" data-main-area="titles">Titel</button><button type="button" class="active" data-main-area="series">Rubriken</button><button type="button" data-main-area="publications">Print</button><button type="button" class="archiveNavBtn archiveFilterBtn">🔍 Filter</button></div>
  <div class="card"><div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Alle Rubriken im Archiv.</div></div><div class="seriesOverviewTools"><button class="btn" id="seriesOverviewSearchBtn" aria-expanded="false">🔍 Suche</button></div></div><div id="seriesOverviewSearchPanel" class="seriesSearchPanel hidden"><div class="seriesSearchRow"><input id="seriesOverviewSearchInput" type="search" autocomplete="off" placeholder="Rubrik, Model oder Beitrag suchen …" aria-label="Rubriken suchen"><button type="button" id="seriesOverviewSearchClose" class="seriesSearchClose" aria-label="Suche schließen">×</button></div><div class="seriesSearchHint">Rubrik, Model oder Beitrag eingeben.</div></div><div id="globalSeriesList"></div></div>
 </section>
 
@@ -2478,7 +2478,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  <div class="archiveMainNav profileArchiveNav">
   <button type="button" class="active" data-profile-archive-tab="titles">Titel</button>
   <button type="button" data-profile-archive-tab="series">Rubriken</button>
-  <button type="button" data-profile-archive-tab="shootings">Individuals</button>
+  <button type="button" data-profile-archive-tab="publications">Print</button>
  </div>
  <div class="card" id="profileArchiveOverview"></div>
 </div>
@@ -4312,21 +4312,23 @@ function syncOverviewContentNav(){
  }
 }
 function profileContentAvailability(modelId){
- const modelShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(modelId));
- const hasTitles=modelShoots.some(sh=>(sh.links||[]).some(id=>(state.archive||[]).some(t=>t.id===id&&t.type==='title')));
- const hasSeries=(state.archive||[]).some(sr=>sr.type==='series'&&seriesShootingsAll(sr).some(sh=>shootingModelIds(sh).includes(modelId)));
- const hasIndividuals=modelShoots.some(sh=>shootingIsIndividual(sh));
- return {titles:hasTitles,series:hasSeries,shootings:hasIndividuals};
+ const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(modelId));
+ const hasTitles=releases.some(r=>linkedObjects(r.id,'title').length);
+ const hasSeries=releases.some(r=>linkedObjects(r.id,'series').length);
+ const hasPublications=(state.archive||[]).some(pub=>pub&&pub.type==='publication'&&(
+  (pub.coverModelIds||[]).includes(modelId)||publicationContributions(pub).some(r=>managementReleaseModelIds(r).includes(modelId))
+ ));
+ return {titles:hasTitles,series:hasSeries,publications:hasPublications};
 }
 function syncProfileContentNav(modelId){
  const available=profileContentAvailability(modelId);
  const card=document.querySelector('#profileView .profileArchiveCard');
- if(card)card.classList.toggle('hidden',!available.titles&&!available.series&&!available.shootings);
+ if(card)card.classList.toggle('hidden',!available.titles&&!available.series&&!available.publications);
  document.querySelectorAll('[data-profile-archive-tab="titles"]').forEach(b=>b.classList.toggle('hidden',!available.titles));
  document.querySelectorAll('[data-profile-archive-tab="series"]').forEach(b=>b.classList.toggle('hidden',!available.series));
- document.querySelectorAll('[data-profile-archive-tab="shootings"]').forEach(b=>b.classList.toggle('hidden',!available.shootings));
+ document.querySelectorAll('[data-profile-archive-tab="publications"]').forEach(b=>b.classList.toggle('hidden',!available.publications));
  if(!available[profileArchiveTab]){
-  profileArchiveTab=available.titles?'titles':available.series?'series':available.shootings?'shootings':'titles';
+  profileArchiveTab=available.titles?'titles':available.series?'series':available.publications?'publications':'titles';
   profileArchiveSearchOpen=false;
   profileArchiveSearch='';
  }
@@ -4848,45 +4850,53 @@ function renderProfileArchiveOverview(){
  const box=document.getElementById('profileArchiveOverview');if(!box||!state.currentModelId)return;
  const mid=state.currentModelId,m=model(),modelName=m.name||'diesem Model';
  const availability=syncProfileContentNav(mid);
- if(!availability.titles&&!availability.series&&!availability.shootings){box.innerHTML='';return}
+ if(!availability.titles&&!availability.series&&!availability.publications){box.innerHTML='';return}
  const q=normalizeSeriesSearch(profileArchiveSearch);
  document.querySelectorAll('[data-profile-archive-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.profileArchiveTab===profileArchiveTab);if(!b.dataset.bound){b.dataset.bound='1';b.onclick=()=>{profileArchiveTab=b.dataset.profileArchiveTab;profileArchiveSearchOpen=false;profileArchiveSearch='';renderProfileArchiveOverview()}}});
- const modelShoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(mid));
  if(profileArchiveTab==='titles'){
   const classOrder=['coed','cyber-girl','playmate','special-edition'],levelOrder=['week','month','year'];
   const classNames={'coed':'Coed','special-edition':'SE Model','playmate':'Playmate','cyber-girl':'Cyber Girl'},levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
-  let titles=(state.archive||[]).filter(t=>t.type==='title'&&titleBelongsToProfileModel(t,mid));
+  let titles=(state.archive||[]).filter(t=>t&&t.type==='title'&&(state.archive||[]).some(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'title').some(x=>x.id===t.id)));
   if(q)titles=titles.filter(t=>normalizeSeriesSearch([titleSearchText(t),t.title,t.titlePeriod,t.titleYear].join(' ')).includes(q));
   const classes=classOrder.filter(c=>titles.some(t=>t.titleClass===c));if(!classes.includes(profileTitleBrowseClass))profileTitleBrowseClass=classes[0]||'';
   const levels=levelOrder.filter(l=>titles.some(t=>t.titleClass===profileTitleBrowseClass&&t.titleLevel===l));if(!levels.includes(profileTitleBrowseLevel))profileTitleBrowseLevel=levels[0]||'';
   const visible=titles.filter(t=>t.titleClass===profileTitleBrowseClass&&t.titleLevel===profileTitleBrowseLevel).slice().sort(sortTitlesChronological);
   const classTabs=classes.map(c=>`<button type="button" class="${c===profileTitleBrowseClass?'active':''}" data-profile-title-class="${c}">${esc(classNames[c])}</button>`).join('');
   const levelTabs=levels.map(l=>`<button type="button" class="${l===profileTitleBrowseLevel?'active':''}" data-profile-title-level="${l}">${esc(levelNames[l])}</button>`).join('');
-  const cards=visible.map(t=>{const period=modelTitleWhen(t);const shoots=modelShoots.filter(sh=>(sh.links||[]).includes(t.id)).slice().sort(sortShootingsNatural);return `<div class="titleBrowseCard"><div class="titleBrowseHead"><button type="button" class="titleTrophy" data-profile-edit-title="${esc(t.id)}">🏆</button><div><div class="titleBrowseName">${esc(period||t.title||'Titel')}</div></div><div class="titleBrowseActions"><button type="button" class="titleDeleteX" data-profile-delete-title="${esc(t.id)}">×</button></div></div><div class="titleShootings"><div class="shootingGridStandalone">${shoots.map(sh=>profileArchiveShootingCard(sh)).join('')}</div></div></div>`}).join('');
-  box.innerHTML=`<div class="globalModelsHeader"><div><h2>Titel</h2><div class="small">Titel von ${esc(modelName)}.</div></div></div>`+(titles.length?`<div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards}</div>`:(q?'<div class="titleSearchHint">Kein passender Titel gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Titel für dieses Model.</div>'));
+  const cards=visible.map(t=>{
+   const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'title').some(x=>x.id===t.id));
+   const contributions=managementContributionGroups(releases,r=>overviewContributionCard(r,titleContributionDisplayParts),titleContributionDisplayParts);
+   return `<div class="titleBrowseCard"><div class="titleBrowseHead managementTitleHead"><span class="titleTrophy" aria-hidden="true">🏆</span><div class="titleBrowseHeading"><div class="titleBrowseName">${esc(titleNameFor(t.titleClass,t.titleLevel)||t.title||'Titel')}</div><div class="titleBrowsePeriod">${esc(modelTitleWhen(t)||'Zeitraum offen')}</div></div><span class="overviewHeadSpacer" aria-hidden="true"></span></div><div class="titleContributionArea managementTitleContributions">${contributions}</div></div>`;
+  }).join('');
+  box.innerHTML=`<div class="globalModelsHeader"><div><h2>Titel</h2><div class="small">Titel von ${esc(modelName)}.</div></div></div><div class="titleBrowseTabs">${classTabs}</div><div class="titleBrowseTabs">${levelTabs}</div><div class="titleBrowseList">${cards}</div>`;
   box.querySelectorAll('[data-profile-title-class]').forEach(x=>x.onclick=()=>{profileTitleBrowseClass=x.dataset.profileTitleClass;profileTitleBrowseLevel='';renderProfileArchiveOverview()});
   box.querySelectorAll('[data-profile-title-level]').forEach(x=>x.onclick=()=>{profileTitleBrowseLevel=x.dataset.profileTitleLevel;renderProfileArchiveOverview()});
-  box.querySelectorAll('[data-profile-edit-title]').forEach(x=>x.onclick=e=>{e.stopPropagation();openArchiveEdit(x.dataset.profileEditTitle)});
-  box.querySelectorAll('[data-profile-delete-title]').forEach(x=>x.onclick=e=>{e.stopPropagation();deleteArchiveItem(x.dataset.profileDeleteTitle)});
-  box.querySelectorAll('[data-profile-shooting]').forEach(x=>x.onclick=()=>openShootingDetail(x.dataset.profileShooting,null,{source:'profile',scrollY:window.scrollY}));hydrateShootingCovers(box);return;
+  bindOverviewContributionMedia(box);return;
  }
  if(profileArchiveTab==='series'){
-  let series=(state.archive||[]).filter(sr=>sr.type==='series'&&seriesShootingsAll(sr).some(sh=>shootingModelIds(sh).includes(mid))).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
+  let series=(state.archive||[]).filter(sr=>sr&&sr.type==='series'&&(state.archive||[]).some(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'series').some(x=>x.id===sr.id))).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
   if(q)series=series.filter(sr=>normalizeSeriesSearch([seriesSearchText(sr),sr.title].join(' ')).includes(q));
   if(!series.some(sr=>sr.id===profileSeriesBrowseId))profileSeriesBrowseId=series[0]?.id||'';
   const sr=series.find(x=>x.id===profileSeriesBrowseId);
   const picker=series.map(x=>`<button type="button" class="${x.id===profileSeriesBrowseId?'active':''}" data-profile-series-pick="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</button>`).join('');
-  let body='';if(sr){const shoots=seriesShootingsAll(sr).filter(sh=>shootingModelIds(sh).includes(mid)).slice().sort(sortShootingsNatural);body=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▣</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" data-profile-series-title="1" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><div class="seriesBrowsePicker hidden" id="profileSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${shoots.map(sh=>profileArchiveShootingCard(sh)).join('')}</div></div></div></div>`}
-  box.innerHTML=profileArchiveHeader('Rubriken',`Rubriken mit ${modelName}.`,'Rubrik')+(body||(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Rubrik gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Rubriken für dieses Model.</div>'));
+  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));
+  const contributions=managementContributionGroups(releases,r=>overviewContributionCard(r,seriesContributionDisplayParts),seriesContributionDisplayParts);
+  box.innerHTML=`<div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Rubriken mit ${esc(modelName)}.</div></div></div><div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" data-profile-series-title="1" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><span class="overviewHeadSpacer" aria-hidden="true"></span><div class="seriesBrowsePicker hidden" id="profileSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${contributions}</div></div>`;
   const titleBtn=box.querySelector('[data-profile-series-title]'),pickBox=box.querySelector('#profileSeriesPicker');if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
   box.querySelectorAll('[data-profile-series-pick]').forEach(x=>x.onclick=e=>{e.stopPropagation();profileSeriesBrowseId=x.dataset.profileSeriesPick;renderProfileArchiveOverview()});
-  bindProfileArchiveCommon(box);return;
+  bindOverviewContributionMedia(box);return;
  }
- let individuals=modelShoots.filter(sh=>shootingIsIndividual(sh)).slice().sort(sortShootingsNatural);
- if(q)individuals=individuals.filter(sh=>normalizeSeriesSearch([sh.title,sh.date,m.name].join(' ')).includes(q));
- const cards=individuals.map(sh=>profileArchiveShootingCard(sh)).join('');
- box.innerHTML=profileArchiveHeader('Individuals',`Shootings von ${modelName} ohne Zuordnung zu Rubrik oder Titel.`,'Shooting')+(individuals.length?`<div class="seriesBrowseCard"><div class="seriesBrowseCardBody"><div class="seriesBrowseModel"><div class="shootingGridStandalone">${cards}</div></div></div></div>`:(q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passenden Individuals gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Individuals für dieses Model.</div>'));
- bindProfileArchiveCommon(box);
+ const series=printSeriesObjects().slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base',numeric:true}));
+ const rows=series.map(sr=>{
+  const pubs=(state.archive||[]).filter(pub=>pub&&pub.type==='publication'&&publicationPrintSeriesObject(pub)?.id===sr.id&&((pub.coverModelIds||[]).includes(mid)||publicationContributions(pub).some(r=>managementReleaseModelIds(r).includes(mid)))).slice().sort((a,b)=>Number(a.issueNumber||0)-Number(b.issueNumber||0)||String(publicationPeriodLabel(a)||'').localeCompare(String(publicationPeriodLabel(b)||''),'de',{numeric:true}));
+  return {sr,pubs};
+ }).filter(row=>row.pubs.length);
+ box.innerHTML=`<div class="globalModelsHeader"><div><h2>Print</h2><div class="small">Printausgaben mit ${esc(modelName)}.</div></div></div><div class="publicationManageList">${rows.map(({sr,pubs})=>{
+  const cards=pubs.map(pub=>{const models=publicationCoverModelNames(pub),photographers=publicationCoverPhotographerNames(pub);return `<div class="publicationIssueCard"><button type="button" class="publicationManageCover" data-profile-publication="${esc(pub.id)}" data-publication-cover="${esc(pub.id)}" aria-label="${esc(publicationDisplayTitle(pub))} öffnen"><span class="small">Kein Cover</span></button><div class="publicationIssueBody"><button type="button" class="publicationIssueOpen" data-profile-publication="${esc(pub.id)}"><span class="publicationIssueLine"><b>${String(pub.issueNumber||'').trim()?`Nr. ${esc(pub.issueNumber)}`:'Ausgabe'}</b><span>${esc(publicationCompactPeriodLabel(pub)||'Zeitraum noch offen')}</span></span></button><div class="small publicationManageArea">${esc(archiveAreaLabel(pub.archiveArea))}</div>${managementNamesStackHtml(models,'Cover-Models noch nicht erfasst','small publicationManageModels')}${managementNamesStackHtml(photographers.map(name=>`📷 ${name}`),'','small publicationManageModels publicationManagePhotographers')}<div class="publicationManageBadges">${publicationStockBadge(pub)}${pub.hasPdf?'<span class="pdfBadge">PDF vorhanden</span>':''}</div></div></div>`}).join('');
+  return `<div class="publicationManageCard seriesBrowseCard"><div class="publicationManageHead seriesBrowseCardHead"><span class="publicationManageIcon seriesBrowseIcon" aria-hidden="true">▤</span><div class="publicationSeriesHeading seriesBrowseTitle">${esc(sr.title||'Reihe')}</div><span class="overviewHeadSpacer" aria-hidden="true"></span></div><div class="publicationSeriesBody">${cards}</div></div>`;
+ }).join('')}</div>`;
+ box.querySelectorAll('[data-profile-publication]').forEach(x=>x.onclick=()=>openPublicationDetail(x.dataset.profilePublication,{readOnly:true}));
+ hydratePublicationCovers(box);
 }
 function profileFactSourceText(f){
  const ids=Array.isArray(f?.sourceResearchIds)?f.sourceResearchIds.filter(Boolean):[];
