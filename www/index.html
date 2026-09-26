@@ -4219,13 +4219,12 @@ function modelEvidenceValue(modelId,key){
  if(!rows.length)return '';
  return String((rows.find(e=>e.current)||rows[0])?.value||'');
 }
-function modelHighestTitles(modelId){
+function modelHighestTitles(modelId,modelReleases=null){
  const rank={week:1,month:2,year:3};
  const classNames={coed:'Coed','special-edition':'SE Model',playmate:'Playmate','cyber-girl':'Cyber Girl'};
  const levelNames={week:'of the Week',month:'of the Month',year:'of the Year'};
- const shoots=(state.archive||[]).filter(sh=>sh.type==='shoot'&&shootingModelIds(sh).includes(modelId));
- const linkedIds=new Set(shoots.flatMap(sh=>sh.links||[]));
- const titles=(state.archive||[]).filter(t=>t.type==='title'&&linkedIds.has(t.id));
+ const releases=modelReleases||(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(modelId));
+ const titles=[...new Map(releases.flatMap(r=>linkedObjects(r.id,'title')).filter(t=>t&&t.type==='title').map(t=>[t.id,t])).values()];
  const best={};
  titles.forEach(t=>{const k=t.titleClass||'';if(!k)return;const cur=best[k];const tr=rank[t.titleLevel]||0,cr=rank[cur?.titleLevel]||0;if(!cur||tr>cr||(tr===cr&&(Number(t.titleYear)||0)>(Number(cur.titleYear)||0)))best[k]=t});
  return Object.entries(best).sort((a,b)=>String(classNames[a[0]]||a[0]).localeCompare(String(classNames[b[0]]||b[0]),'de',{sensitivity:'base'})).map(([k,t])=>({
@@ -4356,6 +4355,11 @@ function renderGlobalModelOverview(){
      return rb-ra||String(a.name||'').localeCompare(String(b.name||''),'de',{sensitivity:'base'});
     })
   : alphabeticalModels(filteredModels);
+ const releasesByModel=new Map();
+ (state.archive||[]).filter(r=>r&&r.type==='release').forEach(release=>managementReleaseModelIds(release).forEach(modelId=>{
+  if(!releasesByModel.has(modelId))releasesByModel.set(modelId,[]);
+  releasesByModel.get(modelId).push(release);
+ }));
  box.innerHTML=models.length?models.map(m=>{
   const locationParts=[m.city,m.region,m.country].map(x=>String(x||'').trim()).filter(Boolean);
   const originText=((effectiveFlag(m)||'')+' '+locationParts.join(', ')).trim()||'Herkunft offen';
@@ -4363,8 +4367,9 @@ function renderGlobalModelOverview(){
   const heightText=heightRaw?formatHeightDisplay(heightRaw):'Größe offen';
   const measurementsText=String(m.measurements||'').trim()||'Maße offen';
   const rating=Math.round(modelRatingSummary(m,m.height||'').percent);
-  let titles=modelHighestTitles(m.id);
-  let series=(state.archive||[]).filter(a=>a.type==='series'&&seriesShootingsAll(a).some(sh=>shootingModelIds(sh).includes(m.id))).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
+  const modelReleases=releasesByModel.get(m.id)||[];
+  let titles=modelHighestTitles(m.id,modelReleases);
+  let series=[...new Map(modelReleases.flatMap(r=>linkedObjects(r.id,'series')).filter(sr=>sr&&sr.type==='series').map(sr=>[sr.id,sr])).values()].sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
   const titleRank={week:1,month:2,year:3};
 const highestTitleRank=Math.max(0,...titles.map(t=>titleRank[t.titleLevel]||0));
 if(highestTitleRank){
@@ -4373,7 +4378,7 @@ if(highestTitleRank){
 
 const seriesCounts=series.map(sr=>({
   sr,
-  count:seriesShootingsAll(sr).filter(sh=>shootingModelIds(sh).includes(m.id)).length
+  count:modelReleases.filter(r=>linkedObjects(r.id,'series').some(x=>x.id===sr.id)).length
 }));
 const highestSeriesCount=Math.max(0,...seriesCounts.map(x=>x.count));
 if(highestSeriesCount){
