@@ -4289,10 +4289,13 @@ function setupModelOverviewSearch(){
  if(!btn.dataset.bound){btn.dataset.bound='1';btn.onclick=()=>{const opening=panel.classList.contains('hidden');panel.classList.toggle('hidden');btn.setAttribute('aria-expanded',opening?'true':'false');if(opening){renderModelOverviewSearch();setTimeout(()=>input.focus(),0)}else{input.value='';renderGlobalModelOverview()}};input.oninput=renderModelOverviewSearch;if(close)close.onclick=()=>{input.value='';panel.classList.add('hidden');btn.setAttribute('aria-expanded','false');renderGlobalModelOverview()}};
 }
   
+function overviewUnassignedReleases(modelId=''){
+ return (state.archive||[]).filter(release=>release&&release.type==='release'&&!linkedObjects(release.id,'series').length&&!linkedObjects(release.id,'title').length&&!linkedObjects(release.id,'publication').length&&(!modelId||managementReleaseModelIds(release).includes(modelId)));
+}
 function overviewContentAvailability(){
  const releases=(state.archive||[]).filter(a=>a&&a.type==='release');
  const hasTitles=(state.archive||[]).some(t=>t&&t.type==='title'&&releases.some(r=>linkedObjects(r.id,'title').some(x=>x.id===t.id)));
- const hasSeries=(state.archive||[]).some(sr=>sr&&sr.type==='series'&&releases.some(r=>linkedObjects(r.id,'series').some(x=>x.id===sr.id)));
+ const hasSeries=overviewUnassignedReleases().length>0||(state.archive||[]).some(sr=>sr&&sr.type==='series'&&releases.some(r=>linkedObjects(r.id,'series').some(x=>x.id===sr.id)));
  const hasPublications=(state.archive||[]).some(pub=>pub&&pub.type==='publication');
  return {titles:hasTitles,series:hasSeries,publications:hasPublications};
 }
@@ -4311,7 +4314,7 @@ function syncOverviewContentNav(){
 function profileContentAvailability(modelId){
  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(modelId));
  const hasTitles=releases.some(r=>linkedObjects(r.id,'title').length);
- const hasSeries=releases.some(r=>linkedObjects(r.id,'series').length);
+ const hasSeries=overviewUnassignedReleases(modelId).length>0||releases.some(r=>linkedObjects(r.id,'series').length);
  const hasPublications=(state.archive||[]).some(pub=>pub&&pub.type==='publication'&&(
   (pub.coverModelIds||[]).includes(modelId)||publicationContributions(pub).some(r=>managementReleaseModelIds(r).includes(modelId))
  ));
@@ -4517,16 +4520,19 @@ function renderGlobalTitles(){
 function renderGlobalSeries(){
  const box=document.getElementById('globalSeriesList');if(!box)return;setupSeriesOverviewSearch();
  const q=seriesSearchQuery();
- const allSeries=(state.archive||[]).filter(sr=>sr&&sr.type==='series'&&overviewFilterAllowsSeries(sr.id)).filter(sr=>{
+ const unassignedReleases=overviewUnassignedReleases().filter(r=>managementReleaseModelIds(r).every(id=>overviewFilterAllowsModel(id)));
+ const realSeries=(state.archive||[]).filter(sr=>sr&&sr.type==='series'&&overviewFilterAllowsSeries(sr.id)).filter(sr=>{
   const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));
   if(!overviewContextMatchesFreeSearch(sr,releases))return false;
   return !q||normalizeSeriesSearch([sr.title,...releases.map(overviewReleaseSearchText)].join(' ')).includes(q);
  }).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
+ const showUnassigned=unassignedReleases.length&&overviewContextMatchesFreeSearch({title:'Nicht zugeordnet'},unassignedReleases)&&(!q||normalizeSeriesSearch(['Nicht zugeordnet',...unassignedReleases.map(overviewReleaseSearchText)].join(' ')).includes(q));
+ const allSeries=[...(showUnassigned?[{id:UNASSIGNED_SERIES_BROWSE_ID,type:'virtual-series',title:'Nicht zugeordnet'}]:[]),...realSeries];
  if(!allSeries.some(sr=>sr.id===globalSeriesBrowseId))globalSeriesBrowseId=allSeries[0]?.id||'';
  const sr=allSeries.find(x=>x.id===globalSeriesBrowseId);
  if(!sr){box.innerHTML=q?'<div class="seriesSearchHint" style="margin-top:10px">Keine passende Rubrik gefunden.</div>':'<div class="small" style="margin-top:10px">Noch keine Rubriken im Archiv.</div>';return}
  const picker=allSeries.map(x=>`<button type="button" class="${x.id===globalSeriesBrowseId?'active':''}" data-global-series-pick="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</button>`).join('');
- const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id)).filter(r=>managementReleaseModelIds(r).every(id=>overviewFilterAllowsModel(id)));
+ const releases=sr.id===UNASSIGNED_SERIES_BROWSE_ID?unassignedReleases:(state.archive||[]).filter(r=>r&&r.type==='release'&&linkedObjects(r.id,'series').some(x=>x.id===sr.id)).filter(r=>managementReleaseModelIds(r).every(id=>overviewFilterAllowsModel(id)));
  const contributions=managementContributionGroups(releases,r=>overviewContributionCard(r,seriesContributionDisplayParts),seriesContributionDisplayParts);
  box.innerHTML=`<div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" id="globalSeriesTitleButton" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><span class="overviewHeadSpacer" aria-hidden="true"></span><div class="seriesBrowsePicker hidden" id="globalSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${contributions||'<div class="small">Noch kein Beitrag dieser Rubrik zugeordnet.</div>'}</div></div>`;
  const titleBtn=box.querySelector('#globalSeriesTitleButton'),pickBox=box.querySelector('#globalSeriesPicker');if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
@@ -4877,12 +4883,15 @@ function renderProfileArchiveOverview(){
   bindOverviewContributionMedia(box);return;
  }
  if(profileArchiveTab==='series'){
+  const unassignedReleases=overviewUnassignedReleases(mid);
   let series=(state.archive||[]).filter(sr=>sr&&sr.type==='series'&&(state.archive||[]).some(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'series').some(x=>x.id===sr.id))).slice().sort((a,b)=>String(a.title||'').localeCompare(String(b.title||''),'de',{sensitivity:'base'}));
-  if(q)series=series.filter(sr=>normalizeSeriesSearch([seriesSearchText(sr),sr.title].join(' ')).includes(q));
+  if(unassignedReleases.length)series.unshift({id:UNASSIGNED_SERIES_BROWSE_ID,type:'virtual-series',title:'Nicht zugeordnet'});
+  if(q)series=series.filter(sr=>sr.id===UNASSIGNED_SERIES_BROWSE_ID?normalizeSeriesSearch(['Nicht zugeordnet',...unassignedReleases.map(overviewReleaseSearchText)].join(' ')).includes(q):normalizeSeriesSearch([seriesSearchText(sr),sr.title].join(' ')).includes(q));
   if(!series.some(sr=>sr.id===profileSeriesBrowseId))profileSeriesBrowseId=series[0]?.id||'';
   const sr=series.find(x=>x.id===profileSeriesBrowseId);
   const picker=series.map(x=>`<button type="button" class="${x.id===profileSeriesBrowseId?'active':''}" data-profile-series-pick="${esc(x.id)}">${esc(x.title||'Rubrik ohne Titel')}</button>`).join('');
-  const releases=(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));
+  if(!sr){box.innerHTML=`<div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Rubriken mit ${esc(modelName)}.</div></div></div><div class="small">Keine passende Rubrik gefunden.</div>`;return}
+  const releases=sr.id===UNASSIGNED_SERIES_BROWSE_ID?unassignedReleases:(state.archive||[]).filter(r=>r&&r.type==='release'&&managementReleaseModelIds(r).includes(mid)&&linkedObjects(r.id,'series').some(x=>x.id===sr.id));
   const contributions=managementContributionGroups(releases,r=>overviewContributionCard(r,seriesContributionDisplayParts),seriesContributionDisplayParts);
   box.innerHTML=`<div class="globalModelsHeader"><div><h2>Rubriken</h2><div class="small">Rubriken mit ${esc(modelName)}.</div></div></div><div class="seriesBrowseCard"><div class="seriesBrowseCardHead"><span class="seriesBrowseIcon">▤</span><div class="seriesBrowseTitle"><button type="button" class="seriesBrowseTitleButton" data-profile-series-title="1" aria-expanded="false">${esc(sr.title||'Rubrik ohne Titel')} <span class="chev">▼</span></button></div><span class="overviewHeadSpacer" aria-hidden="true"></span><div class="seriesBrowsePicker hidden" id="profileSeriesPicker">${picker}</div></div><div class="seriesBrowseCardBody">${contributions}</div></div>`;
   const titleBtn=box.querySelector('[data-profile-series-title]'),pickBox=box.querySelector('#profileSeriesPicker');if(titleBtn&&pickBox)titleBtn.onclick=e=>{e.stopPropagation();const opening=pickBox.classList.contains('hidden');pickBox.classList.toggle('hidden');titleBtn.setAttribute('aria-expanded',opening?'true':'false')};
