@@ -8616,7 +8616,7 @@ async function putMedia(id,file){
   const tx=db.transaction(MEDIA_STORE,'readwrite');
   const store=tx.objectStore(MEDIA_STORE);
   store.put(file,id);
-  if(!/^video-thumb(?:-v\d+)?:/.test(String(id))){store.delete('video-thumb:'+id);store.delete('video-thumb-v2:'+id);store.delete('video-thumb-v3:'+id)}
+  if(!/^video-thumb(?:-v\d+)?:/.test(String(id))){store.delete('video-thumb:'+id);store.delete('video-thumb-v2:'+id);store.delete('video-thumb-v3:'+id);store.delete('video-thumb-v4:'+id)}
   tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
  });
 }
@@ -8636,6 +8636,7 @@ async function deleteMediaBlob(id){
   store.delete('video-thumb:'+id);
   store.delete('video-thumb-v2:'+id);
   store.delete('video-thumb-v3:'+id);
+  store.delete('video-thumb-v4:'+id);
   tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
  });
 }
@@ -9212,32 +9213,39 @@ function createVideoThumbnail(blob){
    if(!sourceWidth||!sourceHeight)throw new Error('Video besitzt kein lesbares Bild');
    const sample=document.createElement('canvas'),sampleWidth=240;sample.width=sampleWidth;sample.height=Math.max(1,Math.round(sampleWidth*sourceHeight/sourceWidth));
    const sampleContext=sample.getContext('2d',{willReadFrequently:true});if(!sampleContext)throw new Error('Videovorschau konnte nicht analysiert werden');
-   const fractions=[.08,.16,.25,.36,.5,.66],times=(Number.isFinite(duration)&&duration>.4?fractions.map(f=>Math.min(Math.max(duration*f,.25),duration-.2)):[0]);
+   const fractions=[.05,.12,.2,.3,.4,.52,.65,.78,.88],times=(Number.isFinite(duration)&&duration>.4?fractions.map(f=>Math.min(Math.max(duration*f,.25),duration-.2)):[0]);
    let detector=null;try{if('FaceDetector' in window)detector=new FaceDetector({fastMode:true,maxDetectedFaces:8})}catch(_){}
    const candidates=[];
    for(let index=0;index<times.length;index++){
     await seek(times[index]);sampleContext.drawImage(video,0,0,sample.width,sample.height);
     const pixels=sampleContext.getImageData(0,0,sample.width,sample.height).data,columns=new Float32Array(sample.width);
-    let light=0,lightSquared=0,edges=0;
+    let light=0,lightSquared=0,edges=0,skinPixels=0,skinMinX=sample.width,skinMaxX=-1,skinMinY=sample.height,skinMaxY=-1;
     for(let y=0;y<sample.height;y+=2){
      for(let x=0;x<sample.width;x+=2){
-      const at=(y*sample.width+x)*4,luma=pixels[at]*.299+pixels[at+1]*.587+pixels[at+2]*.114;light+=luma;lightSquared+=luma*luma;
+      const at=(y*sample.width+x)*4,r=pixels[at],g=pixels[at+1],b=pixels[at+2],luma=r*.299+g*.587+b*.114;light+=luma;lightSquared+=luma*luma;
+      const warmSkin=r>60&&g>28&&b>15&&r>g&&r>b&&Math.max(r,g,b)-Math.min(r,g,b)>12&&Math.abs(r-g)>8;
+      if(warmSkin){skinPixels++;skinMinX=Math.min(skinMinX,x);skinMaxX=Math.max(skinMaxX,x);skinMinY=Math.min(skinMinY,y);skinMaxY=Math.max(skinMaxY,y)}
       if(x>1){const prev=at-8,previous=pixels[prev]*.299+pixels[prev+1]*.587+pixels[prev+2]*.114,difference=Math.abs(luma-previous);edges+=difference;columns[x]+=difference}
      }
     }
-    const count=Math.ceil(sample.width/2)*Math.ceil(sample.height/2),mean=light/count,variance=Math.max(0,lightSquared/count-mean*mean),quality=Math.sqrt(variance)+edges/count-(mean<32||mean>230?80:0);
+    const count=Math.ceil(sample.width/2)*Math.ceil(sample.height/2),mean=light/count,variance=Math.max(0,lightSquared/count-mean*mean),quality=Math.sqrt(variance)+edges/count-(mean<32||mean>230?80:0),skinRatio=skinPixels/count;
     let faces=[];if(detector){try{faces=await detector.detect(sample)}catch(_){detector=null}}
     const cropWidth=Math.min(sample.width,sample.height*2/3),maxLeft=Math.max(0,sample.width-cropWidth);let left=maxLeft/2,facesFit=false;
     if(faces.length){
      const boxes=faces.map(face=>face.boundingBox).filter(Boolean),minX=Math.min(...boxes.map(box=>box.x)),maxX=Math.max(...boxes.map(box=>box.x+box.width)),margin=Math.max(10,(maxX-minX)*.3);
      facesFit=maxX-minX+margin*2<=cropWidth;if(facesFit)left=Math.max(0,Math.min(maxLeft,(minX+maxX-cropWidth)/2));
+    }else if(skinPixels&&maxLeft>0){
+     const skinSpan=skinMaxX-skinMinX,margin=Math.max(10,skinSpan*.18);left=Math.max(0,Math.min(maxLeft,(skinMinX+skinMaxX-cropWidth)/2));
+     facesFit=skinSpan+margin*2<=cropWidth;
     }else if(maxLeft>0){
      let best=-1;for(let x=0;x<=Math.floor(maxLeft);x+=3){let value=0;for(let c=x;c<Math.min(sample.width,x+cropWidth);c++)value+=columns[c];if(value>best){best=value;left=x}}
     }
-    candidates.push({time:times[index],quality,left:sourceWidth*(left/sample.width),faces:faces.length,facesFit});
-    if(faces.length&&facesFit&&quality>5)break;
+    const boundaryPenalty=skinPixels&&(skinMinY<4||skinMaxY>sample.height-5)?32:0,closeupPenalty=skinRatio>.58?110:0,skinScore=Math.min(skinRatio,.4)*260+(skinRatio>=.035&&skinRatio<=.58?30:0);
+    const score=quality+skinScore+(faces.length?120:0)+(facesFit?25:0)-boundaryPenalty-closeupPenalty;
+    candidates.push({time:times[index],quality,score,left:sourceWidth*(left/sample.width),faces:faces.length,facesFit,skinRatio});
+    if((faces.length&&facesFit&&quality>5)||(!detector&&skinRatio>=.05&&skinRatio<=.48&&facesFit&&quality>8))break;
    }
-   const chosen=candidates.find(row=>row.faces&&row.facesFit)||candidates.slice().sort((a,b)=>b.quality-a.quality)[0];
+   const chosen=candidates.find(row=>row.faces&&row.facesFit)||candidates.slice().sort((a,b)=>b.score-a.score)[0];
    if(!chosen)throw new Error('Kein geeigneter Videomoment gefunden');
    await seek(chosen.time);
    const cropWidth=Math.min(sourceWidth,sourceHeight*2/3),cropHeight=Math.min(sourceHeight,sourceWidth*3/2),maxLeft=Math.max(0,sourceWidth-cropWidth),cropLeft=Math.max(0,Math.min(maxLeft,chosen.left)),cropTop=Math.max(0,(sourceHeight-cropHeight)/2);
@@ -9249,14 +9257,14 @@ function createVideoThumbnail(blob){
   video.preload='auto';video.muted=true;video.playsInline=true;
   video.addEventListener('loadedmetadata',()=>{inspect().then(result=>{if(finished)return;finished=true;cleanup();resolve(result)}).catch(fail)},{once:true});
   video.addEventListener('error',()=>fail(new Error('Video konnte nicht gelesen werden')),{once:true});
-  timer=setTimeout(()=>fail(new Error('Videovorschau hat zu lange benötigt')),30000);
+  timer=setTimeout(()=>fail(new Error('Videovorschau hat zu lange benötigt')),45000);
   video.src=url;video.load();
  });
 }
 async function videoThumbnailBlob(mediaId,blob){
- const cacheId='video-thumb-v3:'+mediaId,cached=await getMedia(cacheId);if(cached)return cached;
+ const cacheId='video-thumb-v4:'+mediaId,cached=await getMedia(cacheId);if(cached)return cached;
  if(videoThumbnailLoaders.has(mediaId))return videoThumbnailLoaders.get(mediaId);
- const loader=(async()=>{const thumbnail=await createVideoThumbnail(blob);await putMedia(cacheId,thumbnail);try{await deleteMediaBlob('video-thumb:'+mediaId);await deleteMediaBlob('video-thumb-v2:'+mediaId)}catch(_){}return thumbnail})().finally(()=>videoThumbnailLoaders.delete(mediaId));
+ const loader=(async()=>{const thumbnail=await createVideoThumbnail(blob);await putMedia(cacheId,thumbnail);try{await deleteMediaBlob('video-thumb:'+mediaId);await deleteMediaBlob('video-thumb-v2:'+mediaId);await deleteMediaBlob('video-thumb-v3:'+mediaId)}catch(_){}return thumbnail})().finally(()=>videoThumbnailLoaders.delete(mediaId));
  videoThumbnailLoaders.set(mediaId,loader);return loader;
 }
 
