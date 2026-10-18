@@ -23,6 +23,13 @@ import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions;
 
 import org.json.JSONException;
 
+import java.nio.ByteBuffer;
+
+import com.google.mlkit.vision.segmentation.Segmentation;
+import com.google.mlkit.vision.segmentation.SegmentationMask;
+import com.google.mlkit.vision.segmentation.Segmenter;
+import com.google.mlkit.vision.segmentation.selfie.SelfieSegmenterOptions;
+
 @CapacitorPlugin(name = "ArchiveDirectory")
 public class ArchiveDirectoryPlugin extends Plugin {
 
@@ -106,9 +113,19 @@ public void setVideoImmersive(PluginCall call) {
             detector.process(image)
                 .addOnSuccessListener(pose -> {
                     JSObject result = poseQuality(pose, width, height);
-                    detector.close();
-                    bitmap.recycle();
-                    call.resolve(result);
+                    SelfieSegmenterOptions segmentationOptions = new SelfieSegmenterOptions.Builder()
+                        .setDetectorMode(SelfieSegmenterOptions.SINGLE_IMAGE_MODE)
+                        .build();
+                    Segmenter segmenter = Segmentation.getClient(segmentationOptions);
+                    segmenter.process(image)
+                        .addOnSuccessListener(mask -> {
+                            addContourMetrics(result, pose, mask);
+                            segmenter.close(); detector.close(); bitmap.recycle(); call.resolve(result);
+                        })
+                        .addOnFailureListener(error -> {
+                            result.put("contourAvailable", false);
+                            segmenter.close(); detector.close(); bitmap.recycle(); call.resolve(result);
+                        });
                 })
                 .addOnFailureListener(error -> {
                     detector.close();
@@ -198,6 +215,48 @@ public void setVideoImmersive(PluginCall call) {
             }
         }
         return values;
+    }
+
+    private void addContourMetrics(JSObject out, Pose pose, SegmentationMask mask) {
+        int width = mask.getWidth(), height = mask.getHeight();
+        ByteBuffer buffer = mask.getBuffer(); buffer.rewind();
+        float[] confidence = new float[width * height];
+        int minY = height, maxY = -1;
+        for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
+            float value = buffer.getFloat(); confidence[y * width + x] = value;
+            if (value >= 0.55f) { minY = Math.min(minY, y); maxY = Math.max(maxY, y); }
+        }
+        PoseLandmark ls = pose.getPoseLandmark(PoseLandmark.LEFT_SHOULDER), rs = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER);
+        PoseLandmark lh = pose.getPoseLandmark(PoseLandmark.LEFT_HIP), rh = pose.getPoseLandmark(PoseLandmark.RIGHT_HIP);
+        if (!landmarkVisible(ls) || !landmarkVisible(rs) || !landmarkVisible(lh) || !landmarkVisible(rh) || maxY <= minY) {
+            out.put("contourAvailable", false); return;
+        }
+        float shoulderY = (ls.getPosition().y + rs.getPosition().y) * 0.5f;
+        float hipY = (lh.getPosition().y + rh.getPosition().y) * 0.5f;
+        float centerX = (ls.getPosition().x + rs.getPosition().x + lh.getPosition().x + rh.getPosition().x) * 0.25f;
+        float bodyHeight = maxY - minY + 1f;
+        float bust = contourWidth(confidence, width, height, centerX, shoulderY + (hipY - shoulderY) * 0.34f) / bodyHeight;
+        float waist = contourWidth(confidence, width, height, centerX, shoulderY + (hipY - shoulderY) * 0.70f) / bodyHeight;
+        float hips = contourWidth(confidence, width, height, centerX, hipY) / bodyHeight;
+        boolean available = bust > 0f && waist > 0f && hips > 0f;
+        out.put("contourAvailable", available);
+        if (available) { out.put("bustWidthRatio", bust); out.put("waistWidthRatio", waist); out.put("hipWidthRatio", hips); }
+    }
+
+    private float contourWidth(float[] mask, int width, int height, float centerX, float rowY) {
+        int y = Math.max(0, Math.min(height - 1, Math.round(rowY)));
+        int center = Math.max(0, Math.min(width - 1, Math.round(centerX)));
+        int seed = -1;
+        for (int offset = 0; offset < width / 3 && seed < 0; offset++) {
+            int left = center - offset, right = center + offset;
+            if (left >= 0 && mask[y * width + left] >= 0.55f) seed = left;
+            else if (right < width && mask[y * width + right] >= 0.55f) seed = right;
+        }
+        if (seed < 0) return 0f;
+        int left = seed, right = seed;
+        while (left > 0 && mask[y * width + left - 1] >= 0.55f) left--;
+        while (right < width - 1 && mask[y * width + right + 1] >= 0.55f) right++;
+        return right - left + 1f;
     }
 
     private float pairDistance(PoseLandmark first, PoseLandmark second) {
