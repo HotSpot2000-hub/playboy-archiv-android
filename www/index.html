@@ -1090,6 +1090,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 @media(max-width:700px){.galleryPhotoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .bodyCheckPanel{margin:10px 0 14px;padding:12px;border:1px solid #e3d6e5;border-radius:14px;background:#f8f3f8}
 .bodyCheckPanel h4{margin:0 0 5px}.bodyCheckGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.bodyCheckStat{padding:8px;border-radius:10px;background:#fff;text-align:center}.bodyCheckStat b{display:block;font-size:17px}.bodyCheckActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bodyCheckActions button{width:auto;margin:0}.bodyCheckProgress{margin-top:8px;font-size:12px;color:var(--muted)}
+.bodyCheckCombined{margin-top:12px;padding-top:12px;border-top:1px solid #e3d6e5}.bodyCheckCombinedTitle{font-weight:700}.bodyCheckCombinedMeta{margin-top:3px}.bodyCheckCombinedGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.bodyCheckCombinedGrid .bodyCheckStat{padding:7px 5px}.bodyCheckCombinedGrid .bodyCheckStat b{font-size:16px}
 .managementVideoButtons{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:8px}
 .managementVideoQuick{width:38px;height:38px;min-height:0!important;border:1px solid var(--line)!important;border-radius:50%!important;background:#fff!important;padding:0!important;font-size:17px!important;line-height:1!important;box-shadow:none!important}
 .galleryDetailHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}.galleryDetailHead h2{margin:0}.galleryDetailGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.galleryDetailGrid .mediaThumb{aspect-ratio:2/3;margin:0;border-radius:10px;overflow:hidden;background:#eee;cursor:pointer}.galleryDetailGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}@media(max-width:430px){.galleryDetailGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -13731,14 +13732,33 @@ function shootingBodyCheckQuality(result){
  if(result.fullBody>=2||result.detected>=Math.ceil(result.total*.35))return 'Eingeschränkte Grundlage';
  return 'Noch nicht ausreichend';
 }
+function modelBodyCheckSummary(modelId){
+ const rows=(state.archive||[]).filter(sh=>sh&&sh.type==='shoot'&&shootingModelIds(sh).length===1&&shootingModelIds(sh)[0]===modelId&&sh.bodyCheck&&sh.bodyCheck.version===1).map(sh=>{
+  const currentIds=shootingPreviewParts(sh).photos.map(x=>x.id).sort();
+  const checkedIds=(sh.bodyCheck.photoIds||[]).slice().sort();
+  return currentIds.length===checkedIds.length&&currentIds.every((id,index)=>id===checkedIds[index])?sh.bodyCheck:null;
+ }).filter(Boolean);
+ const summary=rows.reduce((out,row)=>{out.photos+=Number(row.total||0);out.framed+=Number(row.framed||0);out.partial+=Math.max(0,Number(row.fullBody||0)-Number(row.framed||0));return out},{shootings:rows.length,photos:0,framed:0,partial:0});
+ if(summary.shootings>=3&&summary.framed>=24)summary.quality='Sehr gute Gesamtgrundlage';
+ else if(summary.shootings>=2&&summary.framed>=12)summary.quality='Gute Gesamtgrundlage';
+ else if(summary.framed>=5)summary.quality='Eingeschränkte Gesamtgrundlage';
+ else summary.quality='Noch keine ausreichende Gesamtgrundlage';
+ return summary;
+}
+function modelBodyCheckSummaryHtml(sh){
+ const modelId=shootingModelIds(sh)[0]||'';if(!modelId)return '';
+ const summary=modelBodyCheckSummary(modelId);if(!summary.shootings)return '';
+ const m=state.models.find(item=>item.id===modelId);
+ return `<div class="bodyCheckCombined"><div class="bodyCheckCombinedTitle">${esc(summary.quality)}</div><div class="small bodyCheckCombinedMeta">Gemeinsame Grundlage für ${esc(m?.name||'dieses Model')}. Ähnliche Aufnahmen werden in der nächsten Analysestufe noch nicht als unabhängige Messungen gewertet.</div><div class="bodyCheckCombinedGrid"><div class="bodyCheckStat"><b>${summary.shootings}</b><span class="small">Shootings</span></div><div class="bodyCheckStat"><b>${summary.photos}</b><span class="small">Fotos geprüft</span></div><div class="bodyCheckStat"><b>${summary.framed}</b><span class="small">geeignet</span></div></div></div>`;
+}
 function shootingBodyCheckHtml(sh,photos=[]){
  const modelCount=shootingModelIds(sh).length;
  if(modelCount!==1)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Diese erste Analysestufe ist nur für Shootings mit genau einem Model freigegeben. Bei mehreren Models kann die lokale Poseerkennung die erkannte Person noch nicht zuverlässig zuordnen.</div></div>`;
  const result=sh.bodyCheck&&sh.bodyCheck.version===1?sh.bodyCheck:null;
  const changed=result&&Array.isArray(result.photoIds)&&result.photoIds.join('|')!==photos.map(x=>x.id).join('|');
- if(!result)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Die Fotos dieses Shootings werden ausschließlich auf diesem Gerät auf Pose, Ganzkörpererkennbarkeit und vollständige Bildfassung geprüft. Es werden noch keine Körpermaße errechnet.</div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>Lokale Prüfung starten</button></div><div class="bodyCheckProgress" data-body-check-progress></div></div>`;
+ if(!result)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Die Fotos dieses Shootings werden ausschließlich auf diesem Gerät auf Pose, Ganzkörpererkennbarkeit und vollständige Bildfassung geprüft. Es werden noch keine Körpermaße errechnet.</div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>Lokale Prüfung starten</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
  const date=result.analyzedAt?new Date(result.analyzedAt).toLocaleString('de-DE'):'';
- return `<div class="bodyCheckPanel"><h4>${esc(shootingBodyCheckQuality(result))}${changed?' · Daten geändert':''}</h4><div class="small">${result.analyzed} von ${result.total} Fotos lokal geprüft${date?` · ${esc(date)}`:''}. Noch keine Maßschätzung.</div><div class="bodyCheckGrid"><div class="bodyCheckStat"><b>${result.framed}</b><span class="small">Ganzkörper geeignet</span></div><div class="bodyCheckStat"><b>${result.fullBody-result.framed}</b><span class="small">Ganzkörper angeschnitten</span></div><div class="bodyCheckStat"><b>${result.upperOnly}</b><span class="small">nur Oberkörper</span></div><div class="bodyCheckStat"><b>${result.unsuitable}</b><span class="small">nicht geeignet</span></div></div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>${changed?'Erneut prüfen':'Prüfung wiederholen'}</button></div><div class="bodyCheckProgress" data-body-check-progress></div></div>`;
+ return `<div class="bodyCheckPanel"><h4>${esc(shootingBodyCheckQuality(result))}${changed?' · Daten geändert':''}</h4><div class="small">${result.analyzed} von ${result.total} Fotos lokal geprüft${date?` · ${esc(date)}`:''}. Noch keine Maßschätzung.</div><div class="bodyCheckGrid"><div class="bodyCheckStat"><b>${result.framed}</b><span class="small">Ganzkörper geeignet</span></div><div class="bodyCheckStat"><b>${result.fullBody-result.framed}</b><span class="small">Ganzkörper angeschnitten</span></div><div class="bodyCheckStat"><b>${result.upperOnly}</b><span class="small">nur Oberkörper</span></div><div class="bodyCheckStat"><b>${result.unsuitable}</b><span class="small">nicht geeignet</span></div></div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>${changed?'Erneut prüfen':'Prüfung wiederholen'}</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
 }
 async function poseAnalysisDataUrl(blob){
  const bitmap=await createImageBitmap(blob);
