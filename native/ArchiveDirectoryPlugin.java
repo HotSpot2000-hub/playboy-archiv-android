@@ -188,7 +188,14 @@ public void setVideoImmersive(PluginCall call) {
         for (int[] pair : pairs) {
             PoseLandmark first = pose.getPoseLandmark(pair[0]);
             PoseLandmark second = pose.getPoseLandmark(pair[1]);
-            values.put(landmarkVisible(first) && landmarkVisible(second) ? pairDistance(first, second) / torsoLength : -1f);
+            float value = landmarkVisible(first) && landmarkVisible(second)
+                ? pairDistance(first, second) / torsoLength
+                : -1f;
+            try {
+                values.put(value);
+            } catch (JSONException ignored) {
+                values.put(-1);
+            }
         }
         return values;
     }
