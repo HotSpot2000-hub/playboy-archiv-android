@@ -13777,16 +13777,18 @@ function bodyContourEstimate(summary,model){
  const heightCm=heightToCm(model?.height||modelEvidenceValue(model?.id,'height'));
  if(!heightCm||summary.contourShootings!==summary.shootings)return null;
  const groupContours=summary.groups.map(group=>{
-  const contours=(group.samples||[]).map(sample=>sample.contour).filter(contour=>contour&&Number(contour.bust)>0&&Number(contour.waist)>0&&Number(contour.hips)>0);
+  const contours=(group.samples||[]).map(sample=>sample.contour).filter(Boolean);
   if(!contours.length)return null;
-  return {view:group.view,bust:bodyMedian(contours.map(x=>x.bust)),waist:bodyMedian(contours.map(x=>x.waist)),hips:bodyMedian(contours.map(x=>x.hips))};
+  return {view:group.view,bust:bodyMedian(contours.map(x=>x.bust).filter(x=>Number(x)>0)),waist:bodyMedian(contours.map(x=>x.waist).filter(x=>Number(x)>0)),hips:bodyMedian(contours.map(x=>x.hips).filter(x=>Number(x)>0))};
  }).filter(Boolean);
  const frontal=groupContours.filter(group=>group.view==='frontal'),side=groupContours.filter(group=>group.view==='side');
- if(frontal.length<2||side.length<2)return null;
  const estimate={heightCm,frontal:frontal.length,side:side.length,values:{},needsCalibration:false};
  for(const key of ['bust','waist','hips']){
-  const widthRatio=bodyRobustMedian(frontal.map(group=>group[key]));
-  const depthRatio=bodyRobustMedian(side.map(group=>group[key]));
+  const frontValues=frontal.map(group=>group[key]).filter(value=>Number(value)>0);
+  const sideValues=side.map(group=>group[key]).filter(value=>Number(value)>0);
+  if(frontValues.length<2||sideValues.length<2)return null;
+  const widthRatio=bodyRobustMedian(frontValues);
+  const depthRatio=bodyRobustMedian(sideValues);
   const center=bodyEllipseCircumference(widthRatio*heightCm,depthRatio*heightCm);
   if(!Number.isFinite(center))return null;
   if(center<45||center>170)estimate.needsCalibration=true;
@@ -13796,7 +13798,10 @@ function bodyContourEstimate(summary,model){
  return estimate;
 }
 function bodyContourEstimateHtml(summary,model){
- const estimate=bodyContourEstimate(summary,model);if(!estimate)return '';
+ const estimate=bodyContourEstimate(summary,model);
+ if(!estimate)return summary.contourShootings===summary.shootings
+  ?'<div class="bodyEstimate"><div class="bodyEstimateTitle">Noch keine belastbare Konturschätzung</div><div class="small">Nach dem Ausschluss armüberlagerter Messlinien sind noch nicht für Brust, Taille und Hüfte jeweils mindestens zwei breite und zwei seitliche Posengruppen verfügbar. Es wird kein Ersatzwert geraten.</div></div>'
+  :'';
  const stored=storedMetricMeasurements(model),labels={bust:'Brust',waist:'Taille',hips:'Hüfte'};
  const valueHtml=['bust','waist','hips'].map(key=>`<div class="bodyEstimateValue"><b>${estimate.needsCalibration?`${estimate.values[key].center} cm`:`${estimate.values[key].min}–${estimate.values[key].max} cm`}</b><span class="small">${labels[key]}</span></div>`).join('');
  let comparison='';
@@ -13816,8 +13821,8 @@ function modelBodyCheckSummary(modelId){
   const checkedIds=(sh.bodyCheck.photoIds||[]).slice().sort();
   return currentIds.length===checkedIds.length&&currentIds.every((id,index)=>id===checkedIds[index])?sh.bodyCheck:null;
  }).filter(Boolean);
- const summary=rows.reduce((out,row)=>{out.photos+=Number(row.total||0);out.framed+=Number(row.framed||0);out.partial+=Math.max(0,Number(row.fullBody||0)-Number(row.framed||0));if(row.version>=2){out.perspectiveShootings++;out.samples.push(...(Array.isArray(row.samples)?row.samples:[]))}if(row.version>=4)out.contourShootings++;return out},{shootings:rows.length,perspectiveShootings:0,contourShootings:0,photos:0,framed:0,partial:0,samples:[]});
- summary.contours=summary.samples.filter(sample=>sample.contour&&Number(sample.contour.bust)>0&&Number(sample.contour.waist)>0&&Number(sample.contour.hips)>0).length;
+ const summary=rows.reduce((out,row)=>{out.photos+=Number(row.total||0);out.framed+=Number(row.framed||0);out.partial+=Math.max(0,Number(row.fullBody||0)-Number(row.framed||0));if(row.version>=2){out.perspectiveShootings++;out.samples.push(...(Array.isArray(row.samples)?row.samples:[]))}if(row.version>=5)out.contourShootings++;return out},{shootings:rows.length,perspectiveShootings:0,contourShootings:0,photos:0,framed:0,partial:0,samples:[]});
+ summary.contours=summary.samples.filter(sample=>sample.contour&&[sample.contour.bust,sample.contour.waist,sample.contour.hips].some(value=>Number(value)>0)).length;
  summary.groups=bodyPoseGroups(summary.samples);
  summary.views=summary.groups.reduce((out,group)=>{out[group.view]=(out[group.view]||0)+1;return out},{frontal:0,angled:0,side:0,unknown:0});
  if(summary.shootings>=3&&summary.framed>=24)summary.quality='Sehr gute Gesamtgrundlage';
@@ -13839,7 +13844,7 @@ function shootingBodyCheckHtml(sh,photos=[]){
  const result=sh.bodyCheck&&sh.bodyCheck.version>=1?sh.bodyCheck:null;
  const changed=result&&Array.isArray(result.photoIds)&&result.photoIds.join('|')!==photos.map(x=>x.id).join('|');
  const perspectivePending=result&&result.version<2;
- const contourPending=result&&result.version<4;
+ const contourPending=result&&result.version<5;
  if(!result)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Die Fotos dieses Shootings werden ausschließlich auf diesem Gerät auf Pose, Ganzkörpererkennbarkeit und vollständige Bildfassung geprüft. Es werden noch keine Körpermaße errechnet.</div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>Lokale Prüfung starten</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
  const date=result.analyzedAt?new Date(result.analyzedAt).toLocaleString('de-DE'):'';
  return `<div class="bodyCheckPanel"><h4>${esc(shootingBodyCheckQuality(result))}${changed?' · Daten geändert':''}</h4><div class="small">${result.analyzed} von ${result.total} Fotos lokal geprüft${date?` · ${esc(date)}`:''}. ${perspectivePending?'Perspektiven und ähnliche Posen noch nicht ausgewertet.':'Perspektiven und ähnliche Posen lokal ausgewertet.'} ${contourPending?'Konturen noch nicht geprüft.':'Konturen lokal geprüft.'} Noch keine Maßschätzung.</div><div class="bodyCheckGrid"><div class="bodyCheckStat"><b>${result.framed}</b><span class="small">Ganzkörper geeignet</span></div><div class="bodyCheckStat"><b>${result.fullBody-result.framed}</b><span class="small">Ganzkörper angeschnitten</span></div><div class="bodyCheckStat"><b>${result.upperOnly}</b><span class="small">nur Oberkörper</span></div><div class="bodyCheckStat"><b>${result.unsuitable}</b><span class="small">nicht geeignet</span></div></div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>${changed?'Erneut prüfen':perspectivePending?'Perspektiven prüfen':contourPending?'Konturen prüfen':'Prüfung wiederholen'}</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
@@ -13875,7 +13880,7 @@ async function runShootingBodyCheck(shootingId,photos){
  const framed=rows.filter(x=>x.safelyFramed).length;
  const upperOnly=rows.filter(x=>x.upperBody&&!x.fullBody).length;
  const unsuitable=photos.length-framed-(fullBody-framed)-upperOnly;
- sh.bodyCheck={version:4,engine:'mlkit-pose-accurate+segmentation-selfie-scaled',analyzedAt:new Date().toISOString(),total:photos.length,analyzed:rows.length,failed,detected,fullBody,framed,upperOnly,unsuitable,photoIds:photos.map(x=>x.id),suitableMediaIds:rows.filter(x=>x.safelyFramed).map(x=>x.mediaId),partialMediaIds:rows.filter(x=>x.upperBody&&!x.safelyFramed).map(x=>x.mediaId),samples:rows.filter(x=>x.safelyFramed).map(x=>({mediaId:x.mediaId,view:x.view,signature:x.signature,confidence:x.confidence,contour:x.contour}))};
+ sh.bodyCheck={version:5,engine:'mlkit-pose-accurate+segmentation-selfie-torso-clear',analyzedAt:new Date().toISOString(),total:photos.length,analyzed:rows.length,failed,detected,fullBody,framed,upperOnly,unsuitable,photoIds:photos.map(x=>x.id),suitableMediaIds:rows.filter(x=>x.safelyFramed).map(x=>x.mediaId),partialMediaIds:rows.filter(x=>x.upperBody&&!x.safelyFramed).map(x=>x.mediaId),samples:rows.filter(x=>x.safelyFramed).map(x=>({mediaId:x.mediaId,view:x.view,signature:x.signature,confidence:x.confidence,contour:x.contour}))};
  if(!save()){toast('Prüfergebnis konnte nicht gespeichert werden.');return}
  toast('Lokale Shootingprüfung abgeschlossen.');openShootingDetail(sh.id,returnSeriesId,returnShootingContext);
 }
