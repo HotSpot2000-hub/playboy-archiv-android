@@ -13783,12 +13783,13 @@ function bodyContourEstimate(summary,model){
  }).filter(Boolean);
  const frontal=groupContours.filter(group=>group.view==='frontal'),side=groupContours.filter(group=>group.view==='side');
  if(frontal.length<2||side.length<2)return null;
- const estimate={heightCm,frontal:frontal.length,side:side.length,values:{}};
+ const estimate={heightCm,frontal:frontal.length,side:side.length,values:{},needsCalibration:false};
  for(const key of ['bust','waist','hips']){
   const widthRatio=bodyRobustMedian(frontal.map(group=>group[key]));
   const depthRatio=bodyRobustMedian(side.map(group=>group[key]));
   const center=bodyEllipseCircumference(widthRatio*heightCm,depthRatio*heightCm);
-  if(!Number.isFinite(center)||center<45||center>170)return null;
+  if(!Number.isFinite(center))return null;
+  if(center<45||center>170)estimate.needsCalibration=true;
   const uncertainty=Math.max(key==='waist'?8:9,center*(key==='waist'?.11:.10));
   estimate.values[key]={center:Math.round(center),min:Math.round(center-uncertainty),max:Math.round(center+uncertainty)};
  }
@@ -13797,13 +13798,17 @@ function bodyContourEstimate(summary,model){
 function bodyContourEstimateHtml(summary,model){
  const estimate=bodyContourEstimate(summary,model);if(!estimate)return '';
  const stored=storedMetricMeasurements(model),labels={bust:'Brust',waist:'Taille',hips:'Hüfte'};
- const valueHtml=['bust','waist','hips'].map(key=>`<div class="bodyEstimateValue"><b>${estimate.values[key].min}–${estimate.values[key].max} cm</b><span class="small">${labels[key]}</span></div>`).join('');
+ const valueHtml=['bust','waist','hips'].map(key=>`<div class="bodyEstimateValue"><b>${estimate.needsCalibration?`${estimate.values[key].center} cm`:`${estimate.values[key].min}–${estimate.values[key].max} cm`}</b><span class="small">${labels[key]}</span></div>`).join('');
  let comparison='';
- if(stored){
+ if(stored&&!estimate.needsCalibration){
   const checks=[['bust',stored.bust],['waist',stored.waist],['hips',stored.hips]].map(([key,value])=>`${labels[key]} ${value>=estimate.values[key].min&&value<=estimate.values[key].max?'im Bereich':'außerhalb des Bereichs'}`);
   comparison=`<div class="small bodyEstimateCompare">Vorhanden: <b>${stored.text}</b> · ${checks.join(' · ')}</div>`;
  }
- return `<div class="bodyEstimate"><div class="bodyEstimateTitle">Vorsichtige Konturschätzung</div><div class="small">Aus ${estimate.frontal} breiten und ${estimate.side} seitlichen Posengruppen bei ${estimate.heightCm} cm Körpergröße. Die Bereiche sind eine Plausibilitätsprüfung, keine exakte Vermessung.</div><div class="bodyEstimateValues">${valueHtml}</div>${comparison}</div>`;
+ const title=estimate.needsCalibration?'Kontur-Rohwerte zur Kalibrierung':'Vorsichtige Konturschätzung';
+ const note=estimate.needsCalibration
+  ?`Aus ${estimate.frontal} breiten und ${estimate.side} seitlichen Posengruppen bei ${estimate.heightCm} cm Körpergröße. Mindestens ein Rohwert liegt außerhalb des sinnvollen Messbereichs. Diese Zahlen bitte noch nicht als Körpermaße bewerten.`
+  :`Aus ${estimate.frontal} breiten und ${estimate.side} seitlichen Posengruppen bei ${estimate.heightCm} cm Körpergröße. Die Bereiche sind eine Plausibilitätsprüfung, keine exakte Vermessung.`;
+ return `<div class="bodyEstimate"><div class="bodyEstimateTitle">${title}</div><div class="small">${note}</div><div class="bodyEstimateValues">${valueHtml}</div>${comparison}</div>`;
 }
 function modelBodyCheckSummary(modelId){
  const rows=(state.archive||[]).filter(sh=>sh&&sh.type==='shoot'&&shootingModelIds(sh).length===1&&shootingModelIds(sh)[0]===modelId&&sh.bodyCheck&&sh.bodyCheck.version>=1).map(sh=>{
