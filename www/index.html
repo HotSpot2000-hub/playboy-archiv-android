@@ -1086,6 +1086,8 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .galleryPhotoGrid .mediaThumb{aspect-ratio:2/3;margin:0;border:1px solid var(--line);border-radius:8px;background:#eee;overflow:hidden;cursor:pointer}
 .galleryPhotoGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}
 @media(max-width:700px){.galleryPhotoGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.bodyCheckPanel{margin:10px 0 14px;padding:12px;border:1px solid #e3d6e5;border-radius:14px;background:#f8f3f8}
+.bodyCheckPanel h4{margin:0 0 5px}.bodyCheckGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.bodyCheckStat{padding:8px;border-radius:10px;background:#fff;text-align:center}.bodyCheckStat b{display:block;font-size:17px}.bodyCheckActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bodyCheckActions button{width:auto;margin:0}.bodyCheckProgress{margin-top:8px;font-size:12px;color:var(--muted)}
 .managementVideoButtons{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:8px}
 .managementVideoQuick{width:38px;height:38px;min-height:0!important;border:1px solid var(--line)!important;border-radius:50%!important;background:#fff!important;padding:0!important;font-size:17px!important;line-height:1!important;box-shadow:none!important}
 .galleryDetailHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}.galleryDetailHead h2{margin:0}.galleryDetailGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.galleryDetailGrid .mediaThumb{aspect-ratio:2/3;margin:0;border-radius:10px;overflow:hidden;background:#eee;cursor:pointer}.galleryDetailGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}@media(max-width:430px){.galleryDetailGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -13718,6 +13720,57 @@ async function hydrateReleaseGalleryCovers(root=document){
  }
  bindInteractiveMedia(root);
 }
+function bodyPoseAnalyzer(){return window.Capacitor?.Plugins?.ArchiveDirectory||null}
+function shootingBodyCheckQuality(result){
+ if(!result||!result.total)return 'Noch nicht ausgewertet';
+ if(result.framed>=5&&result.detected>=Math.ceil(result.total*.5))return 'Gute Grundlage';
+ if(result.fullBody>=2||result.detected>=Math.ceil(result.total*.35))return 'Eingeschränkte Grundlage';
+ return 'Noch nicht ausreichend';
+}
+function shootingBodyCheckHtml(sh,photos=[]){
+ const modelCount=shootingModelIds(sh).length;
+ if(modelCount!==1)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Diese erste Analysestufe ist nur für Shootings mit genau einem Model freigegeben. Bei mehreren Models kann die lokale Poseerkennung die erkannte Person noch nicht zuverlässig zuordnen.</div></div>`;
+ const result=sh.bodyCheck&&sh.bodyCheck.version===1?sh.bodyCheck:null;
+ const changed=result&&Array.isArray(result.photoIds)&&result.photoIds.join('|')!==photos.map(x=>x.id).join('|');
+ if(!result)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Die Fotos dieses Shootings werden ausschließlich auf diesem Gerät auf Pose, Ganzkörpererkennbarkeit und vollständige Bildfassung geprüft. Es werden noch keine Körpermaße errechnet.</div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>Lokale Prüfung starten</button></div><div class="bodyCheckProgress" data-body-check-progress></div></div>`;
+ const date=result.analyzedAt?new Date(result.analyzedAt).toLocaleString('de-DE'):'';
+ return `<div class="bodyCheckPanel"><h4>${esc(shootingBodyCheckQuality(result))}${changed?' · Daten geändert':''}</h4><div class="small">${result.analyzed} von ${result.total} Fotos lokal geprüft${date?` · ${esc(date)}`:''}. Noch keine Maßschätzung.</div><div class="bodyCheckGrid"><div class="bodyCheckStat"><b>${result.framed}</b><span class="small">Ganzkörper geeignet</span></div><div class="bodyCheckStat"><b>${result.fullBody-result.framed}</b><span class="small">Ganzkörper angeschnitten</span></div><div class="bodyCheckStat"><b>${result.upperOnly}</b><span class="small">nur Oberkörper</span></div><div class="bodyCheckStat"><b>${result.unsuitable}</b><span class="small">nicht geeignet</span></div></div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>${changed?'Erneut prüfen':'Prüfung wiederholen'}</button></div><div class="bodyCheckProgress" data-body-check-progress></div></div>`;
+}
+async function poseAnalysisDataUrl(blob){
+ const bitmap=await createImageBitmap(blob);
+ const maxSide=640,scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+ const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+ const ctx=canvas.getContext('2d',{alpha:false});ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);if(bitmap.close)bitmap.close();
+ return canvas.toDataURL('image/jpeg',.78);
+}
+async function runShootingBodyCheck(shootingId,photos){
+ const sh=(state.archive||[]).find(x=>x&&x.id===shootingId&&x.type==='shoot');
+ const analyzer=bodyPoseAnalyzer();
+ if(!sh||!photos.length)return;
+ if(shootingModelIds(sh).length!==1){alert('Diese erste Analysestufe unterstützt nur Shootings mit genau einem Model.');return}
+ if(!analyzer||typeof analyzer.analyzePose!=='function'){alert('Die lokale Poseanalyse ist erst in der neu gebauten Android-App verfügbar.');return}
+ if(photos.length>30&&!confirm(`${photos.length} Fotos lokal prüfen? Die Verarbeitung kann einige Minuten dauern und vorübergehend mehr Akku verbrauchen.`))return;
+ const button=document.querySelector('#shootingDetailContent [data-run-body-check]');if(button)button.disabled=true;
+ const progress=document.querySelector('#shootingDetailContent [data-body-check-progress]');
+ const rows=[];let failed=0;
+ for(let index=0;index<photos.length;index++){
+  const photo=photos[index];if(progress)progress.textContent=`Foto ${index+1} von ${photos.length} wird lokal geprüft …`;
+  try{
+   const blob=await getMedia(photo.id);if(!blob||!String(blob.type||'').startsWith('image/')){failed++;continue}
+   const dataUrl=await poseAnalysisDataUrl(blob);
+   const result=await analyzer.analyzePose({dataUrl});
+   rows.push({mediaId:photo.id,poseDetected:Boolean(result.poseDetected),upperBody:Boolean(result.upperBody),fullBody:Boolean(result.fullBody),safelyFramed:Boolean(result.safelyFramed),confidence:Number(result.averageConfidence||0)});
+  }catch(error){console.error('Lokale Poseanalyse fehlgeschlagen',photo.id,error);failed++}
+ }
+ const detected=rows.filter(x=>x.poseDetected).length;
+ const fullBody=rows.filter(x=>x.fullBody).length;
+ const framed=rows.filter(x=>x.safelyFramed).length;
+ const upperOnly=rows.filter(x=>x.upperBody&&!x.fullBody).length;
+ const unsuitable=photos.length-framed-(fullBody-framed)-upperOnly;
+ sh.bodyCheck={version:1,engine:'mlkit-pose-accurate',analyzedAt:new Date().toISOString(),total:photos.length,analyzed:rows.length,failed,detected,fullBody,framed,upperOnly,unsuitable,photoIds:photos.map(x=>x.id),suitableMediaIds:rows.filter(x=>x.safelyFramed).map(x=>x.mediaId),partialMediaIds:rows.filter(x=>x.upperBody&&!x.safelyFramed).map(x=>x.mediaId)};
+ if(!save()){toast('Prüfergebnis konnte nicht gespeichert werden.');return}
+ toast('Lokale Shootingprüfung abgeschlossen.');openShootingDetail(sh.id,returnSeriesId,returnShootingContext);
+}
 function openGalleryDetail(galleryId){
  const gallery=(state.archive||[]).find(a=>a&&a.id===galleryId&&a.type==='gallery');
  if(!gallery){toast('Galerie nicht gefunden.');return}
@@ -13769,6 +13822,7 @@ function openShootingDetail(id,seriesId,context=null){
    <div>${esc(sh.note||'')}</div>${modelChips(shootingModelIds(sh))}${renderCredits(sh.credits||[])}
  </div>
  <div class="relationBlock"><div class="shootingMediaHead"><h3>${presentationMode?'Fotos':'Medien'} · ${detailMedia.length}</h3>${activeMainView==='management'&&directMedia.length?`<div class="shootingMediaHeadActions"><button type="button" class="shootingMediaTransfer" data-transfer-direct-shooting-media>Direkte Medien überführen · ${directMedia.length}</button><button type="button" class="shootingMediaUnlink shootingMediaBulkUnlink" data-unlink-all-shooting-media>Alle direkten lösen · ${directMedia.length}</button></div>`:''}</div>
+ ${photos.length?shootingBodyCheckHtml(sh,photos):''}
  ${detailMedia.length
    ? `<div class="gallery">${detailMedia.map(x=>`<div class="galleryItem">
        <div class="mediaThumb" data-media-id="${x.id}"><div class="small" style="padding:10px">Lade Medium …</div></div>
@@ -13821,6 +13875,8 @@ function openShootingDetail(id,seriesId,context=null){
   toast(`${items.length} direkte Medienzuordnungen gelöst.`);
   openShootingDetail(sh.id,returnSeriesId,returnShootingContext);
  };
+ const bodyCheckBtn=box.querySelector('[data-run-body-check]');
+ if(bodyCheckBtn)bodyCheckBtn.onclick=e=>{e.preventDefault();e.stopPropagation();runShootingBodyCheck(sh.id,photos)};
  hydrateMediaThumbs(box);bindInteractiveMedia(box);
 }
 document.getElementById('cancelDirectMediaTransferBtn').onclick=()=>{
