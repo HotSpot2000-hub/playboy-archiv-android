@@ -1092,7 +1092,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .bodyCheckPanel h4{margin:0 0 5px}.bodyCheckGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.bodyCheckStat{padding:8px;border-radius:10px;background:#fff;text-align:center}.bodyCheckStat b{display:block;font-size:17px}.bodyCheckActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bodyCheckActions button{width:auto;margin:0}.bodyCheckProgress{margin-top:8px;font-size:12px;color:var(--muted)}
 .bodyCheckCombined{margin-top:12px;padding-top:12px;border-top:1px solid #e3d6e5}.bodyCheckCombinedTitle{font-weight:700}.bodyCheckCombinedMeta{margin-top:3px}.bodyCheckCombinedGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.bodyCheckCombinedGrid .bodyCheckStat{padding:7px 5px}.bodyCheckCombinedGrid .bodyCheckStat b{font-size:16px}
 .bodyEstimate{margin-top:12px;padding:11px;border-radius:12px;background:#fff}.bodyEstimateTitle{font-weight:700}.bodyEstimateValues{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.bodyEstimateValue{padding:8px 4px;border-radius:10px;background:#f7f0f8;text-align:center}.bodyEstimateValue b,.bodyEstimateValue span{display:block}.bodyEstimateCompare{margin-top:9px}
-.bodyCandidateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.bodyCandidateCard{margin:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:#faf6fb;font-weight:400}.bodyCandidateCard .mediaThumb{aspect-ratio:2/3;margin:0 0 7px;border-radius:9px;overflow:hidden;background:#eee}.bodyCandidateChoice{display:flex;align-items:flex-start;gap:7px}.bodyCandidateChoice input{width:auto;margin:3px 0 0}.bodyCandidateActions{display:flex;gap:8px;margin-top:12px}.bodyCandidateActions button{width:auto;margin:0}
+.bodyCandidateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.bodyCandidateCard{position:relative;margin:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:#faf6fb;font-weight:400}.bodyCandidateCard .mediaThumb{aspect-ratio:2/3;margin:0 0 7px;border-radius:9px;overflow:hidden;background:#eee}.bodyCandidateChoice{display:flex;align-items:flex-start;gap:7px}.bodyCandidateChoice input{width:auto;margin:3px 0 0}.bodyCandidateBadge{position:absolute;top:13px;left:13px;z-index:2;padding:3px 6px;border-radius:999px;background:#fff;color:var(--accent);font-size:10px;font-weight:800;box-shadow:0 1px 4px #0002}.bodyCandidateActions{display:flex;gap:8px;margin-top:12px}.bodyCandidateActions button{width:auto;margin:0}
 .managementVideoButtons{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:8px}
 .managementVideoQuick{width:38px;height:38px;min-height:0!important;border:1px solid var(--line)!important;border-radius:50%!important;background:#fff!important;padding:0!important;font-size:17px!important;line-height:1!important;box-shadow:none!important}
 .galleryDetailHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}.galleryDetailHead h2{margin:0}.galleryDetailGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.galleryDetailGrid .mediaThumb{aspect-ratio:2/3;margin:0;border-radius:10px;overflow:hidden;background:#eee;cursor:pointer}.galleryDetailGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}@media(max-width:430px){.galleryDetailGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -13815,14 +13815,18 @@ function bodyContourAvailability(summary){
 function bodyMeasurementCandidateSamples(summary){
  const candidates=new Map();
  for(const sample of summary.samples){
-  if(!sample?.mediaId||!['frontal','side'].includes(sample.view)||!sample.contour)continue;
-  const measures=['bust','waist','hips'].filter(key=>Number(sample.contour[key])>0);
-  if(!measures.length)continue;
+  if(!sample?.mediaId)continue;
+  const measures=['bust','waist','hips'].filter(key=>Number(sample?.contour?.[key])>0);
   const existing=candidates.get(sample.mediaId);
-  if(existing)existing.measures=[...new Set([...existing.measures,...measures])];
-  else candidates.set(sample.mediaId,{mediaId:sample.mediaId,view:sample.view,measures});
+  if(existing){existing.measures=[...new Set([...existing.measures,...measures])];existing.confidence=Math.max(existing.confidence,Number(sample.confidence||0))}
+  else candidates.set(sample.mediaId,{mediaId:sample.mediaId,view:sample.view||'unknown',measures,confidence:Number(sample.confidence||0)});
  }
- return [...candidates.values()];
+ const viewRank={frontal:0,side:1,angled:2,unknown:3};
+ return [...candidates.values()].map(candidate=>({...candidate,recommended:candidate.measures.length>0})).sort((a,b)=>
+  Number(b.recommended)-Number(a.recommended)||
+  (viewRank[a.view]??4)-(viewRank[b.view]??4)||
+  b.measures.length-a.measures.length||b.confidence-a.confidence
+ );
 }
 function bodyMeasurementSelectionHtml(summary,model,message){
  const selected=Array.isArray(model?.bodyMeasurementCandidateIds)?model.bodyMeasurementCandidateIds.length:0;
@@ -13945,9 +13949,9 @@ function openBodyMeasurementCandidates(modelId,shootingId){
  const model=state.models.find(item=>item.id===modelId);if(!model)return;
  const summary=modelBodyCheckSummary(modelId),candidates=bodyMeasurementCandidateSamples(summary);
  const selected=new Set(Array.isArray(model.bodyMeasurementCandidateIds)?model.bodyMeasurementCandidateIds:[]);
- const labels={bust:'Brust',waist:'Taille',hips:'Hüfte'},views={frontal:'frontal',side:'seitlich'};
+ const labels={bust:'Brust',waist:'Taille',hips:'Hüfte'},views={frontal:'frontal',angled:'schräg',side:'seitlich',unknown:'Perspektive unklar'};
  const box=document.getElementById('galleryDetailContent');
- box.innerHTML=`<div class="galleryDetailHead"><h2>Messfotos auswählen</h2></div><div class="small">Wähle nur Aufnahmen, auf denen der Rumpf an den genannten Messlinien klar erkennbar ist. Die Auswahl verändert keine Fotos.</div>${candidates.length?`<div class="bodyCandidateGrid">${candidates.map(candidate=>{const media=(state.archive||[]).find(item=>item?.id===candidate.mediaId);return `<label class="bodyCandidateCard"><div class="mediaThumb" data-media-id="${esc(candidate.mediaId)}"><div class="small" style="padding:8px">Lade Foto …</div></div><span class="bodyCandidateChoice"><input type="checkbox" data-body-candidate="${esc(candidate.mediaId)}" ${selected.has(candidate.mediaId)?'checked':''}><span><b>${esc(views[candidate.view]||candidate.view)}</b><span class="small">${candidate.measures.map(key=>labels[key]).join(' · ')}${media?.fileName?`<br>${esc(media.fileName)}`:''}</span></span></span></label>`}).join('')}</div><div class="bodyCandidateActions"><button type="button" class="btn" data-save-body-candidates>Auswahl speichern</button></div>`:'<div class="small" style="margin-top:12px">Keine geeigneten Kandidaten vorhanden.</div>'}`;
+ box.innerHTML=`<div class="galleryDetailHead"><h2>Messfotos auswählen</h2></div><div class="small">Alle geeigneten Ganzkörperfotos werden angeboten. Automatisch bevorzugte Aufnahmen stehen zuerst; du kannst ausdrücklich auch jedes andere Foto wählen. Die Auswahl verändert keine Fotos.</div>${candidates.length?`<div class="bodyCandidateGrid">${candidates.map(candidate=>{const media=(state.archive||[]).find(item=>item?.id===candidate.mediaId),measureText=candidate.measures.length?candidate.measures.map(key=>labels[key]+' frei').join(' · '):'Messlinien automatisch nicht frei';return `<label class="bodyCandidateCard">${candidate.recommended?'<span class="bodyCandidateBadge">Empfohlen</span>':''}<div class="mediaThumb" data-media-id="${esc(candidate.mediaId)}"><div class="small" style="padding:8px">Lade Foto …</div></div><span class="bodyCandidateChoice"><input type="checkbox" data-body-candidate="${esc(candidate.mediaId)}" ${selected.has(candidate.mediaId)?'checked':''}><span><b>${esc(views[candidate.view]||candidate.view)}</b><span class="small">${measureText}${media?.fileName?`<br>${esc(media.fileName)}`:''}</span></span></span></label>`}).join('')}</div><div class="bodyCandidateActions"><button type="button" class="btn" data-save-body-candidates>Auswahl speichern</button></div>`:'<div class="small" style="margin-top:12px">Keine geeigneten Kandidaten vorhanden.</div>'}`;
  openOverlay('galleryDetailPane');
  const sheet=document.querySelector('#overlay .sheet');if(sheet)sheet.scrollTop=0;
  hydrateMediaThumbs(box);
