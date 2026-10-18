@@ -13782,18 +13782,21 @@ function bodyContourEstimate(summary,model){
   return {view:group.view,bust:bodyMedian(contours.map(x=>x.bust).filter(x=>Number(x)>0)),waist:bodyMedian(contours.map(x=>x.waist).filter(x=>Number(x)>0)),hips:bodyMedian(contours.map(x=>x.hips).filter(x=>Number(x)>0))};
  }).filter(Boolean);
  const frontal=groupContours.filter(group=>group.view==='frontal'),side=groupContours.filter(group=>group.view==='side');
- const estimate={heightCm,frontal:frontal.length,side:side.length,values:{},needsCalibration:false};
+ const estimate={heightCm,frontal:frontal.length,side:side.length,values:{},sources:{},needsCalibration:false};
  for(const key of ['bust','waist','hips']){
   const frontValues=frontal.map(group=>group[key]).filter(value=>Number(value)>0);
   const sideValues=side.map(group=>group[key]).filter(value=>Number(value)>0);
-  if(frontValues.length<2||sideValues.length<2)return null;
+  if(frontValues.length<1||sideValues.length<3)return null;
   const widthRatio=bodyRobustMedian(frontValues);
   const depthRatio=bodyRobustMedian(sideValues);
   const center=bodyEllipseCircumference(widthRatio*heightCm,depthRatio*heightCm);
   if(!Number.isFinite(center))return null;
   if(center<45||center>170)estimate.needsCalibration=true;
-  const uncertainty=Math.max(key==='waist'?8:9,center*(key==='waist'?.11:.10));
+  const uncertaintyRate={bust:.16,waist:.14,hips:.12}[key];
+  const minimumUncertainty={bust:12,waist:9,hips:10}[key];
+  const uncertainty=Math.max(minimumUncertainty,center*uncertaintyRate);
   estimate.values[key]={center:Math.round(center),min:Math.round(center-uncertainty),max:Math.round(center+uncertainty)};
+  estimate.sources[key]={frontal:frontValues.length,side:sideValues.length};
  }
  return estimate;
 }
@@ -13813,7 +13816,7 @@ function bodyContourEstimateHtml(summary,model){
  if(!estimate&&summary.contourShootings===summary.shootings){
   const counts=bodyContourAvailability(summary),labels={bust:'Brust',waist:'Taille',hips:'Hüfte'};
   const rows=['bust','waist','hips'].map(key=>`<div class="bodyEstimateValue"><b>${labels[key]}</b><span class="small">${counts[key].frontal} frontal · ${counts[key].angled} schräg · ${counts[key].side} seitlich</span></div>`).join('');
-  return `<div class="bodyEstimate"><div class="bodyEstimateTitle">Noch keine belastbare Konturschätzung</div><div class="small">Nach dem Ausschluss armüberlagerter Messlinien sind noch nicht für jedes Maß mindestens zwei frontale und zwei seitliche Posengruppen verfügbar. Es wird kein Ersatzwert geraten.</div><div class="bodyEstimateValues">${rows}</div></div>`;
+  return `<div class="bodyEstimate"><div class="bodyEstimateTitle">Noch keine belastbare Konturschätzung</div><div class="small">Nach dem Ausschluss armüberlagerter Messlinien sind noch nicht für jedes Maß mindestens eine frontale und drei seitliche Posengruppen verfügbar. Es wird kein Ersatzwert geraten.</div><div class="bodyEstimateValues">${rows}</div></div>`;
  }
  if(!estimate)return '';
  const stored=storedMetricMeasurements(model),labels={bust:'Brust',waist:'Taille',hips:'Hüfte'};
@@ -13824,9 +13827,10 @@ function bodyContourEstimateHtml(summary,model){
   comparison=`<div class="small bodyEstimateCompare">Vorhanden: <b>${stored.text}</b> · ${checks.join(' · ')}</div>`;
  }
  const title=estimate.needsCalibration?'Kontur-Rohwerte zur Kalibrierung':'Vorsichtige Konturschätzung';
+ const sourceText=['bust','waist','hips'].map(key=>`${labels[key]} ${estimate.sources[key].frontal}/${estimate.sources[key].side}`).join(' · ');
  const note=estimate.needsCalibration
-  ?`Aus ${estimate.frontal} breiten und ${estimate.side} seitlichen Posengruppen bei ${estimate.heightCm} cm Körpergröße. Mindestens ein Rohwert liegt außerhalb des sinnvollen Messbereichs. Diese Zahlen bitte noch nicht als Körpermaße bewerten.`
-  :`Aus ${estimate.frontal} breiten und ${estimate.side} seitlichen Posengruppen bei ${estimate.heightCm} cm Körpergröße. Die Bereiche sind eine Plausibilitätsprüfung, keine exakte Vermessung.`;
+  ?`Frontale/seitliche Gruppen: ${sourceText}. Körpergröße ${estimate.heightCm} cm. Mindestens ein Rohwert liegt außerhalb des sinnvollen Messbereichs. Diese Zahlen bitte noch nicht als Körpermaße bewerten.`
+  :`Frontale/seitliche Gruppen: ${sourceText}. Körpergröße ${estimate.heightCm} cm. Wegen der einzelnen Frontansicht sind die Bereiche bewusst weit und nur eine Plausibilitätsprüfung.`;
  return `<div class="bodyEstimate"><div class="bodyEstimateTitle">${title}</div><div class="small">${note}</div><div class="bodyEstimateValues">${valueHtml}</div>${comparison}</div>`;
 }
 function modelBodyCheckSummary(modelId){
