@@ -13766,6 +13766,55 @@ function bodyRobustMedian(values){
  if(!mad)return median;
  const filtered=clean.filter(value=>Math.abs(value-median)<=3*mad);return bodyMedian(filtered.length?filtered:clean);
 }
+function bodyGeometryDistance(a,b){
+ if(!a||!b)return null;const dx=Number(a.x)-Number(b.x),dy=Number(a.y)-Number(b.y);
+ return Number.isFinite(dx)&&Number.isFinite(dy)?Math.hypot(dx,dy):null;
+}
+function bodyGeometryMidpoint(a,b){
+ if(!a||!b)return null;const x=(Number(a.x)+Number(b.x))/2,y=(Number(a.y)+Number(b.y))/2;
+ return Number.isFinite(x)&&Number.isFinite(y)?{x,y}:null;
+}
+function bodyGeometryFeatures(sample){
+ const g=sample?.geometry||{},shoulders=bodyGeometryMidpoint(g.leftShoulder,g.rightShoulder),hips=bodyGeometryMidpoint(g.leftHip,g.rightHip);
+ const ankles=bodyGeometryMidpoint(g.leftAnkle||g.leftHeel||g.leftFoot,g.rightAnkle||g.rightHeel||g.rightFoot);
+ const shoulder=bodyGeometryDistance(g.leftShoulder,g.rightShoulder),hip=bodyGeometryDistance(g.leftHip,g.rightHip),torso=bodyGeometryDistance(shoulders,hips);
+ const eye=bodyGeometryDistance(g.leftEye,g.rightEye),headPoints=[g.nose,g.leftEye,g.rightEye,g.leftEar,g.rightEar].filter(Boolean);
+ const topY=headPoints.length?Math.min(...headPoints.map(point=>Number(point.y)).filter(Number.isFinite)):null;
+ const bottomPoints=[g.leftAnkle,g.rightAnkle,g.leftHeel,g.rightHeel,g.leftFoot,g.rightFoot].filter(Boolean);
+ const bottomY=bottomPoints.length?Math.max(...bottomPoints.map(point=>Number(point.y)).filter(Number.isFinite)):null;
+ const body=Number.isFinite(topY)&&Number.isFinite(bottomY)&&bottomY>topY?bottomY-topY:null;
+ const headShoulder=shoulders&&Number.isFinite(topY)&&shoulders.y>topY?shoulders.y-topY:null;
+ const ratio=(a,b)=>Number(a)>0&&Number(b)>0?Number(a)/Number(b):null;
+ return {anchorShoulder:ratio(shoulder,body),anchorTorso:ratio(torso,body),anchorHip:ratio(hip,body),bridgeShoulder:ratio(shoulder,torso),bridgeHip:ratio(hip,torso),upperEye:ratio(shoulder,eye),upperHead:ratio(shoulder,headShoulder),hasAnchor:!!(body&&shoulder&&torso&&hip&&ankles),hasBridge:!!(shoulder&&torso&&hip),hasUpper:!!(shoulder&&(eye||headShoulder))};
+}
+function bodyGeometryConsistency(summary){
+ const samples=(summary.geometrySamples||[]).map(sample=>({...sample,geometryFeatures:bodyGeometryFeatures(sample)}));
+ const definitions={anchor:['anchorShoulder','anchorTorso','anchorHip'],bridge:['bridgeShoulder','bridgeHip'],upper:['upperEye','upperHead']};
+ const available={anchor:samples.filter(sample=>sample.geometryFeatures.hasAnchor),bridge:samples.filter(sample=>sample.geometryFeatures.hasBridge),upper:samples.filter(sample=>sample.geometryFeatures.hasUpper)};
+ const profiles={};
+ for(const [kind,metrics] of Object.entries(definitions))for(const view of ['frontal','angled','side','unknown'])for(const metric of metrics){
+  const values=available[kind].filter(sample=>(sample.view||'unknown')===view).map(sample=>sample.geometryFeatures[metric]).filter(value=>Number(value)>0);
+  if(values.length<3)continue;const median=bodyMedian(values),mad=bodyMedian(values.map(value=>Math.abs(value-median)));
+  profiles[`${kind}:${view}:${metric}`]={median,tolerance:Math.max(Number(mad||0)*3,median*.18)};
+ }
+ const stable={};
+ for(const [kind,metrics] of Object.entries(definitions))stable[kind]=available[kind].filter(sample=>{
+  const view=sample.view||'unknown';let checked=0,passed=0;
+  for(const metric of metrics){const value=sample.geometryFeatures[metric],profile=profiles[`${kind}:${view}:${metric}`];if(!(Number(value)>0)||!profile)continue;checked++;if(Math.abs(value-profile.median)<=profile.tolerance)passed++}
+  return checked>=1&&passed===checked;
+ });
+ const linkedIds=new Set([...stable.anchor,...stable.bridge,...stable.upper].map(sample=>sample.mediaId));
+ const availableIds=new Set([...available.anchor,...available.bridge,...available.upper].map(sample=>sample.mediaId));
+ return {available,stable,linked:linkedIds.size,outliers:[...availableIds].filter(id=>!linkedIds.has(id)).length,ready:stable.anchor.length>=8&&stable.bridge.length>=12&&stable.upper.length>=12};
+}
+function bodyGeometryConsistencyHtml(summary){
+ if(!summary.geometryShootings||summary.geometryShootings!==summary.shootings)return '';
+ const check=bodyGeometryConsistency(summary),title=check.ready?'Stabile Vergleichsgeometrie':'Vergleichsgeometrie noch eingeschränkt';
+ const note=check.ready
+  ?'Die gespeicherten Fotos bilden ausreichend übereinstimmende Ganzkörperanker, Torso-Brücken und Oberkörper-Verknüpfungen. Nahaufnahmen können damit später über gemeinsame Körperpunkte skaliert werden.'
+  :'Die Vergleichsketten werden perspektivweise geprüft. Für eine spätere Skalierung fehlen noch genügend übereinstimmende Anker oder Brücken; es wird noch kein Maß geraten.';
+ return `<div class="bodyEstimate"><div class="bodyEstimateTitle">${title}</div><div class="small">${note}</div><div class="bodyEstimateValues"><div class="bodyEstimateValue"><b>${check.stable.anchor.length} / ${check.available.anchor.length}</b><span class="small">Ganzkörperanker stabil</span></div><div class="bodyEstimateValue"><b>${check.stable.bridge.length} / ${check.available.bridge.length}</b><span class="small">Torso-Brücken stabil</span></div><div class="bodyEstimateValue"><b>${check.stable.upper.length} / ${check.available.upper.length}</b><span class="small">Oberkörper verknüpft</span></div><div class="bodyEstimateValue"><b>${check.linked}</b><span class="small">Fotos vernetzt</span></div><div class="bodyEstimateValue"><b>${check.outliers}</b><span class="small">Ausreißer zurückgestellt</span></div></div><div class="small bodyEstimateCompare">Nur dimensionslose Größenverhältnisse innerhalb vergleichbarer Perspektiven wurden geprüft. Noch keine Zentimeterwerte und keine Änderung der gespeicherten Angaben.</div></div>`;
+}
 function bodyEllipseCircumference(width,depth){
  const a=width/2,b=depth/2;return Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)));
 }
@@ -13880,7 +13929,7 @@ function modelBodyCheckSummaryHtml(sh){
  const summary=modelBodyCheckSummary(modelId);if(!summary.shootings)return '';
  const m=state.models.find(item=>item.id===modelId);
  const perspectiveComplete=summary.perspectiveShootings===summary.shootings;
- return `<div class="bodyCheckCombined"><div class="bodyCheckCombinedTitle">${esc(summary.quality)}</div><div class="small bodyCheckCombinedMeta">Gemeinsame Grundlage für ${esc(m?.name||'dieses Model')}. ${perspectiveComplete?'Ähnliche Posen sind gruppiert; die Perspektiven sind eine lokale heuristische Einschätzung.':`Perspektivprüfung: ${summary.perspectiveShootings} von ${summary.shootings} Shootings aktuell.`}${summary.contourShootings<summary.shootings?` Konturprüfung: ${summary.contourShootings} von ${summary.shootings} Shootings aktuell.`:' Konturen lokal erfasst.'}${summary.geometryShootings<summary.shootings?` Vergleichsgeometrien: ${summary.geometryShootings} von ${summary.shootings} Shootings aktuell.`:' Vergleichsgeometrien lokal erfasst.'}</div><div class="bodyCheckCombinedGrid"><div class="bodyCheckStat"><b>${summary.shootings}</b><span class="small">Shootings</span></div><div class="bodyCheckStat"><b>${summary.photos}</b><span class="small">Fotos geprüft</span></div><div class="bodyCheckStat"><b>${summary.framed}</b><span class="small">geeignet</span></div>${summary.perspectiveShootings?`<div class="bodyCheckStat"><b>${summary.groups.length}</b><span class="small">Posengruppen</span></div><div class="bodyCheckStat"><b>${summary.views.frontal}</b><span class="small">frontal</span></div><div class="bodyCheckStat"><b>${summary.views.angled} · ${summary.views.side}</b><span class="small">schräg · seitlich</span></div>`:''}${summary.contourShootings?`<div class="bodyCheckStat"><b>${summary.contours}</b><span class="small">Konturen erkannt</span></div>`:''}${summary.geometryShootings?`<div class="bodyCheckStat"><b>${summary.geometryPhotos}</b><span class="small">Geometriefotos</span></div><div class="bodyCheckStat"><b>${summary.geometryUpper} · ${summary.geometryTorso}</b><span class="small">Schultern · Torso</span></div><div class="bodyCheckStat"><b>${summary.geometryFull}</b><span class="small">Ganzkörperanker</span></div>`:''}</div>${bodyContourEstimateHtml(summary,m)}</div>`;
+ return `<div class="bodyCheckCombined"><div class="bodyCheckCombinedTitle">${esc(summary.quality)}</div><div class="small bodyCheckCombinedMeta">Gemeinsame Grundlage für ${esc(m?.name||'dieses Model')}. ${perspectiveComplete?'Ähnliche Posen sind gruppiert; die Perspektiven sind eine lokale heuristische Einschätzung.':`Perspektivprüfung: ${summary.perspectiveShootings} von ${summary.shootings} Shootings aktuell.`}${summary.contourShootings<summary.shootings?` Konturprüfung: ${summary.contourShootings} von ${summary.shootings} Shootings aktuell.`:' Konturen lokal erfasst.'}${summary.geometryShootings<summary.shootings?` Vergleichsgeometrien: ${summary.geometryShootings} von ${summary.shootings} Shootings aktuell.`:' Vergleichsgeometrien lokal erfasst.'}</div><div class="bodyCheckCombinedGrid"><div class="bodyCheckStat"><b>${summary.shootings}</b><span class="small">Shootings</span></div><div class="bodyCheckStat"><b>${summary.photos}</b><span class="small">Fotos geprüft</span></div><div class="bodyCheckStat"><b>${summary.framed}</b><span class="small">geeignet</span></div>${summary.perspectiveShootings?`<div class="bodyCheckStat"><b>${summary.groups.length}</b><span class="small">Posengruppen</span></div><div class="bodyCheckStat"><b>${summary.views.frontal}</b><span class="small">frontal</span></div><div class="bodyCheckStat"><b>${summary.views.angled} · ${summary.views.side}</b><span class="small">schräg · seitlich</span></div>`:''}${summary.contourShootings?`<div class="bodyCheckStat"><b>${summary.contours}</b><span class="small">Konturen erkannt</span></div>`:''}${summary.geometryShootings?`<div class="bodyCheckStat"><b>${summary.geometryPhotos}</b><span class="small">Geometriefotos</span></div><div class="bodyCheckStat"><b>${summary.geometryUpper} · ${summary.geometryTorso}</b><span class="small">Schultern · Torso</span></div><div class="bodyCheckStat"><b>${summary.geometryFull}</b><span class="small">Ganzkörperanker</span></div>`:''}</div>${bodyGeometryConsistencyHtml(summary)}${bodyContourEstimateHtml(summary,m)}</div>`;
 }
 function shootingBodyCheckHtml(sh,photos=[]){
  const modelCount=shootingModelIds(sh).length;
