@@ -1398,7 +1398,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .todoModelItem,.todoArchiveItem{border:1px solid var(--line);border-radius:12px;margin-top:8px;overflow:hidden;background:#fff}.todoModelItem button,.todoArchiveItem button{width:100%;text-align:left;border:0;background:#fff;padding:10px 11px;font:inherit}.todoKind{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:3px}.todoWhy{margin-top:5px;display:flex;gap:5px;flex-wrap:wrap}.todoBadge{display:inline-block;border-radius:999px;background:#f2f2ef;padding:4px 7px;font-size:10px;color:#444}
 @media(max-width:520px){.todoTools{align-items:stretch}.todoSearch{flex-basis:100%}.todoFilter{min-height:38px}}
 
-.bioList{display:grid}.bioRow{display:grid;gap:5px;padding:13px 0;border-bottom:1px solid rgba(0,0,0,.08)}.bioRow:last-child{border-bottom:0}.bioLabel{font-size:12px;color:#777}.bioValue{font-size:16px;font-weight:600;line-height:1.35;min-width:0}.bioValueDetail{display:block;margin-top:3px;color:#777;font-size:12px;font-weight:400;line-height:1.4}.bioLocation .bioValue{font-weight:600}@media(max-width:700px){.bioRow{gap:4px;padding:12px 0}.bioLabel{font-size:12px}.bioValue{font-size:15px}}
+.bioList{display:grid}.bioRow{display:grid;gap:5px;padding:13px 0;border-bottom:1px solid rgba(0,0,0,.08)}.bioRow:last-child{border-bottom:0}.bioLabel{font-size:12px;color:#777}.bioValue{font-size:16px;font-weight:600;line-height:1.35;min-width:0}.bioLocation .bioValue{font-weight:600}@media(max-width:700px){.bioRow{gap:4px;padding:12px 0}.bioLabel{font-size:12px}.bioValue{font-size:15px}}
 
 .profileArchiveCard{padding-top:10px}
 .profileArchiveNav{margin-bottom:12px}
@@ -2456,7 +2456,7 @@ body.archiveFilterOpen .bottom{display:none!important}
    <div class="bioProfileName" id="name"></div>
    <div class="bioRow bioLocation"><div class="bioLabel">Herkunft</div><div class="bioValue" id="summaryLocation">—</div></div>
    <div class="bioRow"><div class="bioLabel">Größe</div><div class="bioValue" id="summaryHeightBio">—</div></div>
-   <div class="bioRow"><div class="bioLabel">Maße</div><div class="bioValue"><span id="summaryMeasurements">—</span><span class="bioValueDetail hidden" id="summaryMeasurementsMetric"></span></div></div>
+   <div class="bioRow"><div class="bioLabel">Maße</div><div class="bioValue" id="summaryMeasurements">—</div></div>
    <div class="bioRow"><div class="bioLabel">Gewicht</div><div class="bioValue" id="summaryWeight">—</div></div>
    <div class="bioRow"><div class="bioLabel">Geboren</div><div class="bioValue" id="summaryBirth">—</div></div>
   </div>
@@ -4824,27 +4824,32 @@ function formatBioHeight(value){
  const shown=formatHeightDisplay(value||'');
  return shown||'—';
 }
-function metricMeasurementDetails(value,system='auto'){
+function formattedMeasurements(value,system='auto'){
  const raw=String(value||'').trim();
- if(!raw)return '';
+ if(!raw)return '—';
  const normalized=raw.replace(/[–—−]/g,'-').replace(/[“”″]/g,'"').replace(/\s+/g,'');
  const parts=normalized.replace(/"/g,'').split('-').filter(Boolean);
- if(parts.length!==3)return '';
+ if(parts.length!==3)return raw;
  const first=parts[0].match(/^(\d{2,3})([a-z]+)?$/i);
  const waist=Number(parts[1].replace(',','.'));
  const hip=Number(parts[2].replace(',','.'));
- if(!first||!Number.isFinite(waist)||!Number.isFinite(hip))return '';
+ if(!first||!Number.isFinite(waist)||!Number.isFinite(hip))return raw;
  const hasCup=Boolean(first[2]);
  const explicitInches=/"|\bin\b/i.test(raw);
  const valuesAreCm=!hasCup&&!explicitInches&&Number(first[1])>=55&&waist>=45&&hip>=55;
- const cm=n=>{
-  const v=valuesAreCm?n:n*2.54;
-  return v.toLocaleString('de-DE',{minimumFractionDigits:0,maximumFractionDigits:1})+' cm';
- };
- if(!hasCup)return `Metrisch: Brust ${cm(Number(first[1]))} · Taille ${cm(waist)} · Hüfte ${cm(hip)}`;
- const chosen=['us','uk','eu'].includes(system)?system:'auto';
- const systemLabel=chosen==='auto'?'System nicht bestätigt':chosen.toUpperCase();
- return `BH ${first[1]}${first[2].toUpperCase()} · ${systemLabel} · Taille ${cm(waist)} · Hüfte ${cm(hip)}`;
+ const wholeCm=n=>Math.round(valuesAreCm?n:n*2.54);
+ if(!hasCup)return valuesAreCm?`${wholeCm(Number(first[1]))}-${wholeCm(waist)}-${wholeCm(hip)}`:`${wholeCm(Number(first[1]))}-${wholeCm(waist)}-${wholeCm(hip)} • US ${Number(first[1])}-${waist}-${hip}`;
+ const sourceSystem=['us','uk','eu'].includes(system)?system:'us';
+ const sourceCup=first[2].toUpperCase();
+ const euCup=({AA:'AA',A:'A',B:'B',C:'C',D:'D',DD:'E',E:'E',DDD:'F',F:'F',G:'G',H:'H'})[sourceCup]||sourceCup;
+ if(sourceSystem==='eu')return `EU ${first[1]}(${sourceCup})-${waist}-${hip}`;
+ const cupDifferenceInches=({AA:0.5,A:1,B:2,C:3,D:4,DD:5,E:6,DDD:6,F:6,G:7,H:8})[sourceCup];
+ const estimatedBustCm=Number.isFinite(cupDifferenceInches)
+  ?Math.round((Number(first[1])+cupDifferenceInches)*2.54)
+  :wholeCm(Number(first[1]));
+ const euBand=Math.round(((Number(first[1])*2.54)-10)/5)*5;
+ const metricBody=`${estimatedBustCm}-${wholeCm(waist)}-${wholeCm(hip)}`;
+ return `${metricBody} • ${sourceSystem.toUpperCase()} ${first[1]}(${sourceCup})-${waist}-${hip} • EU ${euBand}(${euCup})-${wholeCm(waist)}-${wholeCm(hip)}`;
 }
 function formatWeightDisplay(value){
  const raw=String(value||'').trim();
@@ -5215,13 +5220,7 @@ document.getElementById('profileRatingIncomplete').textContent=
    ?`<span class="bioLocationFlag" aria-hidden="true">${esc(locationFlag)}</span><span class="bioLocationText">${esc(locationPlain)}</span>`
    :`<span class="bioLocationText">${esc(locationPlain)}</span>`;
  document.getElementById('summaryHeightBio').textContent=formatBioHeight(m.height||he?.value||'');
- document.getElementById('summaryMeasurements').textContent=m.measurements||'—';
- const measurementMetric=document.getElementById('summaryMeasurementsMetric');
- if(measurementMetric){
-  const detail=metricMeasurementDetails(m.measurements,m.measurementsSystem);
-  measurementMetric.textContent=detail;
-  measurementMetric.classList.toggle('hidden',!detail);
- }
+ document.getElementById('summaryMeasurements').textContent=formattedMeasurements(m.measurements,m.measurementsSystem);
  document.getElementById('summaryWeight').textContent=formatWeightDisplay(m.weight);
  document.getElementById('summaryBirth').textContent=formatBirthWithAge(m.birthdate);
  renderProfileConfirmedFacts(m.id);
