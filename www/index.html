@@ -13732,13 +13732,37 @@ function shootingBodyCheckQuality(result){
  if(result.fullBody>=2||result.detected>=Math.ceil(result.total*.35))return 'Eingeschränkte Grundlage';
  return 'Noch nicht ausreichend';
 }
+function bodyPoseSignatureDistance(a,b){
+ const av=Array.isArray(a)?a:[],bv=Array.isArray(b)?b:[];let sum=0,count=0;
+ for(let i=0;i<Math.min(av.length,bv.length);i++){
+  const x=Number(av[i]),y=Number(bv[i]);if(!Number.isFinite(x)||!Number.isFinite(y)||x<0||y<0)continue;
+  sum+=(x-y)*(x-y);count++;
+ }
+ return count>=4?Math.sqrt(sum/count):Infinity;
+}
+function bodyPoseGroups(samples){
+ const groups=[];
+ for(const sample of samples){
+  let best=null,bestDistance=Infinity;
+  for(const group of groups){
+   if(group.view!==sample.view)continue;
+   const distance=bodyPoseSignatureDistance(group.signature,sample.signature);
+   if(distance<bestDistance){best=group;bestDistance=distance}
+  }
+  if(best&&bestDistance<=.32)best.count++;
+  else groups.push({view:sample.view||'unknown',signature:sample.signature,count:1});
+ }
+ return groups;
+}
 function modelBodyCheckSummary(modelId){
- const rows=(state.archive||[]).filter(sh=>sh&&sh.type==='shoot'&&shootingModelIds(sh).length===1&&shootingModelIds(sh)[0]===modelId&&sh.bodyCheck&&sh.bodyCheck.version===1).map(sh=>{
+ const rows=(state.archive||[]).filter(sh=>sh&&sh.type==='shoot'&&shootingModelIds(sh).length===1&&shootingModelIds(sh)[0]===modelId&&sh.bodyCheck&&sh.bodyCheck.version>=1).map(sh=>{
   const currentIds=shootingPreviewParts(sh).photos.map(x=>x.id).sort();
   const checkedIds=(sh.bodyCheck.photoIds||[]).slice().sort();
   return currentIds.length===checkedIds.length&&currentIds.every((id,index)=>id===checkedIds[index])?sh.bodyCheck:null;
  }).filter(Boolean);
- const summary=rows.reduce((out,row)=>{out.photos+=Number(row.total||0);out.framed+=Number(row.framed||0);out.partial+=Math.max(0,Number(row.fullBody||0)-Number(row.framed||0));return out},{shootings:rows.length,photos:0,framed:0,partial:0});
+ const summary=rows.reduce((out,row)=>{out.photos+=Number(row.total||0);out.framed+=Number(row.framed||0);out.partial+=Math.max(0,Number(row.fullBody||0)-Number(row.framed||0));if(row.version>=2){out.perspectiveShootings++;out.samples.push(...(Array.isArray(row.samples)?row.samples:[]))}return out},{shootings:rows.length,perspectiveShootings:0,photos:0,framed:0,partial:0,samples:[]});
+ summary.groups=bodyPoseGroups(summary.samples);
+ summary.views=summary.groups.reduce((out,group)=>{out[group.view]=(out[group.view]||0)+1;return out},{frontal:0,angled:0,side:0,unknown:0});
  if(summary.shootings>=3&&summary.framed>=24)summary.quality='Sehr gute Gesamtgrundlage';
  else if(summary.shootings>=2&&summary.framed>=12)summary.quality='Gute Gesamtgrundlage';
  else if(summary.framed>=5)summary.quality='Eingeschränkte Gesamtgrundlage';
@@ -13749,16 +13773,18 @@ function modelBodyCheckSummaryHtml(sh){
  const modelId=shootingModelIds(sh)[0]||'';if(!modelId)return '';
  const summary=modelBodyCheckSummary(modelId);if(!summary.shootings)return '';
  const m=state.models.find(item=>item.id===modelId);
- return `<div class="bodyCheckCombined"><div class="bodyCheckCombinedTitle">${esc(summary.quality)}</div><div class="small bodyCheckCombinedMeta">Gemeinsame Grundlage für ${esc(m?.name||'dieses Model')}. Ähnliche Aufnahmen werden in der nächsten Analysestufe noch nicht als unabhängige Messungen gewertet.</div><div class="bodyCheckCombinedGrid"><div class="bodyCheckStat"><b>${summary.shootings}</b><span class="small">Shootings</span></div><div class="bodyCheckStat"><b>${summary.photos}</b><span class="small">Fotos geprüft</span></div><div class="bodyCheckStat"><b>${summary.framed}</b><span class="small">geeignet</span></div></div></div>`;
+ const perspectiveComplete=summary.perspectiveShootings===summary.shootings;
+ return `<div class="bodyCheckCombined"><div class="bodyCheckCombinedTitle">${esc(summary.quality)}</div><div class="small bodyCheckCombinedMeta">Gemeinsame Grundlage für ${esc(m?.name||'dieses Model')}. ${perspectiveComplete?'Ähnliche Posen sind gruppiert; die Perspektiven sind eine lokale heuristische Einschätzung.':`Perspektivprüfung: ${summary.perspectiveShootings} von ${summary.shootings} Shootings aktuell.`}</div><div class="bodyCheckCombinedGrid"><div class="bodyCheckStat"><b>${summary.shootings}</b><span class="small">Shootings</span></div><div class="bodyCheckStat"><b>${summary.photos}</b><span class="small">Fotos geprüft</span></div><div class="bodyCheckStat"><b>${summary.framed}</b><span class="small">geeignet</span></div>${summary.perspectiveShootings?`<div class="bodyCheckStat"><b>${summary.groups.length}</b><span class="small">Posengruppen</span></div><div class="bodyCheckStat"><b>${summary.views.frontal}</b><span class="small">frontal</span></div><div class="bodyCheckStat"><b>${summary.views.angled} · ${summary.views.side}</b><span class="small">schräg · seitlich</span></div>`:''}</div></div>`;
 }
 function shootingBodyCheckHtml(sh,photos=[]){
  const modelCount=shootingModelIds(sh).length;
  if(modelCount!==1)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Diese erste Analysestufe ist nur für Shootings mit genau einem Model freigegeben. Bei mehreren Models kann die lokale Poseerkennung die erkannte Person noch nicht zuverlässig zuordnen.</div></div>`;
- const result=sh.bodyCheck&&sh.bodyCheck.version===1?sh.bodyCheck:null;
+ const result=sh.bodyCheck&&sh.bodyCheck.version>=1?sh.bodyCheck:null;
  const changed=result&&Array.isArray(result.photoIds)&&result.photoIds.join('|')!==photos.map(x=>x.id).join('|');
+ const perspectivePending=result&&result.version<2;
  if(!result)return `<div class="bodyCheckPanel"><h4>Körperangaben prüfen</h4><div class="small">Die Fotos dieses Shootings werden ausschließlich auf diesem Gerät auf Pose, Ganzkörpererkennbarkeit und vollständige Bildfassung geprüft. Es werden noch keine Körpermaße errechnet.</div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>Lokale Prüfung starten</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
  const date=result.analyzedAt?new Date(result.analyzedAt).toLocaleString('de-DE'):'';
- return `<div class="bodyCheckPanel"><h4>${esc(shootingBodyCheckQuality(result))}${changed?' · Daten geändert':''}</h4><div class="small">${result.analyzed} von ${result.total} Fotos lokal geprüft${date?` · ${esc(date)}`:''}. Noch keine Maßschätzung.</div><div class="bodyCheckGrid"><div class="bodyCheckStat"><b>${result.framed}</b><span class="small">Ganzkörper geeignet</span></div><div class="bodyCheckStat"><b>${result.fullBody-result.framed}</b><span class="small">Ganzkörper angeschnitten</span></div><div class="bodyCheckStat"><b>${result.upperOnly}</b><span class="small">nur Oberkörper</span></div><div class="bodyCheckStat"><b>${result.unsuitable}</b><span class="small">nicht geeignet</span></div></div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>${changed?'Erneut prüfen':'Prüfung wiederholen'}</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
+ return `<div class="bodyCheckPanel"><h4>${esc(shootingBodyCheckQuality(result))}${changed?' · Daten geändert':''}</h4><div class="small">${result.analyzed} von ${result.total} Fotos lokal geprüft${date?` · ${esc(date)}`:''}. ${perspectivePending?'Perspektiven und ähnliche Posen noch nicht ausgewertet.':'Perspektiven und ähnliche Posen lokal ausgewertet.'} Noch keine Maßschätzung.</div><div class="bodyCheckGrid"><div class="bodyCheckStat"><b>${result.framed}</b><span class="small">Ganzkörper geeignet</span></div><div class="bodyCheckStat"><b>${result.fullBody-result.framed}</b><span class="small">Ganzkörper angeschnitten</span></div><div class="bodyCheckStat"><b>${result.upperOnly}</b><span class="small">nur Oberkörper</span></div><div class="bodyCheckStat"><b>${result.unsuitable}</b><span class="small">nicht geeignet</span></div></div><div class="bodyCheckActions"><button type="button" class="btn" data-run-body-check>${changed?'Erneut prüfen':perspectivePending?'Perspektiven prüfen':'Prüfung wiederholen'}</button></div><div class="bodyCheckProgress" data-body-check-progress></div>${modelBodyCheckSummaryHtml(sh)}</div>`;
 }
 async function poseAnalysisDataUrl(blob){
  const bitmap=await createImageBitmap(blob);
@@ -13783,7 +13809,7 @@ async function runShootingBodyCheck(shootingId,photos){
    const blob=await getMedia(photo.id);if(!blob||!String(blob.type||'').startsWith('image/')){failed++;continue}
    const dataUrl=await poseAnalysisDataUrl(blob);
    const result=await analyzer.analyzePose({dataUrl});
-   rows.push({mediaId:photo.id,poseDetected:Boolean(result.poseDetected),upperBody:Boolean(result.upperBody),fullBody:Boolean(result.fullBody),safelyFramed:Boolean(result.safelyFramed),confidence:Number(result.averageConfidence||0)});
+   rows.push({mediaId:photo.id,poseDetected:Boolean(result.poseDetected),upperBody:Boolean(result.upperBody),fullBody:Boolean(result.fullBody),safelyFramed:Boolean(result.safelyFramed),confidence:Number(result.averageConfidence||0),view:String(result.view||'unknown'),signature:Array.isArray(result.poseSignature)?result.poseSignature.map(Number):[]});
   }catch(error){console.error('Lokale Poseanalyse fehlgeschlagen',photo.id,error);failed++}
  }
  const detected=rows.filter(x=>x.poseDetected).length;
@@ -13791,7 +13817,7 @@ async function runShootingBodyCheck(shootingId,photos){
  const framed=rows.filter(x=>x.safelyFramed).length;
  const upperOnly=rows.filter(x=>x.upperBody&&!x.fullBody).length;
  const unsuitable=photos.length-framed-(fullBody-framed)-upperOnly;
- sh.bodyCheck={version:1,engine:'mlkit-pose-accurate',analyzedAt:new Date().toISOString(),total:photos.length,analyzed:rows.length,failed,detected,fullBody,framed,upperOnly,unsuitable,photoIds:photos.map(x=>x.id),suitableMediaIds:rows.filter(x=>x.safelyFramed).map(x=>x.mediaId),partialMediaIds:rows.filter(x=>x.upperBody&&!x.safelyFramed).map(x=>x.mediaId)};
+ sh.bodyCheck={version:2,engine:'mlkit-pose-accurate',analyzedAt:new Date().toISOString(),total:photos.length,analyzed:rows.length,failed,detected,fullBody,framed,upperOnly,unsuitable,photoIds:photos.map(x=>x.id),suitableMediaIds:rows.filter(x=>x.safelyFramed).map(x=>x.mediaId),partialMediaIds:rows.filter(x=>x.upperBody&&!x.safelyFramed).map(x=>x.mediaId),samples:rows.filter(x=>x.safelyFramed).map(x=>({mediaId:x.mediaId,view:x.view,signature:x.signature,confidence:x.confidence}))};
  if(!save()){toast('Prüfergebnis konnte nicht gespeichert werden.');return}
  toast('Lokale Shootingprüfung abgeschlossen.');openShootingDetail(sh.id,returnSeriesId,returnShootingContext);
 }
