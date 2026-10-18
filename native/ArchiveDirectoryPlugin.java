@@ -237,12 +237,38 @@ public void setVideoImmersive(PluginCall call) {
         float hipY = (lh.getPosition().y + rh.getPosition().y) * 0.5f * scaleY;
         float centerX = (ls.getPosition().x + rs.getPosition().x + lh.getPosition().x + rh.getPosition().x) * 0.25f * scaleX;
         float bodyHeight = maxY - minY + 1f;
-        float bust = contourWidth(confidence, width, height, centerX, shoulderY + (hipY - shoulderY) * 0.34f) / bodyHeight;
-        float waist = contourWidth(confidence, width, height, centerX, shoulderY + (hipY - shoulderY) * 0.70f) / bodyHeight;
-        float hips = contourWidth(confidence, width, height, centerX, hipY) / bodyHeight;
-        boolean available = bust > 0f && waist > 0f && hips > 0f;
+        float bustY = shoulderY + (hipY - shoulderY) * 0.34f;
+        float waistY = shoulderY + (hipY - shoulderY) * 0.70f;
+        float bust = armCrossesTorsoRow(pose, bustY, centerX, bodyHeight, scaleX, scaleY)
+            ? 0f : contourWidth(confidence, width, height, centerX, bustY) / bodyHeight;
+        float waist = armCrossesTorsoRow(pose, waistY, centerX, bodyHeight, scaleX, scaleY)
+            ? 0f : contourWidth(confidence, width, height, centerX, waistY) / bodyHeight;
+        float hips = armCrossesTorsoRow(pose, hipY, centerX, bodyHeight, scaleX, scaleY)
+            ? 0f : contourWidth(confidence, width, height, centerX, hipY) / bodyHeight;
+        boolean available = bust > 0f || waist > 0f || hips > 0f;
         out.put("contourAvailable", available);
         if (available) { out.put("bustWidthRatio", bust); out.put("waistWidthRatio", waist); out.put("hipWidthRatio", hips); }
+    }
+
+    private boolean armCrossesTorsoRow(Pose pose, float rowY, float centerX, float bodyHeight, float scaleX, float scaleY) {
+        int[][] arms = new int[][] {
+            {PoseLandmark.LEFT_SHOULDER, PoseLandmark.LEFT_ELBOW},
+            {PoseLandmark.LEFT_ELBOW, PoseLandmark.LEFT_WRIST},
+            {PoseLandmark.RIGHT_SHOULDER, PoseLandmark.RIGHT_ELBOW},
+            {PoseLandmark.RIGHT_ELBOW, PoseLandmark.RIGHT_WRIST}
+        };
+        float torsoRadius = bodyHeight * 0.34f;
+        for (int[] segment : arms) {
+            PoseLandmark first = pose.getPoseLandmark(segment[0]);
+            PoseLandmark second = pose.getPoseLandmark(segment[1]);
+            if (!landmarkVisible(first) || !landmarkVisible(second)) continue;
+            float y1 = first.getPosition().y * scaleY, y2 = second.getPosition().y * scaleY;
+            if (rowY < Math.min(y1, y2) || rowY > Math.max(y1, y2) || Math.abs(y2 - y1) < 0.5f) continue;
+            float progress = (rowY - y1) / (y2 - y1);
+            float x = (first.getPosition().x + (second.getPosition().x - first.getPosition().x) * progress) * scaleX;
+            if (Math.abs(x - centerX) <= torsoRadius) return true;
+        }
+        return false;
     }
 
     private float contourWidth(float[] mask, int width, int height, float centerX, float rowY) {
