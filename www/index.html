@@ -13797,11 +13797,25 @@ function bodyContourEstimate(summary,model){
  }
  return estimate;
 }
+function bodyContourAvailability(summary){
+ const keys=['bust','waist','hips'],views=['frontal','angled','side'];
+ const counts=Object.fromEntries(keys.map(key=>[key,Object.fromEntries(views.map(view=>[view,0]))]));
+ for(const group of summary.groups){
+  for(const key of keys){
+   const available=(group.samples||[]).some(sample=>Number(sample?.contour?.[key])>0);
+   if(available&&Object.prototype.hasOwnProperty.call(counts[key],group.view))counts[key][group.view]++;
+  }
+ }
+ return counts;
+}
 function bodyContourEstimateHtml(summary,model){
  const estimate=bodyContourEstimate(summary,model);
- if(!estimate)return summary.contourShootings===summary.shootings
-  ?'<div class="bodyEstimate"><div class="bodyEstimateTitle">Noch keine belastbare Konturschätzung</div><div class="small">Nach dem Ausschluss armüberlagerter Messlinien sind noch nicht für Brust, Taille und Hüfte jeweils mindestens zwei breite und zwei seitliche Posengruppen verfügbar. Es wird kein Ersatzwert geraten.</div></div>'
-  :'';
+ if(!estimate&&summary.contourShootings===summary.shootings){
+  const counts=bodyContourAvailability(summary),labels={bust:'Brust',waist:'Taille',hips:'Hüfte'};
+  const rows=['bust','waist','hips'].map(key=>`<div class="bodyEstimateValue"><b>${labels[key]}</b><span class="small">${counts[key].frontal} frontal · ${counts[key].angled} schräg · ${counts[key].side} seitlich</span></div>`).join('');
+  return `<div class="bodyEstimate"><div class="bodyEstimateTitle">Noch keine belastbare Konturschätzung</div><div class="small">Nach dem Ausschluss armüberlagerter Messlinien sind noch nicht für jedes Maß mindestens zwei frontale und zwei seitliche Posengruppen verfügbar. Es wird kein Ersatzwert geraten.</div><div class="bodyEstimateValues">${rows}</div></div>`;
+ }
+ if(!estimate)return '';
  const stored=storedMetricMeasurements(model),labels={bust:'Brust',waist:'Taille',hips:'Hüfte'};
  const valueHtml=['bust','waist','hips'].map(key=>`<div class="bodyEstimateValue"><b>${estimate.needsCalibration?`${estimate.values[key].center} cm`:`${estimate.values[key].min}–${estimate.values[key].max} cm`}</b><span class="small">${labels[key]}</span></div>`).join('');
  let comparison='';
