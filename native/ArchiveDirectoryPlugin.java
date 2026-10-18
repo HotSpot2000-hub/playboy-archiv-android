@@ -119,7 +119,7 @@ public void setVideoImmersive(PluginCall call) {
                     Segmenter segmenter = Segmentation.getClient(segmentationOptions);
                     segmenter.process(image)
                         .addOnSuccessListener(mask -> {
-                            addContourMetrics(result, pose, mask);
+                            addContourMetrics(result, pose, mask, width, height);
                             segmenter.close(); detector.close(); bitmap.recycle(); call.resolve(result);
                         })
                         .addOnFailureListener(error -> {
@@ -217,7 +217,7 @@ public void setVideoImmersive(PluginCall call) {
         return values;
     }
 
-    private void addContourMetrics(JSObject out, Pose pose, SegmentationMask mask) {
+    private void addContourMetrics(JSObject out, Pose pose, SegmentationMask mask, int imageWidth, int imageHeight) {
         int width = mask.getWidth(), height = mask.getHeight();
         ByteBuffer buffer = mask.getBuffer(); buffer.rewind();
         float[] confidence = new float[width * height];
@@ -231,9 +231,11 @@ public void setVideoImmersive(PluginCall call) {
         if (!landmarkVisible(ls) || !landmarkVisible(rs) || !landmarkVisible(lh) || !landmarkVisible(rh) || maxY <= minY) {
             out.put("contourAvailable", false); return;
         }
-        float shoulderY = (ls.getPosition().y + rs.getPosition().y) * 0.5f;
-        float hipY = (lh.getPosition().y + rh.getPosition().y) * 0.5f;
-        float centerX = (ls.getPosition().x + rs.getPosition().x + lh.getPosition().x + rh.getPosition().x) * 0.25f;
+        float scaleX = imageWidth > 0 ? width / (float) imageWidth : 1f;
+        float scaleY = imageHeight > 0 ? height / (float) imageHeight : 1f;
+        float shoulderY = (ls.getPosition().y + rs.getPosition().y) * 0.5f * scaleY;
+        float hipY = (lh.getPosition().y + rh.getPosition().y) * 0.5f * scaleY;
+        float centerX = (ls.getPosition().x + rs.getPosition().x + lh.getPosition().x + rh.getPosition().x) * 0.25f * scaleX;
         float bodyHeight = maxY - minY + 1f;
         float bust = contourWidth(confidence, width, height, centerX, shoulderY + (hipY - shoulderY) * 0.34f) / bodyHeight;
         float waist = contourWidth(confidence, width, height, centerX, shoulderY + (hipY - shoulderY) * 0.70f) / bodyHeight;
