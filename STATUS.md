@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-18
-Referenz-Commit: `ee8f9e1c13affe87bee253d21d8f8b881e2792fc`
+Referenz-Commit: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,8 +18,8 @@ Referenz-Commit: `ee8f9e1c13affe87bee253d21d8f8b881e2792fc`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `ee8f9e1c13affe87bee253d21d8f8b881e2792fc`
-- Verifizierter SHA-256 von `www/index.html`: `316b8776606126e8558e7b5c538c5c0a529827c2efa38d07538e0a8b14d04969`.
+- Aktuell berücksichtigter Code: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
+- Verifizierter SHA-256 von `www/index.html`: `cb361577e332a4d5edae7e412f008d48dab86d77aa3dce60c0f2652434501993`.
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -54,12 +54,27 @@ Referenz-Commit: `ee8f9e1c13affe87bee253d21d8f8b881e2792fc`
 - Pro Shooting werden Ganzkörpererkennbarkeit, vollständige Bildfassung, Oberkörperfotos und ungeeignete Fotos gezählt. Die Ergebnisse bleiben am Shooting gespeichert und werden nur verwendet, solange dessen Fotobestand unverändert ist.
 - Perspektiven und ähnliche Posen werden heuristisch gruppiert. Die Zusammenfassung führt die Shootings eines einzelnen Models zusammen, ohne Shootings oder Mediendaten zu vermischen.
 - Die lokale Konturprüfung mit Selfie-Segmentierung ist technisch funktionsfähig. Direkte automatische Umfangswerte aus Silhouetten erwiesen sich jedoch trotz Koordinaten- und Armüberlagerungskorrektur als unplausibel und werden nicht als Körpermaße angezeigt.
-- Für die bewusste manuelle Auswahl stehen alle geeigneten Messfotokandidaten bereit. Die Auswahl wird pro Model gespeichert; eine spätere Schätzung darf nur ausdrücklich bestätigte Fotos als Messgrundlage verwenden.
+- Für die bewusste manuelle Auswahl stehen alle 96 Geometriefotos bereit. Der aktuelle Stand auf `main` kann Fotos bereits getrennt Brust, Taille und Hüfte zuordnen und hebt perspektivisch ausgewogene Vorschläge hervor. Diese modellweite Auswahl ist noch nicht der endgültige Workflow und soll vor umfangreicher manueller Arbeit durch benennbare Körperstände ersetzt werden.
 - Seit Analysestand 6 werden normalisierte Vergleichsgeometrien aus Kopf-, Schulter-, Arm-, Hüft-, Knie-, Knöchel-, Fersen- und Fußpunkten gespeichert. Dadurch können auch Oberkörper- und Nahaufnahmen über gemeinsame Körperpunkte mit Torso- und Ganzkörperaufnahmen verbunden werden.
 - Die Vergleichsgeometrien werden ohne Zentimeterwerte zunächst perspektivweise auf Konsistenz geprüft. Ganzkörperanker, Torso-Brücken und Oberkörper-Verknüpfungen verwenden robuste Median-/Abweichungsgrenzen; nicht passend vernetzte Fotos werden zurückgestellt statt durch Ersatzwerte ergänzt.
 - Gerätetest Tiffany Ryan: vier Shootings mit 96 Fotos; 96 Geometriefotos, 91 Torsofotos und 36 automatisch erkannte Ganzkörperanker. Die strengere Konsistenzprüfung ergab 24 von 34 stabile Ganzkörperanker, 89 von 91 stabile Torso-Brücken, 69 von 96 verknüpfte Oberkörperaufnahmen, insgesamt 94 vernetzte Fotos und zwei zurückgestellte Ausreißer. Die Grundlage wird als `Stabile Vergleichsgeometrie` ausgewiesen.
 - Die bekannte Körpergröße von Tiffany Ryan (155 cm) wurde noch nicht auf die Geometrien übertragen. Es werden weiterhin weder Zentimeterbereiche noch Gewicht oder Cupgröße aus Fotos behauptet und keine vorhandenen Profilangaben verändert.
 - Keine automatische Massenmigration; kein Schema-Bump.
+
+## Körperangaben und Analyse -- festgelegte Zielstruktur
+
+- Verbindliche Kette: `Model → Körperstand/Messgruppe → ausgewählte Shootings → beurteilte Messfotos → interne Analyse → bestätigte kompakte Profilzeile`.
+- Ein Körperstand fasst ausschließlich bewusst ausgewählte Shootings zusammen. Mehrere Körperstände desselben Models werden nicht gemittelt; dies ist insbesondere für Lisa und Tahlia wegen erkennbarer körperlicher Veränderungen erforderlich.
+- Körperstände sind individuell benennbar, beispielsweise `Frühe Shootings`, `Spätere Shootings`, `Vor 2008` oder `Shootings 1–3`. Reihenfolge und Sichtbarkeit im Profil sollen manuell steuerbar sein.
+- Jeder Körperstand besitzt eigene Messfoto-Beurteilungen und eigene Ergebnisse. Ein Shooting darf bei fachlichem Bedarf auch allein ausgewertet werden.
+- Die automatische Perspektive ist nur ein Vorschlag. Pro Foto müssen Ansicht (`vorne`, `hinten`, `seitlich`, `schräg`, `unklar`) und Haltung (`aufrecht`, `liegend`, `kniend`, `vorgebeugt`, `verdreht`, `andere`) korrigierbar sein.
+- Pro Messbereich wird die Rolle eines Fotos ausdrücklich festgelegt: `Breite`, `Tiefe`, `Breite + Tiefe/schräg`, `nur Vergleich`, `nicht verwenden` oder Ausschluss wegen Kleidung, Armen/Händen, Haltung beziehungsweise anderem Grund.
+- Brust wird intern in Oberbrust und Unterbrust getrennt. Erst aus beiden Bereichen darf zusammen mit dem gewählten Größensystem ein möglicher Band-/Cupbereich abgeleitet werden. Eine veröffentlichte Angabe wie `32DD` gilt nicht als sicherer Messwert.
+- Interne Analysewerte bleiben differenziert: Bereiche, Mittel-/Bestätigungswert, Differenzen, Unsicherheit, verwendete Fotos, Perspektiven, Kleidung/Verdeckungen, Schwierigkeiten und ursprüngliche Quellenangabe.
+- Das Profil zeigt keine Formulierungen wie `möglicherweise` oder breite Analysebereiche. Sichtbar sind ausschließlich ausdrücklich bestätigte eindeutige Archivwerte in der kompakten Form, beispielsweise `94-58-86 • US 32DD-23-34 • EU 70E-58-86`.
+- Bei mehreren bestätigten Körperständen erscheinen mehrere kompakte Maßzeilen mit ihrer individuellen Bezeichnung. Bei genau einem Körperstand kann die Bezeichnung entfallen.
+- Analysen überschreiben Profilangaben niemals automatisch. Die App schlägt aus dem internen Bereich einen eindeutigen Wert vor; erst die manuelle Bestätigung übernimmt ihn als sichtbaren Archivwert.
+- Exakte körperliche Schneidermaße können aus Fotos nicht garantiert werden. Ziel ist eine dokumentierte, möglichst belastbare Plausibilitätsprüfung und ein bewusst bestätigter Archivwert, keine scheinexakte automatische Wahrheit.
 
 ## Fachliches Soll-Modell
 
@@ -386,7 +401,10 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Die kompakte metrische Maßdarstellung und die lokale Analysegrundlage sind gerätetest-bestätigt. Die eigentliche Skalierung in Zentimeter und die daraus folgende Plausibilitätsprüfung vorhandener Werte sind noch offen.
 - Auch mit 96 Fotos bleiben Körperumfänge aus zweidimensionalen Bildern Schätzbereiche. Perspektive, Pose, Kleidung, Verdeckung und Objektivwirkung müssen als Unsicherheit berücksichtigt werden; keine scheinexakten Körpermaße oder Gewichte ausgeben.
 - Die Perspektivklassifikation und Körperpunkte stammen aus lokaler Heuristik beziehungsweise ML Kit und können einzelne Fotos falsch einordnen. Deshalb bleiben robuste Ausreißerbehandlung und manuelle Bestätigung verbindlich.
+- Bildorientierung und Körperhaltung dürfen nicht verwechselt werden: liegende, kniende, vorgebeugte, verdrehte und rückseitige Posen können trotz automatischer Kennzeichnung `frontal` oder `seitlich` für eine andere Messrolle geeignet oder ungeeignet sein.
 - Brustbreite beziehungsweise Brustumfang ist wegen Kleidung, Armen, Dekolleté und unterbrochener Vorderkontur besonders fehleranfällig. Nahaufnahmen dürfen nur über stabile Vergleichsketten skaliert und nicht isoliert vermessen werden.
+- Ober- und Unterbrust benötigen getrennte Foto- und Messlinien. BH, Kleidung, Stützwirkung und weiches Gewebe können beide Bereiche unterschiedlich verändern; eine Cupgröße darf nur als systemabhängige Ableitung aus bestätigten Bereichen entstehen.
+- Der aktuelle `main`-Stand speichert die Messfotoauswahl noch modellweit. Für Models mit mehreren Körperständen darf diese Auswahl nicht als gemeinsame Messgrundlage verwendet werden. Vor umfangreicher manueller Auswahl zuerst auf Messgruppen umstellen.
 - Die Analyse bewahrt Originalangaben. Spätere Ergebnisse erscheinen ausschließlich als nachvollziehbare Bereiche mit Unsicherheit; Profiländerungen erfolgen nur nach ausdrücklicher manueller Bestätigung.
 - Die erstmalige automatische Analyse benötigt pro reinem Videoinhalt kurzzeitig mehr Rechenleistung; anschließend wird ausschließlich die gespeicherte Vorschau verwendet. Akkuverhalten bei normaler Nutzung weiter beobachten.
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
@@ -412,9 +430,12 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 - automatische direkte Umfangsberechnung aus frontaler und seitlicher Silhouettenbreite per Ellipsenformel; die realen Tests lieferten trotz Korrekturen unplausible Werte deutlich über dem sinnvollen Messbereich.
 - Ganzkörperfotos als zwingende Voraussetzung für jede Teilmessung; gute Oberkörper- und Nahaufnahmen werden stattdessen über gemeinsame Vergleichsgeometrien mit Torso- und Ganzkörperankern verbunden.
 - ungeprüfte Skalierung jedes einzelnen Fotos unmittelbar über die Körpergröße; zuerst müssen stabile dimensionslose Vergleichsketten und Ausreißer bestimmt werden.
+- gemeinsame Maßauswertung aller Shootings eines Models; bei erkennbar unterschiedlichen Körperständen entstünde ein fachlich falscher Mittelwert.
+- automatische Bindung `frontal = Breite` und `seitlich = Tiefe` ohne Korrektur von Ansicht und Haltung.
+- sichtbare unsichere Bereiche und Möglichkeitsformulierungen im kompakten Modelprofil; Unsicherheiten bleiben intern, sichtbare Werte werden ausdrücklich bestätigt.
 
 ## Nächster Schritt
 
-**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung und die lokale Vergleichsgeometrie-Grundlage sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Testgrundlage.**
+**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung und die lokale Vergleichsgeometrie-Grundlage sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Testgrundlage. Die maßbezogene Fotoauswahl liegt auf `main`, ist aber wegen der inzwischen festgelegten Körperstand-Logik noch nicht der endgültige Arbeitsablauf.**
 
-Nächster klar abgegrenzter Arbeitsblock: aus der stabilen Geometrievernetzung für Brust, Taille und Hüfte jeweils geeignete Messfotos beziehungsweise Messketten bestimmen. Die vorhandene Körpergröße von 155 cm dient erst nach robuster Kalibrierung der stabilen Ganzkörperanker als Maßstab; Torso- und Nahaufnahmen werden anschließend nur über übereinstimmende gemeinsame Körperpunkte angebunden. Vor einer sichtbaren Maßschätzung müssen die automatisch vorgeschlagenen Fotos manuell bestätigbar sein. Ergebnisse bleiben Bereiche mit begründeter Unsicherheit, werden mit `94-58-86 • US 32DD-23-34 • EU 70E-58-86` verglichen und verändern das Profil nicht automatisch. Eine erneute Analyse der vier Tiffany-Ryan-Shootings ist für diesen nächsten Schritt nicht erforderlich.
+Nächster klar abgegrenzter Arbeitsblock: benennbare Körperstände/Messgruppen mit bewusster Shooting-Auswahl einführen. Messfoto-Beurteilungen müssen innerhalb der jeweiligen Messgruppe gespeichert werden. In denselben Arbeitsablauf gehören die korrigierbare Ansicht und Haltung sowie die Rolle jedes Fotos pro Messbereich. Die Messbereiche werden auf `Oberbrust`, `Unterbrust`, `Taille` und `Hüfte` erweitert. Erst nach bestätigtem Gruppierungs- und Beurteilungsworkflow folgt die Kalibrierung über bekannte Körpergröße und stabile Vergleichsketten. Bis dahin keine umfangreiche manuelle Fotoauswahl und weiterhin keine sichtbare Zentimeter- oder Cupschätzung. Die vier Tiffany-Ryan-Shootings müssen für diese Strukturänderung nicht erneut analysiert werden.
