@@ -4841,15 +4841,15 @@ function formattedMeasurements(value,system='auto'){
  if(!hasCup)return valuesAreCm?`${wholeCm(Number(first[1]))}-${wholeCm(waist)}-${wholeCm(hip)}`:`${wholeCm(Number(first[1]))}-${wholeCm(waist)}-${wholeCm(hip)} • US ${Number(first[1])}-${waist}-${hip}`;
  const sourceSystem=['us','uk','eu'].includes(system)?system:'us';
  const sourceCup=first[2].toUpperCase();
- const euCup=({AA:'AA',A:'A',B:'B',C:'C',D:'D',DD:'E',E:'E',DDD:'F',F:'F',G:'G',H:'H'})[sourceCup]||sourceCup;
- if(sourceSystem==='eu')return `EU ${first[1]}(${sourceCup})-${waist}-${hip}`;
- const cupDifferenceInches=({AA:0.5,A:1,B:2,C:3,D:4,DD:5,E:6,DDD:6,F:6,G:7,H:8})[sourceCup];
+ const euCup=({AA:'AA',A:'A',B:'B',C:'C',D:'D',DD:'E',E:'E',DDD:'F',F:'F',DDDD:'G',G:'G',H:'H'})[sourceCup]||sourceCup;
+ if(sourceSystem==='eu')return `EU ${first[1]}${sourceCup}-${waist}-${hip}`;
+ const cupDifferenceInches=({AA:0.5,A:1,B:2,C:3,D:4,DD:5,E:6,DDD:6,F:6,DDDD:7,G:7,H:8})[sourceCup];
  const estimatedBustCm=Number.isFinite(cupDifferenceInches)
   ?Math.round((Number(first[1])+cupDifferenceInches)*2.54)
   :wholeCm(Number(first[1]));
  const euBand=Math.round(((Number(first[1])*2.54)-10)/5)*5;
  const metricBody=`${estimatedBustCm}-${wholeCm(waist)}-${wholeCm(hip)}`;
- return `${metricBody} • ${sourceSystem.toUpperCase()} ${first[1]}(${sourceCup})-${waist}-${hip} • EU ${euBand}(${euCup})-${wholeCm(waist)}-${wholeCm(hip)}`;
+ return `${metricBody} • ${sourceSystem.toUpperCase()} ${first[1]}${sourceCup}-${waist}-${hip} • EU ${euBand}${euCup}-${wholeCm(waist)}-${wholeCm(hip)}`;
 }
 function formatWeightDisplay(value){
  const raw=String(value||'').trim();
