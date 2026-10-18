@@ -1,8 +1,12 @@
 package de.playboy.archiv;
 
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.PointF;
 import android.net.Uri;
 import android.provider.DocumentsContract;
+import android.util.Base64;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -10,11 +14,19 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.pose.Pose;
+import com.google.mlkit.vision.pose.PoseDetection;
+import com.google.mlkit.vision.pose.PoseDetector;
+import com.google.mlkit.vision.pose.PoseLandmark;
+import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions;
 
 import org.json.JSONException;
 
 @CapacitorPlugin(name = "ArchiveDirectory")
 public class ArchiveDirectoryPlugin extends Plugin {
+
+    private static final float LANDMARK_CONFIDENCE = 0.55f;
 
     @PluginMethod
     public void resolvePath(PluginCall call) {
@@ -64,6 +76,97 @@ public void setVideoImmersive(PluginCall call) {
         call.reject("MainActivity nicht verfügbar");
     }
 }
+
+    @PluginMethod
+    public void analyzePose(PluginCall call) {
+        String dataUrl = call.getString("dataUrl");
+        if (dataUrl == null || dataUrl.isEmpty()) {
+            call.reject("Bilddaten fehlen");
+            return;
+        }
+
+        try {
+            int comma = dataUrl.indexOf(',');
+            String encoded = comma >= 0 ? dataUrl.substring(comma + 1) : dataUrl;
+            byte[] bytes = Base64.decode(encoded, Base64.DEFAULT);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            if (bitmap == null) {
+                call.reject("Bild konnte nicht gelesen werden");
+                return;
+            }
+
+            AccuratePoseDetectorOptions options = new AccuratePoseDetectorOptions.Builder()
+                .setDetectorMode(AccuratePoseDetectorOptions.SINGLE_IMAGE_MODE)
+                .build();
+            PoseDetector detector = PoseDetection.getClient(options);
+            InputImage image = InputImage.fromBitmap(bitmap, 0);
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+
+            detector.process(image)
+                .addOnSuccessListener(pose -> {
+                    JSObject result = poseQuality(pose, width, height);
+                    detector.close();
+                    bitmap.recycle();
+                    call.resolve(result);
+                })
+                .addOnFailureListener(error -> {
+                    detector.close();
+                    bitmap.recycle();
+                    call.reject("Pose konnte nicht analysiert werden: " + error.getMessage(), error);
+                });
+        } catch (Exception error) {
+            call.reject("Poseanalyse fehlgeschlagen: " + error.getMessage(), error);
+        }
+    }
+
+    private JSObject poseQuality(Pose pose, int width, int height) {
+        JSObject out = new JSObject();
+        int visible = 0;
+        float confidenceSum = 0f;
+        float minX = width;
+        float minY = height;
+        float maxX = 0f;
+        float maxY = 0f;
+
+        for (PoseLandmark landmark : pose.getAllPoseLandmarks()) {
+            float confidence = landmark.getInFrameLikelihood();
+            if (confidence < LANDMARK_CONFIDENCE) continue;
+            visible++;
+            confidenceSum += confidence;
+            PointF point = landmark.getPosition();
+            minX = Math.min(minX, point.x);
+            minY = Math.min(minY, point.y);
+            maxX = Math.max(maxX, point.x);
+            maxY = Math.max(maxY, point.y);
+        }
+
+        boolean shoulders = pairVisible(pose, PoseLandmark.LEFT_SHOULDER, PoseLandmark.RIGHT_SHOULDER);
+        boolean hips = pairVisible(pose, PoseLandmark.LEFT_HIP, PoseLandmark.RIGHT_HIP);
+        boolean knees = pairVisible(pose, PoseLandmark.LEFT_KNEE, PoseLandmark.RIGHT_KNEE);
+        boolean ankles = pairVisible(pose, PoseLandmark.LEFT_ANKLE, PoseLandmark.RIGHT_ANKLE);
+        boolean upperBody = shoulders && hips;
+        boolean fullBody = upperBody && knees && ankles;
+        boolean safelyFramed = fullBody && minX >= width * 0.01f && maxX <= width * 0.99f
+            && minY >= height * 0.01f && maxY <= height * 0.99f;
+
+        out.put("poseDetected", visible >= 8);
+        out.put("visibleLandmarks", visible);
+        out.put("averageConfidence", visible > 0 ? confidenceSum / visible : 0f);
+        out.put("upperBody", upperBody);
+        out.put("fullBody", fullBody);
+        out.put("safelyFramed", safelyFramed);
+        return out;
+    }
+
+    private boolean pairVisible(Pose pose, int leftType, int rightType) {
+        return landmarkVisible(pose.getPoseLandmark(leftType)) && landmarkVisible(pose.getPoseLandmark(rightType));
+    }
+
+    private boolean landmarkVisible(PoseLandmark landmark) {
+        return landmark != null && landmark.getInFrameLikelihood() >= LANDMARK_CONFIDENCE;
+    }
+
       private Uri findChild(Uri parentUri, String wantedName) {
         String parentDocumentId = DocumentsContract.getDocumentId(parentUri);
         Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(parentUri, parentDocumentId);
