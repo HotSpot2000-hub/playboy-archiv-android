@@ -186,7 +186,42 @@ public void setVideoImmersive(PluginCall call) {
         out.put("view", upperBody ? view : "unknown");
         out.put("viewRatio", viewRatio);
         out.put("poseSignature", poseSignature(pose, torsoLength));
+        out.put("geometry", poseGeometry(pose, width, height));
         return out;
+    }
+
+    private JSObject poseGeometry(Pose pose, int width, int height) {
+        JSObject geometry = new JSObject();
+        int[][] landmarks = new int[][] {
+            {PoseLandmark.NOSE}, {PoseLandmark.LEFT_EYE}, {PoseLandmark.RIGHT_EYE},
+            {PoseLandmark.LEFT_EAR}, {PoseLandmark.RIGHT_EAR},
+            {PoseLandmark.LEFT_SHOULDER}, {PoseLandmark.RIGHT_SHOULDER},
+            {PoseLandmark.LEFT_ELBOW}, {PoseLandmark.RIGHT_ELBOW},
+            {PoseLandmark.LEFT_WRIST}, {PoseLandmark.RIGHT_WRIST},
+            {PoseLandmark.LEFT_HIP}, {PoseLandmark.RIGHT_HIP},
+            {PoseLandmark.LEFT_KNEE}, {PoseLandmark.RIGHT_KNEE},
+            {PoseLandmark.LEFT_ANKLE}, {PoseLandmark.RIGHT_ANKLE},
+            {PoseLandmark.LEFT_HEEL}, {PoseLandmark.RIGHT_HEEL},
+            {PoseLandmark.LEFT_FOOT_INDEX}, {PoseLandmark.RIGHT_FOOT_INDEX}
+        };
+        String[] names = new String[] {
+            "nose", "leftEye", "rightEye", "leftEar", "rightEar",
+            "leftShoulder", "rightShoulder", "leftElbow", "rightElbow",
+            "leftWrist", "rightWrist", "leftHip", "rightHip",
+            "leftKnee", "rightKnee", "leftAnkle", "rightAnkle",
+            "leftHeel", "rightHeel", "leftFoot", "rightFoot"
+        };
+        for (int index = 0; index < landmarks.length; index++) {
+            PoseLandmark landmark = pose.getPoseLandmark(landmarks[index][0]);
+            if (!landmarkVisible(landmark)) continue;
+            PointF point = landmark.getPosition();
+            JSObject value = new JSObject();
+            value.put("x", width > 0 ? point.x / width : 0f);
+            value.put("y", height > 0 ? point.y / height : 0f);
+            value.put("confidence", landmark.getInFrameLikelihood());
+            geometry.put(names[index], value);
+        }
+        return geometry;
     }
 
     private JSArray poseSignature(Pose pose, float torsoLength) {
