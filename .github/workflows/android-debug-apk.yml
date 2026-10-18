@@ -39,12 +39,17 @@ jobs:
           gradle = Path("android/app/build.gradle")
           text = gradle.read_text()
           marker = "dependencies {"
-          dependency = "    implementation 'com.google.mlkit:pose-detection-accurate:18.0.0-beta5'\n"
-          if dependency.strip() not in text:
-              if marker not in text:
-                  raise SystemExit("Gradle dependencies block not found")
-              text = text.replace(marker, marker + "\n" + dependency, 1)
-              gradle.write_text(text)
+          dependencies = [
+              "    implementation 'com.google.mlkit:pose-detection-accurate:18.0.0-beta5'\n",
+              "    implementation 'com.google.mlkit:segmentation-selfie:16.0.0-beta6'\n",
+          ]
+          for dependency in dependencies:
+            if dependency.strip() in text:
+              continue
+            if marker not in text:
+              raise SystemExit("Gradle dependencies block not found")
+            text = text.replace(marker, marker + "\n" + dependency, 1)
+          gradle.write_text(text)
           PY
 
       - name: Install native archive bridge
