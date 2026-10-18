@@ -13774,7 +13774,7 @@ function storedMetricMeasurements(model){
  return match?{bust:Number(match[1]),waist:Number(match[2]),hips:Number(match[3]),text:`${match[1]}-${match[2]}-${match[3]}`}:null;
 }
 function bodyContourEstimate(summary,model){
- const heightCm=heightToCm(model?.height||'');
+ const heightCm=heightToCm(model?.height||modelEvidenceValue(model?.id,'height'));
  if(!heightCm||summary.contourShootings!==summary.shootings)return null;
  const groupContours=summary.groups.map(group=>{
   const contours=(group.samples||[]).map(sample=>sample.contour).filter(contour=>contour&&Number(contour.bust)>0&&Number(contour.waist)>0&&Number(contour.hips)>0);
