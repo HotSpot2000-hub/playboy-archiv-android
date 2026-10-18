@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-09-16
-Referenz-Commit: `db76e26997e7f98c01ed545146a7ebab8abef727`
+Stand: 2026-10-18
+Referenz-Commit: `4be5dbe529df0ea64c60e44c408bbcfae2f755b3`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,14 +18,39 @@ Referenz-Commit: `db76e26997e7f98c01ed545146a7ebab8abef727`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `db76e26997e7f98c01ed545146a7ebab8abef727`
-- Titel-Feinschliff in diesem Stand nur teilweise gerätetest-bestätigt; bestätigte und offene Teile sind unten getrennt dokumentiert.
+- Aktuell berücksichtigter Code: `4be5dbe529df0ea64c60e44c408bbcfae2f755b3`
+- Verifizierter SHA-256 von `www/index.html`: `0559d752076e7e27c03950162a1f4d05c618dd774b4e2b4f9af591fffef6594d`.
+- Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
 - Etappe 6a Print-Grundstruktur inklusive Reihen, Ausgaben, Cover/PDF und Löschschutz gerätetest-bestätigt.
 - Print/Reihen-Feinschliff einschließlich einheitlicher Aktionsbuttons gerätetest-bestätigt.
 - Rubriken-Übertragung auf die Print-Designsprache einschließlich anschließendem Feinschliff gerätetest-bestätigt.
-- Keine automatische Legacy-Migration; kein Schema-Bump.
+- Medienkarten, Shootingkarten, der visuelle Zuordnungswähler `Shooting | Beitrag`, die indirekte Shooting-Medienauflösung, der bereinigte Importworkflow sowie der neue Beitrags-Zuordnungsmodus sind gerätetest-bestätigt.
+- Direkte Rubrik-/Titel→Shooting-Altzuordnungen werden getrennt von echten Beiträgen als `Umstellung erforderlich` ausgewiesen. Eine einzeln bestätigte Migration kann daraus einen echten Beitrag mit ausgewählten freien Galerien/Videos erzeugen und entfernt erst anschließend genau diese Altzuordnung.
+- Importworkflow-Korrektur gerätetest-bestätigt: Bereits einem Shooting zugeordnete Fotos können zusätzlich einer Galerie zugeordnet werden; vollständig unzugeordnete Dateien können auch bei `Alle Models` zurück in die Inbox verschoben werden.
+- Galerie-/Videodarstellung in der Verwaltung gerätetest-bestätigt: natürliche Dateisortierung, erste Hochformataufnahme als Vorschau, separate reine Foto-Galeriekarte, einzelne Fotos daraus im Fullscreen und Videos ausschließlich über separate ▶︎-Aktionen.
+- Der Rubrik-Arbeitsbereich `Nicht zugeordnet` zählt Beiträge nur noch dann, wenn weder Rubrik noch Titel noch Printausgabe verknüpft ist; Titelbeiträge und Printartikel werden nicht mehr fälschlich erfasst.
+- Beiträge ohne Veröffentlichungskontext und Galerien/Videos ohne Beitrag besitzen getrennte Teilzähler und können nach Sicherheitsabfrage einzeln gelöscht werden. Elf tatsächlich verwaiste Beiträge wurden damit auf dem Gerät identifiziert und bewusst entfernt.
+- `Nicht zugeordnet` ersetzt zugleich die frühere separate Individuals-Logik für fachlich gültige eigenständige Beiträge ohne Rubrik, Titel oder Printausgabe. Solche Beiträge können direkt dort mit optionalem Namen angelegt werden; Galerien und Videos lassen sich ihnen anschließend regulär zuordnen.
+- Der reale Testfall `Bed Time` wurde als eigenständiger Beitrag angelegt und erfolgreich mit zwei Videos desselben Shootings verbunden. Er bleibt bewusst ohne Veröffentlichungskontext und wird nicht als verwaister Datensatz behandelt.
+- Ehemalige Individuals besitzen nun einen eigenen kontrollierten Migrationsweg: freie Galerien/Videos werden pro Shooting unter `Bisherige Individuals` gebündelt und über `In Beitrag überführen` einem neuen eigenständigen Beitrag zugeordnet, ohne Shooting, Werke oder Dateien zu kopieren.
+- Der reale Fall April Katherine wurde mit leerem individuellen Namen erfolgreich überführt: Die vorhandene Galerie wurde übernommen, danach erschien genau ein eigenständiger Beitrag mit `34 Fotos · 0 Videos`.
+- Die kontrollierte Überführung der tatsächlichen Archivdaten ist abgeschlossen: `132 von 132` Zuordnungen verwenden die neue Beitragslogik, es besteht keine Altzuordnung mehr. Die nur während der Migration benötigte Fortschrittsanzeige wurde danach entfernt.
+- Die durch die neue getrennte Galerie-/Video-Logik entstandene Verzögerung im Medienbereich ist behoben. Ein gemeinsamer Beziehungsindex ersetzt wiederholte vollständige Archivdurchläufe; Dateilisten, Modelableitungen und die Nummerierung gleicher Modelkombinationen werden pro Datenstand wiederverwendet. Beide Optimierungsstufen sind auf dem Android-Gerät bestätigt; die Medienverwaltung reagiert wieder unmittelbar.
+- Medienvorschauen werden nur im sichtbaren beziehungsweise nahen Bereich geladen, temporäre Vorschau-URLs anschließend freigegeben und laufende Vorschauerzeugung beim Ansichtswechsel oder Wechsel in den Hintergrund beendet. Fullscreen-Foto- und Videowiedergabe bleiben unverändert.
+- Der Verwaltungsumbau einschließlich Datenüberführung und Leistungsoptimierung ist abgeschlossen.
+- Der abschließende visuelle Verwaltungsfeinschliff für Titel, Rubriken, Medien, Shootings und Print ist auf dem Android-Gerät bestätigt. Die Bereiche verwenden nun eine einheitliche Modelgruppierung, Kartenhierarchie und Foto-/Videodarstellung.
+- Der während der Migration auffällige Akkuverbrauch hat sich nach Abschluss der Überführung und den Vorschau-/Indexoptimierungen bei normaler Nutzung wieder normalisiert.
+- Der vorübergehend ergänzte Verwaltungsfilter `Alle Bereiche` wurde am 13.10.2026 wieder entfernt, weil er die Verwaltungsarbeit unnötig komplizierte. Der Model-Mehrfachfilter und die bereichseigenen Tabs bleiben erhalten.
+- Reine Videoinhalte besitzen jetzt automatisch erzeugte und lokal zwischengespeicherte 2:3-Vorschauen. Vorhandene Fotovorschauen haben immer Vorrang und werden nicht ersetzt.
+- Die automatische Videovorschau prüft mehrere Zeitpunkte, verwirft dunkle beziehungsweise inhaltsarme Kandidaten und richtet den 2:3-Ausschnitt anhand verfügbarer Gesichts- oder Personenflächen-Indizien aus. `Bed Time` und `Beach Comber` wurden dadurch auf dem Android-Gerät deutlich aussagekräftiger dargestellt.
+- Reine Videoinhalte besitzen zusätzlich die gerätetest-bestätigte manuelle Aktion `Vorschau festlegen`. Videozeitpunkt und horizontaler 2:3-Ausschnitt können bewusst gewählt und dauerhaft gespeichert werden; die automatische Vorschau überschreibt diese Auswahl nicht.
+- `Nicht zugeordnet` wird in Übersicht und Modelprofil als virtueller Rubrikenbereich angezeigt, sofern tatsächlich kontextlose Beiträge vorhanden sind. Es wird dabei kein synthetisches Rubrikobjekt gespeichert.
+- Körpermaße werden im Modelprofil kompakt in der Reihenfolge `metrische Körpermaße • ursprüngliche Angabe • europäische BH-Größe` dargestellt. Bestätigtes Beispiel: `94-58-86 • US 32DD-23-34 • EU 70E-58-86`.
+- Die ursprüngliche Maßangabe bleibt unverändert gespeichert. Das BH-Größensystem kann als US, UK oder EU hinterlegt werden; Bandmaß, Cup und Körpermaße bleiben logisch unterscheidbar. Cupangaben bis mindestens `DDDD` werden verarbeitet, ohne sichtbare Klammern zu benötigen.
+- Der erste metrische Wert ist bei vorhandener BH-Angabe ein gerundeter Brustumfang-Mittelwert; die spätere Analyse darf intern weiterhin einen Bereich samt Unsicherheit führen. Bestehende Profilwerte werden nicht automatisch überschrieben.
+- Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Fachliches Soll-Modell
 
@@ -47,11 +72,27 @@ Bestätigte fachliche Beispiele:
 - Playboy Plus: Titel `Cyber Girl`; Rubriken wie `Amateur`, `Cyber Girl` etc.
 - Playboy: Titel `Playmate`; reguläre Ausgaben.
 
-In der Verwaltung steht der Model-Filter über dem Bereichsfilter. Der Archivbereich wird über ein Auswahlfeld gewählt; `Alle Bereiche` und `Ohne Bereich` sind fachlich getrennt. Bereichsfilterung ist für Titel, Rubriken und Print funktionsgeprüft.
+In der Verwaltung steht der Model-Filter über den Haupttabs. Der zusätzliche globale Auswahlfilter `Alle Bereiche` wurde vorerst wieder entfernt. Archivbereiche bleiben an den jeweiligen Objekten gespeichert und in ihren Bearbeitungsabläufen nutzbar.
 
 ## Shooting
 
 Entstehungskontext mit Datum/Ort sowie Model(s)/Fotograf(en). Kein fachlicher Shootingtitel und keine künstlichen Platzhalter. Identifikation über Model bzw. exakte Model-Kombination + Shootingnummer, z. B. `April Katherine • Shooting • Nr. 1`. Nummernreihe pro exakter Model-Kombination; Datum/Ort nur Zusatz. Gerätetest bestätigt.
+
+Aktueller gerätetest-bestätigter Verwaltungsstand:
+- zweistufige Darstellung wie in den anderen Bereichen: feste Überschrift `Shootings`, darunter auberginefarbener Kopf `Shootings`;
+- Karten in der gemeinsamen sehr hellen Kartenfarbe mit einzelner 2:3-Vorschau;
+- `Noch kein Medium` ist in der leeren Vorschau zentriert;
+- rechts stehen Shootingbezeichnung, Models, Foto-/Videoanzahl sowie die kompakten Aktionen `Bearbeiten` und `Löschen`;
+- bei genau einem Shooting derselben exakten Modelkombination erscheint `Shooting`, ab mehreren `Shooting • Nr. 1`, `Shooting • Nr. 2`, ...;
+- Shootings bleiben eigenständige Entstehungskontexte ohne direkte Archivbereichszuordnung;
+- neue direkte Zuordnungen `Shooting → Rubrik/Titel` wurden einschließlich der dadurch funktionslosen Mehrfachauswahl entfernt;
+- vorhandene Legacy-Verknüpfungen zu Rubriken/Titeln bleiben lesbar und werden in den jeweiligen Verwaltungsbereichen ausdrücklich als `Umstellung erforderlich` gekennzeichnet;
+- die kontrollierte Einzelmigration erzeugt nur mit mindestens einer ausgewählten, noch freien Galerie beziehungsweise einem freien Video einen echten Beitrag und entfernt erst nach erfolgreichem Speichern genau die betroffene Direktzuordnung;
+- Shootingvorschau und Medienanzahl berücksichtigen sowohl direkt verknüpfte Legacy-Dateien als auch Fotos/Videos aus den zugeordneten Galerie-/Videoobjekten;
+- identische Dateien werden dabei mit der bestehenden Medienidentität nur einmal gezählt;
+- die korrekte Anzeige für neue Testdaten mit `Datei → Galerie/Video → Shooting` ist auf dem Android-Gerät bestätigt.
+- Im Verwaltungsbereich kann zwischen `Alle` und `Ohne Medien` gefiltert werden; `Ohne Medien` zeigt ausschließlich Shootings, deren berechnete Medienanzahl `0 Fotos · 0 Videos` beträgt.
+- Der Filter berücksichtigt damit direkte Legacy-Medien ebenso wie indirekte Medien aus Galerie/Video, ist mit Suche und Model-Filter kombinierbar und verändert keine Zuordnungen. Gerätetest bestätigt.
 
 ## Galerie / Video
 
@@ -61,7 +102,38 @@ Zielmodell Medien:
 - Foto → Galerie → Shooting
 - Videodatei → Video → Shooting
 
-Direkte Medien→Shooting-Zuordnung ist noch vorhanden und erst nach Abhängigkeitsprüfung zu entfernen. Visuelle Galerie-/Video-Zielkarten sind getestet.
+Der neue Schreibweg folgt ausschließlich `Datei → Galerie/Video → Shooting`. Die direkte Importaktion `Datei → Shooting` ist entfernt. Vorhandene direkte Legacy-Verknüpfungen bleiben lesbar und können gezielt gelöst werden. Visuelle Galerie-/Video-Zielkarten sind getestet.
+
+Aktueller gerätetest-bestätigter Verwaltungsstand in Commit `fb9ff5a5370f426842930a8f33de0cec1de88945`:
+- `Galerien` und `Videos` sind unter dem gemeinsamen Haupttab `Medien` zusammengefasst;
+- der Bereich besitzt oben die feste Überschrift `Medien` mit Suche und passender Hinzufügen-Aktion;
+- darunter folgt wie bei Rubriken ein eigener auberginefarbener Auswahlkopf, über den zwischen `Galerien` und `Videos` gewechselt wird;
+- `Import` bleibt als eigenständiger Haupttab mit seinem bisherigen Workflow und den Foto-/Video-/PDF-Filtern erhalten;
+- Galerie- und Videokarten verwenden eine einzelne 2:3-Vorschau in der gemeinsamen sehr hellen Kartenfarbe;
+- die redundante sichtbare Kartenbezeichnung `Galerie` beziehungsweise `Video` rechts neben der Vorschau wurde entfernt;
+- oberhalb der Karten steht die aus den zugeordneten Shootings abgeleitete exakte Modelkombination als zentrierte Gruppenüberschrift; mehrere Models werden ohne Trennzeichen untereinander dargestellt;
+- rechts neben der Vorschau stehen die individuelle Bezeichnung beziehungsweise die bei mehreren Objekten derselben Modelkombination erforderliche Nummer, die Medienanzahl sowie `Bearbeiten` und `Löschen`;
+- existiert pro Medientyp nur eine Galerie beziehungsweise ein Video derselben exakten Model-Kombination, bleibt die Bezeichnung ohne Nummer; ab zwei Einträgen derselben Kombination werden sichtbar `Nr. 1`, `Nr. 2`, ... ergänzt;
+- Beitrag, Shooting, Datum, Ort, Fotografen und Notiz bleiben gespeichert und über `Bearbeiten` erreichbar, werden auf der kompakten Karte aber nicht mehr angezeigt;
+- beim Bearbeiten einer Galerie oder eines Videos steht ein gemeinsamer Umschalter `Shooting | Beitrag` zur Verfügung;
+- der Shooting-Wähler verwendet wie der Beitragswähler visuelle Auswahlkarten mit 2:3-Vorschau, Modelkombination, Shootingbezeichnung, Datum/Ort und Medienanzahl;
+- der Umschalter wechselt nur die sichtbare Zuordnungsansicht: Shooting- und Beitragsbeziehung bleiben unabhängig voneinander gleichzeitig speicherbar;
+- `Shooting noch nicht bekannt` und `Noch keinem Beitrag zugeordnet` bleiben als bewusste neutrale Optionen erhalten;
+- Model- und Fotografenvererbung aus dem gewählten Shooting funktioniert unverändert;
+- bestehende Galerie- und Videozuordnungen wurden jeweils mit dem visuellen Umschalter geprüft; Shooting- und Beitragskarte zeigen die korrekten Beziehungen;
+- `Shooting zuordnen` wurde aus dem Import entfernt; der zugehörige Dialog und direkte Schreibcode sind nicht mehr vorhanden;
+- die Importtabs und `Alle auswählen` verwenden dieselbe Statuslogik und erkennen Zuordnungen zu Galerie, Video, Printausgabe sowie direkte Legacy-Shootingbeziehungen;
+- unter `Import → Zugeordnet` können Shooting-Fotos zusätzlich einer Galerie zugeordnet werden, ohne ihre Shootingbeziehung zu verlieren;
+- `Zur Inbox` funktioniert für vollständig unzugeordnete Dateien auch bei aktivem Filter `Alle Models`; Dateien mit irgendeiner bestehenden Shooting-, Galerie-, Video- oder Printzuordnung bleiben geschützt;
+- im Shootingdetail erscheint `Direkte Zuordnung lösen` ausschließlich bei einer tatsächlichen direkten Legacy-Datei↔Shooting-Beziehung; indirekte Dateien aus Galerie/Video erhalten keine wirkungslose Löseaktion;
+- zweistufige Überschrift, Umschalter, Suche, Hinzufügen-Aktionen, Medienzugriff und Importworkflow sind gerätetest-bestätigt;
+- der gesamte aktuelle Galerie-/Video-Kartenfeinschliff ist auf dem Android-Gerät bestätigt.
+- Galeriezuordnung aus `Zugeordnet` und Rückgabe unzugeordneter Dateien in die Inbox sind auf dem Android-Gerät bestätigt.
+- Galerie- und Videodateien werden nach Dateinamen natürlich sortiert (`1, 2, 10` statt `1, 10, 2`).
+- Die Verwaltung verwendet für Galerie-/Beitragsvorschauen die erste vorhandene Hochformataufnahme; das gespeicherte Medium und seine Reihenfolge werden dadurch nicht verändert.
+- Antippen einer Verwaltungsvorschau öffnet zuerst eine eigene Galeriekarte mit ausschließlich allen Fotos dieser Galerie; ein einzelnes Foto öffnet anschließend die vorhandene Fullscreen-Galerie.
+- Videos werden nicht in der Galeriekarte angezeigt. Sie stehen auf der Beitragskarte als separate ▶︎-Aktionen bereit und öffnen direkt den Fullscreen-Videoplayer.
+- `Diashow`, `Alle` und `×` wurden in der immersiven Fullscreen-Fotoansicht näher an den oberen Rand gesetzt; auch das Video-`×` verwendet die neue obere Position. Gerätetest bestätigt.
 
 ## Beitrag (`release`)
 
@@ -74,6 +146,14 @@ Beitragsnummerierung:
 - individueller Name wird sichtbar bevorzugt;
 - interne Nummer darf stabil gespeichert bleiben;
 - manuelle Eingabe der Beitragsnummer ist aus Anlegen/Bearbeiten entfernt; die sichtbare Nummerierung wird automatisch aus dem Beitragskontext bestimmt.
+
+Gerätetest-bestätigter Beitragseditor:
+- der Veröffentlichungskontext wird bewusst als `Keine Zuordnung`, `Rubrik`, `Titel` oder `Rubrik und Titel` gewählt;
+- Standardfall ist genau ein Kontext: Rubrik oder Titel;
+- nur der zur Auswahl passende Zuordnungsbereich wird angezeigt;
+- `Rubrik und Titel` bleibt als bewusster Ausnahmefall möglich und zeigt einen deutlichen Warnhinweis;
+- vorhandene Doppelzuordnungen werden beim Öffnen erkannt und automatisch im Ausnahmefall `Rubrik und Titel` angezeigt;
+- beim Speichern verlangt der Doppelmodus beide Werte; eine bestehende Beziehung wird nicht stillschweigend beim Öffnen gelöscht.
 
 ## Rubriken -- gerätetest-bestätigter Feinschliff
 
@@ -93,24 +173,42 @@ Aktuell bestätigte Rubrik-Darstellung:
 - direkte Galerie-/Video-Sprungbuttons wurden aus der Rubrik-Beitragskarte entfernt; die Beziehungen selbst bleiben unverändert;
 - `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen.
 - Der reine Erklärungstext oberhalb von `＋ Beitrag hinzufügen` wurde entfernt; der Button beginnt direkt im Rubriken-Inhaltsbereich.
+- `Nicht zugeordnet` verwendet denselben auberginefarbenen Auswahlkopf, denselben Hinzufügen-Button und dieselbe 2:3-Beitragskarte wie reguläre Rubriken; die frühere technische Arbeitsbereichsdarstellung wurde entfernt.
+- Reine Videobeiträge verwenden auch dort die automatisch erzeugte 2:3-Videovorschau und behalten zusätzlich ihre einzelnen ▶︎-Aktionen. Sobald Fotos vorhanden sind, hat die Fotovorschau Vorrang.
+- Beitragskarten zeigen die Zahl der tatsächlich enthaltenen Fotos statt der Zahl ihrer Galerie-Container; identische Fotodateien werden dabei nicht doppelt gezählt.
+- Beiträge einer Rubrik sowie eigenständige Beiträge unter `Nicht zugeordnet` werden nach exakter Modelkombination gruppiert. Der Modelname erscheint einmal als Gruppenüberschrift und wird in der einzelnen Karte nicht wiederholt.
+- Innerhalb der Karte bleibt nur der individuelle Beitragsname beziehungsweise bei mehreren Beiträgen derselben Rubrik/Modelkombination `Nr. 1`, `Nr. 2`, ... sichtbar. Ein einzelner unbenannter Beitrag erhält weiterhin keine Nummer.
 
 Der gesamte Feinschliff wurde auf dem Android-Gerät bestätigt.
 
-## Titel -- Etappe 5a funktional stabil, visueller Feinschliff begonnen
+Bestätigter Migrationsweg (inzwischen vollständig abgeschlossen):
+- echte Beiträge und direkte Rubrik→Shooting-Altzuordnungen werden in der Verwaltung getrennt dargestellt;
+- Altzuordnungen erscheinen als `Alte Direktzuordnungen` mit Zähler `Umstellung erforderlich` und gelten ausdrücklich nicht als Beiträge;
+- `In Beitrag überführen` bietet ausschließlich Galerien/Videos des betreffenden Shootings an, die noch keinem Beitrag zugeordnet sind;
+- die ausgewählten Werke werden einem neu erzeugten echten Beitrag der festen Rubrik zugeordnet; bereits anderweitig zugeordnete Werke werden nicht verändert;
+- ohne auswählbares Werk entsteht kein leerer Beitrag;
+- die alte Direktzuordnung wird erst nach erfolgreichem Speichern entfernt; bei Speicherfehler wird der Ausgangszustand wiederhergestellt;
+- der erste reale Durchlauf wurde mit einer Titelzuordnung und einer neu angelegten Galerie erfolgreich auf dem Android-Gerät getestet; anschließend wurden alle realen Fälle einzeln kontrolliert über denselben Schreibweg abgeschlossen.
+
+## Titel -- Etappe 5a funktional stabil, Beitragskarten gerätetest-bestätigt
 
 Hierarchie: **Titel → Beitrag → Galerie/Video**.
 
 Vorhandene Titel-Tabs bleiben fachlich bestätigt: erste Ebene z. B. `Coed`, `Cyber Girl`, `Playmate`, `SE Model`; zweite Ebene z. B. `of the Week`, `of the Month`, `of the Year`.
 
-Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge zeigen Modelableitung aus Galerie/Video → Shooting, individuellen Namen/Nummer sowie Galerie-/Video-Zugriff. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
+Titelüberschrift z. B. `Cyber Girl of the Week` / `3. Woche Juni 2001`; kleiner Pokal links, Modelname nicht in der Überschrift. `＋ Beitrag hinzufügen` steht oberhalb der Beiträge. Beiträge werden nach exakter Modelkombination gruppiert. Die zentrierte Gruppenüberschrift zeigt jedes Model ohne Trennzeichen in einer eigenen Zeile; die Karte wiederholt die Models nicht. In der Karte bleibt nur der individuelle Name beziehungsweise bei mehreren Beiträgen derselben Kombination die Nummer; die Medienanzahl bleibt sichtbar. Direkte Galerie-/Video-Sprungbuttons werden nicht angezeigt. `Lösen` entfernt nur Beitrag ↔ Titel. Gerätetest bestätigt.
 
-Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen bleiben unter `Bisher direkt zugeordnete Shootings` sichtbar und werden nicht automatisch migriert.
+Bei Galerie/Video → Beitrag wird zusätzlich der Titelkontext angezeigt. Alte direkte Titel→Shooting-Verknüpfungen werden getrennt als `Alte Direktzuordnungen` / `Umstellung erforderlich` angezeigt und können einzeln kontrolliert in echte Beiträge überführt werden.
 
-Aktueller visueller Zwischenstand in Commit `db76e26997e7f98c01ed545146a7ebab8abef727`:
+Aktueller visueller Stand in Commit `8e627b13187d9f317634b2b7e6178883496f7ce0`:
 - der kompakte auberginefarbene Titelkopf mit mittiger Titel-/Zeitraumdarstellung sowie `Bearbeiten` und quadratischem `×` ist gerätetest-bestätigt;
 - `＋ Beitrag hinzufügen` entspricht nun optisch dem bestätigten Rubriken-Button und ist gerätetest-bestätigt;
-- eine echte Titel-Beitragskarte war im abschließenden Gerätetest nicht sichtbar, weil dem getesteten Titel noch kein Beitrag zugeordnet war; ihre neue Darstellung und ihre Galerie-/Video-Zugriffe sind deshalb noch nicht bestätigt;
-- der sichtbare Bereich `Bisher direkt zugeordnete Shootings` verwendet weiterhin das alte Shooting-Kartenmuster und muss später kontrolliert an die gemeinsame Designsprache angepasst werden;
+- die echte Titel-Beitragskarte entspricht optisch der bestätigten Rubrik-Beitragskarte und ist auf dem Android-Gerät bestätigt;
+- Medienvorschau und Medienanzahl bleiben sichtbar; die überflüssigen direkten Galerie-/Video-Sprungbuttons wurden wie bei Rubriken entfernt, ohne Beziehungen oder Medien zu verändern;
+- `Bearbeiten` und `Lösen` bleiben die fachlichen Kartenaktionen;
+- der frühere sichtbare Legacy-Bereich ist nun ein eindeutig gekennzeichneter Migrationsbereich; `Prüfen` öffnet das Shooting und `In Beitrag überführen` startet die kontrollierte Einzelmigration;
+- eine reale Titel-Altzuordnung wurde erfolgreich in einen echten Beitrag mit einer Galerie überführt; anschließend war genau diese Direktzuordnung entfernt;
+- die Galerie enthielt beim Test noch keine Fotos und zeigte deshalb fachlich korrekt `1 Galerie · 0 Videos` am Beitrag sowie `0 Fotos` an der Galerie.
 - Titel-Fachlogik, Beziehungen und Schema wurden nicht verändert.
 
 ## Titelhierarchien -- vorerst fachlich geklärt
@@ -150,9 +248,11 @@ Referenzfall:
 
 ### Ausgaben
 
-Technischer Typ bleibt vorerst `publication`. Grunddaten: Reihe, Ausgabennummer, Zeitraum, Archivbereich, Cover-Models, physischer Bestandsstatus (`Nicht vorhanden`, `Bestellt`, `Im Bestand`).
+Technischer Typ bleibt vorerst `publication`. Grunddaten: Reihe, Ausgabennummer, Zeitraum, Archivbereich, Cover-Models, Cover-Fotograf(en), physischer Bestandsstatus (`Nicht vorhanden`, `Bestellt`, `Im Bestand`).
 
 Cover-Models sind Metadaten der Ausgabe und erzeugen keinen Beitrag bzw. keinen Nachweis für einen Inhalt im Heft. Verwaltungsdarstellung: Reihe als übergeordneter Kopf; Ausgabennummer und Zeitraum in einer Zeile. Mehrmonatige Zeiträume werden in der Verwaltung platzsparend angezeigt, z. B. `Jul./Aug. 2002`, ohne die gespeicherten Grunddaten zu verändern.
+
+Cover-Fotograf(en) werden als eigene optionale ID-Liste direkt an der Ausgabe gespeichert. Sie erscheinen auf Ausgabekarte und Detailansicht als `Cover-Foto: …`, sind über die Verwaltungssuche auffindbar und werden weder in allgemeine Credits geschrieben noch auf Artikel oder Shootings übertragen. Anlegen, Bearbeiten, erneutes Öffnen, Anzeige und Suche sind auf dem Android-Gerät bestätigt.
 
 ### Cover und PDF
 
@@ -168,7 +268,32 @@ Zuordnen, Ersetzen und Lösen sind gerätetest-bestätigt.
 
 ### Print-Detailansicht
 
-Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen. Ausbau auf Beiträge und Seiten folgt später.
+Antippen einer Ausgabe öffnet die Detailansicht mit vorhandenen Rubrik-/Printbeziehungen sowie dem neuen Artikelbereich. Der aktuelle Stand ist auf dem Android-Gerät bestätigt:
+- die Reihenansicht bleibt ruhig und zeigt ausschließlich die kompakten Ausgaben untereinander;
+- Artikel werden nicht mehr direkt unter der Ausgabekarte aufgefächert, sondern ausschließlich in der geöffneten Ausgabedetailansicht;
+- die sichtbare Aktion heißt im Printkontext `＋ Artikel hinzufügen`; technisch bleibt das Artikelobjekt vorerst `release`;
+- `Bearbeiten` und `Lösen` stehen am Artikel zur Verfügung; `Lösen` entfernt nur Artikel ↔ Ausgabe und erhält Artikel, Galerien und Videos;
+- der Artikeleditor zeigt die konkrete Printausgabe;
+- saubere Printartikel besitzen keine zusätzliche Rubrik-/Titelwahl mehr, da die Ausgabe ihr eindeutiger Veröffentlichungskontext ist;
+- vorhandene ältere Zusatzverknüpfungen werden nicht automatisch gelöscht: Nur in diesem Fall erscheint einmalig ein gekennzeichneter Bereinigungsbereich, über den bewusst `Keine Zuordnung` gewählt werden kann; die Printzuordnung bleibt dabei erhalten;
+- Seiten/Fundstelle, ausdrücklich gespeicherte Models und ein deutscher Erklärungstext können beim Anlegen und Bearbeiten erfasst werden und bleiben vollständig vorausgewählt;
+- jeder Artikel kann genau einem vorhandenen Shooting zugeordnet werden; angeboten werden nur Shootings, die alle ausdrücklich gewählten Artikel-Models enthalten;
+- einzelne Fotos und Galerien werden Artikeln bewusst nicht direkt zugeordnet;
+- die feste 2:3-Vorschau sowie Fotograf(en), Ort und Entstehungsdatum werden ausschließlich aus dem zugeordneten Shooting abgeleitet;
+- die Artikelkarte zeigt die Seiten separat und darunter die kompakten Shootingdaten, z. B. `📷 Mizuno · Los Angeles` sowie `Shooting • Nr. 1 · 1995 (?)`;
+- der deutsche Erklärungstext ist standardmäßig auf vier Zeilen begrenzt und lässt sich durch Antippen vollständig ein- und wieder ausklappen;
+- Galerie-/Videozahlen werden im Printartikel nicht angezeigt;
+- Printartikel und Printausgaben besitzen keine eigene Recherchemarkierung mehr; der Arbeitsbedarf wird zentral über `Shootings → Ohne Medien` ermittelt;
+- vorhandene ältere Artikel-Metadaten für Fotograf, Ort und Entstehungsjahr werden nicht automatisch in Shootings übertragen; automatische Mehrfachnutzung oder Datenüberschreibung findet nicht statt;
+- beim erneuten Speichern eines Artikels werden noch vorhandene direkte Foto-/Galeriezuordnungen am Artikel entfernt, die Mediendateien selbst bleiben erhalten;
+- Cover/PDF, Reihenlogik, Bestand und vorhandene Beziehungen blieben unverändert;
+- kein Schema-Bump und keine automatische Migration.
+- die redundante Ausgabenüberschrift oberhalb des Covers wurde entfernt, weil Ausgabennummer und Zeitraum bereits auf der Ausgabekarte sichtbar sind;
+- Cover und Artikel verwenden dasselbe zweispaltige Kartenraster mit gleich großer 2:3-Vorschau;
+- Antippen des Covers öffnet es in der vorhandenen Fullscreen-Fotoansicht;
+- Cover-Models und Cover-Fotografen erscheinen zentriert, ohne Trennzeichen und bei mehreren Namen jeweils untereinander;
+- Artikel zeigen ebenfalls Models und Fotografen untereinander; dazwischen stehen nur der Seitenbereich und – ausschließlich bei mehreren Shootings derselben exakten Modelkombination – `Nr. 1`, `Nr. 2`, ...;
+- die auf vier Zeilen begrenzte und aufklappbare Kurzinfo sowie `Bearbeiten` und `Lösen` bleiben erhalten.
 
 ### Print-Design -- vollständig gerätetest-bestätigt
 
@@ -178,6 +303,8 @@ Der Print/Reihen-Bereich bleibt die bestätigte Referenz für Ausgabekarten:
 - Ausgabennummer links und Zeitraum rechts in einer Zeile;
 - `＋ Ausgabe`, `×`, `Bearbeiten` und `Lösen` bilden eine gemeinsame Buttonfamilie;
 - `Lösen` trennt die Ausgabe von der Reihe, ohne die Ausgabe oder ihre Medien zu löschen.
+- Nur Ausgabennummer und kompakter Zeitraum behalten ihre links/rechts angeordnete gemeinsame Zeile. Archivbereich, Cover-Models, Cover-Fotografen, Bestands-/PDF-Kennzeichen und Aktionen sind horizontal zentriert.
+- Mehrere Cover-Models und Cover-Fotografen stehen ohne Trennzeichen jeweils untereinander; der bisherige dezente graue Schriftstil der Ausgabekarte bleibt erhalten.
 
 Der finale Buttonstandard wurde auf dem Android-Gerät ausdrücklich bestätigt.
 
@@ -191,16 +318,51 @@ Diese Angleichung wurde auf dem Android-Gerät vollständig bestätigt.
 
 ## Verwaltung -- aktueller UI-Stand
 
-- Model-Filter ganz oben.
+- Model-Filter ganz oben; mehrere Models können nacheinander ausgewählt und als einzeln entfernbare Chips angezeigt werden.
+- Mehrfachauswahl verwendet eine echte UND-Verknüpfung: Ein gemeinsames Shooting beziehungsweise ein gemeinsamer Beitrag muss alle gewählten Models enthalten; getrennte Einzelvorkommen gelten nicht als gemeinsamer Treffer.
+- Die UND-Filterung gilt für Print, Titel, Rubriken, Medien, Shootings und Import einschließlich ihrer inneren Karten und Container.
+- Model-Mehrfachfilter, Suche, Archivbereich und `Shootings → Ohne Medien` bleiben miteinander kombinierbar. Auswahl, Entfernen und Ergebnisfilterung sind auf dem Android-Gerät bestätigt.
+- Die Suchfelder der Verwaltungsbereiche behalten während der Eingabe dasselbe aktive Eingabefeld; nur die Ergebnisliste wird neu aufgebaut. Dadurch bleiben Android-Tastatur und Cursor beim Tippen stabil. Für Print, Titel, Rubriken, Medien, Shootings und Import gerätetest-bestätigt.
 - Archivbereich darunter als Auswahlfeld.
-- Haupttabs horizontal: `Print`, `Titel`, `Rubriken`, `Galerien`, `Videos`, `Shootings`, `Medien`.
+- Haupttabs horizontal: `Print`, `Titel`, `Rubriken`, `Medien`, `Shootings`, `Import`.
+- Der Haupttab `Medien` zeigt oben die feste Bereichsüberschrift und darunter den auberginefarbenen Auswahlkopf `Galerien` / `Videos`; `Import` bleibt fachlich und funktional getrennt. Diese Struktur ist gerätetest-bestätigt.
 - Tabstreifen ist auf den Verwaltungscontainer begrenzt.
 - Printbereich heißt innen `Reihen`.
 - Vorschaubilder in den bearbeiteten Verwaltungskarten haben Rundungen an allen vier Ecken.
 - Print-Ausgabekarten und Rubrik-Beitragskarten folgen inzwischen derselben Grundsprache.
 - Print- und Rubrikkopf sowie ihre Hinzufügen-Buttons sind nun optisch identisch und gerätetest-bestätigt.
 - Rubriken sind nach dem Feinschliff gerätetest-bestätigt.
-- Titel ist funktional stabil. Titelkopf und `＋ Beitrag hinzufügen` sind visuell angeglichen und gerätetest-bestätigt; Beitragskarten und Legacy-Shootings sind noch offen.
+- Titel ist funktional stabil. Titelkopf, `＋ Beitrag hinzufügen`, echte Beitragskarten und die als Migrationsfälle gekennzeichneten Shootingkarten sind visuell angeglichen und gerätetest-bestätigt.
+- Shooting-Haupttab und der visuelle Galerie-/Video-Zuordnungswähler `Shooting | Beitrag` sind gerätetest-bestätigt.
+- Rubriken und Titel trennen echte Beiträge jetzt sichtbar von alten Direktzuordnungen. Die kontrollierte Einzelmigration und der ergänzte Importweg `Zugeordnet → Galerie zuordnen` sind gerätetest-bestätigt.
+- `Rubriken → Nicht zugeordnet` ist jetzt ein präziser Arbeitsbereich: Beiträge benötigen dort das vollständige Fehlen von Rubrik, Titel und Printausgabe; Galerien/Videos werden separat nur ohne Beitrag gezählt.
+- Beide Gruppen zeigen eigene Anzahlen und besitzen manuelle Löschaktionen. Beim Löschen eines Beitrags bleiben Galerien, Videos und Mediendateien erhalten und werden lediglich wieder als unzugeordnet sichtbar. Anzeige, Sicherheitsabfrage und Löschung wurden auf dem Android-Gerät bestätigt.
+- Eigenständige Beiträge können unter `Nicht zugeordnet` direkt angelegt werden. Die reguläre Medien→Beitrag-Zuordnung bündelt anschließend auch mehrere Videos zu einem nachvollziehbaren Beitrag, ohne eine künstliche Rubrik zu erzeugen.
+- Noch nicht überführte ehemalige Individuals erscheinen dort shootingweise als `Bisherige Individuals · Umstellung erforderlich`. `Prüfen` öffnet das Shooting; `In Beitrag überführen` bietet ausschließlich seine noch freien Galerien/Videos an und wählt sie kontrollierbar voraus.
+- Beim Speichern wird nur der fehlende kontextlose Beitrag ergänzt. Shooting, Galerie, Video und Mediendateien bleiben unverändert; bereits einem Beitrag zugeordnete Werke werden ausgeschlossen. Ein leerer Beitrag ohne ausgewähltes Werk wird verhindert.
+- Ein individueller Name ist auch für eigenständige Beiträge optional. Ein einzelner unbenannter Beitrag derselben Modelkombination bleibt ohne Nummer; mehrere unbenannte Beiträge erhalten automatisch `Nr. 1`, `Nr. 2`, ... .
+- Rubrik-, Titel- und eigenständige Beitragskarten zeigen `Fotos · Videos`; reine Videobeiträge besitzen eine 2:3-Videovorschau. Shootingkarten wählen das erste natürlich sortierte Hochformatfoto auch dann, wenn die Datei nur über `Foto → Galerie → Shooting` indirekt verbunden ist.
+- Rubrikbeiträge sind nach Model beziehungsweise exakter Modelkombination gruppiert; die Karte wiederholt den Modelnamen nicht. Die vorhandene Regel „ein Beitrag ohne Nummer, mehrere Beiträge als Nr. 1, Nr. 2, ...“ bleibt bestehen.
+- Die Überführung steht bei `100 %` (`132 von 132`); es bestehen keine alten Direktzuordnungen oder bisherigen Individuals mehr. Der temporäre Fortschrittsblock wird deshalb nicht mehr angezeigt.
+- Der Medien-Tab verwendet indizierte Beziehungen und pro Datenstand zwischengespeicherte Werkberechnungen. Die zuvor mit wachsendem Archiv auftretende Verzögerung ist auf dem Android-Gerät behoben.
+- Titel, Rubriken, Medien und Shootings verwenden dieselbe zweistufige Modeldarstellung: exakte Modelkombination als zentrierte Gruppenüberschrift, darunter die zugehörigen Karten. Vor- und Nachnamen bleiben zusammen; mehrere Models stehen ohne Trennzeichen untereinander.
+- Karten zeigen eine vorhandene individuelle Bezeichnung oder – bei mehreren Objekten derselben Modelkombination – die erforderliche Nummer sowie die Medienanzahl. Bei genau einem unbenannten Objekt entfällt die Nummer weiterhin.
+- Die Fotoansicht ist in diesen Verwaltungsbereichen vereinheitlicht: Eine 2:3-Vorschau öffnet eine reine, natürlich sortierte Fotokarte ohne redundante Bezeichnung und Medienanzahl; einzelne Fotos wechseln von dort in die Fullscreenansicht. Videos erscheinen ausschließlich als separate runde ▶︎-Aktionen und nicht in der Fotokarte.
+- Der Printbereich ist ebenfalls abschließend angeglichen: zentrierte Ausgabemetadaten, gestapelte Model-/Fotografennamen sowie ein einheitliches Cover-/Artikelraster in der Detailansicht. Dieser Stand ist gerätetest-bestätigt.
+
+## Übersicht -- auf die neue Beitragslogik umgebaut und gerätetest-bestätigt
+
+- Die Hauptbereiche der Übersicht sind `Models`, `Titel`, `Rubriken` und `Print`; der frühere sichtbare Bereich `Individuals` ist entfernt.
+- `Models` bleibt die fachliche Grundansicht und wird auch bei aktiver Filterung immer als Bereich angeboten. Innerhalb der Ansicht erscheinen nur die Models, die der aktuellen Filterauswahl entsprechen.
+- Titel, Rubriken und Printausgaben werden ausschließlich aus den bestätigten Beziehungen `Veröffentlichungskontext → Beitrag → Galerie/Video → Shooting` abgeleitet. Frühere direkte Shooting-Zuordnungen und die alte Individuals-Logik werden nicht erneut als Übersichtsdaten verwendet.
+- Titel- und Rubrikenansicht übernehmen die bestätigte Karten- und Modelgruppierung aus der Verwaltung, sind jedoch reine Leseansichten ohne Bearbeiten-, Lösen-, Löschen- oder Hinzufügen-Aktionen.
+- Kontextlose Beiträge erscheinen unter `Rubriken → Nicht zugeordnet`; im Modelprofil werden dort ausschließlich die zum geöffneten Model gehörenden Beiträge gezeigt. Der virtuelle Bereich wird nur eingeblendet, wenn passende Beiträge existieren.
+- Beitragsvorschauen öffnen weiterhin die reine Fotokarte beziehungsweise einzelne Videos über ihre separaten ▶︎-Aktionen.
+- Die Printübersicht zeigt nur tatsächlich vorhandene Reihen und Ausgaben. Leere Reihen werden nicht ausgegeben; Ausgabekarten und die geöffnete Detailansicht sind read-only, während Cover, Artikelvorschauen, Galerien und Videos weiterhin geöffnet werden können.
+- Der gemeinsame Archivfilter lässt sich auf Android zuverlässig über `Filter anwenden` bestätigen und schließt anschließend den Filterdialog.
+- Freitext wird kontextgenau ausgewertet: Eine Rubrik wie `Busty Babes` zeigt nur die zugehörigen Models und ausschließlich Beiträge dieser Rubrik; fachlich fremde Titel, Rubriken und Printausgaben desselben Models werden nicht mit ausgegeben.
+- `Models` bleibt im Navigationsstreifen immer sichtbar. `Titel`, `Rubriken` und `Print` erscheinen bei aktiver Filterung nur, wenn der jeweilige Bereich eigene Treffer enthält; fällt der aktuell geöffnete Bereich weg, wechselt die Übersicht automatisch in einen weiterhin passenden Bereich.
+- Die Kombination aus Model-Grundansicht, dynamischer Bereichsauswahl und kontextgenauer Filterung ist auf dem Android-Gerät bestätigt.
 
 ## Weitere stabile Funktionen
 
@@ -210,13 +372,14 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 
 ## Risiken / offene Punkte
 
-- Direkte Medien→Shooting-Zuordnung vor Entfernung auf Abhängigkeiten prüfen.
 - Research-Löschschutz separat noch nicht gerätetest-dokumentiert.
-- Legacy-Titel→Shooting bleibt kontrolliert sichtbar; keine automatische Migration.
-- Print ist noch nicht auf **Ausgabe → Beitrag → Galerie/Video** und Seiten/Fundstellen ausgebaut.
-- Titel-Beitragskarten sind im aktuellen Stand noch nicht gerätetest-bestätigt.
-- `Bisher direkt zugeordnete Shootings` im Titelbereich verwendet noch das alte Kartenmuster.
-- Übersicht wurde noch nicht auf die neue Print-/Bereichsstruktur umgebaut.
+- Die automatische 2:3-Videovorschau bleibt ein lokaler heuristischer Best-Effort-Ansatz. Schwierige Videos werden über die inzwischen bestätigte manuelle Aktion `Vorschau festlegen` korrigiert; eine aggressivere Automatik ist nicht vorgesehen.
+- Die neue metrische Maßdarstellung ist technisch und syntaktisch geprüft und auf `main` vorhanden. Vor Beginn der Fotoanalyse soll ihr Verhalten mit realen Profilwerten weiter beobachtet werden.
+- Eine künftige Fotoanalyse darf keine scheinexakten Körpermaße oder Gewichte behaupten. Sie arbeitet shootingweise, lokal auf dem Gerät, bewahrt Originalangaben, führt Ergebnisse als Bereiche mit Unsicherheit und bietet Änderungen nur nach manueller Bestätigung an.
+- Die erstmalige automatische Analyse benötigt pro reinem Videoinhalt kurzzeitig mehr Rechenleistung; anschließend wird ausschließlich die gespeicherte Vorschau verwendet. Akkuverhalten bei normaler Nutzung weiter beobachten.
+- Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
+- Der Umbau der Übersicht auf die neue Beitrags-, Print- und Bereichsstruktur ist abgeschlossen und gerätetest-bestätigt.
+- Der während der intensiven Migration beobachtete hohe Akkuverbrauch ist technisch durch Lazy Loading, Abbruch nicht mehr benötigter Vorschauen und die neuen Berechnungsindizes adressiert. Nach abgeschlossener Migration hat sich der Akkuverbrauch bei normaler Nutzung wieder normalisiert.
 - ältere 3e-Werknummerierung technisch vorhanden.
 - Play-Protect-Vorfall aus 3g nicht als Source-Code-Kausalität behaupten. Play Protect nicht deaktivieren; APK nur als Update.
 
@@ -232,16 +395,11 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 - Model-Filter als Beitragsidentität;
 - Galerie-/Video-Nummer als sichtbare Veröffentlichungsidentität;
 - Cover/PDF als eigener Datei-Upload direkt im Printformular.
+- direkte Foto- oder Galeriezuordnung am Printartikel; Artikel referenzieren ausschließlich ein Shooting.
+- eigene Recherchemarkierungen an Printartikeln und Printausgaben; Recherchebedarf wird über Shootings ohne Medien sichtbar.
 
 ## Nächster Schritt
 
-**Titel-Feinschliff später ab dem dokumentierten Zwischenstand fortsetzen.**
+**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht und die manuelle Videovorschau sind abgeschlossen und auf dem Android-Gerät bestätigt. Die kompakte metrische Maßdarstellung ist auf `main` vorhanden.**
 
-Vorgehen:
-1. Für den nächsten Gerätetest einem Titel mindestens einen echten Beitrag mit Galerie/Video zuordnen, damit die Titel-Beitragskarte sichtbar ist.
-2. Diese Titel-Beitragskarte kontrolliert mit der bestätigten Rubrik-Beitragskarte vergleichen und verbleibende Abweichungen korrigieren; Galerie-/Video-Zugriffe erhalten.
-3. Danach den Bereich `Bisher direkt zugeordnete Shootings` separat auf die gemeinsame Karten- und Buttonsprache übertragen, ohne Legacy-Beziehungen zu migrieren oder zu löschen.
-4. Titel-Fachlogik, Titelhierarchien, Beziehungen und Schema unverändert lassen und den gesamten Titelbereich erneut auf dem Android-Gerät testen.
-5. Erst danach Etappe 6b: **Printausgabe → Beitrag → Galerie/Video**, anschließend Seiten/Fundstellen.
-
-Print und Rubriken bleiben die bestätigte Referenz. Beim Titel sind Kopf und Hinzufügen-Button abgeschlossen; Karten und Legacy-Bereich bleiben der nächste visuelle Arbeitsblock.
+Nächster klar abgegrenzter Arbeitsblock: shootingweise On-Device-Prüfung vorhandener Körperangaben. Zunächst werden Fotos lokal auf Eignung, Perspektive und erkennbare Körperpunkte geprüft; Ergebnisse verschiedener Shootings bleiben getrennt und werden anschließend verglichen. Brustumfang, Taille, Hüfte und gegebenenfalls Gewicht dürfen nur als nachvollziehbare Bereiche mit Unsicherheit erscheinen. Originalwerte bleiben erhalten, es gibt keine automatische Profiländerung und keine Übertragung von Fotos oder Analysedaten an einen Server.
