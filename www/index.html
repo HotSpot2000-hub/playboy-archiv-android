@@ -1092,7 +1092,7 @@ label{display:block;font-weight:650;margin:12px 0 5px}input,select,textarea{widt
 .bodyCheckPanel h4{margin:0 0 5px}.bodyCheckGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}.bodyCheckStat{padding:8px;border-radius:10px;background:#fff;text-align:center}.bodyCheckStat b{display:block;font-size:17px}.bodyCheckActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bodyCheckActions button{width:auto;margin:0}.bodyCheckProgress{margin-top:8px;font-size:12px;color:var(--muted)}
 .bodyCheckCombined{margin-top:12px;padding-top:12px;border-top:1px solid #e3d6e5}.bodyCheckCombinedTitle{font-weight:700}.bodyCheckCombinedMeta{margin-top:3px}.bodyCheckCombinedGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.bodyCheckCombinedGrid .bodyCheckStat{padding:7px 5px}.bodyCheckCombinedGrid .bodyCheckStat b{font-size:16px}
 .bodyEstimate{margin-top:12px;padding:11px;border-radius:12px;background:#fff}.bodyEstimateTitle{font-weight:700}.bodyEstimateValues{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px}.bodyEstimateValue{padding:8px 4px;border-radius:10px;background:#f7f0f8;text-align:center}.bodyEstimateValue b,.bodyEstimateValue span{display:block}.bodyEstimateCompare{margin-top:9px}
-.bodyCandidateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.bodyCandidateCard{position:relative;margin:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:#faf6fb;font-weight:400}.bodyCandidateCard .mediaThumb{aspect-ratio:2/3;margin:0 0 7px;border-radius:9px;overflow:hidden;background:#eee}.bodyCandidateChoice{display:flex;align-items:flex-start;gap:7px}.bodyCandidateChoice input{width:auto;margin:3px 0 0}.bodyCandidateBadge{position:absolute;top:13px;left:13px;z-index:2;padding:3px 6px;border-radius:999px;background:#fff;color:var(--accent);font-size:10px;font-weight:800;box-shadow:0 1px 4px #0002}.bodyCandidateActions{display:flex;gap:8px;margin-top:12px}.bodyCandidateActions button{width:auto;margin:0}
+.bodyCandidateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.bodyCandidateCard{position:relative;margin:0;padding:8px;border:1px solid var(--line);border-radius:12px;background:#faf6fb;font-weight:400}.bodyCandidateCard .mediaThumb{aspect-ratio:2/3;margin:0 0 7px;border-radius:9px;overflow:hidden;background:#eee}.bodyCandidateBadge{position:absolute;top:13px;left:13px;right:13px;z-index:2;padding:3px 6px;border-radius:999px;background:#fff;color:var(--accent);font-size:10px;font-weight:800;text-align:center;box-shadow:0 1px 4px #0002}.bodyCandidateMeasures{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.bodyCandidateMeasure{display:inline-flex;align-items:center;gap:4px;margin:0;padding:5px 7px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:11px;font-weight:700}.bodyCandidateMeasure input{width:auto;margin:0}.bodyCandidateMeasure.disabled{opacity:.42}.bodyCandidateFilter{display:flex;gap:6px;overflow:auto;margin-top:10px;padding-bottom:2px}.bodyCandidateFilter button{width:auto;min-width:max-content;margin:0;padding:7px 9px;border:1px solid var(--line);border-radius:999px;background:#fff;font:inherit;font-size:12px}.bodyCandidateFilter button.active{background:#171717;color:#fff;border-color:#171717}.bodyCandidateActions{display:flex;gap:8px;margin-top:12px}.bodyCandidateActions button{width:auto;margin:0}
 .managementVideoButtons{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:8px}
 .managementVideoQuick{width:38px;height:38px;min-height:0!important;border:1px solid var(--line)!important;border-radius:50%!important;background:#fff!important;padding:0!important;font-size:17px!important;line-height:1!important;box-shadow:none!important}
 .galleryDetailHead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:10px}.galleryDetailHead h2{margin:0}.galleryDetailGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.galleryDetailGrid .mediaThumb{aspect-ratio:2/3;margin:0;border-radius:10px;overflow:hidden;background:#eee;cursor:pointer}.galleryDetailGrid .mediaThumb img{width:100%;height:100%;object-fit:cover}@media(max-width:430px){.galleryDetailGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -13867,19 +13867,27 @@ function bodyMeasurementCandidateSamples(summary){
   if(!sample?.mediaId)continue;
   const measures=['bust','waist','hips'].filter(key=>Number(sample?.contour?.[key])>0);
   const existing=candidates.get(sample.mediaId);
-  if(existing){existing.measures=[...new Set([...existing.measures,...measures])];existing.confidence=Math.max(existing.confidence,Number(sample.confidence||0))}
-  else candidates.set(sample.mediaId,{mediaId:sample.mediaId,view:sample.view||'unknown',measures,confidence:Number(sample.confidence||0)});
+  if(existing){existing.measures=[...new Set([...existing.measures,...measures])];existing.confidence=Math.max(existing.confidence,Number(sample.confidence||0));if(!existing.geometry&&sample.geometry)existing.geometry=sample.geometry}
+  else candidates.set(sample.mediaId,{mediaId:sample.mediaId,view:sample.view||'unknown',measures,confidence:Number(sample.confidence||0),geometry:sample.geometry||null});
  }
+ const consistency=bodyGeometryConsistency(summary),stableUpper=new Set(consistency.stable.upper.map(sample=>sample.mediaId)),stableBridge=new Set(consistency.stable.bridge.map(sample=>sample.mediaId)),stableAnchor=new Set(consistency.stable.anchor.map(sample=>sample.mediaId));
+ const viewScore={frontal:4,side:4,angled:3,unknown:1};
+ const rows=[...candidates.values()].map(candidate=>{
+  const g=candidate.geometry||{},available=[];
+  if(stableUpper.has(candidate.mediaId)&&g.leftShoulder&&g.rightShoulder)available.push('bust');
+  if(stableBridge.has(candidate.mediaId)&&g.leftShoulder&&g.rightShoulder&&g.leftHip&&g.rightHip)available.push('waist','hips');
+  const scores=Object.fromEntries(['bust','waist','hips'].map(key=>[key,available.includes(key)?(viewScore[candidate.view]||1)+candidate.confidence+(candidate.measures.includes(key)?3:0)+(stableAnchor.has(candidate.mediaId)?1:0):-1]));
+  return {...candidate,available:[...new Set(available)],scores,suggested:[]};
+ });
+ const quotas={frontal:3,side:3,angled:2,unknown:1};
+ for(const key of ['bust','waist','hips'])for(const [view,limit] of Object.entries(quotas))rows.filter(row=>row.available.includes(key)&&row.view===view).sort((a,b)=>b.scores[key]-a.scores[key]).slice(0,limit).forEach(row=>row.suggested.push(key));
  const viewRank={frontal:0,side:1,angled:2,unknown:3};
- return [...candidates.values()].map(candidate=>({...candidate,recommended:candidate.measures.length>0})).sort((a,b)=>
-  Number(b.recommended)-Number(a.recommended)||
-  (viewRank[a.view]??4)-(viewRank[b.view]??4)||
-  b.measures.length-a.measures.length||b.confidence-a.confidence
- );
+ return rows.sort((a,b)=>b.suggested.length-a.suggested.length||Math.max(...Object.values(b.scores))-Math.max(...Object.values(a.scores))||(viewRank[a.view]??4)-(viewRank[b.view]??4)||b.confidence-a.confidence);
 }
 function bodyMeasurementSelectionHtml(summary,model,message){
- const selected=Array.isArray(model?.bodyMeasurementCandidateIds)?model.bodyMeasurementCandidateIds.length:0;
- return `<div class="bodyEstimate"><div class="bodyEstimateTitle">Messfotos manuell bestätigen</div><div class="small">${message} Die automatische Poseprüfung schlägt geeignete Front- und Seitenfotos vor; die tatsächliche Eignung wird bewusst manuell bestätigt.</div><div class="bodyCheckActions"><button type="button" class="btn" data-body-candidates="${esc(model?.id||'')}">Messfotos auswählen${selected?` · ${selected}`:''}</button></div></div>`;
+ const selections=model?.bodyMeasurementSelections||{},counts=['bust','waist','hips'].map(key=>Array.isArray(selections[key])?selections[key].length:0);
+ const selected=counts.reduce((sum,count)=>sum+count,0),detail=selected?` · Brust ${counts[0]} · Taille ${counts[1]} · Hüfte ${counts[2]}`:'';
+ return `<div class="bodyEstimate"><div class="bodyEstimateTitle">Messfotos manuell bestätigen</div><div class="small">${message} Die automatische Poseprüfung schlägt geeignete Front-, Schräg- und Seitenaufnahmen pro Maß vor; die tatsächliche Eignung wird bewusst manuell bestätigt.</div><div class="bodyCheckActions"><button type="button" class="btn" data-body-candidates="${esc(model?.id||'')}">Messfotos auswählen${detail}</button></div></div>`;
 }
 function bodyContourEstimateHtml(summary,model){
  const estimate=bodyContourEstimate(summary,model);
@@ -14002,19 +14010,27 @@ document.getElementById('closeGalleryDetail').onclick=closeOverlay;
 function openBodyMeasurementCandidates(modelId,shootingId){
  const model=state.models.find(item=>item.id===modelId);if(!model)return;
  const summary=modelBodyCheckSummary(modelId),candidates=bodyMeasurementCandidateSamples(summary);
- const selected=new Set(Array.isArray(model.bodyMeasurementCandidateIds)?model.bodyMeasurementCandidateIds:[]);
+ const legacy=new Set(Array.isArray(model.bodyMeasurementCandidateIds)?model.bodyMeasurementCandidateIds:[]),stored=model.bodyMeasurementSelections||{};
+ const selected=Object.fromEntries(['bust','waist','hips'].map(key=>[key,new Set(Array.isArray(stored[key])?stored[key]:candidates.filter(candidate=>legacy.has(candidate.mediaId)&&candidate.available.includes(key)).map(candidate=>candidate.mediaId))]));
  const labels={bust:'Brust',waist:'Taille',hips:'Hüfte'},views={frontal:'frontal',angled:'schräg',side:'seitlich',unknown:'Perspektive unklar'};
  const box=document.getElementById('galleryDetailContent');
- box.innerHTML=`<div class="galleryDetailHead"><h2>Messfotos auswählen</h2></div><div class="small">Alle geeigneten Ganzkörperfotos werden angeboten. Automatisch bevorzugte Aufnahmen stehen zuerst; du kannst ausdrücklich auch jedes andere Foto wählen. Die Auswahl verändert keine Fotos.</div>${candidates.length?`<div class="bodyCandidateGrid">${candidates.map(candidate=>{const media=(state.archive||[]).find(item=>item?.id===candidate.mediaId),measureText=candidate.measures.length?candidate.measures.map(key=>labels[key]+' frei').join(' · '):'Messlinien automatisch nicht frei';return `<label class="bodyCandidateCard">${candidate.recommended?'<span class="bodyCandidateBadge">Empfohlen</span>':''}<div class="mediaThumb" data-media-id="${esc(candidate.mediaId)}"><div class="small" style="padding:8px">Lade Foto …</div></div><span class="bodyCandidateChoice"><input type="checkbox" data-body-candidate="${esc(candidate.mediaId)}" ${selected.has(candidate.mediaId)?'checked':''}><span><b>${esc(views[candidate.view]||candidate.view)}</b><span class="small">${measureText}${media?.fileName?`<br>${esc(media.fileName)}`:''}</span></span></span></label>`}).join('')}</div><div class="bodyCandidateActions"><button type="button" class="btn" data-save-body-candidates>Auswahl speichern</button></div>`:'<div class="small" style="margin-top:12px">Keine geeigneten Kandidaten vorhanden.</div>'}`;
+ box.innerHTML=`<div class="galleryDetailHead"><h2>Messfotos nach Maß auswählen</h2></div><div class="small">Alle geometrisch vernetzten Fotos bleiben erreichbar. Die Vorschläge berücksichtigen Messbereich, Perspektive und Konsistenz; sie sind keine automatische Auswahl. Für einen späteren Umfang sind möglichst Front- und Seitenansichten manuell zu bestätigen.</div>${candidates.length?`<div class="bodyCandidateFilter"><button type="button" class="active" data-body-candidate-filter="all">Alle · ${candidates.length}</button>${['bust','waist','hips'].map(key=>`<button type="button" data-body-candidate-filter="${key}">${labels[key]} · ${candidates.filter(candidate=>candidate.available.includes(key)).length}</button>`).join('')}<button type="button" data-body-candidate-filter="suggested">Vorschläge</button></div><div class="bodyCandidateGrid">${candidates.map(candidate=>{const media=(state.archive||[]).find(item=>item?.id===candidate.mediaId),suggestion=candidate.suggested.length?`Vorschlag: ${candidate.suggested.map(key=>labels[key]).join(' · ')}`:'';return `<div class="bodyCandidateCard" data-body-candidate-card data-available-measures="${esc(candidate.available.join(','))}" data-suggested-measures="${esc(candidate.suggested.join(','))}">${suggestion?`<span class="bodyCandidateBadge">${esc(suggestion)}</span>`:''}<div class="mediaThumb" data-media-id="${esc(candidate.mediaId)}"><div class="small" style="padding:8px">Lade Foto …</div></div><b>${esc(views[candidate.view]||candidate.view)}</b><div class="small">${candidate.available.length?'Geometrisch nutzbar für '+candidate.available.map(key=>labels[key]).join(', '):'Nur als Vergleichsfoto vernetzt'}${media?.fileName?`<br>${esc(media.fileName)}`:''}</div><div class="bodyCandidateMeasures">${['bust','waist','hips'].map(key=>{const enabled=candidate.available.includes(key);return `<label class="bodyCandidateMeasure${enabled?'':' disabled'}"><input type="checkbox" data-body-candidate="${esc(candidate.mediaId)}" data-body-measure="${key}" ${enabled?'':'disabled'} ${enabled&&selected[key].has(candidate.mediaId)?'checked':''}>${labels[key]}</label>`}).join('')}</div></div>`}).join('')}</div><div class="bodyCandidateActions"><button type="button" class="btn" data-save-body-candidates>Auswahl speichern</button></div>`:'<div class="small" style="margin-top:12px">Keine geeigneten Kandidaten vorhanden.</div>'}`;
  openOverlay('galleryDetailPane');
  const sheet=document.querySelector('#overlay .sheet');if(sheet)sheet.scrollTop=0;
  hydrateMediaThumbs(box);
+ box.querySelectorAll('[data-body-candidate-filter]').forEach(button=>button.onclick=()=>{
+  box.querySelectorAll('[data-body-candidate-filter]').forEach(item=>item.classList.toggle('active',item===button));
+  const filter=button.dataset.bodyCandidateFilter;
+  box.querySelectorAll('[data-body-candidate-card]').forEach(card=>{const available=String(card.dataset.availableMeasures||'').split(','),suggested=String(card.dataset.suggestedMeasures||'').split(',');card.hidden=filter!=='all'&&(filter==='suggested'?!suggested.some(Boolean):!available.includes(filter))});
+ });
  const back=()=>openShootingDetail(shootingId,returnSeriesId,returnShootingContext);
  document.getElementById('closeGalleryDetail').onclick=back;
  const saveButton=box.querySelector('[data-save-body-candidates]');if(saveButton)saveButton.onclick=()=>{
-  model.bodyMeasurementCandidateIds=[...box.querySelectorAll('[data-body-candidate]:checked')].map(input=>input.dataset.bodyCandidate);
+  model.bodyMeasurementSelections=Object.fromEntries(['bust','waist','hips'].map(key=>[key,[...box.querySelectorAll(`[data-body-candidate][data-body-measure="${key}"]:checked`)].map(input=>input.dataset.bodyCandidate)]));
+  model.bodyMeasurementCandidateIds=[...new Set(Object.values(model.bodyMeasurementSelections).flat())];
   if(!save()){toast('Auswahl konnte nicht gespeichert werden.');return}
-  toast(`${model.bodyMeasurementCandidateIds.length} Messfotos bestätigt.`);back();
+  const total=Object.values(model.bodyMeasurementSelections).reduce((sum,ids)=>sum+ids.length,0);
+  toast(`${total} Maßzuordnungen in ${model.bodyMeasurementCandidateIds.length} Fotos bestätigt.`);back();
  };
 }
 let returnSeriesId=null;
