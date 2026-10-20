@@ -14005,6 +14005,25 @@ function saveShootingBodySourceAssessment(shootingId,photos,videos){
  if(!save()){toast('Quellenbewertung konnte nicht gespeichert werden.');return}
  toast('Shootingweise Quellenbewertung gespeichert.');openShootingDetail(sh.id,returnSeriesId,returnShootingContext);
 }
+function shootingBodyMeasurementSignature(sh){
+ return `${sh.bodyCheck?.analyzedAt||''}::${Array.isArray(sh.bodyCheck?.photoIds)?sh.bodyCheck.photoIds.join('|'):''}`;
+}
+function shootingBodyMeasurementAssessmentHtml(sh,photos=[],videos=[]){
+ const checks=sh.videoBodyChecks&&typeof sh.videoBodyChecks==='object'?sh.videoBodyChecks:{},currentVideos=videos.filter(video=>checks[video.id]&&Number(checks[video.id].mediaSize||0)===Number(video.size||0));
+ const sourceCurrent=sh.bodySourceAssessment?.sourceSignature===bodySourceSignature(sh,photos,currentVideos);
+ if(!sourceCurrent||!sh.bodyCheck||sh.bodyCheck.version<6)return '';
+ const signature=shootingBodyMeasurementSignature(sh),current=sh.bodyMeasurementAssessmentSignature===signature,assessments=current&&sh.bodyMeasurementPhotoAssessments&&typeof sh.bodyMeasurementPhotoAssessments==='object'?sh.bodyMeasurementPhotoAssessments:{};
+ const usedRoles=new Set(['width','depth','both','compare']),labels={upperBust:'Oberbrust',underBust:'Unterbrust',waist:'Taille',hips:'Hüfte'};
+ const counts=Object.fromEntries(Object.keys(labels).map(key=>[key,Object.values(assessments).filter(item=>usedRoles.has(item?.measures?.[key])).length]));
+ const selected=Object.values(counts).reduce((sum,count)=>sum+count,0),direct=Object.keys(labels).every(key=>Object.values(assessments).some(item=>['width','depth','both'].includes(item?.measures?.[key])));
+ return `<div class="bodySourceAssessment"><div class="bodyEstimateTitle">Messquellen dieses Shootings</div><div class="small">Die App zeigt zuerst wenige Vorschläge. Ansicht, Haltung und Messrolle bleiben manuell korrigierbar; weitere Fotos sind bei Bedarf erreichbar. Noch keine Zentimeterwerte.</div>${current?`<div class="bodySourceAssessmentStatus"><b>${direct?'Messgrundlage bestätigt':'Messgrundlage noch ergänzen'}</b><div class="small">${Object.entries(labels).map(([key,label])=>`${label} ${counts[key]}`).join(' · ')}${selected?' ausgewählte Zuordnungen.':' noch ohne Zuordnung.'}</div></div>`:''}<button type="button" class="btn" data-shooting-body-candidates>${current?'Messquellen prüfen':'Messquellen auswählen'}</button></div>`;
+}
+function shootingBodyMeasurementCandidates(sh){
+ const check=sh.bodyCheck||{},base=bodyMeasurementCandidateSamples({geometrySamples:Array.isArray(check.geometrySamples)?check.geometrySamples:[],samples:Array.isArray(check.samples)?check.samples:[]});
+ const rows=base.map(candidate=>{const available=[];if(candidate.available.includes('bust'))available.push('upperBust','underBust');if(candidate.available.includes('waist'))available.push('waist');if(candidate.available.includes('hips'))available.push('hips');return {...candidate,available,suggested:[],scores:{upperBust:candidate.scores.bust,underBust:candidate.scores.bust,waist:candidate.scores.waist,hips:candidate.scores.hips}}});
+ for(const key of ['upperBust','underBust','waist','hips'])rows.filter(row=>row.available.includes(key)).sort((a,b)=>b.scores[key]-a.scores[key]).slice(0,4).forEach(row=>row.suggested.push(key));
+ return rows.sort((a,b)=>b.suggested.length-a.suggested.length||Math.max(...Object.values(b.scores))-Math.max(...Object.values(a.scores)));
+}
 function videoBodySeek(video,time){
  return new Promise((resolve,reject)=>{
   if(Math.abs(video.currentTime-time)<.04&&video.readyState>=2){resolve();return}
@@ -14142,6 +14161,24 @@ function openManagementPhotoGrid(photos=[],emptyText='Noch keine Fotos vorhanden
  hydrateMediaThumbs(box);
 }
 document.getElementById('closeGalleryDetail').onclick=closeOverlay;
+function openShootingBodyMeasurementCandidates(shootingId){
+ const sh=(state.archive||[]).find(item=>item?.id===shootingId&&item.type==='shoot');if(!sh)return;
+ const candidates=shootingBodyMeasurementCandidates(sh),signature=shootingBodyMeasurementSignature(sh),current=sh.bodyMeasurementAssessmentSignature===signature;
+ const assessments=current&&sh.bodyMeasurementPhotoAssessments&&typeof sh.bodyMeasurementPhotoAssessments==='object'?sh.bodyMeasurementPhotoAssessments:{};
+ const labels={upperBust:'Oberbrust',underBust:'Unterbrust',waist:'Taille',hips:'Hüfte'},views={frontal:'frontal',angled:'schräg',side:'seitlich',unknown:'Perspektive unklar'};
+ const autoView={frontal:'front',angled:'angled',side:'side',unknown:'unknown'},sourceRole=sh.bodySourceAssessment?.photoRole||'comparison';
+ const optionHtml=(options,value,disabledValues=[])=>options.map(([key,label])=>`<option value="${key}" ${key===value?'selected':''} ${disabledValues.includes(key)?'disabled':''}>${label}</option>`).join('');
+ const viewOptions=[['front','Vorderansicht'],['rear','Rückansicht'],['side','Seitenansicht'],['angled','Schrägansicht'],['unknown','Ansicht unklar']];
+ const postureOptions=[['unknown','Noch nicht bestätigt'],['upright','Aufrecht'],['lying','Liegend'],['kneeling','Kniend'],['bent','Vorgebeugt'],['twisted','Verdreht'],['other','Andere Haltung']];
+ const roleOptions=[['none','Nicht verwenden'],['width','Breite'],['depth','Tiefe'],['both','Breite + Tiefe / schräg'],['compare','Nur Vergleich'],['exclude-clothing','Ausschließen · Kleidung'],['exclude-arms','Ausschließen · Arme/Hände'],['exclude-posture','Ausschließen · Haltung'],['exclude-other','Ausschließen · anderer Grund']];
+ const suggestedRole=(candidate,key)=>{if(!candidate.suggested.includes(key))return 'none';if(sourceRole==='widthScale')return candidate.view==='frontal'?'width':candidate.view==='angled'?'both':'compare';if(sourceRole==='depth')return candidate.view==='side'?'depth':candidate.view==='angled'?'both':'compare';return {frontal:'width',angled:'both',side:'depth',unknown:'compare'}[candidate.view]||'compare'};
+ const box=document.getElementById('galleryDetailContent');
+ box.innerHTML=`<div class="galleryDetailHead"><h2>Messquellen beurteilen</h2></div><div class="small">Nur dieses Shooting wird beurteilt. Die automatischen Vorschläge dienen als Vorauswahl und dürfen bei falscher Perspektive, Haltung, Kleidung oder Verdeckung korrigiert werden. Bestehende Profilmaße bleiben verborgen.</div>${candidates.length?`<div class="bodyCandidateFilter"><button type="button" class="active" data-shooting-candidate-filter="suggested">Vorschläge</button><button type="button" data-shooting-candidate-filter="all">Alle · ${candidates.length}</button>${Object.entries(labels).map(([key,label])=>`<button type="button" data-shooting-candidate-filter="${key}">${label} · ${candidates.filter(candidate=>candidate.available.includes(key)).length}</button>`).join('')}</div><div class="bodyCandidateGrid">${candidates.map(candidate=>{const media=(state.archive||[]).find(item=>item?.id===candidate.mediaId),suggestion=candidate.suggested.length?`Vorschlag: ${candidate.suggested.map(key=>labels[key]).join(' · ')}`:'',saved=assessments[candidate.mediaId]||{},chosenView=saved.view||autoView[candidate.view]||'unknown',chosenPosture=saved.posture||'unknown';return `<div class="bodyCandidateCard" ${candidate.suggested.length?'':'hidden'} data-shooting-candidate-card data-media-id-assessment="${esc(candidate.mediaId)}" data-auto-view="${esc(autoView[candidate.view]||'unknown')}" data-available-measures="${esc(candidate.available.join(','))}" data-suggested-measures="${esc(candidate.suggested.join(','))}">${suggestion?`<span class="bodyCandidateBadge">${esc(suggestion)}</span>`:''}<div class="mediaThumb" data-media-id="${esc(candidate.mediaId)}"><div class="small" style="padding:8px">Lade Foto …</div></div><div class="small">Automatik: ${esc(views[candidate.view]||candidate.view)}${media?.fileName?` · ${esc(media.fileName)}`:''}</div><div class="bodyCandidateMeta"><label>Ansicht<select data-body-assessment-view>${optionHtml(viewOptions,chosenView)}</select></label><label>Haltung<select data-body-assessment-posture>${optionHtml(postureOptions,chosenPosture)}</select></label></div><div class="bodyCandidateMeasures">${Object.entries(labels).map(([key,label])=>{const enabled=candidate.available.includes(key),role=saved?.measures?.[key]||suggestedRole(candidate,key),disabled=enabled?[]:['width','depth','both'];return `<label class="bodyCandidateMeasureRow${enabled?'':' unavailable'}">${label}${enabled?'':' · Geometrie nur zum Vergleich'}<select data-body-measure-role="${key}">${optionHtml(roleOptions,role,disabled)}</select></label>`}).join('')}</div></div>`}).join('')}</div><div class="bodyCandidateActions"><button type="button" class="btn" data-save-shooting-candidates>Beurteilungen speichern</button></div>`:'<div class="small" style="margin-top:12px">Keine geeigneten Kandidaten vorhanden.</div>'}`;
+ openOverlay('galleryDetailPane');const sheet=document.querySelector('#overlay .sheet');if(sheet)sheet.scrollTop=0;hydrateMediaThumbs(box);
+ box.querySelectorAll('[data-shooting-candidate-filter]').forEach(button=>button.onclick=()=>{box.querySelectorAll('[data-shooting-candidate-filter]').forEach(item=>item.classList.toggle('active',item===button));const filter=button.dataset.shootingCandidateFilter;box.querySelectorAll('[data-shooting-candidate-card]').forEach(card=>{const available=String(card.dataset.availableMeasures||'').split(','),suggested=String(card.dataset.suggestedMeasures||'').split(',');card.hidden=filter!=='all'&&(filter==='suggested'?!suggested.some(Boolean):!available.includes(filter))})});
+ const back=()=>openShootingDetail(sh.id,returnSeriesId,returnShootingContext);document.getElementById('closeGalleryDetail').onclick=back;
+ const saveButton=box.querySelector('[data-save-shooting-candidates]');if(saveButton)saveButton.onclick=()=>{sh.bodyMeasurementPhotoAssessments=Object.fromEntries([...box.querySelectorAll('[data-shooting-candidate-card]')].map(card=>{const measures=Object.fromEntries(Object.keys(labels).map(key=>[key,card.querySelector(`[data-body-measure-role="${key}"]`)?.value||'none']));return [card.dataset.mediaIdAssessment,{view:card.querySelector('[data-body-assessment-view]')?.value||card.dataset.autoView||'unknown',posture:card.querySelector('[data-body-assessment-posture]')?.value||'unknown',measures}]}));sh.bodyMeasurementAssessmentSignature=signature;sh.bodyMeasurementAssessmentUpdatedAt=new Date().toISOString();if(!save()){toast('Messquellen konnten nicht gespeichert werden.');return}const usedRoles=new Set(['width','depth','both','compare']),total=Object.values(sh.bodyMeasurementPhotoAssessments).reduce((sum,item)=>sum+Object.values(item.measures||{}).filter(role=>usedRoles.has(role)).length,0);toast(`${total} shootingweise Maßzuordnungen gespeichert.`);back()};
+}
 function openBodyMeasurementCandidates(modelId,shootingId){
  const model=state.models.find(item=>item.id===modelId);if(!model)return;
  const summary=modelBodyCheckSummary(modelId),candidates=bodyMeasurementCandidateSamples(summary);
@@ -14209,6 +14246,7 @@ function openShootingDetail(id,seriesId,context=null){
  ${photos.length?shootingBodyCheckHtml(sh,photos):''}
  ${shootingVideoBodySourcesHtml(sh,photos,videos)}
  ${shootingBodySourceAssessmentHtml(sh,photos,videos)}
+ ${shootingBodyMeasurementAssessmentHtml(sh,photos,videos)}
  ${detailMedia.length
    ? `<div class="gallery">${detailMedia.map(x=>`<div class="galleryItem">
        <div class="mediaThumb" data-media-id="${x.id}"><div class="small" style="padding:10px">Lade Medium …</div></div>
@@ -14269,6 +14307,8 @@ function openShootingDetail(id,seriesId,context=null){
  box.querySelectorAll('[data-run-video-body-fine]').forEach(button=>button.onclick=e=>{e.preventDefault();e.stopPropagation();runShootingVideoBodyFineScan(sh.id,button.dataset.runVideoBodyFine,Number(button.dataset.videoBodyFrame))});
  const saveBodySourceAssessmentBtn=box.querySelector('[data-save-body-source-assessment]');
  if(saveBodySourceAssessmentBtn)saveBodySourceAssessmentBtn.onclick=e=>{e.preventDefault();e.stopPropagation();saveShootingBodySourceAssessment(sh.id,photos,videos)};
+ const shootingBodyCandidatesBtn=box.querySelector('[data-shooting-body-candidates]');
+ if(shootingBodyCandidatesBtn)shootingBodyCandidatesBtn.onclick=e=>{e.preventDefault();e.stopPropagation();openShootingBodyMeasurementCandidates(sh.id)};
  hydrateMediaThumbs(box);bindInteractiveMedia(box);
 }
 document.getElementById('cancelDirectMediaTransferBtn').onclick=()=>{
