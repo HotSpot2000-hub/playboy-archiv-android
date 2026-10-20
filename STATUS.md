@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-10-18
-Referenz-Commit: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
+Stand: 2026-10-20
+Referenz-Commit: `8f73a42d7ba184b7f686a952baf26ad735780678`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,8 +18,8 @@ Referenz-Commit: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
-- Verifizierter SHA-256 von `www/index.html`: `cb361577e332a4d5edae7e412f008d48dab86d77aa3dce60c0f2652434501993`.
+- Aktuell berücksichtigter Code: `8f73a42d7ba184b7f686a952baf26ad735780678`
+- Verifizierter SHA-256 von `www/index.html`: `609d17edd5a844b3f4dd6d2d1c9294d6d961d21ed53144040527d6f54209edbb`.
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -59,6 +59,12 @@ Referenz-Commit: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
 - Die Vergleichsgeometrien werden ohne Zentimeterwerte zunächst perspektivweise auf Konsistenz geprüft. Ganzkörperanker, Torso-Brücken und Oberkörper-Verknüpfungen verwenden robuste Median-/Abweichungsgrenzen; nicht passend vernetzte Fotos werden zurückgestellt statt durch Ersatzwerte ergänzt.
 - Gerätetest Tiffany Ryan: vier Shootings mit 96 Fotos; 96 Geometriefotos, 91 Torsofotos und 36 automatisch erkannte Ganzkörperanker. Die strengere Konsistenzprüfung ergab 24 von 34 stabile Ganzkörperanker, 89 von 91 stabile Torso-Brücken, 69 von 96 verknüpfte Oberkörperaufnahmen, insgesamt 94 vernetzte Fotos und zwei zurückgestellte Ausreißer. Die Grundlage wird als `Stabile Vergleichsgeometrie` ausgewiesen.
 - Die bekannte Körpergröße von Tiffany Ryan (155 cm) wurde noch nicht auf die Geometrien übertragen. Es werden weiterhin weder Zentimeterbereiche noch Gewicht oder Cupgröße aus Fotos behauptet und keine vorhandenen Profilangaben verändert.
+- Der lokale Videoanalyse-Pilot ist auf dem Android-Gerät bestätigt. Pro Video werden zunächst 24 gleichmäßig verteilte Frames ausschließlich lokal auf Pose, Ganzkörpererkennbarkeit, Perspektive und Vergleichsgeometrie geprüft. Gespeichert werden nur Zeitpunkte und Geometrien, keine zusätzlichen Videokopien und noch keine Maße.
+- Die 24 Video-Stichproben sind mit Zeitpunkt und automatischer Einordnung sichtbar. Einzelne Zeitbereiche können bewusst mit jeweils neun zusätzlichen Frames feiner geprüft werden; Ergebnisse bleiben shootingweise gespeichert.
+- Gerätetest Tahlia Paris, Shooting Nr. 1: 40 Fotos und das Video `Rustic Charmer.mp4` mit 7:32 Minuten bei 1920×1080. Der Grobscan erkannte in 15 von 24 Frames eine Pose, darunter sechs Ganzkörperansichten; automatisch eingeordnet wurden null frontal, zwei schräg und zehn seitlich.
+- Fünf bewusst ausgewählte Video-Feinscans bestätigten viele seitliche und schräge Ansichten, aber keine belastbare frontale Ansicht. Die manuelle Sichtung des Videos bestätigt diese Quellencharakteristik; weitere Feinscans dieses Videos sind vorerst nicht erforderlich.
+- Die Fotoanalyse desselben Shootings ergab 19 geeignete Ganzkörperfotos, ein angeschnittenes Ganzkörperfoto, 18 Oberkörperfotos und zwei ungeeignete Fotos. Die automatische Perspektive ordnete null frontal, 16 schräg, 22 seitlich und zwei unklar ein, obwohl die Galerie visuell frontale beziehungsweise nahezu frontale Aufnahmen enthält. Die Perspektivheuristik ist damit ausdrücklich nur ein korrigierbarer Vorschlag.
+- Die shootingweise Quellenbilanz ist gerätetest-bestätigt. Für Tahlia Shooting Nr. 1 wurden die Fotos bewusst als `Breite + Ganzkörperskalierung` und das Video als `Tiefe + Schrägansichten` bestätigt. Die App weist dies als `Ergänzende Quellen bestätigt` aus; fehlende Perspektiven werden nicht durch Ersatzwerte aufgefüllt.
 - Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Körperangaben und Analyse -- festgelegte Zielstruktur
@@ -74,6 +80,10 @@ Referenz-Commit: `6f3a1e558af146b2ffe0183a201a2a7674870e34`
 - Das Profil zeigt keine Formulierungen wie `möglicherweise` oder breite Analysebereiche. Sichtbar sind ausschließlich ausdrücklich bestätigte eindeutige Archivwerte in der kompakten Form, beispielsweise `94-58-86 • US 32DD-23-34 • EU 70E-58-86`.
 - Bei mehreren bestätigten Körperständen erscheinen mehrere kompakte Maßzeilen mit ihrer individuellen Bezeichnung. Bei genau einem Körperstand kann die Bezeichnung entfallen.
 - Analysen überschreiben Profilangaben niemals automatisch. Die App schlägt aus dem internen Bereich einen eindeutigen Wert vor; erst die manuelle Bestätigung übernimmt ihn als sichtbaren Archivwert.
+- Eine vorhandene Maßangabe wird nur dann zur Korrektur vorgeschlagen, wenn der neue Wert auf ausreichend belastbarer Grundlage plausibler erscheint. Bei unzureichender oder widersprüchlicher Grundlage bleibt die vorhandene Angabe bestehen und wird intern als ungeklärt vermerkt.
+- Intern bleiben ursprüngliche Quellenangabe, ermittelter Bereich, vorgeschlagener Archivwert, Abweichung, Qualität und Schwierigkeiten der Datengrundlage sowie die abschließende Entscheidung erhalten.
+- Ziel des späteren Standardworkflows ist `Shootings vorsortieren → Körperstände bestätigen → vorhandene Maße prüfen → eindeutige Archivwerte freigeben`. Die aufwendige Einzelprüfung dient jetzt dem Referenzfall und darf nicht zur dauerhaften Hauptaufgabe werden.
+- Eindeutige Fälle sollen später automatisch vorbereitet und gesammelt bestätigt werden. Manuelle Detailarbeit ist auf unsichere Perspektiven, widersprüchliche Quellen und wahrscheinliche Körperstandsänderungen zu begrenzen; Profilwerte werden trotzdem nie automatisch übernommen.
 - Exakte körperliche Schneidermaße können aus Fotos nicht garantiert werden. Ziel ist eine dokumentierte, möglichst belastbare Plausibilitätsprüfung und ein bewusst bestätigter Archivwert, keine scheinexakte automatische Wahrheit.
 
 ## Fachliches Soll-Modell
@@ -401,10 +411,13 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Die kompakte metrische Maßdarstellung und die lokale Analysegrundlage sind gerätetest-bestätigt. Die eigentliche Skalierung in Zentimeter und die daraus folgende Plausibilitätsprüfung vorhandener Werte sind noch offen.
 - Auch mit 96 Fotos bleiben Körperumfänge aus zweidimensionalen Bildern Schätzbereiche. Perspektive, Pose, Kleidung, Verdeckung und Objektivwirkung müssen als Unsicherheit berücksichtigt werden; keine scheinexakten Körpermaße oder Gewichte ausgeben.
 - Die Perspektivklassifikation und Körperpunkte stammen aus lokaler Heuristik beziehungsweise ML Kit und können einzelne Fotos falsch einordnen. Deshalb bleiben robuste Ausreißerbehandlung und manuelle Bestätigung verbindlich.
+- Der reale Tahlia-Test zeigt, dass die Heuristik auch eine ganze Galerie ohne frontale Treffer einordnen kann, obwohl visuell frontale beziehungsweise nahezu frontale Fotos vorhanden sind. Quellenrollen und spätere Messrollen dürfen deshalb nie allein aus der automatischen Perspektive abgeleitet werden.
 - Bildorientierung und Körperhaltung dürfen nicht verwechselt werden: liegende, kniende, vorgebeugte, verdrehte und rückseitige Posen können trotz automatischer Kennzeichnung `frontal` oder `seitlich` für eine andere Messrolle geeignet oder ungeeignet sein.
 - Brustbreite beziehungsweise Brustumfang ist wegen Kleidung, Armen, Dekolleté und unterbrochener Vorderkontur besonders fehleranfällig. Nahaufnahmen dürfen nur über stabile Vergleichsketten skaliert und nicht isoliert vermessen werden.
 - Ober- und Unterbrust benötigen getrennte Foto- und Messlinien. BH, Kleidung, Stützwirkung und weiches Gewebe können beide Bereiche unterschiedlich verändern; eine Cupgröße darf nur als systemabhängige Ableitung aus bestätigten Bereichen entstehen.
 - Der aktuelle `main`-Stand speichert die Messfotoauswahl noch modellweit. Für Models mit mehreren Körperständen darf diese Auswahl nicht als gemeinsame Messgrundlage verwendet werden. Vor umfangreicher manueller Auswahl zuerst auf Messgruppen umstellen.
+- Video-Frames derselben zusammenhängenden Sequenz sind keine voneinander unabhängigen Quellen. Viele ähnliche Frames erhöhen nicht künstlich die Sicherheit; Video dient vor allem zur räumlichen Ergänzung, Bewegungsbeobachtung und Auswahl weniger belastbarer Referenzzeitpunkte.
+- Der spätere Normalbetrieb darf keine vollständige manuelle Sichtung jeder Galerie und jedes Videos verlangen. Die App muss eindeutige Fälle vorsortieren, wenige geeignete Quellen vorschlagen und dem Benutzer primär Gruppierungs-, Plausibilitäts- und Ausnahmeentscheidungen vorlegen.
 - Die Analyse bewahrt Originalangaben. Spätere Ergebnisse erscheinen ausschließlich als nachvollziehbare Bereiche mit Unsicherheit; Profiländerungen erfolgen nur nach ausdrücklicher manueller Bestätigung.
 - Die erstmalige automatische Analyse benötigt pro reinem Videoinhalt kurzzeitig mehr Rechenleistung; anschließend wird ausschließlich die gespeicherte Vorschau verwendet. Akkuverhalten bei normaler Nutzung weiter beobachten.
 - Print besitzt die gerätetest-bestätigte Grundstruktur **Ausgabe → Artikel → Shooting** einschließlich der fachlichen Artikeldaten und unabhängiger Cover-Fotografen.
@@ -436,6 +449,8 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung und die lokale Vergleichsgeometrie-Grundlage sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Testgrundlage. Die maßbezogene Fotoauswahl liegt auf `main`, ist aber wegen der inzwischen festgelegten Körperstand-Logik noch nicht der endgültige Arbeitsablauf.**
+**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung, lokale Foto-/Videoanalyse und die shootingweise Quellenbilanz sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Foto-Testgrundlage. Tahlia Paris Shooting Nr. 1 bestätigt zusätzlich den lokalen Video-Grobscan, gezielte Feinscans und die bewusste Ergänzung von Fotos für Breite/Skalierung durch Video für Tiefe/Schrägansichten.**
 
-Nächster klar abgegrenzter Arbeitsblock: benennbare Körperstände/Messgruppen mit bewusster Shooting-Auswahl einführen. Messfoto-Beurteilungen müssen innerhalb der jeweiligen Messgruppe gespeichert werden. In denselben Arbeitsablauf gehören die korrigierbare Ansicht und Haltung sowie die Rolle jedes Fotos pro Messbereich. Die Messbereiche werden auf `Oberbrust`, `Unterbrust`, `Taille` und `Hüfte` erweitert. Erst nach bestätigtem Gruppierungs- und Beurteilungsworkflow folgt die Kalibrierung über bekannte Körpergröße und stabile Vergleichsketten. Bis dahin keine umfangreiche manuelle Fotoauswahl und weiterhin keine sichtbare Zentimeter- oder Cupschätzung. Die vier Tiffany-Ryan-Shootings müssen für diese Strukturänderung nicht erneut analysiert werden.
+Nächster klar abgegrenzter Arbeitsblock: innerhalb genau eines Shootings wenige konkrete Messquellen für `Oberbrust`, `Unterbrust`, `Taille` und `Hüfte` auswählen und beurteilen. Pro Foto beziehungsweise bestätigtem Videozeitpunkt müssen Ansicht, Haltung und Messrolle korrigierbar sein; die Automatik liefert nur Vorschläge. Die Auswahl bleibt shootingweise gespeichert und erzeugt zunächst ausschließlich eine dimensionslose Shooting-Signatur, noch keine Zentimeterwerte.
+
+Danach werden weitere Tahlia-Shootings einzeln analysiert und ihre Shooting-Signaturen paarweise als `wahrscheinlich gleicher Körperstand`, `wahrscheinlich unterschiedlicher Körperstand` oder `unklar` vorsortiert. Der Benutzer bestätigt `zusammenführen`, `getrennt halten` oder `vorläufig unklar`. Erst innerhalb bestätigter Körperstände folgt die Kalibrierung über Tahlia Paris' bekannte Körpergröße 5′4″ beziehungsweise intern 162,6 cm, anschließend die Plausibilitätsprüfung vorhandener Maße. Korrekturen werden nur vorgeschlagen, wenn sie auf belastbarer Grundlage plausibler erscheinen; bis dahin keine sichtbare Zentimeter- oder Cupschätzung und keine automatische Profiländerung.
