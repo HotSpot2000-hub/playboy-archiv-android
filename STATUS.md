@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-10-20
-Referenz-Commit: `8f73a42d7ba184b7f686a952baf26ad735780678`
+Stand: 2026-10-21
+Referenz-Commit: `e3982977edbb7b0ddceef83d3e4c249a96f108f0`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -18,8 +18,8 @@ Referenz-Commit: `8f73a42d7ba184b7f686a952baf26ad735780678`
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
-- Aktuell berücksichtigter Code: `8f73a42d7ba184b7f686a952baf26ad735780678`
-- Verifizierter SHA-256 von `www/index.html`: `609d17edd5a844b3f4dd6d2d1c9294d6d961d21ed53144040527d6f54209edbb`.
+- Aktuell berücksichtigter Code: `e3982977edbb7b0ddceef83d3e4c249a96f108f0`
+- Verifizierter SHA-256 von `www/index.html`: `f32ed2b9c26d86a3be1de4aa9789d9c375abb5424557da4cc72e925dded35842`.
 - Titelkopf, Hinzufügen-Button, echte Titel-Beitragskarte und der klar getrennte Migrationsbereich für direkte Altzuordnungen sind gerätetest-bestätigt.
 - Etappe 4c samt Folgekorrekturen getestet.
 - Etappe 5a inklusive 5a.1 und 5a.2 gerätetest-bestätigt.
@@ -65,6 +65,9 @@ Referenz-Commit: `8f73a42d7ba184b7f686a952baf26ad735780678`
 - Fünf bewusst ausgewählte Video-Feinscans bestätigten viele seitliche und schräge Ansichten, aber keine belastbare frontale Ansicht. Die manuelle Sichtung des Videos bestätigt diese Quellencharakteristik; weitere Feinscans dieses Videos sind vorerst nicht erforderlich.
 - Die Fotoanalyse desselben Shootings ergab 19 geeignete Ganzkörperfotos, ein angeschnittenes Ganzkörperfoto, 18 Oberkörperfotos und zwei ungeeignete Fotos. Die automatische Perspektive ordnete null frontal, 16 schräg, 22 seitlich und zwei unklar ein, obwohl die Galerie visuell frontale beziehungsweise nahezu frontale Aufnahmen enthält. Die Perspektivheuristik ist damit ausdrücklich nur ein korrigierbarer Vorschlag.
 - Die shootingweise Quellenbilanz ist gerätetest-bestätigt. Für Tahlia Shooting Nr. 1 wurden die Fotos bewusst als `Breite + Ganzkörperskalierung` und das Video als `Tiefe + Schrägansichten` bestätigt. Die App weist dies als `Ergänzende Quellen bestätigt` aus; fehlende Perspektiven werden nicht durch Ersatzwerte aufgefüllt.
+- Die shootingweise Messquellen-Beurteilung ist auf dem Android-Gerät bestätigt. Die Automatik zeigt nur noch eine kleine geometrische Vorauswahl und bezeichnet diese ausdrücklich nicht als Direktquelle. Ansicht und Haltung beginnen unbestätigt; eine direkte Messrolle wird erst nach manueller Bestätigung einer aufrechten Haltung und der passenden Ansicht freigeschaltet.
+- Die verfügbaren Direktrollen sind an die bestätigte Perspektive gebunden: Vorder-/Rückansicht liefert Breite, Seitenansicht Tiefe und Schrägansicht die räumliche Ergänzung. Rückansichten sind für Ober- und Unterbrust keine Direktquelle. Die Wahl einer Direktrolle bestätigt zugleich, dass die jeweilige Messlinie nicht durch Kleidung, Arme oder Hände verdeckt ist; alternativ stehen Vergleich und begründete Ausschlüsse bereit.
+- Gerätetest Tahlia Paris, Shooting Nr. 1: Foto `332079_full.jpg` wurde als aufrechte Schrägansicht bestätigt, für Oberbrust und Unterbrust wegen Kleidung ausgeschlossen, für die freie Taille als direkte Schrägquelle bestätigt und für die Hüfte wegen Kleidung ausgeschlossen. Nach dem Speichern weist die Shooting-Zusammenfassung korrekt ausschließlich `Taille 1` sowie `Oberbrust 0 · Unterbrust 0 · Hüfte 0` aus.
 - Keine automatische Massenmigration; kein Schema-Bump.
 
 ## Körperangaben und Analyse -- festgelegte Zielstruktur
@@ -415,7 +418,7 @@ Research-Löschschutz implementiert, separater Gerätetest noch nicht dokumentie
 - Bildorientierung und Körperhaltung dürfen nicht verwechselt werden: liegende, kniende, vorgebeugte, verdrehte und rückseitige Posen können trotz automatischer Kennzeichnung `frontal` oder `seitlich` für eine andere Messrolle geeignet oder ungeeignet sein.
 - Brustbreite beziehungsweise Brustumfang ist wegen Kleidung, Armen, Dekolleté und unterbrochener Vorderkontur besonders fehleranfällig. Nahaufnahmen dürfen nur über stabile Vergleichsketten skaliert und nicht isoliert vermessen werden.
 - Ober- und Unterbrust benötigen getrennte Foto- und Messlinien. BH, Kleidung, Stützwirkung und weiches Gewebe können beide Bereiche unterschiedlich verändern; eine Cupgröße darf nur als systemabhängige Ableitung aus bestätigten Bereichen entstehen.
-- Der aktuelle `main`-Stand speichert die Messfotoauswahl noch modellweit. Für Models mit mehreren Körperständen darf diese Auswahl nicht als gemeinsame Messgrundlage verwendet werden. Vor umfangreicher manueller Auswahl zuerst auf Messgruppen umstellen.
+- Neue Messfoto-Beurteilungen werden shootingweise gespeichert. Die frühere modellweite Auswahl bleibt nur als Altbestand lesbar und darf für Models mit mehreren Körperständen nicht als gemeinsame Messgrundlage verwendet werden. Shootings werden erst nach Einzelprüfung bewusst zu benennbaren Messgruppen beziehungsweise Körperständen zusammengeführt.
 - Video-Frames derselben zusammenhängenden Sequenz sind keine voneinander unabhängigen Quellen. Viele ähnliche Frames erhöhen nicht künstlich die Sicherheit; Video dient vor allem zur räumlichen Ergänzung, Bewegungsbeobachtung und Auswahl weniger belastbarer Referenzzeitpunkte.
 - Der spätere Normalbetrieb darf keine vollständige manuelle Sichtung jeder Galerie und jedes Videos verlangen. Die App muss eindeutige Fälle vorsortieren, wenige geeignete Quellen vorschlagen und dem Benutzer primär Gruppierungs-, Plausibilitäts- und Ausnahmeentscheidungen vorlegen.
 - Die Analyse bewahrt Originalangaben. Spätere Ergebnisse erscheinen ausschließlich als nachvollziehbare Bereiche mit Unsicherheit; Profiländerungen erfolgen nur nach ausdrücklicher manueller Bestätigung.
@@ -449,8 +452,8 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 
 ## Nächster Schritt
 
-**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung, lokale Foto-/Videoanalyse und die shootingweise Quellenbilanz sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Foto-Testgrundlage. Tahlia Paris Shooting Nr. 1 bestätigt zusätzlich den lokalen Video-Grobscan, gezielte Feinscans und die bewusste Ergänzung von Fotos für Breite/Skalierung durch Video für Tiefe/Schrägansichten.**
+**Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung, lokale Foto-/Videoanalyse, shootingweise Quellenbilanz und die zweistufige Messquellen-Bestätigung sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Foto-Testgrundlage. Tahlia Paris Shooting Nr. 1 bestätigt zusätzlich den lokalen Video-Grobscan, gezielte Feinscans, die bewusste Ergänzung von Foto und Video sowie die erste gespeicherte direkte Schrägquelle für die Taille.**
 
-Nächster klar abgegrenzter Arbeitsblock: innerhalb genau eines Shootings wenige konkrete Messquellen für `Oberbrust`, `Unterbrust`, `Taille` und `Hüfte` auswählen und beurteilen. Pro Foto beziehungsweise bestätigtem Videozeitpunkt müssen Ansicht, Haltung und Messrolle korrigierbar sein; die Automatik liefert nur Vorschläge. Die Auswahl bleibt shootingweise gespeichert und erzeugt zunächst ausschließlich eine dimensionslose Shooting-Signatur, noch keine Zentimeterwerte.
+Nächster klar abgegrenzter Arbeitsblock: Tahlia Paris Shooting Nr. 1 mit nur wenigen weiteren bewusst bestätigten Foto- beziehungsweise Videoquellen ergänzen, bis pro Maß nach Möglichkeit mindestens eine Breiten-/Schrägquelle und eine Tiefenquelle vorliegen. Nicht alle Medien müssen manuell beurteilt werden; ungeeignete oder redundante Kandidaten bleiben unberücksichtigt. Aus den bestätigten Quellen entsteht zunächst ausschließlich eine dimensionslose Shooting-Signatur, noch keine Zentimeterwerte.
 
 Danach werden weitere Tahlia-Shootings einzeln analysiert und ihre Shooting-Signaturen paarweise als `wahrscheinlich gleicher Körperstand`, `wahrscheinlich unterschiedlicher Körperstand` oder `unklar` vorsortiert. Der Benutzer bestätigt `zusammenführen`, `getrennt halten` oder `vorläufig unklar`. Erst innerhalb bestätigter Körperstände folgt die Kalibrierung über Tahlia Paris' bekannte Körpergröße 5′4″ beziehungsweise intern 162,6 cm, anschließend die Plausibilitätsprüfung vorhandener Maße. Korrekturen werden nur vorgeschlagen, wenn sie auf belastbarer Grundlage plausibler erscheinen; bis dahin keine sichtbare Zentimeter- oder Cupschätzung und keine automatische Profiländerung.
