@@ -1,3 +1,207 @@
+# Decoder adapter derived from Meta MHR (Apache-2.0). Full upstream license follows.
+# 
+#                                  Apache License
+#                            Version 2.0, January 2004
+#                         http://www.apache.org/licenses/
+# 
+#    TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+# 
+#    1. Definitions.
+# 
+#       "License" shall mean the terms and conditions for use, reproduction,
+#       and distribution as defined by Sections 1 through 9 of this document.
+# 
+#       "Licensor" shall mean the copyright owner or entity authorized by
+#       the copyright owner that is granting the License.
+# 
+#       "Legal Entity" shall mean the union of the acting entity and all
+#       other entities that control, are controlled by, or are under common
+#       control with that entity. For the purposes of this definition,
+#       "control" means (i) the power, direct or indirect, to cause the
+#       direction or management of such entity, whether by contract or
+#       otherwise, or (ii) ownership of fifty percent (50%) or more of the
+#       outstanding shares, or (iii) beneficial ownership of such entity.
+# 
+#       "You" (or "Your") shall mean an individual or Legal Entity
+#       exercising permissions granted by this License.
+# 
+#       "Source" form shall mean the preferred form for making modifications,
+#       including but not limited to software source code, documentation
+#       source, and configuration files.
+# 
+#       "Object" form shall mean any form resulting from mechanical
+#       transformation or translation of a Source form, including but
+#       not limited to compiled object code, generated documentation,
+#       and conversions to other media types.
+# 
+#       "Work" shall mean the work of authorship, whether in Source or
+#       Object form, made available under the License, as indicated by a
+#       copyright notice that is included in or attached to the work
+#       (an example is provided in the Appendix below).
+# 
+#       "Derivative Works" shall mean any work, whether in Source or Object
+#       form, that is based on (or derived from) the Work and for which the
+#       editorial revisions, annotations, elaborations, or other modifications
+#       represent, as a whole, an original work of authorship. For the purposes
+#       of this License, Derivative Works shall not include works that remain
+#       separable from, or merely link (or bind by name) to the interfaces of,
+#       the Work and Derivative Works thereof.
+# 
+#       "Contribution" shall mean any work of authorship, including
+#       the original version of the Work and any modifications or additions
+#       to that Work or Derivative Works thereof, that is intentionally
+#       submitted to Licensor for inclusion in the Work by the copyright owner
+#       or by an individual or Legal Entity authorized to submit on behalf of
+#       the copyright owner. For the purposes of this definition, "submitted"
+#       means any form of electronic, verbal, or written communication sent
+#       to the Licensor or its representatives, including but not limited to
+#       communication on electronic mailing lists, source code control systems,
+#       and issue tracking systems that are managed by, or on behalf of, the
+#       Licensor for the purpose of discussing and improving the Work, but
+#       excluding communication that is conspicuously marked or otherwise
+#       designated in writing by the copyright owner as "Not a Contribution."
+# 
+#       "Contributor" shall mean Licensor and any individual or Legal Entity
+#       on behalf of whom a Contribution has been received by Licensor and
+#       subsequently incorporated within the Work.
+# 
+#    2. Grant of Copyright License. Subject to the terms and conditions of
+#       this License, each Contributor hereby grants to You a perpetual,
+#       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+#       copyright license to reproduce, prepare Derivative Works of,
+#       publicly display, publicly perform, sublicense, and distribute the
+#       Work and such Derivative Works in Source or Object form.
+# 
+#    3. Grant of Patent License. Subject to the terms and conditions of
+#       this License, each Contributor hereby grants to You a perpetual,
+#       worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+#       (except as stated in this section) patent license to make, have made,
+#       use, offer to sell, sell, import, and otherwise transfer the Work,
+#       where such license applies only to those patent claims licensable
+#       by such Contributor that are necessarily infringed by their
+#       Contribution(s) alone or by combination of their Contribution(s)
+#       with the Work to which such Contribution(s) was submitted. If You
+#       institute patent litigation against any entity (including a
+#       cross-claim or counterclaim in a lawsuit) alleging that the Work
+#       or a Contribution incorporated within the Work constitutes direct
+#       or contributory patent infringement, then any patent licenses
+#       granted to You under this License for that Work shall terminate
+#       as of the date such litigation is filed.
+# 
+#    4. Redistribution. You may reproduce and distribute copies of the
+#       Work or Derivative Works thereof in any medium, with or without
+#       modifications, and in Source or Object form, provided that You
+#       meet the following conditions:
+# 
+#       (a) You must give any other recipients of the Work or
+#           Derivative Works a copy of this License; and
+# 
+#       (b) You must cause any modified files to carry prominent notices
+#           stating that You changed the files; and
+# 
+#       (c) You must retain, in the Source form of any Derivative Works
+#           that You distribute, all copyright, patent, trademark, and
+#           attribution notices from the Source form of the Work,
+#           excluding those notices that do not pertain to any part of
+#           the Derivative Works; and
+# 
+#       (d) If the Work includes a "NOTICE" text file as part of its
+#           distribution, then any Derivative Works that You distribute must
+#           include a readable copy of the attribution notices contained
+#           within such NOTICE file, excluding those notices that do not
+#           pertain to any part of the Derivative Works, in at least one
+#           of the following places: within a NOTICE text file distributed
+#           as part of the Derivative Works; within the Source form or
+#           documentation, if provided along with the Derivative Works; or,
+#           within a display generated by the Derivative Works, if and
+#           wherever such third-party notices normally appear. The contents
+#           of the NOTICE file are for informational purposes only and
+#           do not modify the License. You may add Your own attribution
+#           notices within Derivative Works that You distribute, alongside
+#           or as an addendum to the NOTICE text from the Work, provided
+#           that such additional attribution notices cannot be construed
+#           as modifying the License.
+# 
+#       You may add Your own copyright statement to Your modifications and
+#       may provide additional or different license terms and conditions
+#       for use, reproduction, or distribution of Your modifications, or
+#       for any such Derivative Works as a whole, provided Your use,
+#       reproduction, and distribution of the Work otherwise complies with
+#       the conditions stated in this License.
+# 
+#    5. Submission of Contributions. Unless You explicitly state otherwise,
+#       any Contribution intentionally submitted for inclusion in the Work
+#       by You to the Licensor shall be under the terms and conditions of
+#       this License, without any additional terms or conditions.
+#       Notwithstanding the above, nothing herein shall supersede or modify
+#       the terms of any separate license agreement you may have executed
+#       with Licensor regarding such Contributions.
+# 
+#    6. Trademarks. This License does not grant permission to use the trade
+#       names, trademarks, service marks, or product names of the Licensor,
+#       except as required for reasonable and customary use in describing the
+#       origin of the Work and reproducing the content of the NOTICE file.
+# 
+#    7. Disclaimer of Warranty. Unless required by applicable law or
+#       agreed to in writing, Licensor provides the Work (and each
+#       Contributor provides its Contributions) on an "AS IS" BASIS,
+#       WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+#       implied, including, without limitation, any warranties or conditions
+#       of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+#       PARTICULAR PURPOSE. You are solely responsible for determining the
+#       appropriateness of using or redistributing the Work and assume any
+#       risks associated with Your exercise of permissions under this License.
+# 
+#    8. Limitation of Liability. In no event and under no legal theory,
+#       whether in tort (including negligence), contract, or otherwise,
+#       unless required by applicable law (such as deliberate and grossly
+#       negligent acts) or agreed to in writing, shall any Contributor be
+#       liable to You for damages, including any direct, indirect, special,
+#       incidental, or consequential damages of any character arising as a
+#       result of this License or out of the use or inability to use the
+#       Work (including but not limited to damages for loss of goodwill,
+#       work stoppage, computer failure or malfunction, or any and all
+#       other commercial damages or losses), even if such Contributor
+#       has been advised of the possibility of such damages.
+# 
+#    9. Accepting Warranty or Additional Liability. While redistributing
+#       the Work or Derivative Works thereof, You may choose to offer,
+#       and charge a fee for, acceptance of support, warranty, indemnity,
+#       or other liability obligations and/or rights consistent with this
+#       License. However, in accepting such obligations, You may act only
+#       on Your own behalf and on Your sole responsibility, not on behalf
+#       of any other Contributor, and only if You agree to indemnify,
+#       defend, and hold each Contributor harmless for any liability
+#       incurred by, or claims asserted against, such Contributor by reason
+#       of your accepting any such warranty or additional liability.
+# 
+#    END OF TERMS AND CONDITIONS
+# 
+#    APPENDIX: How to apply the Apache License to your work.
+# 
+#       To apply the Apache License to your work, attach the following
+#       boilerplate notice, with the fields enclosed by brackets "[]"
+#       replaced with your own identifying information. (Don't include
+#       the brackets!)  The text should be enclosed in the appropriate
+#       comment syntax for the file format. We also recommend that a
+#       file or class name and description of purpose be included on the
+#       same "printed page" as the copyright notice for easier
+#       identification within third-party archives.
+# 
+#    Copyright [yyyy] [name of copyright owner]
+# 
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+# 
+#        http://www.apache.org/licenses/LICENSE-2.0
+# 
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
 name: 3D-Techniktest (keine APK)
 
 on:
@@ -14,11 +218,11 @@ jobs:
       - name: Python einrichten
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Prüfwerkzeuge installieren
         run: |
           python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
-          python -m pip install numpy==2.2.6 onnx==1.18.0 onnxruntime==1.22.0
+          python -m pip install numpy==2.2.6 onnx==1.18.0 onnxruntime==1.31.0
       - name: Modelle und Decoder mit künstlichen Eingaben prüfen
         run: |
           python - <<'PY'
@@ -33,10 +237,72 @@ jobs:
           import urllib.request
           import zipfile
           
+          # Experimental source-backed decoder adapter for the official MHR v1.0.1 checkpoint.
+          # Adapted from Meta MHR tensor definitions (Apache-2.0); not an accuracy claim.
+          import torch
+          
+          
+          def qmul(a,b):
+           av,aw=a[...,:3],a[...,3:];bv,bw=b[...,:3],b[...,3:]
+           return torch.cat((aw*bv+bw*av+torch.cross(av,bv,dim=-1),aw*bw-(av*bv).sum(-1,keepdim=True)),-1)
+          
+          
+          def qrotate(q,v):
+           q=q/torch.linalg.vector_norm(q,dim=-1,keepdim=True).clamp_min(1e-12)
+           xyz=q[...,:3];uv=torch.cross(xyz,v,dim=-1)
+           return v+2*(q[...,3:]*uv+torch.cross(xyz,uv,dim=-1))
+          
+          
+          def compose(a,b):
+           q=qmul(a[...,3:7],b[...,3:7]);q=q/torch.linalg.vector_norm(q,dim=-1,keepdim=True).clamp_min(1e-12)
+           return torch.cat((a[...,:3]+a[...,7:]*qrotate(a[...,3:7],b[...,:3]),q,a[...,7:]*b[...,7:]),-1)
+          
+          
+          class EagerMHR(torch.nn.Module):
+           def __init__(self,original):
+            super().__init__();c=original.character_torch;s=c.skeleton;l=c.linear_blend_skinning
+            def buf(name,value): self.register_buffer(name,value.detach())
+            buf('base',c.blend_shape.base_shape);buf('identity_dirs',c.blend_shape.shape_vectors)
+            buf('face_dirs',original.face_expressions_model.shape_vectors)
+            buf('parameter_map',c.parameter_transform.parameter_transform)
+            buf('offsets',s.joint_translation_offsets);buf('prerot',s.joint_prerotations)
+            buf('invbind',l.inverse_bind_pose);buf('skinidx',l.skin_indices_flattened.long())
+            buf('vertidx',l.vert_indices_flattened);buf('weights',l.skin_weights_flattened)
+            self.parents=s.joint_parents.tolist()
+            sparse=original.pose_correctives_model.pose_dirs_predictor._modules['0']
+            buf('corrective_a',torch.sparse_coo_tensor(sparse.sparse_indices,sparse.sparse_weight,tuple(sparse.sparse_shape)).to_dense())
+            buf('corrective_b',original.pose_correctives_model.pose_dirs_predictor._modules['2'].weight)
+           def forward(self,identity,pose,expression):
+            rest=self.base+torch.einsum('nvd,bn->bvd',self.identity_dirs,identity)+torch.einsum('nvd,bn->bvd',self.face_dirs,expression)
+            jp=torch.nn.functional.linear(torch.cat((pose,torch.zeros_like(identity)),-1),self.parameter_map).reshape(-1,127,7)
+            angles=jp[...,3:6];cs=torch.cos(angles*.5);sn=torch.sin(angles*.5)
+            cx,cy,cz=cs.unbind(-1);sx,sy,sz=sn.unbind(-1)
+            q=torch.stack((sx*cy*cz-cx*sy*sz,cx*sy*cz+sx*cy*sz,cx*cy*sz-sx*sy*cz,cx*cy*cz+sx*sy*sz),-1)
+            q=qmul(self.prerot.unsqueeze(0).expand_as(q),q)
+            local=torch.cat((jp[...,:3]+self.offsets,q,torch.exp(jp[...,6:7]*0.69314718246459961)),-1).double()
+            states=[]
+            for j,parent in enumerate(self.parents):
+             states.append(local[:,j] if parent<0 else compose(states[parent],local[:,j]))
+            global_state=torch.stack(states,1).float()
+            # Corrective features: first two columns of Rz*Ry*Rx, excluding the two global joints.
+            co=torch.cos(angles[:,2:]);si=torch.sin(angles[:,2:])
+            cx,cy,cz=co.unbind(-1);sx,sy,sz=si.unbind(-1)
+            features=torch.stack((cy*cz-1,cy*sz,-sy,-cx*sz+sx*sy*cz,cx*cz+sx*sy*sz-1,sx*cy),-1).flatten(1)
+            offsets=torch.nn.functional.linear(torch.relu(torch.nn.functional.linear(features,self.corrective_a)),self.corrective_b).reshape(-1,18439,3)
+            rest=rest+offsets
+            transforms=compose(global_state,self.invbind.unsqueeze(0).expand_as(global_state))
+            influence=transforms.index_select(1,self.skinidx)
+            points=rest.index_select(1,self.vertidx)
+            moved=influence[...,:3]+influence[...,7:]*qrotate(influence[...,3:7],points)
+            weighted=moved*self.weights[None,:,None]
+            indices=self.vertidx[None,:,None].expand_as(weighted)
+            return torch.zeros_like(rest).scatter_add(1,indices,weighted)
+          
+          
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 2, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 3, 'stages': []}
           
           def download(url, target, max_bytes):
               request = urllib.request.Request(url, headers={'User-Agent': 'PlayboyArchiv-3D-Preflight/1.0'})
@@ -153,7 +419,10 @@ jobs:
               changed[0][0, 0] = .5
               pose_changed = tuple(t.clone() for t in neutral)
               pose_changed[1][0, 6] = .1
-              cases = (neutral, changed, pose_changed)
+              torch.manual_seed(42)
+              cases = (neutral, changed, pose_changed) + tuple(
+                  (torch.randn(1,45)*.3, torch.randn(1,204)*.04, torch.randn(1,72)*.01)
+                  for _ in range(9))
               reference = []
           
               def check_decoder():
@@ -179,28 +448,19 @@ jobs:
           
               def prepare_export():
                   nonlocal export_model
-                  # Inline module attributes before ONNX shape propagation. Keep numerical optimizations off.
-                  frozen = torch.jit.freeze(decoder, optimize_numerics=False)
-                  schema = str(frozen.forward.schema)
-          
-                  class VerticesOnly(torch.nn.Module):
-                      def __init__(self, core):
-                          super().__init__()
-                          self.core = core
-          
-                      def forward(self, identity, pose, expression):
-                          return self.core(identity, pose, expression)[0]
-          
-                  wrapper = VerticesOnly(frozen).eval()
+                  # Source-backed eager tensor implementation; no nested frozen ScriptModule.
+                  # Pose correctives remain enabled and are checked against the official model.
+                  export_model = EagerMHR(decoder).eval()
+                  errors = []
                   with torch.no_grad():
-                      export_model = torch.jit.trace(wrapper, neutral, strict=True,
-                                                    check_trace=True, check_inputs=[changed, pose_changed])
-                      export_model = torch.jit.freeze(export_model.eval(), optimize_numerics=False)
                       for inputs, expected in zip(cases, reference):
                           got = export_model(*inputs).detach().cpu().numpy()
                           np.testing.assert_allclose(got, expected, rtol=1e-4, atol=1e-3)
-                  return {'original_forward_schema': schema, 'export_forward_schema': str(export_model.forward.schema),
-                          'checked_cases': 3, 'output': 'vertices only', 'numerical_optimizations': False}
+                          errors.append(float(np.max(np.abs(got-expected))))
+                  return {'original_forward_schema': str(decoder.forward.schema),
+                          'checked_cases': len(cases), 'output': 'vertices only',
+                          'max_abs_errors_native_units': errors, 'pose_correctives_enabled': True,
+                          'adapter': 'source-backed EagerMHR; v1.0.1 asset fingerprint checked'}
               stage('Decoder für Export vorbereiten und gegenprüfen', prepare_export)
           
               def export_decoder():
@@ -230,6 +490,10 @@ jobs:
                   got = session.run(['vertices'], {k: v for k, v in feeds.items() if k in input_names})[0]
                   if not np.isfinite(got).all():
                       raise RuntimeError('Regressor-to-decoder chain yields nonfinite vertices')
+                  with torch.no_grad():
+                      expected_chain = decoder(torch.from_numpy(feeds['identity']), torch.from_numpy(feeds['pose']),
+                                               torch.from_numpy(feeds['expression']))[0].numpy()
+                  np.testing.assert_allclose(got, expected_chain, rtol=1e-4, atol=1e-3)
                   return {'checked_cases': len(cases), 'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
                           'tolerance': 'rtol=1e-4, atol=1e-3 in MHR native units; export parity, not body accuracy'}
               stage('Numerische Exportprüfung und Modellkette', parity)
