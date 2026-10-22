@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-22
-Referenz-Commit: `355f8714313ce46c748a1ed5de8696136aa49a94`
+Referenz-Commit: `4fd1e8b9d1aae457171026944571ef6bdbd16137`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,22 +14,44 @@ Referenz-Commit: `355f8714313ce46c748a1ed5de8696136aa49a94`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Vorbereitete Änderung dieser Sitzung — noch nicht gerätetest-bestätigt
+## Aktuelle Übergabe: Messquellen-UI und lokaler 3D-Pilot
 
-Basis: `main` bei `fbe1c5a` (seit Referenz-Commit ausschließlich STATUS.md geändert). Der oben genannte Referenz-Commit bleibt der berücksichtigte veröffentlichte Code-Stand. Die vollständige Ersatzdatei `www/index.html` wurde lokal vorbereitet; sie ist noch nicht hochgeladen. Der stabile Stand unten beschreibt weiterhin die bisherige Android-Version.
+Berücksichtigtes main: `4fd1e8b9d1aae457171026944571ef6bdbd16137`. App-Code: `aec046c1e2317c75a9a06396f0d5bcce9d82cbb1`, www/index.html Git-Blob `981086297535a76e4b9b3f9651cbda841753c2fa`. Danach wurden nur die separaten Diagnose-Workflows ergänzt/geändert. Die weiter unten stehenden stabilen Funktionsbeschreibungen sind historischer Stand vor diesem UI-Umbau.
 
-- Foto- und Videoquellen erhalten je Oberbrust, Unterbrust, Taille und Hüfte eigene Angaben zu beiden sichtbaren Endpunkten, sicherer Messhöhe und neutralem, gestrecktem, gestauchtem, seitlich gebeugtem, verdrehtem oder belastetem Linienzustand.
-- Globale Aufrecht-Sperre und Brust-Sperre für Rückansichten entfallen. Sitzen ist zusätzlich als Haltung auswählbar. Die Ansicht muss zur gewählten Breiten-, Tiefen- oder Schrägrolle passen; die konkrete Linie wird manuell bestätigt.
-- Neutrale, bestätigte Breiten-/Tiefenlinien zählen als direkt. Beeinflusste Linien und Schrägquellen werden als korrigierbar mit erforderlichem Quercheck ausgewiesen; es gibt keine geschätzten Korrekturprozente.
-- Bestehende Rollen bleiben gespeichert und erscheinen ohne neue Linienbestätigung als offen. Sie werden nicht automatisch zu bestätigten direkten Messlinien. Beim erneuten Speichern einer bisherigen Breiten-/Tiefen-/Schrägrolle müssen ihre Linienangaben ergänzt oder die Rolle bewusst geändert werden; gegebenenfalls unter „Alle“ nachsehen.
-- Die Video-Vorauswahl prüft plausible Rumpfgeometrie und Bildränder, bevorzugt nicht mehr das unzuverlässige Ganzkörperflag und reduziert zeitlich nahe, geometrisch ähnliche Frames. Pro 18-Sekunden-Nachbarschaft bleiben höchstens zwei Kandidaten und insgesamt höchstens acht neue Vorschläge. Bereits gespeicherte Beurteilungen bleiben zusätzlich erreichbar und erhalten; sie zählen nicht zum Vorschlagslimit.
-- Die geometrische Vorsortierung erkennt weder Kleidung noch tatsächliche sichtbare Konturendpunkte. Stark fehlerhafte Posepunkte können weiterhin durchkommen; Tahlia 4:19 und 6:18 müssen am Gerät überprüft werden. Die neue Anzeige behauptet aus dem bisherigen Ganzkörperflag keine sichere Ganzkörperansicht mehr.
-- Prüfung: JavaScript-Syntaxprüfung, Diff-Prüfung und zehn gezielte Funktionsprüfungen zu Rollen, Rückansicht, Haltungseinfluss, fehlenden Bestätigungen, Ausschnitten, Redundanz und gespeicherten Videoframes bestanden. Browser-/Layoutprüfung konnte mangels installierter Chromium-Binärdatei nicht ausgeführt werden. Android-Build und Gerätetest stehen aus.
-- Keine Schemaänderung, Massenmigration, Zentimeterwerte oder automatische Profiländerung.
+### Bestätigter Verlauf
 
-Nächster Schritt: Beide Ersatzdateien hochladen; danach `main` erneut prüfen und APK ausschließlich als Update installieren. Im Shooting Tahlia Paris Nr. 1 unter „Messquellen“ zunächst wenige bestehende Fotoquellen erneut beurteilen und speichern. Erfolg: Rückansicht beziehungsweise Sitzen/Knien sperren nicht pauschal; fehlende Endpunkte/Messhöhe verhindern eine Messlinie; belastete/verdrehte Linien bleiben als Quercheck offen; die Beurteilungen bleiben nach erneutem Öffnen erhalten. Anschließend Videoauswahl auf weniger ähnliche Frames und problematische Ausschnitte prüfen, insbesondere 4:19 und 6:18. Erst nach diesem Gerätetest die dimensionslose Shooting-Signatur entwickeln.
+- Speichern nur tatsächlich bearbeiteter Foto-/Videokarten und geänderter Messlinien; unberührte ältere Rollen anderer Fotos erzwingen keine Nachbearbeitung. Gespeicherte Felder auberginefarben, ungespeicherte Änderungen ockerfarben, offene Felder unmarkiert. Detailfelder nur bei Messrollen sichtbar; „Messstelle am Körper“ ersetzt im Formular „Messhöhe“.
+- Uploadverzögerung beziehungsweise ältere Builds verursachten zwischenzeitlich Verwirrung. Richtige Index-Datei ist im Repository angekommen; Benutzer bestätigt inzwischen, dass die neue Version funktioniert. Ein vollständiger gesonderter Wiederöffnungs-/Persistenztest wurde nicht ausdrücklich dokumentiert.
+- Der Benutzer pausiert weitere mühsame Einzelbewertung und beauftragt einen gemeinsamen messorientierten 3D-Ansatz je Körperstand.
+- Tahlia Paris: Shootings 1, 2 und 6 bilden die vom Benutzer vorgegebene frühere Ausgangsgruppe. Alle übrigen sollen wahrscheinlich zur späteren Gruppe gehören; diese bleibt vorläufig. Nummern sind keine Chronologie; keine unbekannten Archiv-IDs erraten oder Gruppen automatisch in vorhandene Daten schreiben.
+- Verbindliche Zielplattform: ausschließlich Samsung Galaxy S25 Ultra SM-S938B/DS; kein PC beim Benutzer. Lokale Verarbeitung auf Android, kein Cloud-Upload von Archivfotos freigegeben.
+- MeshPose nur statisch untersucht; erforderliche Gewichte laut Projekt erst nach Zugriffsanfrage. Keine Anfrage gesendet. Nicht als fertige Android-Lösung darstellen.
+- Konkreter aktueller Kandidat: veröffentlichter InstantHMR-ONNX-Regressor plus vollständiges MHR-Körpermodell. Mobile Ausführung und Maßgenauigkeit bleiben ungeprüft.
 
-## Aktueller stabiler Code-Stand
+### Zwei ausgewertete GitHub-Prüfläufe
+
+1. Lauf 39859798994 (#1), Commit bc9a8f581ee2543f83d18bef58700ad91bccc9d0: Downloads, Bildmodell auf CPU und vollständiger MHR-Decoder bestanden. Körpernetz: 18439 Punkte. Direkter ONNX-Export scheitert an interner Parameterzählung von PyTorch.
+2. Lauf 39860927270 (#2), Commit 4fd1e8b9d1aae457171026944571ef6bdbd16137: gleiche Vorstufen bestanden; die neue Exporthülle scheitert am typisierten gefrorenen Untermodul. Diese zweite Hülle war eine fehlerhafte Anpassung des Assistenten.
+
+Keine dieser Fehler ist ein Nachweis einer ungeeigneten Handyhardware. Alle Eingaben waren künstlich; keine Archivbilder wurden verwendet.
+
+### Revision 3: tatsächlich lokal mit Modellen getestet
+
+Vollständige Ersatzdatei: `.github/workflows/body-3d-preflight.yml` aus techniktest-3d-geprueft. Basis ist der aktuelle Workflow auf main, keine App-Datei wird geändert.
+
+- Statt geschachtelter gefrorener ScriptModules verwendet die Revision eine quellcodebasierte Tensor-Nachbildung der offiziellen MHR-v1.0.1-Berechnung. Form, Gesichtsausdruck, vollständige Gelenkhierarchie, Skinning und Posekorrekturen bleiben enthalten. Sparse-Korrekturmatrix wird einmalig in eine äquivalente dichte Matrix umgesetzt.
+- Tatsächlich lokal ausgeführt: beide öffentlichen Downloads mit verifizierten SHA-256, synthetische InstantHMR-Inferenz, Original-MHR-Ausführung, Nachbildung gegen Original in zwölf Testfällen, ONNX-Export, ONNX-Graphprüfung, ONNX-Runtime-Ausführung und zwölf numerische Vergleiche sowie Bildmodell→Decoder gegen Original.
+- Alle Stufen dieser lokalen Gesamtausführung bestanden. ONNX-Datei: 703789981 Bytes (rund 704 MB dezimal). Dies ist eine relevante noch offene Speicherhürde für Android.
+- Maximale absolute Abweichung exportierter Vertices in den zwölf Vergleichsfällen rund 0,0000611 in den MHR-Zentimetereinheiten. Das ist ausschließlich Rechen-/Exportparität mit dem Originalmodell, ausdrücklich keine Genauigkeitsangabe für reale Körpermaße.
+- Python-Prüfung mit Python 3.12.14, Torch 2.7.1+cpu, NumPy 2.2.6, ONNX 1.18.0 und ONNX Runtime 1.31.0. Python 3.12 und diese Paketversionen sind auch im Workflow festgelegt. Alte ORT-Versionen brachen in der eingeschränkten lokalen CPU-Erkennung ab; ORT 1.31.0 lief. Das ist kein S25-Benchmark.
+- YAML und eingebetteter Python-Code geprüft. Nur manueller Trigger, Repository-Berechtigung contents:read, kein Checkout, keine Archivfotos/Signiersecrets. Nur JSON-/Textbericht als Artifact, keine Modellgewichte. Vollständiger Apache-2.0-Hinweis zum MHR-Adapter ist im Workflow enthalten. InstantHMR-Gewichte behalten ihre separaten Bedingungen.
+- Revision 3 wurde noch nicht im Benutzer-Repository gestartet. Dort liegt noch Revision 2. Keine neue Test-APK erstellt; Android-/GPU-/NPU-Ausführung, Wärme, Arbeitsspeicher, echte Bilder, gemeinsame Mehrbild-Form und Umfangsschätzungen sind weiterhin offen. Keine Profiländerung, kein Schema-Bump.
+
+### Historischer nächster Schritt (durch aktuelle Übergabe oben ersetzt)
+
+Benutzer ersetzt die Workflowdatei in `.github/workflows`; danach main erneut prüfen und einen neuen „Run workflow“ auf main auslösen, nicht einen alten Lauf wiederholen. Wenn Revision 3 auch dort besteht, die Modellgröße reduzieren beziehungsweise einen Android-tauglichen Decoderpfad und eine begrenzte Einfoto-Diagnose vorbereiten. Vor jedem Gerätetest Ziel, sichtbare Stelle und Erfolgskriterium erklären. Keine Maße ausgeben, bevor der Oberflächen- und Mehrbildtest überzeugt. Benutzer braucht weder PC noch weitere Feld-für-Feld-Eingabe.
+
+## Historischer gerätetest-bestätigter Stand vor Messlinien-Umbau
 
 - App-Paket: `de.playboy.archiv`
 - Schema: `6`
@@ -485,3 +507,4 @@ Der folgende Arbeitsblock ist mit der oben beschriebenen Ersatzdatei vorbereitet
 Anschließend wird Tahlia Paris Shooting Nr. 1 mit wenigen bewusst bestätigten Foto- und Videoquellen ergänzt. Haltungseinflüsse werden über neutrale und beeinflusste Fotos beziehungsweise benachbarte Videoframes desselben Körperstands quergeprüft; es werden keine pauschalen Korrekturprozente angenommen. Aus den bestätigten Quellen entsteht zunächst ausschließlich eine dimensionslose Shooting-Signatur, noch keine Zentimeterwerte.
 
 Danach werden weitere Tahlia-Shootings einzeln analysiert und ihre Shooting-Signaturen paarweise als `wahrscheinlich gleicher Körperstand`, `wahrscheinlich unterschiedlicher Körperstand` oder `unklar` vorsortiert. Der Benutzer bestätigt `zusammenführen`, `getrennt halten` oder `vorläufig unklar`. Erst innerhalb bestätigter Körperstände folgt die Kalibrierung über Tahlia Paris' bekannte Körpergröße 5′4″ beziehungsweise intern 162,6 cm, anschließend die Plausibilitätsprüfung vorhandener Maße. Korrekturen werden nur vorgeschlagen, wenn sie auf belastbarer Grundlage plausibler erscheinen; bis dahin keine sichtbare Zentimeter- oder Cupschätzung und keine automatische Profiländerung.
+
