@@ -36,7 +36,7 @@ jobs:
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 2, 'stages': []}
           
           def download(url, target, max_bytes):
               request = urllib.request.Request(url, headers={'User-Agent': 'PlayboyArchiv-3D-Preflight/1.0'})
@@ -54,6 +54,12 @@ jobs:
                       digest.update(chunk)
               if not count:
                   raise RuntimeError('Empty download')
+              expected = {
+                  'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
+                  'mhr-assets.zip': 'e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94',
+              }.get(target.name)
+              if expected and digest.hexdigest() != expected:
+                  raise RuntimeError('Download checksum differs from verified first run')
               return {'url': url, 'bytes': count, 'sha256': digest.hexdigest()}
           
           def flush():
@@ -74,9 +80,11 @@ jobs:
               try:
                   row['details'] = fn()
                   row['status'] = 'passed'
+                  print(json.dumps(row, ensure_ascii=False), flush=True)
               except Exception as error:
                   row['status'] = 'failed'
                   row['error'] = str(error)
+                  print(json.dumps(row, ensure_ascii=False), flush=True)
                   row['traceback'] = traceback.format_exc()
                   raise
               finally:
@@ -143,13 +151,16 @@ jobs:
               neutral = (torch.zeros(1, 45), torch.zeros(1, 204), torch.zeros(1, 72))
               changed = tuple(t.clone() for t in neutral)
               changed[0][0, 0] = .5
+              pose_changed = tuple(t.clone() for t in neutral)
+              pose_changed[1][0, 6] = .1
+              cases = (neutral, changed, pose_changed)
               reference = []
           
               def check_decoder():
                   nonlocal decoder
                   decoder = torch.jit.load(str(decoder_path), map_location='cpu').eval()
                   with torch.inference_mode():
-                      for inputs in (neutral, changed):
+                      for inputs in cases:
                           result = decoder(*inputs)
                           vertices = result[0].detach().cpu().numpy()
                           if vertices.ndim != 3 or vertices.shape[0] != 1 or vertices.shape[-1] != 3 or vertices.shape[1] < 500:
@@ -164,11 +175,40 @@ jobs:
               stage('Vollständiger Decoder CPU', check_decoder)
               target = ROOT / 'mhr_decoder.onnx'
           
+              export_model = None
+          
+              def prepare_export():
+                  nonlocal export_model
+                  # Inline module attributes before ONNX shape propagation. Keep numerical optimizations off.
+                  frozen = torch.jit.freeze(decoder, optimize_numerics=False)
+                  schema = str(frozen.forward.schema)
+          
+                  class VerticesOnly(torch.nn.Module):
+                      def __init__(self, core):
+                          super().__init__()
+                          self.core = core
+          
+                      def forward(self, identity, pose, expression):
+                          return self.core(identity, pose, expression)[0]
+          
+                  wrapper = VerticesOnly(frozen).eval()
+                  with torch.no_grad():
+                      export_model = torch.jit.trace(wrapper, neutral, strict=True,
+                                                    check_trace=True, check_inputs=[changed, pose_changed])
+                      export_model = torch.jit.freeze(export_model.eval(), optimize_numerics=False)
+                      for inputs, expected in zip(cases, reference):
+                          got = export_model(*inputs).detach().cpu().numpy()
+                          np.testing.assert_allclose(got, expected, rtol=1e-4, atol=1e-3)
+                  return {'original_forward_schema': schema, 'export_forward_schema': str(export_model.forward.schema),
+                          'checked_cases': 3, 'output': 'vertices only', 'numerical_optimizations': False}
+              stage('Decoder für Export vorbereiten und gegenprüfen', prepare_export)
+          
               def export_decoder():
-                  # Fixed batch 1; this is a portability probe, not a certified Android model.
-                  torch.onnx.export(decoder, neutral, str(target), opset_version=17, dynamo=False,
-                                    input_names=['identity', 'pose', 'expression'],
-                                    output_names=['vertices', 'skeleton'], do_constant_folding=True)
+                  # Fixed batch 1; neither a mobile benchmark nor an accuracy claim.
+                  with torch.no_grad():
+                      torch.onnx.export(export_model, neutral, str(target), opset_version=17, dynamo=False,
+                                        input_names=['identity', 'pose', 'expression'],
+                                        output_names=['vertices'], do_constant_folding=True)
                   onnx.checker.check_model(str(target))
                   return {'bytes': target.stat().st_size, 'batch': 1, 'opset': 17}
               stage('Decoder ONNX-Export', export_decoder)
@@ -177,7 +217,7 @@ jobs:
                   session = ort.InferenceSession(str(target), sess_options=options, providers=['CPUExecutionProvider'])
                   input_names = {item.name for item in session.get_inputs()}
                   errors = []
-                  for inputs, expected in zip((neutral, changed), reference):
+                  for inputs, expected in zip(cases, reference):
                       feeds = {name: value.numpy() for name, value in zip(['identity', 'pose', 'expression'], inputs)
                                if name in input_names}
                       got = session.run(['vertices'], feeds)[0]
@@ -190,7 +230,7 @@ jobs:
                   got = session.run(['vertices'], {k: v for k, v in feeds.items() if k in input_names})[0]
                   if not np.isfinite(got).all():
                       raise RuntimeError('Regressor-to-decoder chain yields nonfinite vertices')
-                  return {'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
+                  return {'checked_cases': len(cases), 'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
                           'tolerance': 'rtol=1e-4, atol=1e-3 in MHR native units; export parity, not body accuracy'}
               stage('Numerische Exportprüfung und Modellkette', parity)
           
@@ -224,3 +264,4 @@ jobs:
             model-preflight/report.md
           if-no-files-found: warn
           retention-days: 7
+
