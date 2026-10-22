@@ -1,0 +1,226 @@
+name: 3D-Techniktest (keine APK)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  model-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prüfwerkzeuge installieren
+        run: |
+          python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install numpy==2.2.6 onnx==1.18.0 onnxruntime==1.22.0
+      - name: Modelle und Decoder mit künstlichen Eingaben prüfen
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import platform
+          import shutil
+          import time
+          import traceback
+          import urllib.request
+          import zipfile
+          
+          ROOT = Path('model-preflight')
+          ROOT.mkdir(exist_ok=True)
+          REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'stages': []}
+          
+          def download(url, target, max_bytes):
+              request = urllib.request.Request(url, headers={'User-Agent': 'PlayboyArchiv-3D-Preflight/1.0'})
+              count = 0
+              digest = hashlib.sha256()
+              with urllib.request.urlopen(request, timeout=60) as response, target.open('wb') as output:
+                  while True:
+                      chunk = response.read(1024 * 1024)
+                      if not chunk:
+                          break
+                      count += len(chunk)
+                      if count > max_bytes:
+                          raise RuntimeError('Download exceeds diagnostic size limit')
+                      output.write(chunk)
+                      digest.update(chunk)
+              if not count:
+                  raise RuntimeError('Empty download')
+              return {'url': url, 'bytes': count, 'sha256': digest.hexdigest()}
+          
+          def flush():
+              (ROOT / 'report.json').write_text(json.dumps(REPORT, indent=2), encoding='utf-8')
+              lines = ['# 3D-Techniktest', '', 'Nur künstliche Eingaben. Keine Archivfotos, keine Körpermaße.', '',
+                       '| Stufe | Ergebnis |', '|---|---|']
+              for row in REPORT['stages']:
+                  lines.append('| ' + row['name'] + ' | ' + row['status'] + ' |')
+              lines += ['', '**Android auf dem S25: nicht getestet. Maßgenauigkeit: nicht getestet.**', '',
+                        'Details und Fehler stehen in report.json. Ein grüner Lauf belegt nur diese CPU-/Exportprüfungen.']
+              (ROOT / 'report.md').write_text('\n'.join(lines), encoding='utf-8')
+          
+          
+          def stage(name, fn):
+              row = {'name': name, 'status': 'running'}
+              REPORT['stages'].append(row)
+              flush()
+              try:
+                  row['details'] = fn()
+                  row['status'] = 'passed'
+              except Exception as error:
+                  row['status'] = 'failed'
+                  row['error'] = str(error)
+                  row['traceback'] = traceback.format_exc()
+                  raise
+              finally:
+                  flush()
+          
+          
+          def main():
+              import numpy as np
+              import onnx
+              import onnxruntime as ort
+              import torch
+              torch.set_num_threads(2)
+              REPORT['environment'] = {'python': platform.python_version(), 'torch': torch.__version__,
+                                       'onnx': onnx.__version__, 'onnxruntime': ort.__version__}
+              flush()
+              revision = '3504446fc31e7f76fdb1cd7e463189e7cf0fdd0f'
+              regressor_path = ROOT / 'instanthmr.onnx'
+              stage('Download Bildmodell', lambda: download(
+                  f'https://huggingface.co/momolesang/InstantHMR/resolve/{revision}/instanthmr.onnx',
+                  regressor_path, 512 * 1024**2))
+              options = ort.SessionOptions()
+              options.intra_op_num_threads = 2
+              regressor = None
+              predictions = None
+          
+              def check_regressor():
+                  nonlocal regressor, predictions
+                  regressor = ort.InferenceSession(str(regressor_path), sess_options=options,
+                                                  providers=['CPUExecutionProvider'])
+                  inputs = {item.name: item for item in regressor.get_inputs()}
+                  if set(inputs) != {'image', 'cliff_cond'}:
+                      raise RuntimeError(f'Unexpected inputs: {list(inputs)}')
+                  feeds = {'image': np.zeros((1, 3, 224, 224), np.float32),
+                           'cliff_cond': np.array([[0., 0., .8]], np.float32)}
+                  begin = time.perf_counter()
+                  outputs = regressor.run(None, feeds)
+                  elapsed = time.perf_counter() - begin
+                  predictions = dict(zip([item.name for item in regressor.get_outputs()], outputs))
+                  for name, shape in {'mhr_params': (1, 204), 'shape_params': (1, 45)}.items():
+                      if name not in predictions or predictions[name].shape != shape or not np.isfinite(predictions[name]).all():
+                          raise RuntimeError(f'Invalid or missing output {name}')
+                  return {'outputs': {k: list(v.shape) for k, v in predictions.items()},
+                          'first_call_cpu_seconds': elapsed, 'input': 'synthetic zero tensor; not an accuracy test'}
+              stage('Bildmodell CPU und Schnittstelle', check_regressor)
+              archive = ROOT / 'mhr-assets.zip'
+              stage('Download Körpermodell', lambda: download(
+                  'https://github.com/facebookresearch/MHR/releases/download/v1.0.1/assets.zip',
+                  archive, 4 * 1024**3))
+              decoder_path = ROOT / 'mhr_model.pt'
+          
+              def extract_decoder():
+                  with zipfile.ZipFile(archive) as bundle:
+                      info = bundle.getinfo('assets/mhr_model.pt')
+                      if info.file_size > 2 * 1024**3:
+                          raise RuntimeError('Decoder exceeds diagnostic size limit')
+                      with bundle.open(info) as source, decoder_path.open('wb') as target:
+                          shutil.copyfileobj(source, target)
+                      licenses = [name for name in bundle.namelist() if Path(name).name.upper().startswith('LICENSE')]
+                      return {'member': info.filename, 'bytes': info.file_size, 'license_members': licenses,
+                              'sha256': hashlib.file_digest(decoder_path.open('rb'), 'sha256').hexdigest()}
+              stage('Decoder aus offizieller Veröffentlichung', extract_decoder)
+              archive.unlink()
+              decoder = None
+              neutral = (torch.zeros(1, 45), torch.zeros(1, 204), torch.zeros(1, 72))
+              changed = tuple(t.clone() for t in neutral)
+              changed[0][0, 0] = .5
+              reference = []
+          
+              def check_decoder():
+                  nonlocal decoder
+                  decoder = torch.jit.load(str(decoder_path), map_location='cpu').eval()
+                  with torch.inference_mode():
+                      for inputs in (neutral, changed):
+                          result = decoder(*inputs)
+                          vertices = result[0].detach().cpu().numpy()
+                          if vertices.ndim != 3 or vertices.shape[0] != 1 or vertices.shape[-1] != 3 or vertices.shape[1] < 500:
+                              raise RuntimeError(f'Invalid mesh dimensions {vertices.shape}')
+                          if not np.isfinite(vertices).all():
+                              raise RuntimeError('Nonfinite mesh vertices')
+                          reference.append(vertices)
+                  delta = float(np.max(np.abs(reference[0] - reference[1])))
+                  if delta <= 1e-7:
+                      raise RuntimeError('Shape perturbation has no observable effect')
+                  return {'vertices_shape': list(reference[0].shape), 'shape_perturbation_max_delta_native_units': delta}
+              stage('Vollständiger Decoder CPU', check_decoder)
+              target = ROOT / 'mhr_decoder.onnx'
+          
+              def export_decoder():
+                  # Fixed batch 1; this is a portability probe, not a certified Android model.
+                  torch.onnx.export(decoder, neutral, str(target), opset_version=17, dynamo=False,
+                                    input_names=['identity', 'pose', 'expression'],
+                                    output_names=['vertices', 'skeleton'], do_constant_folding=True)
+                  onnx.checker.check_model(str(target))
+                  return {'bytes': target.stat().st_size, 'batch': 1, 'opset': 17}
+              stage('Decoder ONNX-Export', export_decoder)
+          
+              def parity():
+                  session = ort.InferenceSession(str(target), sess_options=options, providers=['CPUExecutionProvider'])
+                  input_names = {item.name for item in session.get_inputs()}
+                  errors = []
+                  for inputs, expected in zip((neutral, changed), reference):
+                      feeds = {name: value.numpy() for name, value in zip(['identity', 'pose', 'expression'], inputs)
+                               if name in input_names}
+                      got = session.run(['vertices'], feeds)[0]
+                      np.testing.assert_allclose(got, expected, rtol=1e-4, atol=1e-3)
+                      errors.append(float(np.max(np.abs(got - expected))))
+                  # Also check that image-regressor outputs can drive the decoder, without assessing anatomy.
+                  feeds = {'identity': predictions['shape_params'].astype(np.float32),
+                           'pose': predictions['mhr_params'].astype(np.float32),
+                           'expression': np.zeros((1, 72), np.float32)}
+                  got = session.run(['vertices'], {k: v for k, v in feeds.items() if k in input_names})[0]
+                  if not np.isfinite(got).all():
+                      raise RuntimeError('Regressor-to-decoder chain yields nonfinite vertices')
+                  return {'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
+                          'tolerance': 'rtol=1e-4, atol=1e-3 in MHR native units; export parity, not body accuracy'}
+              stage('Numerische Exportprüfung und Modellkette', parity)
+          
+          if __name__ == '__main__':
+              try:
+                  main()
+              except Exception as error:
+                  REPORT['result'] = 'failed'
+                  REPORT['failure'] = str(error)
+                  flush()
+                  raise
+              else:
+                  REPORT['result'] = 'cpu_export_checks_passed_android_not_tested'
+                  flush()
+          PY
+      - name: Ergebnis in Zusammenfassung anzeigen
+        if: always()
+        run: |
+          if [ -f model-preflight/report.md ]; then
+            cat model-preflight/report.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Prüfung vor Erstellung des Berichts abgebrochen; bitte Schrittprotokoll prüfen.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Nur Diagnosebericht bereitstellen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3D-Techniktest-Bericht-${{ github.run_number }}
+          path: |
+            model-preflight/report.json
+            model-preflight/report.md
+          if-no-files-found: warn
+          retention-days: 7
