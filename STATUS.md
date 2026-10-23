@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-23
-Referenz-Commit: `b9ed375e221c587ac4641ef583949c8eed89fa5b`
+Referenz-Commit: `5d6255dfc08c2cad26283c402642b8681a22e488`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -13,6 +13,36 @@ Referenz-Commit: `b9ed375e221c587ac4641ef583949c8eed89fa5b`
 - Benutzer lädt selbst hoch; danach `main` erneut prüfen.
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
+
+## Neu vorbereitet: lokaler Einfoto-3D-Test (Geräteprüfung noch offen)
+
+Basis: main `5d6255dfc08c2cad26283c402642b8681a22e488`. Änderungen seit b9ed375 geprüft: nur STATUS; bestätigter APK-Code weiterhin Build 569. Die unten beschriebenen Ersatzdateien sind vorbereitet, noch nicht vom Benutzer hochgeladen oder auf dem S25 getestet.
+
+### Umfang und Bedienung
+
+- In der geöffneten Fotoansicht neuer Button **3D-Test**. Genau eine Person möglichst vollständig von Kopf bis Fuß wählen; vorgeschlagenen Personenrahmen prüfen oder mit dem Finger neu aufziehen/Ecken korrigieren. **3D-Modell berechnen** startet die lokale Modellkette.
+- Ergebnis: schattiertes Netz über dem Foto, regelbare Deckkraft, optionale Modell-Bildpunkte und separate drehbare Modellansicht. Keine Fototextur, keine Zentimeter, keine Maßprüfung und keine automatische Profiländerung. Ein einzelnes Bild enthält für verdeckte Bereiche nur Modellannahmen.
+- Vorschlag über vorhandenes lokales analyzePose; falls nicht verfügbar oder unvollständig, manueller Rahmen. JPEG-Arbeitsbild maximal 1280 Pixel lange Kante, aus bereits dekodiertem Foto. Original bleibt unverändert. Rahmen wird mit 1,2-facher langer Seite quadratisch erweitert, schwarz gepolstert und bilinear auf 224 × 224 gebracht. RGB, ImageNet-Normalisierung, Float32 NCHW little endian.
+- Native Methode analyzePhoto validiert Bildtensor und Rahmen, berechnet pixelbasierte CLIFF-Bedingung selbst, führt Bildmodell und anschließend Decoder in getrennten Sitzungen aus. MHR-Netz cm/Y-oben/Z-hinten wird in Meter/Y-unten/Z-vorne konvertiert. Kameratranslation wird für die Überlagerung addiert; keine künstliche Neuzentrierung/Anpassung ans Foto. Separate Drehansicht darf zur Anzeige zentrieren.
+- Projektionsannahme ohne Kamerakalibrierung: Brennweite = Bilddiagonale, Hauptpunkt Bildmitte. Sichtprüfung ausdrücklich erforderlich. Keine Annahme metrischer Körpermaßgenauigkeit.
+- mesh-faces.u16 wird aus den offiziellen Decoder-Netzflächen exportiert: 36.874 Dreiecke, 221.244 Bytes, SHA-256 f2ac1f031a34dc4fd475b5d735904a65c2cd1b76a37c77ff2c44cb77597a5c36. Native Größen-, Hash- und Indexprüfung. Manifest photo_revision=1, diagnostic_revision=3, image_compute=float32; Preflight test_revision=7.
+- Kein Netzwerkpfad für Archivfotos. Ergebnis nur im Arbeitsspeicher, beim Schließen verworfen; Abbruch wird zwischen nativen Verarbeitungsschritten geprüft. Kein Archiv-/Profil-/IndexedDB-Schreibzugriff des Fototests, keine Migration. Bestehender synthetischer Test und Telemetrieabschaltung bleiben erhalten.
+
+### Durchgeführte Prüfungen und Grenzen
+
+- Vollständiger neuer Python-Preflight tatsächlich ausgeführt: verifizierte Modelldownloads, FP32-Konvertierung, offizieller TorchScript-Decoder, 12 Export-Paritätsfälle, ONNX-Export, 12 Laufzeitvergleiche und synthetische Gesamtmodellkette bestanden. Originaltoleranz unverändert atol=0,001 / rtol=0,0001. Asset-Paket samt Netzflächen und Manifest erzeugt.
+- Native Klasse mit ORT 1.31-Klassen, Android-API-Jar und Capacitor-Stubs kompiliert. Reflexionstests: bestehender Diagnosevergleich inklusive NaN und Originaltoleranz; neue CLIFF-Berechnung und Ablehnung ungültiger Rahmen bestanden. Kein vollständiger Android-Gradle-Build lokal.
+- Öffentliches OpenCV-Beispielfoto (messi5.jpg) intern auf CPU durch beide echten Modelle gerechnet: endliche 18.439 Netzpunkte und gültige Kameratranslation. Keine Benutzerfotos verwendet, Beispielbild nicht Bestandteil der Lieferung. Dies prüft die technische Verarbeitung, nicht Körpermaßgenauigkeit.
+- JavaScript: alle vier Inline-Skripte syntaktisch geprüft; Tensorgröße/Kanalnormalisierung, Base64-Little-Endian-Rückweg, Rahmenprüfung, Projektion und Netznormalen mit echtem Modellresultat geprüft.
+- Browser-Rendertest in dieser Umgebung konnte wegen nicht startendem Chromium nicht durchgeführt werden. WebGL-Schattierung, Touch-Rahmen, Overlayausrichtung, Speicher und Geschwindigkeit auf dem S25 sowie APK-Build noch offen; keine Darstellung als bereits auf dem Gerät bestätigt ausgeben.
+
+### Lieferung und nächster Schritt
+
+Vier vollständige Ersatzdateien, genau in dieser Reihenfolge hochladen: `.github/workflows/body-3d-preflight.yml`, `www/index.html`, `STATUS.md`, **zuletzt** `native/Body3DPlugin.java`. Damit enthält der letzte automatisch gestartete APK-Build alle Dateien. ZIP ist absichtlich flach; Dateien einzeln in die genannten bestehenden Ordner hochladen. Keine Modelle, Originalfotos oder APK im ZIP. Aktiver APK-Workflow und MainActivity bleiben unverändert; vorhandener APK-Workflow erzeugt die Modellassets aus dem Preflight-Code.
+
+Nach Upload main prüfen und **konkrete Buildnummer des letzten vollständigen Build Android Debug APK** nennen, nicht raten. APK als Update installieren, niemals deinstallieren. Für Gerätetest ein vollständiges Einzelpersonenfoto öffnen → 3D-Test → Rahmen prüfen → berechnen. Erfolg: Netzüberlagerung und drehbare Modellansicht erscheinen, schließen/neu öffnen möglich. Screenshot erbitten, erst dann Mehrbildabgleich planen. Noch keine Körpermaße ableiten.
+
+Vertrag/Quellen: gepinnte Modellkarte https://huggingface.co/momolesang/InstantHMR/blob/3504446fc31e7f76fdb1cd7e463189e7cf0fdd0f/README.md sowie InstantHMR-Quellstand e125a1e8427739c40439f8d2eb66a924c742a178, Dateien instanthmr/inference.py und instanthmr/mhr_renderer.py (Naturalpad-studio/InstantHMR). Pixel-CLIFF des vorhandenen Checkpoints verwenden, nicht das neuere Winkel-CLIFF. Öffentliches internes Testbild https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/messi5.jpg.
 
 ## Aktueller bestätigter Stand: FP32-Techniktest auf dem S25 bestanden
 
