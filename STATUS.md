@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-23
-Referenz-Commit: `8b79f792899adfd69f635b6554ec2232be229bd8`
+Referenz-Commit: `ca679774ec88ad40fe6af553cf703afaa9bad796`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,59 @@ Referenz-Commit: `8b79f792899adfd69f635b6554ec2232be229bd8`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktuelle Übergabe: Gerätetest Build 563, Diagnose 2 bereitgestellt
+## Aktuelle Übergabe: Bildmodell intern FP16, FP32-Ausführung vorbereitet
+
+Berücksichtigtes main: `ca679774ec88ad40fe6af553cf703afaa9bad796`. Seit Referenz 8b79f79 wurden Preflight, STATUS und native Diagnose hochgeladen und geprüft. **APK-Build 566**, Lauf **39994767028**, war erfolgreich gebaut, auf verpackte Assets/Telemetriesperren geprüft und dauerhaft signiert. Benutzer hat diese APK installiert und Diagnose 2 ausgeführt.
+
+### Gerätetest Build 566 und Eingrenzung
+
+Screenshot: `Decoder/feste Eingaben OK (max. 7.62939e-05)`; Bildparameter Form-Delta **0.0509033**, Pose-Delta **0.0457764**; Gesamtkette **55100/55317** Koordinaten abweichend, max. **1.60893**, erster Punkt 1/Achse 1: **4.70747 statt 5.17596**.
+
+Damit besteht der Decoder den synthetischen Paritätstest auf dem S25, wenn exakt dieselben Eingabewerte verwendet werden. Die Form-/Poseausgabe des Bildmodells unterscheidet sich bereits vor dem Decoder. Das belegt keine Genauigkeit realer Körpermaße. Keine Archivfotos verwendet.
+
+### Tatsächliche Analyse des Bildmodells
+
+- Gepinntes Original-ONNX aus der Build-563-APK untersucht. Trotz Float32-Ein-/Ausgängen rechnet der Graph intern mit Float16: **826 Float16-Initializer**, weitere Float16-Konstanten, Eingabecasts auf Typ 10 und Ausgabecasts zurück auf Float32. Es enthält keine Dropout-/Random-Operatoren.
+- Vier identische hiesige CPU-Inferenzen sind bitgleich. Die vollständigen 45 Form- und 204 Poseparameter stimmen hier außerdem exakt mit den Referenzparametern aus dem tatsächlichen CI-Bericht von Build 566 überein. Der Bildmodellunterschied auf dem S25 ist damit bestätigt; die genaue verantwortliche Kernel-/Rundungsstelle wurde nicht auf dem Gerät instrumentiert.
+- Interne Float16-Ausführung ist eine konkrete, jetzt gezielt adressierte Ursache für plattformabhängige numerische Unterschiede. Nicht pauschal als Handydefekt, Eingabefehler oder unzureichende Hardware darstellen.
+
+### Vorbereitete Änderung, noch nicht hochgeladen
+
+Flaches ZIP **3D-FP32-Test.zip**, drei vollständige Dateien, keine Gewichte enthalten. Reihenfolge:
+
+1. `body-3d-preflight.yml` nach `.github/workflows/` ersetzen (Revision **6**).
+2. `STATUS.md` im Hauptverzeichnis ersetzen.
+3. **`Body3DPlugin.java` zuletzt nach `native/` ersetzen.** Erst die APK dieses letzten Uploads verwenden.
+
+Kein neuer Index und keine Änderung von `android-debug-apk.yml` nötig. Kein zusätzlicher manueller Diagnose-Workflow erforderlich: der APK-Build führt die Vorbereitung selbst aus.
+
+### Technische Änderung
+
+- Originaler Download bleibt gepinnt und SHA-256-verifiziert. Daraus wird in CI `instanthmr-fp32.onnx` erzeugt. Als APK-Asset bleibt der bekannte Name `body3d/instanthmr.onnx` erhalten; verpackt wird ausdrücklich die neue FP32-Datei, nicht der ursprüngliche FP16-Download.
+- Vorhandene Float16-Tensorwerte werden exakt als Float32 gespeichert. Dies stellt keine verlorene Trainingspräzision wieder her, verändert keine Gewichtswerte und trainiert nichts nach. Entscheidend ist die Umstellung der internen Tensor-/Ausführungstypen und Float16-Casts auf Float32.
+- **1020 Tensoren**, **1457 Typdeklarationen**, **18 Cast-Ziele** umgestellt. Initializer, Konstanttensoren, Typdeklarationen und verschachtelte Graphen/Funktionen berücksichtigt. Rekursive abschließende Prüfung verweigert verbleibende Float16-Tensoren, -Typen oder -Casts. ONNX-Graphprüfung bestanden.
+- Neue Bildmodelldatei **161.106.320 Bytes**, vorher **80.961.622 Bytes**. APK und installierter Modellbestand werden größer. Native mmap-Größenobergrenze deshalb gezielt von 120 auf 200 MiB angehoben. S25-Arbeitsspeicher und Laufzeit mit FP32 noch nicht gemessen.
+- `mlas.enable_gemm_fastmath_arm64_bfloat16=0` und `optimization.enable_gelu_approximation=0` im CPU-Test und auf Android ausdrücklich gesetzt; beides entspricht dem dokumentierten Standard der verwendeten Version. Keine NPU-/GPU-/NNAPI-Ausführung ergänzt.
+- Manifest trägt `diagnostic_revision: 3`, `image_compute: float32`. Die bekannten synthetischen CI-Eingabeparameter und die aus dem offiziellen MHR-Decoder erzeugte Netzreferenz werden mit dem neuen FP32-Bildmodell neu bestimmt. Native Seite verweigert alte bzw. nicht als FP32 vorbereitete Metadaten. Ausführliche Fehler beginnen mit **„Prüfung 3“**.
+- MHR-Decoderklasse und Körpermodellgleichungen bleiben identisch. **Keine Aufweitung der Toleranz:** weiterhin atol 0,001 und rtol 0,0001. Isolierter Decoder und Gesamtkette müssen bestehen. Keine stillschweigende Freigabe einer Abweichung.
+- Telemetrie bleibt vor Bibliotheksinitialisierung gesperrt; automatischer Android-Telemetrieprovider bleibt entfernt. Permanente Signierung, APK-/Fingerprintprüfungen, Datenmodell und UI bleiben unverändert. Keine Medien-Uploads, Profiländerungen, Archivschreibzugriffe, Migration oder Schemaänderung. Modelllizenzen bleiben erhalten; FP32-Umstellung im APK-NOTICE dokumentiert.
+
+### Abgeschlossene Prüfungen und Grenzen
+
+- Exakte ausgelieferte Konvertierungsfunktion auf dem tatsächlichen gepinnten Originalmodell ausgeführt. Für jeden umgestellten Tensor Rückkonvertierung gegen die originalen Float16-Werte geprüft; verbleibende halbe Präzision rekursiv ausgeschlossen; ONNX-Checker bestanden. Konverter mit aktuellen und älteren Protobuf-Deskriptor-APIs kompatibel gemacht und erneut getestet.
+- Vollständige lokale FP32-Bildmodell→MHR-ONNX-Kette mit zwei Wiederholungen je Konfiguration ausgeführt: volle Optimierung bei 1/2/4 Threads und ohne Graphoptimierungen bei 2 Threads. Innerhalb jeder Konfiguration bitgleiche Wiederholungen. Alle Netze endlich und korrekt geformt; **alle vier Konfigurationen innerhalb der unveränderten Netzvergleichstoleranz**. Maximaler Unterschied zwischen Konfigurationen: Form 5,96e-7, Pose 1,13249e-6, Netz 7,62939e-5 in nativen Recheneinheiten. Das ist kein S25-Benchmark und keine Körpermaßgenauigkeit.
+- Exakter ausgelieferter Konverter nochmals geprüft; erzeugte ONNX-Datei bytegleich mit dem zuvor tatsächlich ausgeführten FP32-Modell.
+- YAML, Shell, eingebetteter Python-Code, unveränderte Decoderklasse, richtige Auswahl des FP32-Assets bei Verpackung, Manifestversion/-Präzision und native Grenzwert-/Fehlersperren geprüft. Verpackungszweig mit kleinen Dateien getestet, keine fertige neue APK damit behauptet.
+- Native Java-Datei gegen tatsächliche ORT-Android-1.31.0-Klassen und Android-/Capacitor-Stubs typ-/syntaxgeprüft. Vergleichstests auf JVM erneut bestanden: genaue Übereinstimmung, alte Toleranz, Fehlerzählung/erster Punkt, NaN-Abweisung und JSON-Floatkonvertierung.
+- Lokaler neuer vollständiger Torch-/APK-Build nicht ausgeführt (Torch hier nicht verfügbar). Die unveränderten Original-MHR-/Export-Paritätsprüfungen und neue FP32-Vorbereitung laufen im nächsten CI-APK-Build. Gerätetest mit FP32 und die Beseitigung der Android-Abweichung sind daher noch offen. Keine voreilige Erfolgsmeldung.
+
+### Verbindlicher nächster Schritt
+
+Drei Dateien in obiger Reihenfolge hochladen. Danach main und APK-Build des letzten Plugin-Uploads prüfen und dessen genaue Buildnummer nennen. APK ausschließlich als **Update** installieren, niemals deinstallieren. Unter Einstellungen den vorhandenen 3D-Techniktest einmal starten. Erwartet wird die bestehende Bestanden-Meldung; falls nicht, vollständigen Text **„Prüfung 3“** auswerten. Build 566 nicht nochmals testen.
+
+Ziel: Stabilität der FP32-Bildmodellrechnung und unveränderte Decoder-Parität auf S25 prüfen. Noch keine realen Körpermaße und keine weitere manuelle Foto-Feldbewertung. Erst nach bestandenem Rechentest folgt ein einzelnes echtes Foto mit korrektem Ausschnitt und räumlicher Darstellung. Tahlia-Gruppen 1/2/6 vs. übrige vorläufig unverändert.
+
+## Historische Übergabe: Gerätetest Build 563, Diagnose 2 bereitgestellt
 
 Berücksichtigtes main: `8b79f792899adfd69f635b6554ec2232be229bd8`. Seit der bisherigen Referenz d68b4fc wurden www/index.html, Preflight-Workflow, STATUS und aktiver APK-Workflow hochgeladen; Änderungen geprüft. APK-Build **563**, Lauf **39961989033**, war erfolgreich, einschließlich 3D-Assetbereitstellung, Android-Kompilierung, tatsächlicher APK-/Manifestprüfung, permanenter Signatur und Upload. Richtiger APK-Artifact: `Playboy-Archiv-Build-563`; `3D-Preparation-563` ist nur der Prüfbericht.
 
