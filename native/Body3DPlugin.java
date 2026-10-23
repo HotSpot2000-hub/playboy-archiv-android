@@ -101,7 +101,7 @@ public class Body3DPlugin extends Plugin {
                     }
                     // Keep the original tolerance and both comparisons. Never turn a mismatch
                     // into success merely because the isolated decoder comparison passes.
-                    String diagnostic = "Diagnose 2: Decoder/feste Eingaben " + fixed.describe()
+                    String diagnostic = "Prüfung 3: Decoder/feste Eingaben " + fixed.describe()
                         + "; Bildparameter Form-Delta " + number(shapeDelta)
                         + ", Pose-Delta " + number(poseDelta)
                         + "; Gesamtkette " + chain.describe()
@@ -127,7 +127,7 @@ public class Body3DPlugin extends Plugin {
                 } catch (Exception error) {
                     String message = error.getMessage();
                     if (message == null) message = error.getClass().getSimpleName();
-                    if (!message.startsWith("Diagnose 2:")) message = "Diagnose 2 / " + stage + ": " + message;
+                    if (!message.startsWith("Prüfung 3:")) message = "Prüfung 3 / " + stage + ": " + message;
                     call.reject(message.substring(0, Math.min(message.length(), 600)));
                 } finally {
                     busy.set(false);
@@ -151,8 +151,9 @@ public class Body3DPlugin extends Plugin {
             }
         }
         JSONObject manifest = new JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
-        if (manifest.optInt("diagnostic_revision", 0) != 2) {
-            throw new IllegalStateException("Für Diagnose 2 fehlen die neuen Referenzeingaben im APK-Build.");
+        if (manifest.optInt("diagnostic_revision", 0) != 3
+                || !"float32".equals(manifest.optString("image_compute", ""))) {
+            throw new IllegalStateException("Für Prüfung 3 fehlt das neue FP32-Bildmodell im APK-Build.");
         }
         JSONObject inputs = manifest.getJSONObject("synthetic_inputs");
         return new float[][]{readVector(inputs.getJSONArray("identity"), 45), readVector(inputs.getJSONArray("pose"), 204)};
@@ -249,6 +250,8 @@ public class Body3DPlugin extends Plugin {
     private OrtSession.SessionOptions options() throws Exception {
         OrtSession.SessionOptions options = new OrtSession.SessionOptions();
         try {
+            options.addConfigEntry("mlas.enable_gemm_fastmath_arm64_bfloat16", "0");
+            options.addConfigEntry("optimization.enable_gelu_approximation", "0");
             options.setIntraOpNumThreads(2);
             options.setInterOpNumThreads(1);
             options.setExecutionMode(OrtSession.SessionOptions.ExecutionMode.SEQUENTIAL);
@@ -266,7 +269,7 @@ public class Body3DPlugin extends Plugin {
         AssetFileDescriptor asset = getContext().getAssets().openFd("body3d/" + name);
         try (FileInputStream input = asset.createInputStream()) {
             long length = asset.getDeclaredLength();
-            if (length < 1024 || length > 120L * 1024 * 1024) {
+            if (length < 1024 || length > 200L * 1024 * 1024) {
                 throw new IllegalStateException("Ungültige 3D-Modelldatei.");
             }
             // APK assets are uncompressed; mmap avoids a second full Java-heap copy.
