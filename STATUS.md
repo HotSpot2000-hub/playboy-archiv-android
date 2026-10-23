@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-23
-Referenz-Commit: `d68b4fce48bfd725d74bb6d2ab9b6d2fe7b9d632`
+Referenz-Commit: `8b79f792899adfd69f635b6554ec2232be229bd8`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,52 @@ Referenz-Commit: `d68b4fce48bfd725d74bb6d2ab9b6d2fe7b9d632`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktuelle Übergabe: Android-3D-Test vorbereitet, Downloadpaket erneuert
+## Aktuelle Übergabe: Gerätetest Build 563, Diagnose 2 bereitgestellt
+
+Berücksichtigtes main: `8b79f792899adfd69f635b6554ec2232be229bd8`. Seit der bisherigen Referenz d68b4fc wurden www/index.html, Preflight-Workflow, STATUS und aktiver APK-Workflow hochgeladen; Änderungen geprüft. APK-Build **563**, Lauf **39961989033**, war erfolgreich, einschließlich 3D-Assetbereitstellung, Android-Kompilierung, tatsächlicher APK-/Manifestprüfung, permanenter Signatur und Upload. Richtiger APK-Artifact: `Playboy-Archiv-Build-563`; `3D-Preparation-563` ist nur der Prüfbericht.
+
+### Beobachtung und noch ungeklärte Ursache
+
+- Benutzer hat Build 563 auf Samsung Galaxy S25 Ultra SM-S938B/DS installiert. Screenshot des gestarteten Tests zeigt: **„Test nicht abgeschlossen: Der 3D-Vergleich weicht von der Referenz ab.“**
+- Meldung entsteht nach Ausführung beider Modelle und Lesen der Decoder-Ausgabe. Die bisherige Sammelbedingung unterscheidet weder nichtendliche Werte von Zahlenabweichungen noch Bildmodell- von Decoderabweichungen. Kein vollständiger Erfolg und noch keine Ursachenfeststellung.
+- Tatsächliche Modell-/Referenzdateien aus der signierten Build-563-APK hier geprüft, ohne Archivfotos. Fehler auch auf hiesiger CPU mit ORT 1.31.0 reproduziert: maximale Kettenabweichung ca. **0,0210414 in nativen MHR-Recheneinheiten**, 30.198 von 55.317 Koordinaten außerhalb der bisherigen Toleranz. Abschalten von CPU-Arena und Memory Pattern wie auf Android verändert dies nicht; ohne Graphoptimierungen bleibt die Abweichung bestehen (max. ca. 0,0211434; 21.874 Koordinaten außerhalb). Keine dieser Varianten wird als Abhilfe ausgeliefert.
+- Abweichung also nicht ausschließlich auf S25 beobachtet. Ihre Ursache und Aufteilung auf Bildmodell/Decoder bleiben offen. Zahlen sind ausschließlich Rechenabweichungen bei künstlicher Eingabe, keine Genauigkeit realer Körpermaße.
+
+### Neue vollständige Ersatzdateien, noch nicht hochgeladen
+
+Flaches Paket **3D-Diagnose-2.zip**, ohne versteckte Unterordner und ohne Modellgewichte:
+
+1. `body-3d-preflight.yml` nach `.github/workflows/` ersetzen. Workflowrevision **5** speichert die exakten synthetischen Form-/Poseparameter des CI-Bildmodells zusätzlich in der vorhandenen APK-Datei `body3d/manifest.json`: `diagnostic_revision: 2`, `synthetic_inputs`. Der Float32→JSON→Float32-Roundtrip wird bitgenau geprüft.
+2. `STATUS.md` im Repository-Hauptverzeichnis ersetzen.
+3. **`Body3DPlugin.java` zuletzt nach `native/` ersetzen.** Nur den danach erzeugten APK-Build verwenden.
+
+Kein neuer Index und keine Änderung des aktiven APK-Workflows notwendig. Dieser führt automatisch den aktualisierten Preflight aus. Die neuen kleinen Metadaten werden mit der bestehenden Manifestdatei verpackt; vorhandene Gewichts-Fingerprints, Lizenzkopien und APK-Prüfungen bleiben gültig. Zwischenbuilds nicht installieren; den separaten manuellen Preflight nicht zusätzlich starten.
+
+### Aussage der Diagnose 2
+
+- Bildmodell weiterhin mit künstlichem Nulltensor. Meldung zeigt maximale Abweichung seiner Form- und Poseparameter von den gespeicherten CI-Werten.
+- Decoder einmal mit tatsächlichen Geräteparametern (Gesamtkette), zusätzlich mit exakt den CI-Parametern (isolierter Vergleich). Beide Netze werden vollständig gegen die in CI aus dem offiziellen Originaldecoder erzeugte Referenz geprüft.
+- Meldung beginnt bei einem Fehler mit **„Diagnose 2“**. Sie nennt `Decoder/feste Eingaben`, Form-/Pose-Delta und `Gesamtkette`; bei Abweichungen Zahl betroffener Koordinaten, Maximum und ersten Punkt/Achse mit Ist-/Referenzwert. Frühere Fehler erhalten die betroffene Stufe im Text. Nichtendliche Werte werden ausdrücklich gemeldet.
+- **Unveränderte Fehlergrenzen:** `atol=0,001`, `rtol=0,0001`. Beide Vergleiche müssen bestehen. Ein bestandener isolierter Decoder macht eine abweichende Gesamtkette nicht grün. Kein Aufweiten von Toleranzen und kein stillschweigendes Akzeptieren eines Fehlers.
+- Bei vollständigem Erfolg weiterhin die bestehende Bestanden-Anzeige. Ein erneuter roter Text mit ausführlicher Diagnose ist ein verwertbares Diagnoseergebnis. Noch keine Zusage, dass die Ursache behoben ist.
+- Modellgleichungen, Gewichte, CPU-Ausführungsoptionen, Telemetriesperren vor Laden samt Entfernung des automatischen Providers, Pluginregistrierung, UI und Signierung unverändert. Keine Archivschreibzugriffe, Medien-Uploads, Profiländerungen, Migration oder Schemaänderung.
+
+### Abgeschlossene Prüfungen und Grenzen
+
+- Originalfehler mit tatsächlichen Build-563-Assets unter drei CPU-Konfigurationen reproduziert. Alle ORT-Aufrufe mit `ORT_DISABLE_TELEMETRY=1` vor Import und zusätzlicher API-Abschaltung.
+- Neue Java-Datei gegen echte ORT-Android-1.31.0-Klassen, Android-API-JAR und Capacitor-/Os-Stubs typ-/syntaxgeprüft. Neue Vergleichslogik auf JVM getestet: exakte Übereinstimmung, ursprüngliche Toleranz, vollständige Fehlerzählung, erster Punkt/Achse, NaN-Abweisung und exakte JSON-Floatkonvertierung bestanden. Kein neuer Android-Build hier behauptet.
+- YAML, Shell und eingebetteter Python-Code geprüft. Decoder-Klasse gegenüber Build 563 byteidentisch; ursprüngliche Grenzen und kombinierte Fehlersperre im neuen Java geprüft.
+- Tatsächliche neue `package_assets`-Funktion mit kleinen Verpackungsdateien und realen synthetischen CPU-Parametern getestet: JSON-Roundtrip bitgenau, Feldgrößen 45/204, Metadaten unter dem nativen 32-KB-Limit. Dies ist ein Serialisierungs-/Verpackungstest, keine erneute vollständige Torch-Exportprüfung.
+- Dateien waren beim zwischenzeitlichen Ausfall der Arbeitsumgebung erhalten. Prüfungen nach Wiederverfügbarkeit erneut bestanden; ZIP-Inhalte byteweise mit Quelldateien abgeglichen. Die vorherige Sitzung endete vor Erstellung der STATUS-Datei und des ZIP; dies ist jetzt nachgeholt.
+- Vollständiger neuer CI-/APK-Build der Revision 5 und Gerätetest Diagnose 2 stehen noch aus. CI führt beim Upload die unveränderten Originaldecoder-/Exporttests sowie die neue Serialisierungsprüfung aus.
+
+### Verbindlicher nächster Schritt
+
+Drei Dateien in obiger Reihenfolge hochladen. Danach main und den Build des letzten Plugin-Uploads prüfen und dessen genaue APK-Buildnummer nennen. Nur diese APK als **Update** installieren, niemals deinstallieren. In Einstellungen einmal den vorhandenen 3D-Techniktest starten und vollständige Diagnose-2-Meldung per Screenshot auswerten. Ziel ist die Trennung von Bildmodell- und Decoderabweichung. Build 563 nicht nochmals testen.
+
+Erst nach geklärter und bestandener Rechenprüfung einen echten Fotoeingang vorbereiten. Keine weitere Feld-für-Feld-Bewertung nötig. Tahlia-Körperstandsgruppen 1/2/6 vs. übrige vorläufig unverändert; weiterhin keine Zentimeter-/Cupschätzungen oder automatischen Profiländerungen.
+
+## Historische Übergabe: Android-3D-Test vorbereitet, Downloadpaket erneuert
 
 Berücksichtigtes main: `d68b4fce48bfd725d74bb6d2ab9b6d2fe7b9d632`. Änderungen seit der früheren Referenz wurden geprüft: separater Diagnose-Workflow Revision 3, STATUS und zuletzt `native/Body3DPlugin.java`. App-Index und APK-Workflow sind noch unverändert. Die vorbereiteten Ersatzdateien sind nur lokal ausgeliefert; es wurde noch keine neue 3D-APK gebaut oder auf dem S25 getestet.
 
