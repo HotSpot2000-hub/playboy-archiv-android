@@ -75,6 +75,7 @@ public class Body3DPlugin extends Plugin {
                     env.setTelemetry(false);
                     float[] shape, pose, camera;
                     JSONArray joints = new JSONArray();
+                    JSONArray joints3d = new JSONArray();
                     ByteBuffer imageModel = mapAsset("instanthmr.onnx");
                     try (OrtSession.SessionOptions opts = options();
                          OrtSession session = env.createSession(imageModel, opts);
@@ -93,6 +94,9 @@ public class Body3DPlugin extends Plugin {
                                 if (point.length != 2 || !Float.isFinite(point[0]) || !Float.isFinite(point[1])) throw new IllegalStateException("Ungültiger Bildpunkt.");
                                 joints.put(new JSONArray().put((double) point[0]).put((double) point[1]));
                             }
+                            Object value3d = result.get("joints_3d").orElseThrow(() -> new IllegalStateException("3D-Körperpunkte fehlen.")).getValue();
+                            if (!(value3d instanceof float[][][])) throw new IllegalStateException("Ungültige 3D-Körperpunkte.");
+                            joints3d = photoPoints3d((float[][][]) value3d);
                         }
                     }
                     imageModel = null;
@@ -118,7 +122,7 @@ public class Body3DPlugin extends Plugin {
                     result.put("faces", android.util.Base64.encodeToString(faces, android.util.Base64.NO_WRAP));
                     result.put("vertexCount", VERTICES); result.put("faceCount", faces.length / 6);
                     result.put("camera", new JSONArray().put((double) camera[0]).put((double) camera[1]).put((double) camera[2]));
-                    result.put("joints2d", joints); result.put("coordinateFrame", "vision_metres");
+                    result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("coordinateFrame", "vision_metres");
                     result.put("elapsedSeconds", (SystemClock.elapsedRealtime() - start) / 1000.0);
                     checkActive(); call.resolve(result);
                 } catch (OutOfMemoryError error) {
@@ -137,6 +141,21 @@ public class Body3DPlugin extends Plugin {
     public void cancelPhoto(PluginCall call) {
         if (photoJob.get()) cancelled.set(true);
         call.resolve(new JSObject());
+    }
+
+    private static JSONArray photoPoints3d(float[][][] points) throws Exception {
+        if (points.length != 1 || points[0] == null || points[0].length != 70) throw new IllegalStateException("Ungültige 3D-Körperpunktzahl.");
+        JSONArray result = new JSONArray();
+        for (float[] point : points[0]) {
+            if (point == null || point.length != 3) throw new IllegalStateException("Ungültiger 3D-Körperpunkt.");
+            JSONArray row = new JSONArray();
+            for (float v : point) {
+                if (!Float.isFinite(v)) throw new IllegalStateException("Ungültiger 3D-Körperpunkt.");
+                row.put((double) v);
+            }
+            result.put(row);
+        }
+        return result;
     }
 
     private static float[] photoCondition(JSONObject input) throws Exception {
