@@ -320,7 +320,7 @@ jobs:
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 4, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 5, 'stages': []}
           
           def download(url, target, max_bytes):
               known = {'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
@@ -544,7 +544,16 @@ jobs:
                           'Synthetic technical test only. Not a body-measurement accuracy claim.\n', encoding='utf-8')
                       manifest = {name: {'bytes': (destination / name).stat().st_size,
                                   'sha256': hashlib.sha256((destination / name).read_bytes()).hexdigest()} for name in names}
-                      (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+                      manifest['diagnostic_revision'] = 2
+                      manifest['synthetic_inputs'] = {
+                          'identity': predictions['shape_params'][0].astype(np.float32).tolist(),
+                          'pose': predictions['mhr_params'][0].astype(np.float32).tolist(),
+                      }
+                      payload = json.dumps(manifest, indent=2)
+                      restored = json.loads(payload)['synthetic_inputs']
+                      np.testing.assert_array_equal(np.asarray(restored['identity'], dtype=np.float32), predictions['shape_params'][0])
+                      np.testing.assert_array_equal(np.asarray(restored['pose'], dtype=np.float32), predictions['mhr_params'][0])
+                      (destination / 'manifest.json').write_text(payload, encoding='utf-8')
                       return {'files': manifest, 'scope': 'APK assets; synthetic CPU test only'}
                   stage('Android-Testdateien bereitstellen', package_assets)
           
