@@ -2063,6 +2063,13 @@ body.archiveFilterOpen .bottom{display:none!important}
    <button type="button" id="resetSettingsBtn" class="settingsReset">Standardeinstellungen</button>
   </div>
   <div class="settingsGroup">
+   <div class="settingsTitle">3D-Techniktest · Android</div>
+   <div class="small">Prüft die 3D-Modelle einmal mit künstlichen Testdaten auf diesem Handy. Dauert beim ersten Start etwas länger. App währenddessen geöffnet lassen.</div>
+   <button type="button" id="body3dTestBtn" class="btn">3D-Techniktest starten</button>
+   <div id="body3dTestStatus" class="small" style="margin-top:8px" role="status" aria-live="polite">Noch nicht getestet. Verwendet keine Archivfotos und ermittelt keine Körpermaße.</div>
+   <details class="small"><summary>Modellhinweise und Lizenzen</summary><p>InstantHMR-Gewichte unter SAM-Lizenz; MHR unter Apache 2.0. Modelltest für die spätere lokale Analyse.</p><a href="body3d/SAM-LICENSE.txt" target="_blank" rel="noopener">SAM-Lizenz</a> · <a href="body3d/MHR-LICENSE.txt" target="_blank" rel="noopener">MHR-Lizenz</a> · <a href="body3d/NOTICE.txt" target="_blank" rel="noopener">Hinweise</a></details>
+  </div>
+  <div class="settingsGroup">
    <div class="settingsTitle">Metadatenspeicher</div>
    <div id="metadataStorageStatus" class="small">Speicherstatus wird ermittelt …</div>
   </div>
@@ -15035,6 +15042,25 @@ document.addEventListener('DOMContentLoaded',function(){
 
 // 1.2 Beta 3: metadata bootstrap/migration runs after all app functions are defined.
 setTimeout(()=>initializeMetadataStorage(),0);
+</script>
+<script>
+// Isolated synthetic native diagnostic; no archive persistence or network requests.
+document.getElementById('body3dTestBtn')?.addEventListener('click',async()=>{
+ const button=document.getElementById('body3dTestBtn'),status=document.getElementById('body3dTestStatus');
+ const plugin=window.Capacitor?.Plugins?.Body3D;
+ if(!plugin||typeof plugin.runSyntheticTest!=='function'){
+  status.textContent='Der 3D-Techniktest benötigt die neu gebaute Android-App.';return;
+ }
+ button.disabled=true;status.style.color='';status.textContent='3D-Test läuft lokal … Bitte die App geöffnet lassen.';
+ try{
+  const result=await plugin.runSyntheticTest();
+  if(result.passed!==true)throw new Error('Der Vergleich wurde nicht bestanden.');
+  status.textContent=`Bestanden: Bildmodell und 3D-Decoder laufen auf diesem Handy. ${Number(result.vertices).toLocaleString('de-DE')} Netzpunkte geprüft · ${Number(result.elapsedSeconds).toFixed(1)} Sekunden. Noch kein Fototest und keine Maßprüfung.`;
+  status.style.color='#456144';
+ }catch(error){
+  status.style.color='#9b3333';status.textContent='Test nicht abgeschlossen: '+String(error?.message||error)+'. Bitte diese Meldung weitergeben.';
+ }finally{button.disabled=false;}
+});
 </script>
 </body>
 </html>
