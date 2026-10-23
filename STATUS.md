@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-23
-Referenz-Commit: `5d6255dfc08c2cad26283c402642b8681a22e488`
+Referenz-Commit: `6ff0ab20ac230e3460d9a5ac62d45b40634dedba`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,37 @@ Referenz-Commit: `5d6255dfc08c2cad26283c402642b8681a22e488`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Neu vorbereitet: lokaler Einfoto-3D-Test (Geräteprüfung noch offen)
+## Aktueller Stand: Build 574 verarbeitet Fotos; Passform noch unzureichend
+
+Berücksichtigtes main `6ff0ab20ac230e3460d9a5ac62d45b40634dedba`. Alle vier Einfoto-Ersatzdateien nach Upload bytegenau mit Lieferung verglichen. **Build Android Debug APK 574**, Lauf **40007986560**, erfolgreich, Artifact **Playboy-Archiv-Build-574** vorhanden. CI-Code entspricht vollständiger Lieferung. Neue Änderungen nach diesem main derzeit nicht vorhanden.
+
+Benutzer hat die APK auf dem S25 getestet. Screenshots von Foto `26994_full-0.jpg` zeigen erfolgreiche Berechnung **18.439 Netzpunkte, 1,6 bzw. 1,9 Sekunden** und violette Netzüberlagerung. Grüne 2D-Modellpunkte liegen an Beinen/Füßen näher am Foto, im Kopf-/Schulterbereich weichen auch sie sichtbar ab. Netz an Kopf/Armen/Schultern verschoben. Kein Beleg für zuverlässige Körpermaße; Drehansicht wurde durch diese Screenshots nicht gesondert bestätigt. Keine Ursache aus dem Screenshot allein als bewiesen ausgeben.
+
+### Neu vorbereitet: Punktdiagnose 1
+
+Drei Ersatzdateien auf Basis dieses main: `www/index.html`, `native/Body3DPlugin.java`, `STATUS.md`. Noch nicht hochgeladen, gebaut oder auf dem S25 bestätigt.
+
+- Native analyzePhoto gibt zusätzlich die vorhandene Modellausgabe joints_3d zurück: exakt 1 × 70 × 3, endliche Zahlen, rig-lokale Vision-Koordinaten in Metern. Keine weitere Achsenumwandlung dieser bereits im Vision-System gelieferten Modellpunkte. Kennzeichnung pointDiagnosticRevision=1. MHR-Decoder und seine cm/Y/Z-Transformation bleiben unverändert.
+- Oberfläche projiziert die 3D-Punkte mit derselben Kamera/Brennweite wie das Netz. Grüne gefüllte Punkte = 2D-Modellkopf zurück ins Vollbild, orange Ringe = projizierter 3D-Modellkopf, dünne Verbindungslinien = gleiche Punktindizes. Checkbox **Bild- und 3D-Punkte** standardmäßig aktiv. Legende und Punktbericht direkt vor dem Foto; keine zusätzliche Dateneingabe erforderlich.
+- Bericht: gültige Paare von 70, Median-/Maximalabstand in Arbeitsbildpixeln und Median in Prozent der Bilddiagonale. Dies ist eine modellinterne Konsistenzprüfung, weder anatomischer Fehlerwert noch Maßgenauigkeit. 2D- und 3D-Modellköpfe sind nicht automatisch identisch mit den Netzgelenken. Hinter der Kamera liegende Punkte werden beim Abstand ausgelassen; kein gültiges Paar führt zu klarer Fehlermeldung.
+- Keine Kamerakorrektur, kein Verschieben/Skalieren des Netzes auf die Punkte, keine optimierte Form, keine neuen Maße. Diese Diagnose dient der Eingrenzung vor einer fachlich begründeten Korrektur.
+- Nur kurzlebige Ergebnisdaten; keine Archiv-/Profil-/Datenbankschreibvorgänge, kein Medienupload, keine Migration. Bestehende synthetische Prüfung und Telemetriesperren unverändert. Kein neuer Preflight-/APK-Workflow und keine neuen Modellassets erforderlich.
+
+### Prüfung dieses Arbeitsgangs
+
+- Vorhandenen öffentlichen Testfoto-Durchlauf erneut mit echtem FP32-Bildmodell gerechnet: alle fünf Ausgaben vorhanden, 70 3D-Punkte. Projizierter 3D-Kopf gegen zurücktransformierten 2D-Kopf: Median **6,2411 Pixel**, Maximum **13,8369 Pixel** bei 548 × 342. Diese Zahlen gehören zum öffentlichen Beispielfoto, ausdrücklich nicht zum Benutzerfoto.
+- Neue JS-Projektion mit diesen echten 70 Punkten gegen unabhängig in NumPy berechnete Projektion verglichen: Median stimmt innerhalb 0,001 Pixel überein.
+- Alle vier Inline-Skripte syntaktisch geprüft. Diagnosefälle: identische Punkte, Punkte hinter Kamera, fehlende Revision und NaN-Ablehnung bestanden.
+- Native Klasse mit realen ORT-1.31-Klassen, Android-API-Jar und Capacitor-Stubs kompiliert. 3D-Punktserialisierung, 70-Punkt-/Dreierdimensionen, ungültige Werte geprüft. Bestehende Rahmen-/CLIFF- und Diagnosevergleichstests mit Originaltoleranz erneut bestanden.
+- Noch kein Gradle-/APK-Build dieser Änderung und keine Browser-/Geräteprüfung der neuen orangefarbenen Marker. Bestehende Rendering-Kette aus Build 574 unverändert. Kein Behaupten eines bereits gelösten Passformfehlers.
+
+### Nächster Schritt für den Benutzer
+
+ZIP entpacken und **index.html → www**, **STATUS.md → Hauptordner**, **zuletzt Body3DPlugin.java → native** ersetzen. Danach main prüfen und konkrete vollständige erfolgreiche APK-Buildnummer nennen. APK immer als Update, niemals vorher deinstallieren. Dasselbe Foto öffnen, 3D-Test berechnen; Marker erscheinen automatisch. Screenshot mit Legende, Punktabstand und Foto erbitten. Keine manuellen Bewertungsfelder und keine neue Mehrbildanalyse erforderlich.
+
+Bei Interpretation unterscheiden: (a) grüner 2D-Kopf passt zum Foto, orange 3D-Punkte und Netz nicht → Kamera/3D-Modellkonsistenz untersuchen; (b) orange/grün ähnlich, Netz anders → Decoder-/Gelenkbezug untersuchen; (c) bereits grün unpassend → Ausschnitt oder 2D-Modellschätzung beteiligt. Diese Fälle sind Indizien, keine isolierten Beweise. Erst dann gezielte Korrektur testen. Tahlia-Gruppierung weiterhin 1/2/6 früh, Rest nur vorläufig später; noch keine Körpermaße oder Profiländerungen.
+
+## Historische Vorbereitung: lokaler Einfoto-3D-Test
 
 Basis: main `5d6255dfc08c2cad26283c402642b8681a22e488`. Änderungen seit b9ed375 geprüft: nur STATUS; bestätigter APK-Code weiterhin Build 569. Die unten beschriebenen Ersatzdateien sind vorbereitet, noch nicht vom Benutzer hochgeladen oder auf dem S25 getestet.
 
@@ -44,7 +74,7 @@ Nach Upload main prüfen und **konkrete Buildnummer des letzten vollständigen B
 
 Vertrag/Quellen: gepinnte Modellkarte https://huggingface.co/momolesang/InstantHMR/blob/3504446fc31e7f76fdb1cd7e463189e7cf0fdd0f/README.md sowie InstantHMR-Quellstand e125a1e8427739c40439f8d2eb66a924c742a178, Dateien instanthmr/inference.py und instanthmr/mhr_renderer.py (Naturalpad-studio/InstantHMR). Pixel-CLIFF des vorhandenen Checkpoints verwenden, nicht das neuere Winkel-CLIFF. Öffentliches internes Testbild https://raw.githubusercontent.com/opencv/opencv/4.x/samples/data/messi5.jpg.
 
-## Aktueller bestätigter Stand: FP32-Techniktest auf dem S25 bestanden
+## Historischer bestätigter Stand: FP32-Techniktest Build 569
 
 Berücksichtigtes main: `b9ed375e221c587ac4641ef583949c8eed89fa5b`. Seit Referenz ca67977 wurden Preflight-Revision 6, STATUS und native Prüfung 3 hochgeladen; Änderungen geprüft. **APK-Build 569**, Lauf **40001344901**, erfolgreich mit FP32-Vorbereitung, APK-/Manifestprüfung, permanenter Signatur und Upload. Benutzer hat genau diese APK als Update installiert.
 
