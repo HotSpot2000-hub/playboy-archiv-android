@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-23
-Referenz-Commit: `6ff0ab20ac230e3460d9a5ac62d45b40634dedba`
+Referenz-Commit: `52df36825e8069d8236475dd3ef1e2c090ea0d47`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,41 @@ Referenz-Commit: `6ff0ab20ac230e3460d9a5ac62d45b40634dedba`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 574 verarbeitet Fotos; Passform noch unzureichend
+## Aktueller Stand: Build 577 zeigt interne 2D-/3D-Abweichung
+
+Berücksichtigtes main `52df36825e8069d8236475dd3ef1e2c090ea0d47`. Nach Upload alle drei Punktdiagnose-Dateien bytegenau mit Lieferung verglichen. Build **577**, Lauf **40012134421**, erfolgreich und APK-Artifact vorhanden. Main seitdem vor neuer Bearbeitung erneut geprüft, keine weiteren Änderungen.
+
+Benutzer-Gerätetest erfolgreich: Screenshot des gleichen Fotos zeigt **18.439 Netzpunkte, 1,7 Sekunden**, **70/70 Punktpaare**, Median **36,4 Arbeitsbildpixel / 2,37 % der Bilddiagonale**, Maximum **56,9 Bildpixel**. Orange projizierte 3D-Punkte am Oberkörper gegenüber grünen 2D-Punkten nach oben versetzt, Beine/Füße näher beieinander. Das belegt unterschiedliche Modellausgaben; es beweist allein weder einen Decoderfehler noch eine falsche Brennweite. Keine Körpermaßgenauigkeit bestätigt. Keine erneute manuelle Feldbewertung anfordern.
+
+### Benutzerwunsch zum Arbeitsablauf
+
+Benutzer hat ausdrücklich dauerhaft freigegeben, ohne wiederholtes „weiter“ bis zum nächsten konkreten Ergebnis weiterzuarbeiten. Bei vorhandener Autorisierung keine erneute Freigabe für routinemäßige Arbeit einholen und keine Abfolge leerer Statusantworten. Benutzer nur für tatsächlichen Upload/Gerätetest oder notwendige fehlende Information einbeziehen. Nicht behaupten, zwischen abgeschlossenen Antworten im Hintergrund weiterzuarbeiten. Manuelle Datei-Uploads bleiben der vereinbarte Repository-Workflow.
+
+### Neu vorbereitet: umschaltbarer Kameravergleich
+
+Zwei vollständige Ersatzdateien: `www/index.html` und `STATUS.md`, noch nicht hochgeladen oder als APK gebaut/getestet. Keine native Änderung und keine neuen Modelle/Workflows erforderlich; native Punktdiagnose aus Build 577 bleibt Voraussetzung.
+
+- Nach genau einer Fotoanalyse berechnet JS eine alternative **Kameratranslation tx/ty/tz** mit unveränderter Brennweite = Bilddiagonale, unverändertem Hauptpunkt und identischen 3D-Punkten. Levenberg-Marquardt mit analytischer Jacobi-Matrix, gedämpftem 3×3-System, maximal 100 Iterationen; ausschließlich endliche Verbesserungen und vor der Kamera liegende Punkte akzeptieren.
+- Optimiert wird die Summe quadrierter Bildabstände aller 70 3D-Modellpunkte zu den 70 2D-Modellpunkten. Keine anatomischen Referenzmessungen, keine tatsächliche Kamerakalibrierung. Ungültige Ausgangspunkte werden von der bestehenden Diagnose abgelehnt, unvollständig sichtbare/fehlende Verbesserung liefert keine Vergleichskamera. Nicht als Beleg physikalisch richtiger Kamera oder Körpermaße interpretieren.
+- Neuer Schalter direkt oberhalb des Fotos: **Kamera: Original / Angepasst (Test)**. Original bleibt Standard; alternative Option nur bei numerischer Verbesserung verfügbar. Umschalten ohne erneuten nativen Modelldurchlauf. Punktbericht zeigt gewählte Ansicht und beide Medianwerte, auch wenn Optimierungsziel der quadratische Abstand ist. Ein gesunkener quadratischer Fehler garantiert keinen gesunkenen Median oder bessere Anatomie.
+- Orange 3D-Punkte und violettes Netz verwenden in der Fotoansicht gemeinsam die gewählte Kameratranslation. Grüne 2D-Punkte bleiben unverändert. WebGL aktualisiert Kamerauniform pro draw; keine Neuinitialisierung/Bufferverschiebung erforderlich. Separate Drehansicht, Originalmodell, Pose, Netzpunkte und Körperform bleiben unverändert. Auch die Brennweite wird nicht optimiert: am öffentlichen Testbild ergab das kaum Zusatznutzen und schlechteren gehaltenen Median.
+- **Rahmen ändern / neu berechnen** setzt Vergleich auf Original zurück; alte Kamerawerte und Berichte werden verworfen. Beim Schließen alles flüchtig wie zuvor. Kein Archiv-/Profil-/IndexedDB-Schreiben, keine neuen Körpermaße, keine Migration und kein Medienupload.
+
+### Durchgeführte Prüfung
+
+- Python-Vorversuch mit öffentlichem OpenCV-Testfoto und echten Modellausgaben, nicht mit Benutzerfoto: Median vor Anpassung **6,2411 px**, nur Kameratranslation **1,7342 px**; RMS 6,6153 → 3,0268 px; Maximum weiterhin 10,1697 px. Fit auf 49 Punkten, getrennt geprüfte 21 Punkte: Median 4,1075 → 2,6702 px. Keine Aussage zur Überlagerungsqualität oder Maßgenauigkeit des Benutzerfotos.
+- Numerischer Test mit bekannter Kamera und 70 räumlich verteilten synthetischen Punkten: Zielkamera aus gestörter Startposition innerhalb 0,00001 wiedergefunden; Pose und Input unverändert.
+- Produkt-JS gegen unabhängigen NumPy-Kamerafit am echten öffentlichen 70-Punkt-Resultat geprüft: Median 1,734187143 und Kamerawerte innerhalb 0,00001 identisch. Fälle ohne Fehler, ungültige Tiefe und fehlende Verbesserung geprüft.
+- Alle vier Inline-Skripte syntaktisch geprüft. WebGL-Aufrufprüfung mit GL-Stub: angepasste Kamera wird bei draw übertragen, folgender Originalaufruf stellt ursprüngliche Werte wieder her, keine weiteren draw-Aufrufe nach dispose. Dies ist ein Logiktest, kein echter WebGL-/Browser-Rendertest.
+- Modell-/Native-Code unverändert; kein erneuter teurer Exportlauf erforderlich. APK-/Gradle-Build und sichtbarer Android-Kamerawechsel noch offen. Kein bereits behobener Passformfehler behauptet.
+
+### Konkreter nächster Schritt
+
+ZIP entpacken, **zuerst STATUS.md im Hauptordner**, **zuletzt index.html unter www** ersetzen. Nach „Hochgeladen“ main und letzte vollständige erfolgreiche APK-Buildnummer prüfen und nennen. APK als Update installieren, niemals vorher deinstallieren.
+
+Gerätetest: dasselbe Foto → 3D-Test → berechnen → oberhalb des Fotos Kamera von Original auf **Angepasst (Test)** stellen. Screenshot mit Punktbericht und Foto senden. Ziel: sehen, welche Verschiebung sich allein durch Kameraposition verändert und wo Pose/Modell weiter abweichen. Kein neuer Dateneingabedurchlauf. Nicht voreilig zu Mehrbildmessungen übergehen und keinen Einzelfoto-Fit als metrische Validierung behandeln.
+
+## Historischer Stand: Build 574 / Vorbereitung Punktdiagnose 1
 
 Berücksichtigtes main `6ff0ab20ac230e3460d9a5ac62d45b40634dedba`. Alle vier Einfoto-Ersatzdateien nach Upload bytegenau mit Lieferung verglichen. **Build Android Debug APK 574**, Lauf **40007986560**, erfolgreich, Artifact **Playboy-Archiv-Build-574** vorhanden. CI-Code entspricht vollständiger Lieferung. Neue Änderungen nach diesem main derzeit nicht vorhanden.
 
