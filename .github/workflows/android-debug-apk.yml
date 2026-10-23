@@ -42,6 +42,7 @@ jobs:
           dependencies = [
               "    implementation 'com.google.mlkit:pose-detection-accurate:18.0.0-beta5'\n",
               "    implementation 'com.google.mlkit:segmentation-selfie:16.0.0-beta6'\n",
+              "    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.31.0'\n",
           ]
           for dependency in dependencies:
             if dependency.strip() in text:
@@ -49,17 +50,87 @@ jobs:
             if marker not in text:
               raise SystemExit("Gradle dependencies block not found")
             text = text.replace(marker, marker + "\n" + dependency, 1)
+          text += "\nandroid { androidResources { noCompress += ['onnx', 'f32'] } }\n"
           gradle.write_text(text)
           PY
+
+      - name: Setup Python for compact 3D assets
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build and verify compact 3D assets
+        env:
+          BODY3D_ASSET_DIR: android/app/src/main/assets/body3d
+        run: |
+          python -m pip install torch==2.7.1 --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install numpy==2.2.6 onnx==1.18.0 onnxruntime==1.31.0 pyyaml==6.0.3
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          workflow = yaml.load(Path('.github/workflows/body-3d-preflight.yml').read_text(), Loader=yaml.BaseLoader)
+          script = workflow['jobs']['model-test']['steps'][2]['run']
+          code = script.split("python - <<'PY'\n", 1)[1].rsplit('\nPY', 1)[0]
+          exec(compile(code, 'body-3d-preflight.yml', 'exec'), {'__name__': '__main__'})
+          PY
+          mkdir -p www/body3d
+          cp android/app/src/main/assets/body3d/*LICENSE.txt android/app/src/main/assets/body3d/NOTICE.txt www/body3d/
+
+      - name: Upload 3D preparation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3D-Preparation-${{ github.run_number }}
+          path: |
+            model-preflight/report.json
+            model-preflight/report.md
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Install native archive bridge
         run: |
           mkdir -p android/app/src/main/java/de/playboy/archiv
           cp native/ArchiveDirectoryPlugin.java android/app/src/main/java/de/playboy/archiv/ArchiveDirectoryPlugin.java
+          cp native/Body3DPlugin.java android/app/src/main/java/de/playboy/archiv/Body3DPlugin.java
           cp native/MainActivity.java android/app/src/main/java/de/playboy/archiv/MainActivity.java
+          python3 - <<'PY'
+          from pathlib import Path
+          activity = Path('android/app/src/main/java/de/playboy/archiv/MainActivity.java')
+          text = activity.read_text()
+          marker = '        registerPlugin(ArchiveDirectoryPlugin.class);'
+          if text.count(marker) != 1:
+              raise SystemExit('Native plugin registration marker missing or ambiguous')
+          text = text.replace(marker, marker + chr(10) + '        registerPlugin(Body3DPlugin.class);', 1)
+          activity.write_text(text)
+          PY
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Disable automatic ONNX telemetry startup
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          android = 'http://schemas.android.com/apk/res/android'
+          tools = 'http://schemas.android.com/tools'
+          ET.register_namespace('android', android)
+          ET.register_namespace('tools', tools)
+          tree = ET.parse(path)
+          application = tree.getroot().find('application')
+          if application is None:
+              raise SystemExit('Android application manifest missing')
+          name = 'ai.onnxruntime.TelemetryInitializer'
+          for provider in list(application.findall('provider')):
+              if provider.get('{' + android + '}name') == name:
+                  application.remove(provider)
+          ET.SubElement(application, 'provider', {
+              '{' + android + '}name': name,
+              '{' + tools + '}node': 'remove',
+          })
+          tree.write(path, encoding='utf-8', xml_declaration=True)
+          PY
 
       - name: Install Playboy Archiv app icon
         run: |
@@ -100,6 +171,43 @@ jobs:
 
       - name: Build debug APK
         run: cd android && ./gradlew assembleDebug
+
+      - name: Verify packaged 3D assets and telemetry opt-out
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+          import xml.etree.ElementTree as ET
+          import zipfile
+          root = Path('android/app/build/intermediates')
+          manifests = [p for p in root.rglob('AndroidManifest.xml')
+                       if 'merged_manifests' in p.parts or 'merged_manifest' in p.parts]
+          if not manifests:
+              raise SystemExit('Merged Android manifest not found')
+          name_key = '{http://schemas.android.com/apk/res/android}name'
+          for path in manifests:
+              for provider in ET.parse(path).getroot().iter('provider'):
+                  if provider.get(name_key) == 'ai.onnxruntime.TelemetryInitializer':
+                      raise SystemExit('Automatic ONNX telemetry initializer remains in merged manifest')
+          manifest = json.loads(Path('android/app/src/main/assets/body3d/manifest.json').read_text())
+          apk = Path('android/app/build/outputs/apk/debug/app-debug.apk')
+          with zipfile.ZipFile(apk) as bundle:
+              for name in ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32']:
+                  info = bundle.getinfo('assets/body3d/' + name)
+                  if info.compress_type != zipfile.ZIP_STORED:
+                      raise SystemExit('3D model/reference must be uncompressed: ' + name)
+                  if info.file_size != manifest[name]['bytes']:
+                      raise SystemExit('3D asset length differs: ' + name)
+                  with bundle.open(info) as stream:
+                      digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+                  if digest != manifest[name]['sha256']:
+                      raise SystemExit('3D asset checksum differs: ' + name)
+              for name in ['SAM-LICENSE.txt', 'MHR-LICENSE.txt', 'NOTICE.txt']:
+                  bundle.getinfo('assets/body3d/' + name)
+                  bundle.getinfo('assets/public/body3d/' + name)
+          print('3D assets verified; automatic ONNX telemetry provider absent')
+          PY
 
       - name: Sign APK with permanent key
         env:
