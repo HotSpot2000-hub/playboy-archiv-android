@@ -11,6 +11,12 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.io.DataInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -43,6 +49,7 @@ public class Body3DPlugin extends Plugin {
         try {
             worker.execute(() -> {
                 long start = SystemClock.elapsedRealtime();
+                String stage = "Start";
                 try {
                     checkActive();
                     // Full opt-out must precede ORT class/environment initialization.
@@ -53,6 +60,7 @@ public class Body3DPlugin extends Plugin {
                     float[] pose;
                     long sampledPssKb;
                     // Close the image session before opening the mesh decoder.
+                    stage = "Bildmodell";
                     ByteBuffer imageModel = mapAsset("instanthmr.onnx");
                     try (OrtSession.SessionOptions options = options();
                          OrtSession session = env.createSession(imageModel, options);
@@ -72,51 +80,34 @@ public class Body3DPlugin extends Plugin {
                     }
                     imageModel = null;
                     checkActive();
+                    stage = "Referenzdaten";
+                    float[][] fixedInputs = readFixedInputs();
+                    float[] expectedMesh = readReference();
+                    double shapeDelta = maxDifference(shape, fixedInputs[0]);
+                    double poseDelta = maxDifference(pose, fixedInputs[1]);
+                    Comparison chain;
+                    Comparison fixed;
                     ByteBuffer meshModel = mapAsset("mhr_decoder.onnx");
-                    double maxError = 0;
                     try (OrtSession.SessionOptions options = options();
-                         OrtSession session = env.createSession(meshModel, options);
-                         OnnxTensor identity = OnnxTensor.createTensor(env,
-                             FloatBuffer.wrap(shape), new long[]{1, 45});
-                         OnnxTensor bodyPose = OnnxTensor.createTensor(env,
-                             FloatBuffer.wrap(pose), new long[]{1, 204});
-                         OnnxTensor expression = OnnxTensor.createTensor(env,
-                             FloatBuffer.wrap(new float[72]), new long[]{1, 72})) {
-                        Map<String, OnnxTensor> inputs = new HashMap<>();
-                        inputs.put("identity", identity);
-                        inputs.put("pose", bodyPose);
-                        inputs.put("expression", expression);
+                         OrtSession session = env.createSession(meshModel, options)) {
+                        stage = "Gesamtkette";
                         checkActive();
-                        try (OrtSession.Result result = session.run(inputs)) {
-                            Object value = result.get("vertices").orElseThrow(
-                                () -> new IllegalStateException("Decoder-Ausgabe fehlt.")).getValue();
-                            if (!(value instanceof float[][][])) {
-                                throw new IllegalStateException("Unerwarteter Decoder-Datentyp.");
-                            }
-                            float[][][] mesh = (float[][][]) value;
-                            if (mesh.length != 1 || mesh[0].length != VERTICES) {
-                                throw new IllegalStateException("Unerwartete Netzgröße.");
-                            }
-                            // Compare every coordinate against the original MHR checkpoint,
-                            // prepared in CI from the same synthetic regressor input.
-                            try (DataInputStream reference = new DataInputStream(
-                                    getContext().getAssets().open("body3d/synthetic-reference.f32"))) {
-                                for (float[] vertex : mesh[0]) {
-                                    if (vertex.length != 3) throw new IllegalStateException("Ungültiger Netzpunkt.");
-                                    for (float actual : vertex) {
-                                        float expected = Float.intBitsToFloat(Integer.reverseBytes(reference.readInt()));
-                                        double error = Math.abs((double) actual - expected);
-                                        if (!Float.isFinite(actual) || !Float.isFinite(expected)
-                                                || error > .001 + .0001 * Math.abs(expected)) {
-                                            throw new IllegalStateException("Der 3D-Vergleich weicht von der Referenz ab.");
-                                        }
-                                        maxError = Math.max(maxError, error);
-                                    }
-                                }
-                                if (reference.read() != -1) throw new IllegalStateException("Ungültige Referenzgröße.");
-                            }
-                            sampledPssKb = Math.max(sampledPssKb, Debug.getPss());
-                        }
+                        chain = compareMesh(decode(env, session, shape, pose), expectedMesh);
+                        sampledPssKb = Math.max(sampledPssKb, Debug.getPss());
+                        stage = "Decoder mit festen Eingaben";
+                        checkActive();
+                        fixed = compareMesh(decode(env, session, fixedInputs[0], fixedInputs[1]), expectedMesh);
+                        sampledPssKb = Math.max(sampledPssKb, Debug.getPss());
+                    }
+                    // Keep the original tolerance and both comparisons. Never turn a mismatch
+                    // into success merely because the isolated decoder comparison passes.
+                    String diagnostic = "Diagnose 2: Decoder/feste Eingaben " + fixed.describe()
+                        + "; Bildparameter Form-Delta " + number(shapeDelta)
+                        + ", Pose-Delta " + number(poseDelta)
+                        + "; Gesamtkette " + chain.describe()
+                        + ". Rechenvergleich, keine Körpermaße.";
+                    if (fixed.mismatches != 0 || chain.mismatches != 0) {
+                        throw new IllegalStateException(diagnostic);
                     }
                     checkActive();
                     JSObject result = new JSObject();
@@ -124,7 +115,11 @@ public class Body3DPlugin extends Plugin {
                     result.put("vertices", VERTICES);
                     result.put("elapsedSeconds", (SystemClock.elapsedRealtime() - start) / 1000.0);
                     result.put("sampledProcessPssKb", sampledPssKb);
-                    result.put("maxExportDifferenceNativeUnits", maxError);
+                    result.put("maxExportDifferenceNativeUnits", fixed.maxError);
+                    result.put("chainMaxDifferenceNativeUnits", chain.maxError);
+                    result.put("shapeParameterMaxDifference", shapeDelta);
+                    result.put("poseParameterMaxDifference", poseDelta);
+                    result.put("diagnosticRevision", 2);
                     result.put("scope", "synthetic_cpu_only");
                     call.resolve(result);
                 } catch (OutOfMemoryError error) {
@@ -132,6 +127,7 @@ public class Body3DPlugin extends Plugin {
                 } catch (Exception error) {
                     String message = error.getMessage();
                     if (message == null) message = error.getClass().getSimpleName();
+                    if (!message.startsWith("Diagnose 2:")) message = "Diagnose 2 / " + stage + ": " + message;
                     call.reject(message.substring(0, Math.min(message.length(), 600)));
                 } finally {
                     busy.set(false);
@@ -140,6 +136,113 @@ public class Body3DPlugin extends Plugin {
         } catch (RuntimeException error) {
             busy.set(false);
             call.reject("Der 3D-Test konnte nicht gestartet werden.");
+        }
+    }
+
+
+    private float[][] readFixedInputs() throws Exception {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        try (InputStream input = getContext().getAssets().open("body3d/manifest.json")) {
+            byte[] chunk = new byte[4096];
+            int count;
+            while ((count = input.read(chunk)) != -1) {
+                if (bytes.size() + count > 32768) throw new IllegalStateException("Referenzmetadaten sind zu groß.");
+                bytes.write(chunk, 0, count);
+            }
+        }
+        JSONObject manifest = new JSONObject(new String(bytes.toByteArray(), StandardCharsets.UTF_8));
+        if (manifest.optInt("diagnostic_revision", 0) != 2) {
+            throw new IllegalStateException("Für Diagnose 2 fehlen die neuen Referenzeingaben im APK-Build.");
+        }
+        JSONObject inputs = manifest.getJSONObject("synthetic_inputs");
+        return new float[][]{readVector(inputs.getJSONArray("identity"), 45), readVector(inputs.getJSONArray("pose"), 204)};
+    }
+
+    private static float[] readVector(JSONArray values, int length) throws Exception {
+        if (values.length() != length) throw new IllegalStateException("Ungültige Referenzparameterzahl.");
+        float[] result = new float[length];
+        for (int i = 0; i < length; i++) {
+            result[i] = (float) values.getDouble(i);
+            if (!Float.isFinite(result[i])) throw new IllegalStateException("Ungültiger Referenzparameter.");
+        }
+        return result;
+    }
+
+    private float[] readReference() throws Exception {
+        float[] values = new float[VERTICES * 3];
+        try (DataInputStream input = new DataInputStream(getContext().getAssets().open("body3d/synthetic-reference.f32"))) {
+            for (int i = 0; i < values.length; i++) {
+                values[i] = Float.intBitsToFloat(Integer.reverseBytes(input.readInt()));
+                if (!Float.isFinite(values[i])) throw new IllegalStateException("Ungültiger Referenznetzpunkt.");
+            }
+            if (input.read() != -1) throw new IllegalStateException("Ungültige Referenzgröße.");
+        }
+        return values;
+    }
+
+    private static double maxDifference(float[] actual, float[] expected) {
+        double maximum = 0;
+        for (int i = 0; i < actual.length; i++) maximum = Math.max(maximum, Math.abs((double) actual[i] - expected[i]));
+        return maximum;
+    }
+
+    private static float[][][] decode(OrtEnvironment env, OrtSession session, float[] shape, float[] pose) throws Exception {
+        try (OnnxTensor identity = OnnxTensor.createTensor(env, FloatBuffer.wrap(shape), new long[]{1, 45});
+             OnnxTensor bodyPose = OnnxTensor.createTensor(env, FloatBuffer.wrap(pose), new long[]{1, 204});
+             OnnxTensor expression = OnnxTensor.createTensor(env, FloatBuffer.wrap(new float[72]), new long[]{1, 72})) {
+            Map<String, OnnxTensor> inputs = new HashMap<>();
+            inputs.put("identity", identity);
+            inputs.put("pose", bodyPose);
+            inputs.put("expression", expression);
+            try (OrtSession.Result result = session.run(inputs)) {
+                Object value = result.get("vertices").orElseThrow(
+                    () -> new IllegalStateException("Decoder-Ausgabe fehlt.")).getValue();
+                if (!(value instanceof float[][][])) throw new IllegalStateException("Unerwarteter Decoder-Datentyp.");
+                return (float[][][]) value;
+            }
+        }
+    }
+
+    private static Comparison compareMesh(float[][][] mesh, float[] expected) {
+        if (mesh.length != 1 || mesh[0].length != VERTICES) throw new IllegalStateException("Unerwartete Netzgröße.");
+        Comparison result = new Comparison();
+        int index = 0;
+        for (float[] vertex : mesh[0]) {
+            if (vertex.length != 3) throw new IllegalStateException("Ungültiger Netzpunkt.");
+            for (float actual : vertex) {
+                if (!Float.isFinite(actual)) throw new IllegalStateException("Nichtendlicher Decoder-Netzpunkt.");
+                double error = Math.abs((double) actual - expected[index]);
+                result.maxError = Math.max(result.maxError, error);
+                if (error > .001 + .0001 * Math.abs(expected[index])) {
+                    if (result.mismatches == 0) {
+                        result.firstIndex = index;
+                        result.firstActual = actual;
+                        result.firstExpected = expected[index];
+                    }
+                    result.mismatches++;
+                }
+                index++;
+            }
+        }
+        return result;
+    }
+
+    private static String number(double value) {
+        return String.format(Locale.ROOT, "%.6g", value);
+    }
+
+    private static final class Comparison {
+        int mismatches;
+        int firstIndex;
+        float firstActual;
+        float firstExpected;
+        double maxError;
+
+        String describe() {
+            if (mismatches == 0) return "OK (max. " + number(maxError) + ")";
+            return mismatches + "/55317 abweichend (max. " + number(maxError)
+                + ", erster Punkt " + (firstIndex / 3 + 1) + "/Achse " + (firstIndex % 3 + 1)
+                + ": " + number(firstActual) + " statt " + number(firstExpected) + ")";
         }
     }
 
