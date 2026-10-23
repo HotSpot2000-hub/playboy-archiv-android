@@ -2020,6 +2020,11 @@ body.archiveFilterOpen .bottom{display:none!important}
  line-height:1;
 }
 .bioLocationText{display:block;min-width:0}
+.lightboxPhoto3d{position:absolute;top:calc(env(safe-area-inset-top,0px) + 66px);left:16px;z-index:3;border:0;border-radius:999px;padding:10px 14px;background:rgba(82,54,101,.92);color:white;font-size:14px;font-weight:700;cursor:pointer}
+.lightbox.controlsHidden .lightboxPhoto3d{opacity:0;visibility:hidden;pointer-events:none}
+.bodyPhotoPanel{position:fixed;inset:0;z-index:500;background:#faf7fc;overflow:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top,0px) + 14px) 14px calc(env(safe-area-inset-bottom,0px) + 24px);color:#242126;box-sizing:border-box}
+.bodyPhotoInner{max-width:720px;margin:auto}.bodyPhotoHead{display:flex;align-items:center;gap:12px}.bodyPhotoHead h2{flex:1;margin:0;font-size:23px}.bodyPhotoClose{width:44px;height:44px;flex-shrink:0;border:1px solid #d5cdd9;border-radius:12px;background:white;font-size:27px}.bodyPhotoName{font-size:13px;color:#666;overflow-wrap:anywhere;margin:8px 0}.bodyPhotoHint{font-size:15px;line-height:1.4;margin:10px 0}.bodyPhotoStatus{font-size:15px;line-height:1.45;overflow-wrap:anywhere;margin:12px 0}.bodyPhotoStage{position:relative;line-height:0;background:#19161b;border-radius:12px;overflow:hidden;touch-action:none}.bodyPhotoStage img{display:block;width:100%;height:auto;max-height:none}.bodyPhotoStage canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}.bodyPhotoStage .bodyPhotoMesh{pointer-events:none}.bodyPhotoControls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}.bodyPhotoControls button{font:inherit;padding:11px 13px;border:1px solid #cfc4d6;background:white;border-radius:12px;min-height:44px}.bodyPhotoControls button:disabled{opacity:.5}.bodyPhotoControls .primary{background:#60466e;color:white;border-color:#60466e}.bodyPhotoControls label{display:flex;align-items:center;gap:8px;font-size:15px}.bodyPhotoControls input[type=range]{width:150px;min-height:35px}.bodyPhotoControls input[type=checkbox]{width:22px;height:22px}.bodyPhotoOrbit{display:block;width:100%;height:340px;background:#eeeaef;border-radius:12px;touch-action:pan-y}.bodyPhotoPanel [hidden]{display:none!important}.bodyPhotoPanel h3{font-size:18px;margin:16px 0 8px}
+
 </style>
 
 <meta name="application-name" content="Playboy Archiv">
@@ -3130,7 +3135,7 @@ body.archiveFilterOpen .bottom{display:none!important}
  </div>
 </div></div>
 
-<div class="lightbox" id="lightbox"><button class="lightboxClose" id="lightboxClose">×</button><button class="lightboxSlideshow" id="lightboxSlideshow" aria-label="Diashow starten">▶︎ Diashow</button><button class="lightboxDownloadAll" id="lightboxDownloadAll" aria-label="Alle Fotos dieser Galerie herunterladen">⇩ Alle</button><button class="lightboxNav lightboxPrev" id="lightboxPrev" aria-label="Vorheriges Foto">‹</button><img id="lightboxImage" alt=""><button class="lightboxNav lightboxNext" id="lightboxNext" aria-label="Nächstes Foto">›</button><div class="lightboxCaption" id="lightboxCaption"></div></div><div class="videoPlayerOverlay" id="videoPlayerOverlay">
+<div class="lightbox" id="lightbox"><button class="lightboxClose" id="lightboxClose">×</button><button class="lightboxSlideshow" id="lightboxSlideshow" aria-label="Diashow starten">▶︎ Diashow</button><button class="lightboxDownloadAll" id="lightboxDownloadAll" aria-label="Alle Fotos dieser Galerie herunterladen">⇩ Alle</button><button type="button" class="lightboxPhoto3d" id="lightboxPhoto3d">3D-Test</button><button class="lightboxNav lightboxPrev" id="lightboxPrev" aria-label="Vorheriges Foto">‹</button><img id="lightboxImage" alt=""><button class="lightboxNav lightboxNext" id="lightboxNext" aria-label="Nächstes Foto">›</button><div class="lightboxCaption" id="lightboxCaption"></div></div><div class="videoPlayerOverlay" id="videoPlayerOverlay">
   <button class="videoClose" id="videoClose">×</button>
   <video id="videoPlayer" controls playsinline controlsList="nofullscreen"></video>
  <div class="videoCaption" id="videoCaption"></div>
@@ -14966,6 +14971,7 @@ function visibleMainViewId(){
   .find(id=>{const el=document.getElementById(id);return el&&!el.classList.contains('hidden')})||'';
 }
 function closeTransientUiForAndroidBack(){
+ if(window.closeBodyPhotoTest?.())return true;
  if(document.getElementById('videoPlayerOverlay')?.classList.contains('open')){setTimeout(closeVideoPlayer,0);return true}
  if(document.getElementById('lightbox')?.classList.contains('open')){closeLightbox();return true}
  if(!document.getElementById('settingsPanel')?.classList.contains('hidden')){closeSettings();return true}
@@ -15061,6 +15067,172 @@ document.getElementById('body3dTestBtn')?.addEventListener('click',async()=>{
   status.style.color='#9b3333';status.textContent='Test nicht abgeschlossen: '+String(error?.message||error)+'. Bitte diese Meldung weitergeben.';
  }finally{button.disabled=false;}
 });
+</script>
+<script>
+// Pinned InstantHMR 3504446 pixel-CLIFF contract; all coordinates refer to the displayed full frame.
+const BodyPhotoMath=(()=>{
+ const size=224,mean=[.485,.456,.406],std=[.229,.224,.225];
+ function crop(box,w,h){
+  const [x1,y1,x2,y2]=box;
+  if(![w,h,...box].every(Number.isFinite)||w<16||h<16||x1<0||y1<0||x2>w||y2>h||x2-x1<8||y2-y1<8||Math.max(x2-x1,y2-y1)<64)throw Error('Bitte einen ausreichend großen Rahmen um genau eine Person ziehen.');
+  const cx=(x1+x2)/2,cy=(y1+y2)/2,side=Math.ceil(Math.max(x2-x1,y2-y1)*1.2);
+  return {left:Math.floor(cx-side/2),top:Math.floor(cy-side/2),side,cliff:[2*cx/w-1,2*cy/h-1,Math.max(x2-x1,y2-y1)/Math.max(w,h)]};
+ }
+ function tensor(rgba){
+  if(rgba.length!==size*size*4)throw Error('Ungültige Bildpixelzahl.');
+  const buffer=new ArrayBuffer(3*size*size*4),view=new DataView(buffer),n=size*size;
+  for(let c=0;c<3;c++)for(let i=0;i<n;i++)view.setFloat32((c*n+i)*4,(rgba[i*4+c]/255-mean[c])/std[c],true);
+  return buffer;
+ }
+ function base64(buffer){const bytes=new Uint8Array(buffer);let result='';for(let i=0;i<bytes.length;i+=8192)result+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(result)}
+ function unpack(text,kind,count){
+  const raw=atob(text),bytes=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+  const step=kind==='float'?4:2;if(bytes.length!==count*step)throw Error('Unvollständige 3D-Daten.');
+  const view=new DataView(bytes.buffer),out=kind==='float'?new Float32Array(count):new Uint16Array(count);
+  for(let i=0;i<count;i++){out[i]=kind==='float'?view.getFloat32(i*4,true):view.getUint16(i*2,true);if(!Number.isFinite(out[i]))throw Error('Ungültige 3D-Daten.')}
+  return out;
+ }
+ function normals(vertices,faces){
+  const n=new Float32Array(vertices.length),count=vertices.length/3;
+  for(let t=0;t<faces.length;t+=3){
+   const a=faces[t],b=faces[t+1],c=faces[t+2];if(a>=count||b>=count||c>=count)throw Error('Ungültige Netzfläche.');
+   const i=a*3,j=b*3,k=c*3,ux=vertices[j]-vertices[i],uy=vertices[j+1]-vertices[i+1],uz=vertices[j+2]-vertices[i+2],vx=vertices[k]-vertices[i],vy=vertices[k+1]-vertices[i+1],vz=vertices[k+2]-vertices[i+2];
+   const x=uy*vz-uz*vy,y=uz*vx-ux*vz,z=ux*vy-uy*vx;
+   for(const q of [i,j,k]){n[q]+=x;n[q+1]+=y;n[q+2]+=z}
+  }
+  for(let i=0;i<n.length;i+=3){const len=Math.hypot(n[i],n[i+1],n[i+2])||1;n[i]/=len;n[i+1]/=len;n[i+2]/=len}
+  return n;
+ }
+ function bounds(vertices){
+  const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
+  for(let i=0;i<vertices.length;i++) {lo[i%3]=Math.min(lo[i%3],vertices[i]);hi[i%3]=Math.max(hi[i%3],vertices[i])}
+  const center=lo.map((x,i)=>(x+hi[i])/2);let radius=0;
+  for(let i=0;i<vertices.length;i+=3)radius=Math.max(radius,Math.hypot(vertices[i]-center[0],vertices[i+1]-center[1],vertices[i+2]-center[2]));
+  if(!Number.isFinite(radius)||radius<1e-6)throw Error('Das Körpermodell hat keine gültige Ausdehnung.');
+  return {center,radius:radius*1.12};
+ }
+ function project(vertex,camera,w,h){const z=vertex[2]+camera[2];if(z<=.01)return null;const f=Math.hypot(w,h);return [f*(vertex[0]+camera[0])/z+w/2,f*(vertex[1]+camera[1])/z+h/2]}
+ return {crop,tensor,base64,unpack,normals,bounds,project};
+})();
+
+function createBodyPhotoRenderer(canvas,data,mode,frame){
+ const gl=canvas.getContext('webgl',{alpha:true,antialias:true,premultipliedAlpha:false});
+ if(!gl)throw Error('Die 3D-Anzeige ist in dieser WebView nicht verfügbar.');
+ const vertex=`attribute vec3 aPosition;attribute vec3 aNormal;uniform vec3 uCamera;uniform vec3 uCenter;uniform vec2 uFrame;uniform vec2 uViewport;uniform float uMode;uniform float uRadius;uniform float uYaw;varying float vLight;
+ void main(){float c=cos(uYaw),s=sin(uYaw);mat3 r=mat3(c,0.,-s,0.,1.,0.,s,0.,c);vec3 n=aNormal;
+ if(uMode<.5){vec3 p=aPosition+uCamera;float f=length(uFrame);float near=.01,far=1000.;gl_Position=vec4(2.*f*p.x/uFrame.x,-2.*f*p.y/uFrame.y,(far+near)/(far-near)*p.z-2.*far*near/(far-near),p.z);}
+ else{vec3 p=r*(aPosition-uCenter);n=r*n;float aspect=uViewport.x/uViewport.y;gl_Position=vec4(p.x/uRadius/max(1.,aspect),-p.y/uRadius*min(1.,aspect),p.z/uRadius*.25,1.);}
+ vLight=.35+.65*abs(dot(normalize(n),normalize(vec3(.3,-.4,-.8))));}`;
+ const fragment=`precision mediump float;uniform float uAlpha;varying float vLight;void main(){gl_FragColor=vec4(vec3(.37,.24,.52)*vLight,uAlpha);}`;
+ const shaders=[],buffers=[];let program,disposed=false;
+ function shader(type,source){const sh=gl.createShader(type);shaders.push(sh);gl.shaderSource(sh,source);gl.compileShader(sh);if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))throw Error('3D-Shader konnte nicht erstellt werden.');return sh}
+ try{
+  program=gl.createProgram();gl.attachShader(program,shader(gl.VERTEX_SHADER,vertex));gl.attachShader(program,shader(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('3D-Programm konnte nicht erstellt werden.');gl.useProgram(program);
+  for(const [name,array] of [['aPosition',data.vertices],['aNormal',data.normals]]){const buffer=gl.createBuffer();buffers.push(buffer);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,array,gl.STATIC_DRAW);const at=gl.getAttribLocation(program,name);gl.enableVertexAttribArray(at);gl.vertexAttribPointer(at,3,gl.FLOAT,false,0,0)}
+  const indices=gl.createBuffer();buffers.push(indices);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indices);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,data.faces,gl.STATIC_DRAW);
+  const u={};for(const name of ['Camera','Center','Frame','Viewport','Mode','Radius','Yaw','Alpha'])u[name]=gl.getUniformLocation(program,'u'+name);
+  const bounds=BodyPhotoMath.bounds(data.vertices);gl.uniform3fv(u.Camera,data.camera);gl.uniform3fv(u.Center,bounds.center);gl.uniform2f(u.Frame,frame.width,frame.height);gl.uniform1f(u.Mode,mode==='photo'?0:1);gl.uniform1f(u.Radius,bounds.radius);gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);
+  function draw(yaw=0,alpha=.48){
+   if(disposed)return;const dpr=Math.min(window.devicePixelRatio||1,2),w=Math.max(1,Math.round(canvas.clientWidth*dpr)),h=Math.max(1,Math.round(canvas.clientHeight*dpr));
+   if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+   gl.viewport(0,0,w,h);gl.useProgram(program);gl.uniform2f(u.Viewport,w,h);gl.uniform1f(u.Yaw,yaw*Math.PI/180);gl.uniform1f(u.Alpha,mode==='photo'?alpha:1);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+   // Keep the nearest surface in the transparent overlay; browser composites it over the photo.
+   gl.disable(gl.BLEND);gl.drawElements(gl.TRIANGLES,data.faces.length,gl.UNSIGNED_SHORT,0);
+  }
+  return {draw,dispose(){if(disposed)return;disposed=true;for(const b of buffers)gl.deleteBuffer(b);gl.deleteProgram(program);for(const sh of shaders)gl.deleteShader(sh);gl.getExtension('WEBGL_lose_context')?.loseContext()}};
+ }catch(error){for(const b of buffers)gl.deleteBuffer(b);if(program)gl.deleteProgram(program);for(const sh of shaders)gl.deleteShader(sh);throw error}
+}
+
+(()=>{
+ let active=null;
+ const $=(s,selector)=>s.panel.querySelector(selector);
+ const live=s=>active===s;
+ function disposeViews(s,replace=false){
+  for(const view of s.views||[])view.dispose();s.views=[];
+  if(replace)for(const id of ['#bodyPhotoMesh','#bodyPhotoOrbit']){const old=$(s,id);old.replaceWith(old.cloneNode(false))}
+ }
+ function close(){
+  const s=active;if(!s)return false;active=null;
+  if(s.busy)window.Capacitor?.Plugins?.Body3D?.cancelPhoto?.().catch(()=>{});
+  disposeViews(s);s.panel.remove();s.canvas.width=1;s.canvas.height=1;s.result=null;
+  window.Capacitor?.Plugins?.ArchiveDirectory?.setVideoImmersive?.({enabled:true}).catch(()=>{});
+  if(typeof showLightboxControls==='function')showLightboxControls();return true;
+ }
+ window.closeBodyPhotoTest=close;
+ function position(s,event){const r=$(s,'#bodyPhotoSelect').getBoundingClientRect();return [Math.max(0,Math.min(s.canvas.width,(event.clientX-r.left)/r.width*s.canvas.width)),Math.max(0,Math.min(s.canvas.height,(event.clientY-r.top)/r.height*s.canvas.height))]}
+ function drawSelection(s){
+  const c=$(s,'#bodyPhotoSelect'),ctx=c.getContext('2d');ctx.clearRect(0,0,c.width,c.height);
+  const scale=c.width/Math.max(1,c.clientWidth);
+  if(!s.result){
+   const [x1,y1,x2,y2]=s.box;ctx.strokeStyle='#e9bb65';ctx.lineWidth=2.5*scale;ctx.strokeRect(x1,y1,x2-x1,y2-y1);
+   ctx.fillStyle='#fff';for(const [x,y] of [[x1,y1],[x2,y1],[x2,y2],[x1,y2]]){ctx.beginPath();ctx.arc(x,y,5*scale,0,Math.PI*2);ctx.fill();ctx.stroke()}
+  }else if($(s,'#bodyPhotoPoints').checked){
+   ctx.fillStyle='#20bf8d';for(const point of s.result.joints2d||[]){const x=s.crop.left+(point[0]+1)/2*s.crop.side,y=s.crop.top+(point[1]+1)/2*s.crop.side;if(!Number.isFinite(x+y))continue;ctx.beginPath();ctx.arc(x,y,2.2*scale,0,Math.PI*2);ctx.fill()}
+  }
+ }
+ function clearResult(s){disposeViews(s,true);s.result=null;$(s,'#bodyPhotoResult').hidden=true;$(s,'#bodyPhotoMesh').hidden=true;$(s,'#bodyPhotoSelect').style.pointerEvents='auto';drawSelection(s)}
+ function render(s){if(!live(s)||!s.result)return;const opacity=Number($(s,'#bodyPhotoOpacity').value),yaw=Number($(s,'#bodyPhotoYaw').value);$(s,'#bodyPhotoMesh').hidden=!$(s,'#bodyPhotoOverlay').checked;s.views[0]?.draw(0,opacity);s.views[1]?.draw(yaw,1);drawSelection(s)}
+ function setStatus(s,text,error=false){$(s,'#bodyPhotoStatus').textContent=text;$(s,'#bodyPhotoStatus').style.color=error?'#a12e38':'#60466e'}
+ async function run(s){
+  if(s.busy||!live(s))return;const plugin=window.Capacitor?.Plugins?.Body3D;
+  if(!plugin?.analyzePhoto){setStatus(s,'Der Einfoto-Test benötigt die neue Android-APK.',true);return}
+  try{
+   const crop=BodyPhotoMath.crop(s.box,s.canvas.width,s.canvas.height);s.userAdjusted=true;s.busy=true;clearResult(s);$(s,'#bodyPhotoRun').disabled=true;$(s,'#bodyPhotoFrame').disabled=true;
+   setStatus(s,'Das 3D-Modell wird lokal berechnet … Bitte die App geöffnet lassen.');
+   const patch=document.createElement('canvas');patch.width=patch.height=224;const ctx=patch.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,224,224);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='low';
+   const scale=224/crop.side;ctx.drawImage(s.canvas,-crop.left*scale,-crop.top*scale,s.canvas.width*scale,s.canvas.height*scale);
+   const tensor=BodyPhotoMath.base64(BodyPhotoMath.tensor(ctx.getImageData(0,0,224,224).data));patch.width=patch.height=1;
+   const result=await plugin.analyzePhoto({tensor,input:{width:s.canvas.width,height:s.canvas.height,box:s.box.slice()}});
+   if(!live(s))return;
+   if(result.vertexCount!==18439||result.faceCount!==36874||result.coordinateFrame!=='vision_metres'||!Array.isArray(result.camera)||result.camera.length!==3||!result.camera.every(Number.isFinite))throw Error('Die Android-Antwort hat ein unerwartetes Format.');
+   const vertices=BodyPhotoMath.unpack(result.vertices,'float',18439*3),faces=BodyPhotoMath.unpack(result.faces,'short',36874*3),normals=BodyPhotoMath.normals(vertices,faces);
+   s.result=result;s.crop=crop;$(s,'#bodyPhotoResult').hidden=false;$(s,'#bodyPhotoMesh').hidden=false;$(s,'#bodyPhotoSelect').style.pointerEvents='none';
+   const data={vertices,faces,normals,camera:result.camera},frame={width:s.canvas.width,height:s.canvas.height};
+   s.views.push(createBodyPhotoRenderer($(s,'#bodyPhotoMesh'),data,'photo',frame));s.views.push(createBodyPhotoRenderer($(s,'#bodyPhotoOrbit'),data,'orbit',frame));
+   $(s,'#bodyPhotoYaw').value=0;$(s,'#bodyPhotoRun').textContent='Neu berechnen';
+   let inside=0;for(let i=0;i<vertices.length;i+=3){const p=BodyPhotoMath.project(vertices.subarray(i,i+3),result.camera,frame.width,frame.height);if(p&&p[0]>=0&&p[0]<=frame.width&&p[1]>=0&&p[1]<=frame.height)inside++}
+   setStatus(s,`Modell berechnet · 18.439 Netzpunkte · ${Number(result.elapsedSeconds).toFixed(1)} Sekunden. Haltung und Kontur jetzt visuell prüfen. Noch keine Körpermaße.`+(inside<18439/2?' Viele Modellpunkte liegen außerhalb des Fotos. Bitte den Personenrahmen prüfen.':''));render(s);
+  }catch(error){if(live(s)){clearResult(s);setStatus(s,String(error?.message||error),true)}}
+  finally{if(live(s)){s.busy=false;$(s,'#bodyPhotoRun').disabled=false;$(s,'#bodyPhotoFrame').disabled=false}}
+ }
+ async function propose(s){
+  const plugin=window.Capacitor?.Plugins?.ArchiveDirectory;if(!plugin?.analyzePose)return;
+  try{
+   const result=await plugin.analyzePose({dataUrl:s.canvas.toDataURL('image/jpeg',.8)});
+   if(!live(s)||s.userAdjusted||s.busy||s.result)return;
+   const points=Object.values(result.geometry||{}).filter(p=>p.confidence>=.55&&Number.isFinite(p.x)&&Number.isFinite(p.y));
+   if(!result.fullBody||points.length<12){setStatus(s,'Bitte den Rahmen um genau eine Person prüfen oder mit dem Finger neu aufziehen. Für den ersten Test Kopf und Füße mit einschließen.');return}
+   const w=s.canvas.width,h=s.canvas.height,x=points.map(p=>p.x*w),y=points.map(p=>p.y*h),span=Math.max(...y)-Math.min(...y);
+   s.box=[Math.max(0,Math.min(...x)-span*.03),Math.max(0,Math.min(...y)-span*.1),Math.min(w,Math.max(...x)+span*.03),Math.min(h,Math.max(...y)+span*.025)];drawSelection(s);
+   setStatus(s,'Personenrahmen vorgeschlagen. Bei Bedarf korrigieren, dann „3D-Modell berechnen“.');
+  }catch(_){if(live(s)&&!s.userAdjusted&&!s.busy)setStatus(s,'Kein automatischer Rahmen verfügbar. Bitte eine Person mit dem Finger einrahmen.')}
+ }
+ async function open(){
+  const image=document.getElementById('lightboxImage');if(!image?.src||!image.naturalWidth)return;
+  if(active)close();if(typeof stopLightboxSlideshow==='function')stopLightboxSlideshow();if(typeof hideLightboxControlsNow==='function')hideLightboxControlsNow();
+  const canvas=document.createElement('canvas'),factor=Math.min(1,1280/Math.max(image.naturalWidth,image.naturalHeight));canvas.width=Math.round(image.naturalWidth*factor);canvas.height=Math.round(image.naturalHeight*factor);const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+  try{ctx.drawImage(image,0,0,canvas.width,canvas.height)}catch(_){if(typeof toast==='function')toast('Foto konnte nicht für den 3D-Test gelesen werden.');return}
+  const panel=document.createElement('section');panel.className='bodyPhotoPanel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','bodyPhotoTitle');
+  panel.innerHTML=`<div class="bodyPhotoInner"><div class="bodyPhotoHead"><h2 id="bodyPhotoTitle">Einfoto-3D-Test</h2><button type="button" class="bodyPhotoClose" id="bodyPhotoClose" aria-label="Fototest schließen">×</button></div><div class="bodyPhotoName" id="bodyPhotoName"></div><p class="bodyPhotoHint">Für den ersten Test eine einzelne Person von Kopf bis Fuß einrahmen. Den Rahmen bei Bedarf mit dem Finger neu aufziehen oder an den Ecken ändern.</p><div class="bodyPhotoStatus" id="bodyPhotoStatus" role="status" aria-live="polite">Personenrahmen wird vorgeschlagen. Das Foto bleibt auf diesem Handy.</div><div class="bodyPhotoStage"><img id="bodyPhotoImage" alt="Ausgewähltes Archivfoto"><canvas id="bodyPhotoMesh" class="bodyPhotoMesh" hidden></canvas><canvas id="bodyPhotoSelect" aria-label="Personenrahmen wählen"></canvas></div><div class="bodyPhotoControls"><button type="button" class="primary" id="bodyPhotoRun">3D-Modell berechnen</button><button type="button" id="bodyPhotoFrame">Rahmen ändern</button></div><div id="bodyPhotoResult" hidden><div class="bodyPhotoControls"><label><input type="checkbox" id="bodyPhotoOverlay" checked> Modell über Foto</label><label>Deckkraft <input type="range" id="bodyPhotoOpacity" min="0.1" max="0.9" step="0.05" value="0.45"></label><label><input type="checkbox" id="bodyPhotoPoints"> Modell-Bildpunkte</label></div><h3>Drehbare Modellansicht</h3><canvas id="bodyPhotoOrbit" class="bodyPhotoOrbit" aria-label="Geschätztes Körpermodell"></canvas><div class="bodyPhotoControls"><label>Modell drehen <input type="range" id="bodyPhotoYaw" min="-180" max="180" step="1" value="0"></label></div><p class="bodyPhotoHint">Einzelbild-Schätzung ohne Fototextur. Überlagerung und Haltung visuell vergleichen; Kleidung und verdeckte Körperbereiche werden nicht vermessen. Das Ergebnis wird beim Schließen verworfen.</p></div></div>`;
+  document.body.appendChild(panel);const s={panel,canvas,box:[0,0,canvas.width,canvas.height],views:[],busy:false,result:null,userAdjusted:false,drag:null};active=s;
+  const photo=$(s,'#bodyPhotoImage');photo.width=canvas.width;photo.height=canvas.height;photo.src=canvas.toDataURL('image/jpeg',.92);$(s,'#bodyPhotoName').textContent=document.getElementById('lightboxCaption')?.textContent||'Archivfoto';
+  const select=$(s,'#bodyPhotoSelect');select.width=canvas.width;select.height=canvas.height;drawSelection(s);
+  select.addEventListener('pointerdown',event=>{
+   if(s.busy||s.result)return;event.preventDefault();const p=position(s,event),radius=24*canvas.width/select.getBoundingClientRect().width,[x1,y1,x2,y2]=s.box,corners=[[x1,y1],[x2,y1],[x2,y2],[x1,y2]];let corner=corners.findIndex(q=>Math.hypot(q[0]-p[0],q[1]-p[1])<radius);
+   s.userAdjusted=true;s.drag={start:p,old:s.box.slice(),anchor:corner<0?p:corners[(corner+2)%4]};select.setPointerCapture(event.pointerId);
+  });
+  select.addEventListener('pointermove',event=>{if(!s.drag||s.busy)return;event.preventDefault();const p=position(s,event),a=s.drag.anchor;s.box=[Math.min(a[0],p[0]),Math.min(a[1],p[1]),Math.max(a[0],p[0]),Math.max(a[1],p[1])];drawSelection(s)});
+  const finish=()=>{if(!s.drag)return;if(s.box[2]-s.box[0]<8||s.box[3]-s.box[1]<8)s.box=s.drag.old;s.drag=null;drawSelection(s)};select.addEventListener('pointerup',finish);select.addEventListener('pointercancel',()=>{if(s.drag)s.box=s.drag.old;finish()});
+  $(s,'#bodyPhotoClose').onclick=close;$(s,'#bodyPhotoRun').onclick=()=>run(s);$(s,'#bodyPhotoFrame').onclick=()=>{if(s.busy)return;clearResult(s);s.userAdjusted=true;setStatus(s,'Rahmen um genau eine Person ziehen, danach erneut berechnen.')};
+  for(const id of ['#bodyPhotoOpacity','#bodyPhotoYaw','#bodyPhotoOverlay','#bodyPhotoPoints'])$(s,id).addEventListener('input',()=>render(s));
+  $(s,'#bodyPhotoClose').focus({preventScroll:true});window.Capacitor?.Plugins?.ArchiveDirectory?.setVideoImmersive?.({enabled:false}).catch(()=>{});
+  propose(s);
+ }
+ document.getElementById('lightboxPhoto3d')?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();open()});
+ document.addEventListener('keydown',event=>{if(!active)return;if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close()}else if(event.key.startsWith('Arrow'))event.stopPropagation()},true);
+ window.addEventListener('resize',()=>{if(active){drawSelection(active);render(active)}});
+})();
+
 </script>
 </body>
 </html>
