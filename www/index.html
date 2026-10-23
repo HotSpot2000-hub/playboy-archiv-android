@@ -15112,7 +15112,17 @@ const BodyPhotoMath=(()=>{
   return {center,radius:radius*1.12};
  }
  function project(vertex,camera,w,h){const z=vertex[2]+camera[2];if(z<=.01)return null;const f=Math.hypot(w,h);return [f*(vertex[0]+camera[0])/z+w/2,f*(vertex[1]+camera[1])/z+h/2]}
- return {crop,tensor,base64,unpack,normals,bounds,project};
+ function comparePoints(result,crop,w,h){
+  const valid=(points,dim)=>Array.isArray(points)&&points.length===70&&points.every(p=>Array.isArray(p)&&p.length===dim&&p.every(Number.isFinite));
+  if(result.pointDiagnosticRevision!==1||!valid(result.joints2d,2)||!valid(result.joints3d,3))throw Error('Die neue Punktdiagnose benötigt die passende Android-APK.');
+  const image=result.joints2d.map(p=>[crop.left+(p[0]+1)*.5*crop.side,crop.top+(p[1]+1)*.5*crop.side]);
+  const projected=result.joints3d.map(p=>project(p,result.camera,w,h));
+  const errors=projected.flatMap((p,i)=>p?[Math.hypot(p[0]-image[i][0],p[1]-image[i][1])]:[]).sort((a,b)=>a-b);
+  if(!errors.length)throw Error('Keine 3D-Körperpunkte vor der Kamera. Bitte den Rahmen prüfen.');
+  const mid=Math.floor(errors.length/2),median=errors.length%2?errors[mid]:(errors[mid-1]+errors[mid])/2;
+  return {image,projected,count:errors.length,median,max:errors[errors.length-1],percent:median/Math.hypot(w,h)*100};
+ }
+ return {crop,tensor,base64,unpack,normals,bounds,project,comparePoints};
 })();
 
 function createBodyPhotoRenderer(canvas,data,mode,frame){
@@ -15167,7 +15177,11 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
    const [x1,y1,x2,y2]=s.box;ctx.strokeStyle='#e9bb65';ctx.lineWidth=2.5*scale;ctx.strokeRect(x1,y1,x2-x1,y2-y1);
    ctx.fillStyle='#fff';for(const [x,y] of [[x1,y1],[x2,y1],[x2,y2],[x1,y2]]){ctx.beginPath();ctx.arc(x,y,5*scale,0,Math.PI*2);ctx.fill();ctx.stroke()}
   }else if($(s,'#bodyPhotoPoints').checked){
-   ctx.fillStyle='#20bf8d';for(const point of s.result.joints2d||[]){const x=s.crop.left+(point[0]+1)/2*s.crop.side,y=s.crop.top+(point[1]+1)/2*s.crop.side;if(!Number.isFinite(x+y))continue;ctx.beginPath();ctx.arc(x,y,2.2*scale,0,Math.PI*2);ctx.fill()}
+   const diagnostic=s.pointDiagnostic;
+   ctx.strokeStyle='rgba(221,119,0,.6)';ctx.lineWidth=scale;
+   diagnostic.projected.forEach((p,i)=>{if(!p)return;ctx.beginPath();ctx.moveTo(...diagnostic.image[i]);ctx.lineTo(...p);ctx.stroke()});
+   ctx.fillStyle='#20bf8d';for(const p of diagnostic.image){ctx.beginPath();ctx.arc(...p,2.5*scale,0,Math.PI*2);ctx.fill()}
+   ctx.strokeStyle='#db7900';ctx.lineWidth=1.8*scale;for(const p of diagnostic.projected){if(!p)continue;ctx.beginPath();ctx.arc(...p,4.5*scale,0,Math.PI*2);ctx.stroke()}
   }
  }
  function clearResult(s){disposeViews(s,true);s.result=null;$(s,'#bodyPhotoResult').hidden=true;$(s,'#bodyPhotoMesh').hidden=true;$(s,'#bodyPhotoSelect').style.pointerEvents='auto';drawSelection(s)}
@@ -15186,6 +15200,8 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
    if(!live(s))return;
    if(result.vertexCount!==18439||result.faceCount!==36874||result.coordinateFrame!=='vision_metres'||!Array.isArray(result.camera)||result.camera.length!==3||!result.camera.every(Number.isFinite))throw Error('Die Android-Antwort hat ein unerwartetes Format.');
    const vertices=BodyPhotoMath.unpack(result.vertices,'float',18439*3),faces=BodyPhotoMath.unpack(result.faces,'short',36874*3),normals=BodyPhotoMath.normals(vertices,faces);
+   s.pointDiagnostic=BodyPhotoMath.comparePoints(result,crop,s.canvas.width,s.canvas.height);
+   const d=s.pointDiagnostic;$(s,'#bodyPhotoPointReport').textContent=`Punktvergleich: ${d.count}/70 Paare · mittlerer Abstand (Median) ${d.median.toFixed(1)} Bildpixel (${d.percent.toFixed(2)} % der Bilddiagonale) · größter Abstand ${d.max.toFixed(1)} Bildpixel. Vergleich zweier Modellausgaben, kein Körpermaßfehler.`;
    s.result=result;s.crop=crop;$(s,'#bodyPhotoResult').hidden=false;$(s,'#bodyPhotoMesh').hidden=false;$(s,'#bodyPhotoSelect').style.pointerEvents='none';
    const data={vertices,faces,normals,camera:result.camera},frame={width:s.canvas.width,height:s.canvas.height};
    s.views.push(createBodyPhotoRenderer($(s,'#bodyPhotoMesh'),data,'photo',frame));s.views.push(createBodyPhotoRenderer($(s,'#bodyPhotoOrbit'),data,'orbit',frame));
@@ -15213,7 +15229,7 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
   const canvas=document.createElement('canvas'),factor=Math.min(1,1280/Math.max(image.naturalWidth,image.naturalHeight));canvas.width=Math.round(image.naturalWidth*factor);canvas.height=Math.round(image.naturalHeight*factor);const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
   try{ctx.drawImage(image,0,0,canvas.width,canvas.height)}catch(_){if(typeof toast==='function')toast('Foto konnte nicht für den 3D-Test gelesen werden.');return}
   const panel=document.createElement('section');panel.className='bodyPhotoPanel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','bodyPhotoTitle');
-  panel.innerHTML=`<div class="bodyPhotoInner"><div class="bodyPhotoHead"><h2 id="bodyPhotoTitle">Einfoto-3D-Test</h2><button type="button" class="bodyPhotoClose" id="bodyPhotoClose" aria-label="Fototest schließen">×</button></div><div class="bodyPhotoName" id="bodyPhotoName"></div><p class="bodyPhotoHint">Für den ersten Test eine einzelne Person von Kopf bis Fuß einrahmen. Den Rahmen bei Bedarf mit dem Finger neu aufziehen oder an den Ecken ändern.</p><div class="bodyPhotoStatus" id="bodyPhotoStatus" role="status" aria-live="polite">Personenrahmen wird vorgeschlagen. Das Foto bleibt auf diesem Handy.</div><div class="bodyPhotoStage"><img id="bodyPhotoImage" alt="Ausgewähltes Archivfoto"><canvas id="bodyPhotoMesh" class="bodyPhotoMesh" hidden></canvas><canvas id="bodyPhotoSelect" aria-label="Personenrahmen wählen"></canvas></div><div class="bodyPhotoControls"><button type="button" class="primary" id="bodyPhotoRun">3D-Modell berechnen</button><button type="button" id="bodyPhotoFrame">Rahmen ändern</button></div><div id="bodyPhotoResult" hidden><div class="bodyPhotoControls"><label><input type="checkbox" id="bodyPhotoOverlay" checked> Modell über Foto</label><label>Deckkraft <input type="range" id="bodyPhotoOpacity" min="0.1" max="0.9" step="0.05" value="0.45"></label><label><input type="checkbox" id="bodyPhotoPoints"> Modell-Bildpunkte</label></div><h3>Drehbare Modellansicht</h3><canvas id="bodyPhotoOrbit" class="bodyPhotoOrbit" aria-label="Geschätztes Körpermodell"></canvas><div class="bodyPhotoControls"><label>Modell drehen <input type="range" id="bodyPhotoYaw" min="-180" max="180" step="1" value="0"></label></div><p class="bodyPhotoHint">Einzelbild-Schätzung ohne Fototextur. Überlagerung und Haltung visuell vergleichen; Kleidung und verdeckte Körperbereiche werden nicht vermessen. Das Ergebnis wird beim Schließen verworfen.</p></div></div>`;
+  panel.innerHTML=`<div class="bodyPhotoInner"><div class="bodyPhotoHead"><h2 id="bodyPhotoTitle">Einfoto-3D-Test</h2><button type="button" class="bodyPhotoClose" id="bodyPhotoClose" aria-label="Fototest schließen">×</button></div><div class="bodyPhotoName" id="bodyPhotoName"></div><p class="bodyPhotoHint">Für den ersten Test eine einzelne Person von Kopf bis Fuß einrahmen. Den Rahmen bei Bedarf mit dem Finger neu aufziehen oder an den Ecken ändern.</p><div class="bodyPhotoStatus" id="bodyPhotoStatus" role="status" aria-live="polite">Personenrahmen wird vorgeschlagen. Das Foto bleibt auf diesem Handy.</div><p class="bodyPhotoHint">Grün: Bildpunkte · Orange: projizierte 3D-Punkte · Violett: Körpernetz.</p><p class="bodyPhotoHint" id="bodyPhotoPointReport" role="status"></p><div class="bodyPhotoStage"><img id="bodyPhotoImage" alt="Ausgewähltes Archivfoto"><canvas id="bodyPhotoMesh" class="bodyPhotoMesh" hidden></canvas><canvas id="bodyPhotoSelect" aria-label="Personenrahmen wählen"></canvas></div><div class="bodyPhotoControls"><button type="button" class="primary" id="bodyPhotoRun">3D-Modell berechnen</button><button type="button" id="bodyPhotoFrame">Rahmen ändern</button></div><div id="bodyPhotoResult" hidden><div class="bodyPhotoControls"><label><input type="checkbox" id="bodyPhotoOverlay" checked> Modell über Foto</label><label>Deckkraft <input type="range" id="bodyPhotoOpacity" min="0.1" max="0.9" step="0.05" value="0.45"></label><label><input type="checkbox" id="bodyPhotoPoints" checked> Bild- und 3D-Punkte</label></div><h3>Drehbare Modellansicht</h3><canvas id="bodyPhotoOrbit" class="bodyPhotoOrbit" aria-label="Geschätztes Körpermodell"></canvas><div class="bodyPhotoControls"><label>Modell drehen <input type="range" id="bodyPhotoYaw" min="-180" max="180" step="1" value="0"></label></div><p class="bodyPhotoHint">Einzelbild-Schätzung ohne Fototextur. Überlagerung und Haltung visuell vergleichen; Kleidung und verdeckte Körperbereiche werden nicht vermessen. Das Ergebnis wird beim Schließen verworfen.</p></div></div>`;
   document.body.appendChild(panel);const s={panel,canvas,box:[0,0,canvas.width,canvas.height],views:[],busy:false,result:null,userAdjusted:false,drag:null};active=s;
   const photo=$(s,'#bodyPhotoImage');photo.width=canvas.width;photo.height=canvas.height;photo.src=canvas.toDataURL('image/jpeg',.92);$(s,'#bodyPhotoName').textContent=document.getElementById('lightboxCaption')?.textContent||'Archivfoto';
   const select=$(s,'#bodyPhotoSelect');select.width=canvas.width;select.height=canvas.height;drawSelection(s);
