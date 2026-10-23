@@ -229,6 +229,7 @@ jobs:
           import hashlib
           import json
           import os
+          os.environ['ORT_DISABLE_TELEMETRY'] = '1'
           from pathlib import Path
           import platform
           import shutil
@@ -258,7 +259,7 @@ jobs:
            return torch.cat((a[...,:3]+a[...,7:]*qrotate(a[...,3:7],b[...,:3]),q,a[...,7:]*b[...,7:]),-1)
           
           
-          class EagerMHR(torch.nn.Module):
+          class CompactMHR(torch.nn.Module):
            def __init__(self,original):
             super().__init__();c=original.character_torch;s=c.skeleton;l=c.linear_blend_skinning
             def buf(name,value): self.register_buffer(name,value.detach())
@@ -271,7 +272,15 @@ jobs:
             self.parents=s.joint_parents.tolist()
             sparse=original.pose_correctives_model.pose_dirs_predictor._modules['0']
             buf('corrective_a',torch.sparse_coo_tensor(sparse.sparse_indices,sparse.sparse_weight,tuple(sparse.sparse_shape)).to_dense())
-            buf('corrective_b',original.pose_correctives_model.pose_dirs_predictor._modules['2'].weight)
+            matrix=original.pose_correctives_model.pose_dirs_predictor._modules['2'].weight
+            self.active_blocks=[]
+            for j in range(125):
+             block=matrix[:,j*24:(j+1)*24]
+             rows=(block!=0).any(dim=1).nonzero().flatten()
+             if rows.numel():
+              self.active_blocks.append(j)
+              buf('corrective_rows_'+str(j),rows)
+              buf('corrective_block_'+str(j),block.index_select(0,rows).contiguous())
            def forward(self,identity,pose,expression):
             rest=self.base+torch.einsum('nvd,bn->bvd',self.identity_dirs,identity)+torch.einsum('nvd,bn->bvd',self.face_dirs,expression)
             jp=torch.nn.functional.linear(torch.cat((pose,torch.zeros_like(identity)),-1),self.parameter_map).reshape(-1,127,7)
@@ -288,7 +297,14 @@ jobs:
             co=torch.cos(angles[:,2:]);si=torch.sin(angles[:,2:])
             cx,cy,cz=co.unbind(-1);sx,sy,sz=si.unbind(-1)
             features=torch.stack((cy*cz-1,cy*sz,-sy,-cx*sz+sx*sy*cz,cx*cz+sx*sy*sz-1,sx*cy),-1).flatten(1)
-            offsets=torch.nn.functional.linear(torch.relu(torch.nn.functional.linear(features,self.corrective_a)),self.corrective_b).reshape(-1,18439,3)
+            hidden=torch.relu(torch.nn.functional.linear(features,self.corrective_a))
+            offsets=torch.zeros_like(rest).flatten(1)
+            for j in self.active_blocks:
+             rows=getattr(self,'corrective_rows_'+str(j))
+             block=getattr(self,'corrective_block_'+str(j))
+             values=torch.nn.functional.linear(hidden[:,j*24:(j+1)*24],block)
+             offsets=offsets.scatter_add(1,rows.unsqueeze(0).expand_as(values),values)
+            offsets=offsets.reshape(-1,18439,3)
             rest=rest+offsets
             transforms=compose(global_state,self.invbind.unsqueeze(0).expand_as(global_state))
             influence=transforms.index_select(1,self.skinidx)
@@ -299,12 +315,21 @@ jobs:
             return torch.zeros_like(rest).scatter_add(1,indices,weighted)
           
           
+          SAM_LICENSE = 'SAM License\nLast Updated: November 19, 2025\n\n“Agreement” means the terms and conditions for use, reproduction, distribution and modification of the SAM Materials set forth herein.\n\n“SAM Materials” means, collectively, Documentation and the models, software and algorithms, including machine-learning model code, trained model weights, inference-enabling code, training-enabling code, fine-tuning enabling code, and other elements of the foregoing distributed by Meta and made available under this Agreement.\n\n“Documentation” means the specifications, manuals and documentation accompanying \nSAM Materials distributed by Meta.\n\n“Licensee” or “you” means you, or your employer or any other person or entity (if you are entering into this Agreement on such person or entity’s behalf), of the age required under applicable laws, rules or regulations to provide legal consent and that has legal authority to bind your employer or such other person or entity if you are entering in this Agreement on their behalf.\n\n“Meta” or “we” means Meta Platforms Ireland Limited (if you are located in or, if you are an entity, your principal place of business is in the EEA or Switzerland) or Meta Platforms, Inc. (if you are located outside of the EEA or Switzerland).\n\n“Sanctions” means any economic or trade sanctions or restrictions administered or enforced by the United States (including the Office of Foreign Assets Control of the U.S. Department of the Treasury (“OFAC”), the U.S. Department of State and the U.S. Department of Commerce), the United Nations, the European Union, or the United Kingdom.\n\n“Trade Controls” means any of the following: Sanctions and applicable export and import controls.\n\nBy using or distributing any portion or element of the SAM Materials, you agree to be bound by this Agreement.\n\n1. License Rights and Redistribution.\n\na. Grant of Rights. You are granted a non-exclusive, worldwide, non-transferable and royalty-free limited license under Meta’s intellectual property or other rights owned by Meta embodied in the SAM Materials to use, reproduce, distribute, copy, create derivative works of, and make modifications to the SAM Materials.  \n\ni. Grant of Patent License. Subject to the terms and conditions of this License, you are granted a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable (except as stated in this section) patent license to make, have made, use, offer to sell, sell, import, and otherwise transfer the Work, where such license applies only to those patent claims licensable by Meta that are necessarily infringed alone or by combination of their contribution(s) with the SAM 3 Materials. If you institute patent litigation against any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the SAM 3 Materials incorporated within the work constitutes direct or contributory patent infringement, then any patent licenses granted to you under this License for that work shall terminate as of the date such litigation is filed.\n \nb. Redistribution and Use.  \n\ni. Distribution of SAM Materials, and any derivative works thereof, are subject to the terms of this Agreement. If you distribute or make the SAM Materials, or any derivative works thereof, available to a third party, you may only do so under the terms of this Agreement and you shall provide a copy of this Agreement with any such SAM Materials.\n\nii.  If you submit for publication the results of research you perform on, using, or otherwise in connection with SAM Materials, you must acknowledge the use of SAM Materials in your publication.\n\niii. Your use of the SAM Materials must comply with applicable laws and regulations, including Trade Control Laws and applicable privacy and data protection laws.\niv. Your use of the SAM Materials will not involve or encourage others to reverse engineer, decompile or discover the underlying components of the SAM Materials.\nv. You are not the target of Trade Controls and your use of SAM Materials must comply with Trade Controls. You agree not to use, or permit others to use, SAM Materials for any activities subject to the International Traffic in Arms Regulations (ITAR) or end uses prohibited by Trade Controls, including those related to military or warfare purposes, nuclear industries or applications, espionage, or the development or use of guns or illegal weapons.\n2. User Support. Your use of the SAM Materials is done at your own discretion; Meta does not process any information nor provide any service in relation to such use.  Meta is under no obligation to provide any support services for the SAM Materials. Any support provided is “as is”, “with all faults”, and without warranty of any kind.\n\n3. Disclaimer of Warranty. UNLESS REQUIRED BY APPLICABLE LAW, THE SAM MATERIALS AND ANY OUTPUT AND RESULTS THEREFROM ARE PROVIDED ON AN “AS IS” BASIS, WITHOUT WARRANTIES OF ANY KIND, AND META DISCLAIMS ALL WARRANTIES OF ANY KIND, BOTH EXPRESS AND IMPLIED, INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OF TITLE, NON-INFRINGEMENT, MERCHANTABILITY, OR FITNESS FOR A PARTICULAR PURPOSE. YOU ARE SOLELY RESPONSIBLE FOR DETERMINING THE APPROPRIATENESS OF USING OR REDISTRIBUTING THE SAM MATERIALS AND ASSUME ANY RISKS ASSOCIATED WITH YOUR USE OF THE SAM MATERIALS AND ANY OUTPUT AND RESULTS.\n \n4. Limitation of Liability. IN NO EVENT WILL META OR ITS AFFILIATES BE LIABLE UNDER ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, TORT, NEGLIGENCE, PRODUCTS LIABILITY, OR OTHERWISE, ARISING OUT OF THIS AGREEMENT, FOR ANY LOST PROFITS OR ANY DIRECT OR INDIRECT, SPECIAL, CONSEQUENTIAL, INCIDENTAL, EXEMPLARY OR PUNITIVE DAMAGES, EVEN IF META OR ITS AFFILIATES HAVE BEEN ADVISED OF THE POSSIBILITY OF ANY OF THE FOREGOING.\n \n5. Intellectual Property.\n\na. Subject to Meta’s ownership of SAM Materials and derivatives made by or for Meta, with respect to any derivative works and modifications of the SAM Materials that are made by you, as between you and Meta, you are and will be the owner of such derivative works and modifications.\n \nb. If you institute litigation or other proceedings against Meta or any entity (including a cross-claim or counterclaim in a lawsuit) alleging that the SAM Materials, outputs or results, or any portion of any of the foregoing, constitutes infringement of intellectual property or other rights owned or licensable by you, then any licenses granted to you under this Agreement shall terminate as of the date such litigation or claim is filed or instituted. You will indemnify and hold harmless Meta from and against any claim by any third party arising out of or related to your use or distribution of the SAM Materials.\n \n6. Term and Termination. The term of this Agreement will commence upon your acceptance of this Agreement or access to the SAM Materials and will continue in full force and effect until terminated in accordance with the terms and conditions herein. Meta may terminate this Agreement if you are in breach of any term or condition of this Agreement. Upon termination of this Agreement, you shall delete and cease use of the SAM Materials. Sections 3, 4 and 7 shall survive the termination of this Agreement. \n \n7. Governing Law and Jurisdiction. This Agreement will be governed and construed under the laws of the State of California without regard to choice of law principles, and the UN Convention on Contracts for the International Sale of Goods does not apply to this Agreement. The courts of California shall have exclusive jurisdiction of any dispute arising out of this Agreement. \n\n8. Modifications and Amendments. Meta may modify this Agreement from time to time; provided that they are similar in spirit to the current version of the Agreement, but may differ in detail to address new problems or concerns. All such changes will be effective immediately. Your continued use of the SAM Materials after any modification to this Agreement constitutes your agreement to such modification. Except as provided in this Agreement, no modification or addition to any provision of this Agreement will be binding unless it is in writing and signed by an authorized representative of both you and Meta.\n'
+          
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 3, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 4, 'stages': []}
           
           def download(url, target, max_bytes):
+              known = {'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
+                       'mhr-assets.zip': 'e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94'}
+              if target.exists() and target.name in known:
+                  with target.open('rb') as cached:
+                      fingerprint = hashlib.file_digest(cached, 'sha256').hexdigest()
+                  if fingerprint == known[target.name]:
+                      return {'url': url, 'bytes': target.stat().st_size, 'sha256': fingerprint, 'verified_cache': True}
               request = urllib.request.Request(url, headers={'User-Agent': 'PlayboyArchiv-3D-Preflight/1.0'})
               count = 0
               digest = hashlib.sha256()
@@ -361,6 +386,7 @@ jobs:
               import numpy as np
               import onnx
               import onnxruntime as ort
+              ort.disable_telemetry_events()
               import torch
               torch.set_num_threads(2)
               REPORT['environment'] = {'python': platform.python_version(), 'torch': torch.__version__,
@@ -408,6 +434,7 @@ jobs:
                           raise RuntimeError('Decoder exceeds diagnostic size limit')
                       with bundle.open(info) as source, decoder_path.open('wb') as target:
                           shutil.copyfileobj(source, target)
+                      (ROOT / 'MHR-LICENSE.txt').write_bytes(bundle.read('assets/LICENSE.txt'))
                       licenses = [name for name in bundle.namelist() if Path(name).name.upper().startswith('LICENSE')]
                       return {'member': info.filename, 'bytes': info.file_size, 'license_members': licenses,
                               'sha256': hashlib.file_digest(decoder_path.open('rb'), 'sha256').hexdigest()}
@@ -450,7 +477,7 @@ jobs:
                   nonlocal export_model
                   # Source-backed eager tensor implementation; no nested frozen ScriptModule.
                   # Pose correctives remain enabled and are checked against the official model.
-                  export_model = EagerMHR(decoder).eval()
+                  export_model = CompactMHR(decoder).eval()
                   errors = []
                   with torch.no_grad():
                       for inputs, expected in zip(cases, reference):
@@ -460,7 +487,7 @@ jobs:
                   return {'original_forward_schema': str(decoder.forward.schema),
                           'checked_cases': len(cases), 'output': 'vertices only',
                           'max_abs_errors_native_units': errors, 'pose_correctives_enabled': True,
-                          'adapter': 'source-backed EagerMHR; v1.0.1 asset fingerprint checked'}
+                          'adapter': 'source-backed CompactMHR; v1.0.1 asset fingerprint checked'}
               stage('Decoder für Export vorbereiten und gegenprüfen', prepare_export)
           
               def export_decoder():
@@ -470,7 +497,10 @@ jobs:
                                         input_names=['identity', 'pose', 'expression'],
                                         output_names=['vertices'], do_constant_folding=True)
                   onnx.checker.check_model(str(target))
-                  return {'bytes': target.stat().st_size, 'batch': 1, 'opset': 17}
+                  if target.stat().st_size > 80 * 1024**2:
+                      raise RuntimeError('Compact decoder size regression')
+                  return {'bytes': target.stat().st_size, 'batch': 1, 'opset': 17,
+                          'zero_blocks_omitted': 34, 'quantized_or_pruned': False}
               stage('Decoder ONNX-Export', export_decoder)
           
               def parity():
@@ -494,9 +524,29 @@ jobs:
                       expected_chain = decoder(torch.from_numpy(feeds['identity']), torch.from_numpy(feeds['pose']),
                                                torch.from_numpy(feeds['expression']))[0].numpy()
                   np.testing.assert_allclose(got, expected_chain, rtol=1e-4, atol=1e-3)
+                  (ROOT / 'synthetic-reference.f32').write_bytes(expected_chain.astype('<f4').tobytes())
                   return {'checked_cases': len(cases), 'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
                           'tolerance': 'rtol=1e-4, atol=1e-3 in MHR native units; export parity, not body accuracy'}
               stage('Numerische Exportprüfung und Modellkette', parity)
+              asset_dir = os.environ.get('BODY3D_ASSET_DIR')
+              if asset_dir:
+                  def package_assets():
+                      destination = Path(asset_dir)
+                      destination.mkdir(parents=True, exist_ok=True)
+                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt']
+                      for name in names:
+                          shutil.copyfile(ROOT / name, destination / name)
+                      (destination / 'SAM-LICENSE.txt').write_text(SAM_LICENSE, encoding='utf-8')
+                      (destination / 'NOTICE.txt').write_text(
+                          'InstantHMR weights: momolesang/InstantHMR, pinned release 3504446fc31e7f76fdb1cd7e463189e7cf0fdd0f; SAM License.\n'
+                          'MHR v1.0.1: Copyright (c) Meta Platforms, Inc. and affiliates; Apache License 2.0.\n'
+                          'Modified for Playboy Archiv: equivalent packed pose-corrective blocks and ONNX export; no quantization.\n'
+                          'Synthetic technical test only. Not a body-measurement accuracy claim.\n', encoding='utf-8')
+                      manifest = {name: {'bytes': (destination / name).stat().st_size,
+                                  'sha256': hashlib.sha256((destination / name).read_bytes()).hexdigest()} for name in names}
+                      (destination / 'manifest.json').write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+                      return {'files': manifest, 'scope': 'APK assets; synthetic CPU test only'}
+                  stage('Android-Testdateien bereitstellen', package_assets)
           
           if __name__ == '__main__':
               try:
