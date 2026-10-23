@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-23
-Referenz-Commit: `ca679774ec88ad40fe6af553cf703afaa9bad796`
+Referenz-Commit: `b9ed375e221c587ac4641ef583949c8eed89fa5b`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,44 @@ Referenz-Commit: `ca679774ec88ad40fe6af553cf703afaa9bad796`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktuelle Übergabe: Bildmodell intern FP16, FP32-Ausführung vorbereitet
+## Aktueller bestätigter Stand: FP32-Techniktest auf dem S25 bestanden
+
+Berücksichtigtes main: `b9ed375e221c587ac4641ef583949c8eed89fa5b`. Seit Referenz ca67977 wurden Preflight-Revision 6, STATUS und native Prüfung 3 hochgeladen; Änderungen geprüft. **APK-Build 569**, Lauf **40001344901**, erfolgreich mit FP32-Vorbereitung, APK-/Manifestprüfung, permanenter Signatur und Upload. Benutzer hat genau diese APK als Update installiert.
+
+### Gerätetest am 23.10.2026 bestätigt
+
+Benutzer bestätigt „Hat geklappt.“; Screenshot zeigt:
+
+> Bestanden: Bildmodell und 3D-Decoder laufen auf diesem Handy. 18.439 Netzpunkte geprüft · 1.8 Sekunden. Noch kein Fototest und keine Maßprüfung.
+
+- Gerät: **Samsung Galaxy S25 Ultra SM-S938B/DS**; ausschließlich Handy, kein PC beim Benutzer.
+- Synthetische FP32-Bildmodell→MHR-Kette und isolierter Decodervergleich haben die bestehenden Fehlergrenzen auf dem Gerät bestanden. Beide Vergleiche bleiben verpflichtend; keine Lockerung von atol 0,001 / rtol 0,0001.
+- **Angezeigter einzelner Durchlauf: 1,8 Sekunden.** Kein gemessener Dauerbetrieb, kein Speicher-/Wärmebenchmark und keine Aussage zur Geschwindigkeit ganzer Galerien. Genaue erfolgreiche Fehlerwerte werden in der vorhandenen UI nicht angezeigt und daher nicht erfunden.
+- Der zuvor mit FP16 beobachtete Referenzfehler tritt in diesem FP32-Gerätetest nicht mehr auf. Die konkrete verantwortliche interne Rundungs-/Kernelstelle wurde nicht instrumentiert. Keine pauschale Aussage über andere Modelle oder Geräte daraus ableiten.
+- Noch keine echte Fotoeingabe, Mehrbildrekonstruktion, Skalierung oder Körpermaßgenauigkeit geprüft. Es wurden keinerlei Profilangaben oder Archivdaten verändert und keine Archivmedien hochgeladen.
+- Build 569 ist der bestätigte App-Stand. Keine weiteren synthetischen Wiederholungstests und keine Neuinstallation für diesen Statusnachtrag notwendig. Ein automatischer Build nach reinem STATUS-Upload enthält keine funktionale Änderung und muss nicht installiert werden.
+
+### Relevante stabile technische Grundlage
+
+- Lokale FP32-Bildrechnung mit exakt aus den gepinnten FP16-Gewichtswerten überführten Tensorwerten; Float16-Ausführungstypen/Casts entfernt. Bildmodell 161.106.320 Bytes; kompakter MHR-Decoder 59.587.507 Bytes mit allen Posekorrekturen, 18.439 Netzpunkten.
+- CI prüft Originaldownloads, Konvertierung, verbleibende Float16-Typen, Decoder-Exportparität und synthetische Modellkette. Native Seite prüft Manifestversion 3 / `image_compute: float32`, isolierten Decoder und Gesamtkette.
+- CPU-Ausführung, lazy Modellinitialisierung, sequentielle Sitzungen, mmap statt kompletter Java-Bytearray-Kopie. Telemetrie vor Initialisierung gesperrt und automatischer Android-Provider entfernt. Keine NPU-/GPU-/NNAPI-Freigabe und kein Medien-Upload.
+- Bestehende Signierung/Updatefähigkeit, Modelldaten, Archivschema und UI bleiben unverändert. Vollständige SAM-/MHR-Lizenzen werden mitgeliefert.
+
+### Verbindlicher nächster Arbeitsblock: genau ein echtes Foto
+
+1. Vor Implementierung Eingabevertrag des **konkret gepinnten InstantHMR-Modells** prüfen: RGB/NCHW, Normalisierung, Personenausschnitt, Seitenverhältnis/Padding, `cliff_cond`-/Kamerakonvention und Rückprojektion. Den erfolgreichen künstlichen Nulltensor nicht als Beleg korrekter Fotoverarbeitung behandeln; neuere Repository-Dokumentation kann von den gepinnten Gewichten abweichen.
+2. Einen begrenzten lokalen Einfoto-Test in der vorhandenen Android-App vorbereiten. Auswahl eines vorhandenen Archivfotos; keine Aufforderung zum Cloud-Upload und keine erneute Feld-für-Feld-Beurteilung ganzer Shootings.
+3. Originalfoto und daraus geschätztes Körpernetz sichtbar vergleichen, mit einer überlagerten Darstellung oder klar zugeordneten 3D-Ansicht. Zunächst prüfen, ob Lage, Haltung und Körperkontur plausibel zum Foto passen. Fehlerhafte Ausschnitte, mehrere Personen oder unzureichende Erkennbarkeit nicht als belastbare Form akzeptieren.
+4. Noch keine Zentimeter-/Cupwerte ausgeben, keine Profiländerungen und keine automatische Messgruppenanlage. Erst nach plausiblem Fotoergebnis weitere Ansichten desselben Körperstands ergänzen und gemeinsame Form stabilisieren.
+
+Tahlia Paris: Shootings **1, 2 und 6** sind die vom Benutzer bestätigte frühere Ausgangsgruppe. Übrige Shootings nur vorläufig spätere Gruppe; Nummern sind keine Datierung. Keine körperstandsübergreifenden Mittelwerte oder automatisch erratenen Archiv-IDs.
+
+### Dieser Arbeitsgang
+
+Nur diese vollständige STATUS-Ersatzdatei wurde aktualisiert und als ZIP bereitgestellt; kein App-Code geändert und kein neuer Build ausgelöst. Grundlage sind aktueller main-Abgleich, bereits geprüfter Build 569 und der vom Benutzer vorgelegte erfolgreiche Gerätescreenshot. Für eine reine Dokumentationsaktualisierung sind keine weiteren Modell-/App-Tests erforderlich.
+
+## Historische Übergabe: Bildmodell intern FP16, FP32-Ausführung vorbereitet
 
 Berücksichtigtes main: `ca679774ec88ad40fe6af553cf703afaa9bad796`. Seit Referenz 8b79f79 wurden Preflight, STATUS und native Diagnose hochgeladen und geprüft. **APK-Build 566**, Lauf **39994767028**, war erfolgreich gebaut, auf verpackte Assets/Telemetriesperren geprüft und dauerhaft signiert. Benutzer hat diese APK installiert und Diagnose 2 ausgeführt.
 
