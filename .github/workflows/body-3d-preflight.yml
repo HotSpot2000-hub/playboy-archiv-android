@@ -379,7 +379,7 @@ jobs:
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 6, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 7, 'stages': []}
           
           def download(url, target, max_bytes):
               known = {'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
@@ -525,6 +525,12 @@ jobs:
               def check_decoder():
                   nonlocal decoder
                   decoder = torch.jit.load(str(decoder_path), map_location='cpu').eval()
+                  faces = decoder.character_torch.mesh.faces.detach().cpu().numpy()
+                  if faces.shape != (36874, 3) or not np.issubdtype(faces.dtype, np.integer):
+                      raise RuntimeError('Unexpected MHR triangle topology')
+                  if int(faces.min()) < 0 or int(faces.max()) >= 18439:
+                      raise RuntimeError('MHR triangle indices do not match decoder vertices')
+                  (ROOT / 'mesh-faces.u16').write_bytes(faces.astype('<u2').tobytes())
                   with torch.inference_mode():
                       for inputs in cases:
                           result = decoder(*inputs)
@@ -603,7 +609,7 @@ jobs:
                   def package_assets():
                       destination = Path(asset_dir)
                       destination.mkdir(parents=True, exist_ok=True)
-                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt']
+                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt', 'mesh-faces.u16']
                       for name in names:
                           shutil.copyfile(regressor_path if name == 'instanthmr.onnx' else ROOT / name, destination / name)
                       (destination / 'SAM-LICENSE.txt').write_text(SAM_LICENSE, encoding='utf-8')
@@ -617,6 +623,7 @@ jobs:
                                   'sha256': hashlib.sha256((destination / name).read_bytes()).hexdigest()} for name in names}
                       manifest['diagnostic_revision'] = 3
                       manifest['image_compute'] = 'float32'
+                      manifest['photo_revision'] = 1
                       manifest['synthetic_inputs'] = {
                           'identity': predictions['shape_params'][0].astype(np.float32).tolist(),
                           'pose': predictions['mhr_params'][0].astype(np.float32).tolist(),
