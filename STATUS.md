@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-10-22
-Referenz-Commit: `4fd1e8b9d1aae457171026944571ef6bdbd16137`
+Stand: 2026-10-23
+Referenz-Commit: `d68b4fce48bfd725d74bb6d2ab9b6d2fe7b9d632`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,57 @@ Referenz-Commit: `4fd1e8b9d1aae457171026944571ef6bdbd16137`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktuelle Übergabe: Messquellen-UI und lokaler 3D-Pilot
+## Aktuelle Übergabe: Android-3D-Test vorbereitet, Downloadpaket erneuert
+
+Berücksichtigtes main: `d68b4fce48bfd725d74bb6d2ab9b6d2fe7b9d632`. Änderungen seit der früheren Referenz wurden geprüft: separater Diagnose-Workflow Revision 3, STATUS und zuletzt `native/Body3DPlugin.java`. App-Index und APK-Workflow sind noch unverändert. Die vorbereiteten Ersatzdateien sind nur lokal ausgeliefert; es wurde noch keine neue 3D-APK gebaut oder auf dem S25 getestet.
+
+### Aktueller Uploadstand und Downloads
+
+- `native/Body3DPlugin.java` ist auf main angekommen und bytegenau mit der geprüften Datei identisch. Kein erneuter Upload nötig.
+- Die übrigen alten Downloadlinks waren wegen nicht mehr vorhandener Arbeitsdateien ungültig. Die Programmdateien wurden wiederhergestellt und ihre SHA-256-Fingerprints stimmen mit der ursprünglichen geprüften Lieferung überein. Keine funktionale Änderung bei dieser Wiederbereitstellung.
+- Das neue flache ZIP `3D-Testdateien.zip` enthält alle fünf vollständigen Dateien mit ihren exakten Repository-Dateinamen. Keine versteckten ZIP-Unterordner und keine Modellgewichte. ZIP auf dem Handy entpacken und die enthaltenen Einzeldateien hochladen, nicht die ZIP ins Repository.
+- Noch hochzuladen, in dieser Reihenfolge: `index.html` nach `www/`; `body-3d-preflight.yml` nach `.github/workflows/`; `STATUS.md` ins Hauptverzeichnis; **`android-debug-apk.yml` zuletzt nach `.github/workflows/`**.
+- Zwischenzeitliche automatische Builds nicht installieren. Erst der letzte APK-Build integriert alle Teile. Der separate manuelle „3D-Techniktest (keine APK)“ muss dafür nicht noch einmal gestartet werden; seine Prüfungen sind im neuen APK-Build eingebunden.
+
+### Bereits tatsächlich geprüfter Modellstand
+
+- GitHub-Preflight Revision 3, Lauf 39862837019 (#3), Commit `25e2f307e8d301637996b482c35b10d913f46480`: alle acht Stufen erfolgreich, vom Benutzer bestätigt. Keine Archivmedien verwendet.
+- Kompakter MHR-Decoder überspringt ausschließlich exakt nullbesetzte Blöcke der Posekorrekturmatrix. Alle Formparameter, Gesichtsausdrücke, Gelenke, Skinning und Posekorrekturen bleiben enthalten. Keine Quantisierung und kein Abschneiden kleiner Nichtnullwerte.
+- ONNX-Dateigröße jetzt **59.587.507 Bytes** statt 703.789.981 Bytes, rund 92 Prozent kleiner. Dies ist ausdrücklich keine gemessene Verringerung des Android-Arbeitsspeichers.
+- Revision 4 vor dem Ausfall der Arbeitsumgebung vollständig lokal ausgeführt: beide öffentlichen Downloads mit Fingerprints, synthetisches Bildmodell, offizieller MHR-Decoder, zwölf Vergleiche der kompakten Nachbildung, ONNX-Export/Graphprüfung, zwölf Runtime-Vergleiche, gesamte Bildmodell→Decoder-Kette gegen Original sowie Android-Assetbereitstellung. Alle neun Stufen bestanden.
+- Maximale ONNX-Abweichung der zwölf Vergleichsfälle 0,0000611 in MHR-Zentimetereinheiten. Das belegt ausschließlich Rechenparität, keine Genauigkeit echter Körpermaße.
+- Umgebung dieser Prüfung: Python 3.12.14, Torch 2.7.1+cpu, NumPy 2.2.6, ONNX 1.18.0 und ONNX Runtime 1.31.0. Kein S25-Benchmark.
+
+### Android-Integration und Telemetriesperre
+
+- Neue Aktion unter Zahnrad → Einstellungen → **3D-Techniktest · Android** → **3D-Techniktest starten**.
+- Verwendet ausschließlich einen künstlichen Null-Bildeingabetensor; prüft anschließend alle 18.439 Netzpunkte gegen die in CI aus dem Originalmodell erzeugte Referenz. Erfolgsmeldung: **„Bestanden: Bildmodell und 3D-Decoder laufen auf diesem Handy.“**, dazu Netzpunktzahl und Dauer. Noch kein echtes Foto, keine Mehrbildrekonstruktion und keine Maßprüfung.
+- Ein Auftrag gleichzeitig, separater Worker, zwei CPU-Threads und ein Interop-Thread. Bildmodell-Sitzung wird vor Decoder-Sitzung geschlossen. Modelle werden unkomprimiert aus APK-Assets per mmap geladen, ohne vollständige Java-Bytearray-Kopie. Keine Modellinitialisierung beim normalen App-Start.
+- Beim Verlassen der App wird nach der gerade laufenden nativen Stufe abgebrochen. Eine synchrone Inferenz wird nicht mitten in der Berechnung beendet. Ressourcen werden danach geschlossen; der Executor beim Zerstören beendet.
+- Zwei frühere weitere Modellläufe wurden von automatischer Sicherheitsprüfung wegen möglicher Microsoft-Telemetrie angehalten. Die spätere API-Abschaltung allein war unzureichend, da ONNX Runtime 1.31.0 den 1DS-Provider schon beim Laden initialisieren kann.
+- Daher `ORT_DISABLE_TELEMETRY=1` im Python-Test vor dem Import und auf Android per `android.system.Os.setenv` vor dem ersten `OrtEnvironment`-Zugriff; zusätzlich API-Abschaltung. Fehler bei der Umgebungsvariablen brechen vor ORT ab. Der offizielle Quellcode überspringt mit diesem frühen Opt-out die Telemetrieinitialisierung dauerhaft für den Prozess. Der vollständige lokale Lauf mit früher Sperre bestand.
+- Das tatsächliche Android-AAR enthält außerdem den automatisch startenden ContentProvider `ai.onnxruntime.TelemetryInitializer`. Der APK-Workflow entfernt ihn mit einer Manifest-Merge-Regel `tools:node="remove"`. Nach Gradle wird sein Fehlen in den zusammengeführten Manifesten verpflichtend geprüft, sonst wird nicht signiert.
+- Geprüfte Quellen: https://github.com/microsoft/onnxruntime/blob/v1.31.0/onnxruntime/core/platform/telemetry_environment.h und https://github.com/microsoft/onnxruntime/blob/v1.31.0/onnxruntime/core/platform/telemetry_1ds.cc . Keine Freigabe für Telemetrie oder Medien-Uploads erteilt.
+- Der APK-Build erzeugt und prüft die Gewichte selbst. Ca. 81 MB Bildmodell plus ca. 60 MB Decoder und Runtime vergrößern die APK deutlich. Keine Modelle manuell ins Repository laden. Laufzeit, Spitzenspeicher, Wärme und echter Fotoeingang auf dem S25 bleiben offen. Die an zwei Punkten erhobenen Prozess-PSS-Werte sind keine Spitzenmessung und umfassen nicht alle WebView-Prozesse.
+- `native/MainActivity.java` im Repository bleibt unverändert. Der Workflow kopiert sie und ergänzt die Pluginregistrierung nur in der generierten Android-Plattform; der eindeutige Einfügepunkt wird geprüft. Die neue Plugin-Java-Datei wird dort ebenfalls kopiert.
+- Vollständige SAM- und MHR/Apache-Lizenzen sowie Änderungshinweise liegen in den APK-Assets; Textkopien sind aus den Einstellungen verlinkt. Modelle behalten ihre jeweiligen Bedingungen.
+- Nach dem Build werden Modell- und Referenzdateien direkt in der APK auf unkomprimierte Ablage, Länge und SHA-256 geprüft; Lizenzdateien müssen nativ und im Webbereich vorhanden sein.
+- Keine Archivschreibzugriffe, keine Profiländerung, kein Schema-Bump, keine Migration. Permanente Signier-, Umbenennungs- und APK-Uploadschritte unverändert. APK ausschließlich als **Update** installieren, niemals deinstallieren.
+
+### Abgeschlossene Codeprüfungen und Grenzen
+
+- Java-Typ-/Syntaxprüfung vor dem Ausfall gegen echte ORT-Android-1.31.0-Klassen und Android-/Capacitor-Stubs bestanden; Capacitor-8-Schnittstellen mit veröffentlichtem Quellcode abgeglichen. Dies ist kein Gradle-/Android-Build.
+- YAML, Shell und eingebettete Python-Blöcke geprüft. Alle drei Inline-JavaScript-Blöcke geprüft; bestehende App-Skripte identisch. Neue Schaltfläche mit Erfolg, Fehler, fehlender Bridge und ungültigem Ergebnis getestet; Knopf danach wieder bedienbar. Keine visuelle Geräteprüfung.
+- Generierte Gradle-, Activity- und Manifeständerungen an separaten Dateivorlagen ausgeführt. Nachgelagerte Verpackungsprüfung mit ZIP-Vorlage und negativen Fällen geprüft: komprimierte Modelle oder verbliebener Telemetrie-Provider führen zum Fehler. Das ist kein tatsächlicher Manifest-Merge-/APK-Test.
+- Bei dieser Wiederbereitstellung: Programmdatei-Fingerprints gegen die ursprüngliche geprüfte Lieferung abgeglichen, YAML/Shell/Python und JavaScript erneut syntaktisch geprüft, ZIP-Inhalte auf unveränderte Bytes geprüft. Keine erneute Modellinferenz erforderlich oder behauptet.
+
+### Verbindlicher nächster Schritt
+
+Die vier noch fehlenden Dateien in der oben genannten Reihenfolge hochladen. Anschließend main und APK-Build zum letzten Upload prüfen. Nach grünem Build APK als Update installieren und den synthetischen Test einmal bei geöffneter App starten. Erst nach Bestanden-Meldung folgt ein echter Fotoeingang mit korrektem Ausschnitt und räumlicher Darstellung; danach gemeinsame Formanpassung innerhalb bestätigter Körperstände.
+
+Tahlia Paris Shootings 1/2/6 bleiben frühere Ausgangsgruppe; übrige nur vorläufig spätere Gruppe. Keine gruppenübergreifenden Mittelwerte und keine automatischen Profilübernahmen. Es werden bislang keine Zentimeter- oder Cupschätzungen ausgegeben.
+
+## Historische Übergabe: Messquellen-UI und lokaler 3D-Pilot
 
 Berücksichtigtes main: `4fd1e8b9d1aae457171026944571ef6bdbd16137`. App-Code: `aec046c1e2317c75a9a06396f0d5bcce9d82cbb1`, www/index.html Git-Blob `981086297535a76e4b9b3f9651cbda841753c2fa`. Danach wurden nur die separaten Diagnose-Workflows ergänzt/geändert. Die weiter unten stehenden stabilen Funktionsbeschreibungen sind historischer Stand vor diesem UI-Umbau.
 
@@ -498,7 +548,7 @@ Nicht ohne neuen ausdrücklichen Plan wieder einführen:
 - automatische Bindung `frontal = Breite` und `seitlich = Tiefe` ohne Korrektur von Ansicht und Haltung.
 - sichtbare unsichere Bereiche und Möglichkeitsformulierungen im kompakten Modelprofil; Unsicherheiten bleiben intern, sichtbare Werte werden ausdrücklich bestätigt.
 
-## Nächster Schritt
+## Historischer nächster Schritt vor dem 3D-Pilot
 
 **Verwaltung, Datenüberführung, Leistungsoptimierung, Übersicht, manuelle Videovorschau, kompakte Maßdarstellung, lokale Foto-/Videoanalyse, shootingweise Quellenbilanz, zweistufige Fotoquellen-Bestätigung und die technische Bereitstellung feingescannter Videoframes sind auf dem Android-Gerät bestätigt. Tiffany Ryans 96 Fotos bilden mit 94 vernetzten Fotos eine stabile Foto-Testgrundlage. Tahlia Paris Shooting Nr. 1 bestätigt zusätzlich lokalen Video-Grobscan, gezielte Feinscans, getrennte Foto-/Videoquellen sowie temporär erzeugte Vorschauen von acht Videokandidaten. Noch wurde kein Videoframe als Messquelle gespeichert.**
 
