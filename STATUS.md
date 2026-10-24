@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-24
-Referenz-Commit: `2f8d302725e98f4507dfad276d4f6dcef0f9ca61`
+Referenz-Commit: `53b52887c4deee453aee3597caf9854e357d5e50`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,48 @@ Referenz-Commit: `2f8d302725e98f4507dfad276d4f6dcef0f9ca61`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 581; Netzbezug der Kamerapunkte wird korrigiert
+## Aktueller Stand: Build 585; begrenzter Posentest vorbereitet
+
+Berücksichtigtes main `53b52887c4deee453aee3597caf9854e357d5e50`. Vor Bearbeitung erneut abgerufen und Änderungen seit Ref 53b5288 geprüft: keine. Seit der älteren STATUS-Referenz 2f8d302 wurden genau die vier Decoderpunkt-Dateien hochgeladen und bytegenau geprüft. **Build 585**, Lauf **40075133100**, erfolgreich einschließlich 3D-Asset-Prüfung, APK-Prüfung und dauerhaft signiertem APK-Artifact. Benutzer hat ihn auf dem S25 getestet.
+
+### Gerätetests und Einordnung
+
+Foto mit angehobenen Armen: Kameraanpassung an Decoderpunkte läuft, Pose/Netz besonders an Kopf/Schultern/Armen weiter unzureichend. Zweites Foto aus derselben Umgebung mit gesenkten, vor dem Körper überkreuzten Händen zeigt ebenfalls Abweichungen. Das zweite Foto ist keine völlig neutrale, unverdeckte Haltung. Keine Körpermaßgenauigkeit oder anatomische Richtigkeit bestätigt, kein Fehler allein durch kleine Punktabstände als behoben erklären.
+
+Untersuchter gepinnter InstantHMR-Code enthält einen neueren MHR-only-Trainingspfad ohne unabhängigen 3D-Kopf. In der untersuchten öffentlichen Hugging-Face-Veröffentlichung wurden nur die bisherigen ONNX-/PTH-Gewichte gefunden, keine getrennt angebotenen MHR-only-Gewichte. Kein stiller Modellwechsel oder Nachtraining. Quelle für Rotations-/Größenkanäle: instanthmr_distill_train/mhr_cont.py, Commit e125a1e8427739c40439f8d2eb66a924c742a178.
+
+### Neu vorbereitet: optionaler begrenzter Posentest
+
+Vier vollständige Ersatzdateien auf aktuellem main: `.github/workflows/body-3d-preflight.yml`, `www/index.html`, `STATUS.md`, `native/Body3DPlugin.java`. Noch nicht hochgeladen, als Android-APK gebaut oder auf S25 getestet.
+
+- Standard bleibt bisheriger Fototest. Neue Checkbox **Begrenzter Posentest**, standardmäßig AUS, in der vorhandenen Leiste über dem Foto. Umschalten verwirft nur das flüchtige Ergebnis und verlangt Neuberechnung; Rahmen bleibt gesperrt und unverändert. Keine zusätzlichen Bewertungsfelder.
+- Bei Aktivierung führt die bestehende native Fotoanalyse nach dem Bildmodell einen optionalen Hintergrund-Fit aus. Optimiert Kameratranslation und Rotationsparameter **3..69**, begrenzte Änderungen **±0,15 rad / ±8,59°** relativ zur Vorhersage, L2-Rückbindung mit Sigma 0,05 rad. 45 Formkoeffizienten, Root-Translation 0..2, Kanäle 70..129, flexible Größenkanäle 130..135 und 68 Skalierungsparameter 136..203 bleiben fest. Diese technischen Grenzen sind KEINE validierten anatomischen Gelenkgrenzen.
+- 49 festgelegte 2D-Modellpunkte dienen der Anpassung, 21 andere Punkte desselben Bildmodells dem Kontrollvergleich. Ausgangspunkt des Vergleichs ist ein Kamerafit bei unveränderter Pose. Übernahme nur bei mindestens 2 % UND mehr als 0,05 Pixel RMS-Verbesserung sowohl an Anpassungs- als auch Kontrollpunkten. Sonst ursprüngliche Pose UND ursprüngliche Kamera unverändert zurückgeben. Ein besserer interner Kontrollwert belegt keine echte Anatomie, da die Zielpunkte selbst Modellschätzungen sind und aus demselben Foto stammen.
+- Gedämpftes Least-Squares-Verfahren mit analytischer Kamera- und numerischer Winkelableitung, maximal zwölf Iterationen je Teilfit, Zeitbudget 25 Sekunden zwischen Iterationen; laufende Inferenz kann darüber hinausreichen. Abbruch zwischen Modellaufrufen über vorhandene Cancel-Logik. Keine Geschwindigkeitszusage für S25.
+- Neues kleines **mhr_pose.onnx** aus dem bestehenden Decoder herausgeschnitten: nur dessen Skelett-/Punktzweig, keine neu gelernten Gewichte. Lokal **3.212.418 Bytes**, nur Eingang pose, Ausgang decoder_joints. Prüft dieselben Punkte wie der volle Decoder. Nach akzeptiertem Fit wird das volle Netz mit den korrigierten Rotationen und unveränderten Form-/Größenparametern einmal neu dekodiert, inklusive bestehender Posekorrekturen.
+- Native Berichtsdaten: angewendet/verworfen, RMS vor/nach an Anpassungs- und Kontrollpunkten, größte Winkeländerung, Modellaufrufzahl, Zeitlimit. Bei ungültiger Ausgangstiefe ursprüngliche Werte behalten. Punkte/Netz verwenden weiter denselben Decoderbezug.
+- Bei Übernahme zeigt die Kameraauswahl **Kamera des Posentests**. Zusätzlicher JS-Kamerafit ist dafür deaktiviert, damit der anschließende Fit auf allen 70 Punkten den internen Kontrollvergleich nicht überlagert. Native Pose-/Kamerawerte werden gemeinsam angezeigt. Bei verworfenem oder ausgeschaltetem Posentest bleibt bisheriger Kameravergleich möglich.
+- Die Hinweise unterscheiden jetzt ausdrücklich Kameraänderung allein von angewendetem Posentest. Körperformparameter bleiben fest; durch Posekorrekturen kann sich die sichtbare Netzoberfläche trotzdem verändern. Keine Zentimeter-/Cupwerte und keine Aussage zu bestätigter Formgenauigkeit.
+- Kleiner ergänzender Bedienungsfix: clearResult setzte trotz editing=false den Auswahlcanvas zuletzt auf pointer-events:auto. Jetzt bleibt er nach Löschen/Fehler/Optionswechsel auf none; damit blockiert eine gesperrte Auswahl nach diesen Pfaden auch nicht versehentlich das Scrollen. Pointer-Guards/Rahmenübernahme bleiben erhalten.
+- Keine Archiv-/Profil-/IndexedDB-Schreibzugriffe, Migration oder Medienuploads. Alle neuen Ergebnisse nur im Arbeitsspeicher. Aktiver APK-Workflow und MainActivity unverändert, vorhandene Telemetriesperren und Lizenzen erhalten.
+
+### Prüfungen dieses Arbeitsgangs
+
+- Python-Prototyp auf öffentlichem OpenCV-Beispielfoto, NICHT auf Benutzerfoto: nur Kamera → begrenzte Gelenk-/Kameraanpassung; Median der 21 nicht angepassten Punkte **5,3205 → 2,4036 px**, RMS **11,6362 → 5,7607 px**, maximale Winkeländerung **4,9232°**, Form-/Größenparameter unverändert. Kein anatomischer Genauigkeitsnachweis.
+- Tatsächlicher Java-Fit mit echter **Linux-Java-ONNX-Runtime 1.31.0** und aus dem Produkt-Exporthelfer erzeugtem Skelettmodell ausgeführt: angewendet, Kontroll-RMS **11,6362 → 5,7614 px**, Anpassungs-RMS **7,0045 → 2,86235 px**, max. **4,92086°**, 274 Modellaufrufe, Zeitlimit nicht erreicht.
+- Java-Integration prüft feste Parameter und unveränderte Eingabearrays, keinen Eingriff bei exakt passenden Zielpunkten, unveränderte Rückgabe bei absichtlich verschlechterten Kontrollpunkten trotz gleichem Anpassungsdatensatz, ungültige Tiefe und tatsächlichen Abbruch per Callback. Alle bestanden.
+- Produkt-Exporthelfer lokal ausgeführt; zwölf unterschiedliche Eingaben durch vollen Decoder und abgeschnittenen Posezweig geprüft: maximaler Punktunterschied **0,0 m**. Neuer Preflight Revision 9 führt zusätzlich diese zwölf Posezweig-Paritätsprüfungen aus und verpackt mhr_pose.onnx samt Manifest pose_refine_revision=1. Bestehende Netz-/Punktprüfungen gegen den offiziellen TorchScript-Decoder bleiben unverändert.
+- Native Klasse auch gegen Android-ORT-1.31-Klassen mit Android-/Capacitor-Stubs kompiliert. Bestehender Diagnosevergleich mit Originaltoleranz, NaN-Abweisung und Fehlerzählung erneut bestanden.
+- Alle vier Inline-Skripte syntaktisch geprüft; tatsächliches Panel-Script mit simuliertem DOM/Canvas getestet: Checkbox default aus, refinePose-Flag, Bericht/Kameraoptionen nach angewendetem Fit, Ergebnislöschen, Bearbeitungssperre, ältere APK erkannt, Schließen. Workflow-YAML geparst, eingebettetes Python kompiliert, ZIP vollständig gegengeprüft.
+- Noch KEIN vollständiger neuer Download-/TorchScript-/Exportlauf lokal, kein Gradle-/Android-APK-Build und kein echter Browser-/S25-Touch-/Rendertest dieser Erweiterung. Die echte Java-Laufzeitprüfung ist ein Host-Test, keine S25-Leistungsmessung. Neue CI muss den vollständigen Preflight bestehen. Kein bereits gelöster Pose-/Körpermaßfehler behaupten.
+
+### Konkreter nächster Schritt
+
+ZIP ist flach. **1. body-3d-preflight.yml → .github/workflows**, **2. index.html → www**, **3. STATUS.md → Hauptordner**, **4. Body3DPlugin.java zuletzt → native**. Nach Upload main/Dateien vergleichen und konkrete Nummer des letzten vollständigen erfolgreichen APK-Builds nennen. Zwischenbuilds nicht installieren. APK immer als Update, niemals vorher deinstallieren.
+
+Gerätetest: möglichst dasselbe zweite Foto mit gesenkten Armen, vollständigen Personenrahmen prüfen/übernehmen. **Begrenzter Posentest aktivieren**, einmal berechnen und App geöffnet lassen. Anschließend NICHT noch eine Kameraoption ändern: bei Übernahme ist „Kamera des Posentests“ ausgewählt. Screenshot mit Posentest-Bericht und Foto genügt, auch wenn Bericht „verworfen“ meldet. Ohne Checkbox bleibt alte Funktion. Weiterhin keine Maße, automatischen Profiländerungen oder neue Feldbewertungen. Bestehende dauerhafte Freigabe zum Weiterarbeiten beachten.
+
+## Historischer Stand: Build 581 / Vorbereitung Decoderpunkte
 
 Berücksichtigtes main `2f8d302725e98f4507dfad276d4f6dcef0f9ca61`. Vor Änderung erneut abgerufen; seit Referenz 8d077c7 wurden nur die gelieferten STATUS-/Index-Dateien zur Rahmensperre hochgeladen. Beide nach Upload bytegenau geprüft. **Build 581**, Lauf **40072463743**, erfolgreich und APK-Artifact vorhanden. Benutzer hat ihn installiert und Original/Angepasst aus derselben Fotoanalyse gezeigt.
 
