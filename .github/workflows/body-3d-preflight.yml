@@ -379,7 +379,7 @@ jobs:
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 8, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 9, 'stages': []}
           
           def download(url, target, max_bytes):
               known = {'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
@@ -466,6 +466,25 @@ jobs:
               model.graph.output.append(onnx.helper.make_tensor_value_info('decoder_joints',onnx.TensorProto.FLOAT,[1,70,3]))
               if old_nodes!=[n.SerializeToString() for n in model.graph.node[:len(old_nodes)]] or old_initializers!=[x.SerializeToString() for x in model.graph.initializer[:len(old_initializers)]]:raise RuntimeError('Original mesh graph modified')
               onnx.checker.check_model(model);onnx.save(model,str(target))
+
+          def export_pose_only(target, destination):
+              model = onnx.load(str(target))
+              needed = {'decoder_joints'}
+              kept = []
+              for node in reversed(model.graph.node):
+                  if any(name in needed for name in node.output):
+                      kept.append(node)
+                      needed.update(node.input)
+              graph = onnx.helper.make_graph(list(reversed(kept)), 'body3d_pose_only',
+                  [v for v in model.graph.input if v.name in needed],
+                  [onnx.helper.make_tensor_value_info('decoder_joints', onnx.TensorProto.FLOAT, [1, 70, 3])],
+                  initializer=[v for v in model.graph.initializer if v.name in needed])
+              result = onnx.helper.make_model(graph, opset_imports=model.opset_import)
+              result.ir_version = model.ir_version
+              onnx.checker.check_model(result)
+              onnx.save(result, str(destination))
+              if destination.stat().st_size > 5 * 1024**2:
+                  raise RuntimeError('Pose-only decoder size regression')
 
           def main():
               import numpy as np
@@ -606,6 +625,7 @@ jobs:
                                         input_names=['identity', 'pose', 'expression'],
                                         output_names=['vertices'], do_constant_folding=True)
                   add_decoder_points(target, point_weights)
+                  export_pose_only(target, ROOT / 'mhr_pose.onnx')
                   onnx.checker.check_model(str(target))
                   if target.stat().st_size > 80 * 1024**2:
                       raise RuntimeError('Compact decoder size regression')
@@ -615,6 +635,8 @@ jobs:
           
               def parity():
                   session = ort.InferenceSession(str(target), sess_options=options, providers=['CPUExecutionProvider'])
+                  pose_session = ort.InferenceSession(str(ROOT / 'mhr_pose.onnx'), sess_options=options, providers=['CPUExecutionProvider'])
+                  pose_inputs = {item.name for item in pose_session.get_inputs()}
                   input_names = {item.name for item in session.get_inputs()}
                   errors = []
                   point_errors = []
@@ -629,6 +651,8 @@ jobs:
                       if points.shape != (1, 70, 3) or not np.isfinite(points).all():
                           raise RuntimeError('Invalid decoder body points')
                       np.testing.assert_allclose(points, expected_points, rtol=1e-4, atol=1e-5)
+                      pose_points = pose_session.run(['decoder_joints'], {k: v for k, v in feeds.items() if k in pose_inputs})[0]
+                      np.testing.assert_allclose(pose_points, points, rtol=1e-4, atol=1e-5)
                       point_errors.append(float(np.max(np.abs(points - expected_points))))
                       errors.append(float(np.max(np.abs(got - expected))))
                   # Also check that image-regressor outputs can drive the decoder, without assessing anatomy.
@@ -651,7 +675,7 @@ jobs:
                   def package_assets():
                       destination = Path(asset_dir)
                       destination.mkdir(parents=True, exist_ok=True)
-                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt', 'mesh-faces.u16', 'InstantHMR-SOURCE-LICENSE.txt']
+                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt', 'mesh-faces.u16', 'InstantHMR-SOURCE-LICENSE.txt', 'mhr_pose.onnx']
                       for name in names:
                           shutil.copyfile(regressor_path if name == 'instanthmr.onnx' else ROOT / name, destination / name)
                       (destination / 'SAM-LICENSE.txt').write_text(SAM_LICENSE, encoding='utf-8')
@@ -668,6 +692,7 @@ jobs:
                       manifest['image_compute'] = 'float32'
                       manifest['photo_revision'] = 1
                       manifest['decoder_points_revision'] = 1
+                      manifest['pose_refine_revision'] = 1
                       manifest['decoder_point_map_sha256'] = 'd0a64adcec183a892167ea1df1657a8c819fcddbc721f6b8a46f6336ea90292a'
                       manifest['synthetic_inputs'] = {
                           'identity': predictions['shape_params'][0].astype(np.float32).tolist(),
