@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-24
-Referenz-Commit: `8d077c748a2cc3268a1fd4d52c878ec7d1958e18`
+Referenz-Commit: `2f8d302725e98f4507dfad276d4f6dcef0f9ca61`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,46 @@ Referenz-Commit: `8d077c748a2cc3268a1fd4d52c878ec7d1958e18`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 579, Rahmensperre erneut bereitgestellt
+## Aktueller Stand: Build 581; Netzbezug der Kamerapunkte wird korrigiert
+
+Berücksichtigtes main `2f8d302725e98f4507dfad276d4f6dcef0f9ca61`. Vor Änderung erneut abgerufen; seit Referenz 8d077c7 wurden nur die gelieferten STATUS-/Index-Dateien zur Rahmensperre hochgeladen. Beide nach Upload bytegenau geprüft. **Build 581**, Lauf **40072463743**, erfolgreich und APK-Artifact vorhanden. Benutzer hat ihn installiert und Original/Angepasst aus derselben Fotoanalyse gezeigt.
+
+### Gerätetest und bisherige Einordnung
+
+Screenshot zeigt „Rahmen gesperrt“ und nach bewusstem Ganzkörperrahmen wieder Punkte/Netz bei der Person statt oben links. Ein gesonderter ausdrücklicher Nachweis aller Touch-/Scrollfälle liegt nicht vor. Im angepassten Kameramodus liegen orange/grüne Punkte näher beieinander; Netz an Kopf/Armen bleibt unzureichend. Der sichtbare kleinere Punktabstand bestätigt weder korrekte Körperform noch Maßgenauigkeit.
+
+### Nachgewiesener Unterschied und Quellen
+
+Im gepinnten InstantHMR-Referenzcode e125a1e8427739c40439f8d2eb66a924c742a178 (Naturalpad-studio/InstantHMR, instanthmr/mhr_renderer.py) werden 70 Punkte aus 127 MHR-Skelettgelenken über instanthmr_distill_train/assets/mhr_j127_to_kp70.npy regrediert. Die bisher für Kameraanpassung genutzte separate Bildmodell-Ausgabe joints_3d muss damit nicht exakt übereinstimmen. Koordinaten werden wie im Referenzcode von MHR cm/Y-oben/Z-hinten in Vision-Meter/Y-unten/Z-vorne umgerechnet; Punkte sind keine garantierten Oberflächenpunkte oder Maßendpunkte.
+
+Öffentliches OpenCV-Testfoto intern mit echtem FP32-Bildmodell und bisherigem Decoder geprüft: Differenz separater 3D-Ausgabe zu Decoderpunkten Median 0,0328648 m, Mittel 0,0360291 m, Maximum 0,1348886 m. Dies sind Modellkonsistenzwerte am öffentlichen Beispielfoto, keine Körpermaßfehler und keine Messung des Benutzerfotos. Der frühere Kameraerfolg am separaten 3D-Kopf beweist somit keine entsprechende Verbesserung des Netzes. Die Ursache aller verbleibenden Fotoabweichungen ist weiterhin nicht vollständig isoliert.
+
+### Neu vorbereitet: Kameravergleich mit Decoderpunkten
+
+Vier vollständige Ersatzdateien auf aktuellem main, noch nicht hochgeladen/gebaut/auf S25 getestet:
+
+- `.github/workflows/body-3d-preflight.yml`: Preflight-Revision 8. Gepinnte Punktezuordnung (35.688 Bytes, SHA-256 d0a64adcec183a892167ea1df1657a8c819fcddbc721f6b8a46f6336ea90292a) und zugehörige Apache-2.0-Quelllizenz (11.905 Bytes, SHA-256 ac522c297992539ad2ef77b6780c1d5456e4194ff9109767cf54032aa6fe2f8a) werden begrenzt heruntergeladen und hashgeprüft. Lizenz wird in Android- und öffentliche Lizenzassets übernommen, Quelle im NOTICE genannt.
+- Bestehendes kompaktes MHR-ONNX erhält nur einen zusätzlichen Ausgabezweig: globaler Float-Skelettzustand strukturell eindeutig erkannt → Translationen slicen → Vision-Transformation → gepinnte 70×127-Matrix. Ausgabe **decoder_joints [1,70,3]**. Bestehende Knoten, Initializer und vertices-Ausgabe bleiben unverändert; das wird beim Ergänzen geprüft. Neue Größe im lokalen Test **59.623.748 Bytes**, rund 36 KB Zusatzdaten.
+- Die vorhandene CI vergleicht weiterhin 12 Netze mit dem offiziellen TorchScript-Decoder unter unverändertem atol=0,001/rtol=0,0001. Zusätzlich werden 12 Punktmengen mit unabhängig aus dessen Skelettzustand berechneten Punkten verglichen (Vision-Meter, atol=0,00001/rtol=0,0001). Manifest erhält decoder_points_revision=1 und Zuordnungshash. photo_revision=1 und diagnostic_revision=3 bleiben bestehen.
+- `native/Body3DPlugin.java`: Fototest verlangt neue Manifestkennzeichnung und holt Netz UND Punkte aus derselben Decoder-Inferenz. Kein weiterer Modelllauf. joints3d im Fotoprotokoll enthält jetzt die validierten Decoderpunkte; pointSource=decoder_skeleton. Der separate 3D-Ausgabekopf des Bildmodells wird dafür nicht mehr ausgelesen. Bestehender synthetischer Netztest nutzt unveränderte Schnittstelle/Fehlergrenzen.
+- `www/index.html`: prüft den neuen Punktbezug und zeigt Orange als projizierte Decoderpunkte an. Bestehender Kamerafit arbeitet damit auf diesen Punkten, Netz und Fit beruhen auf derselben Decoderpose. Kamera Original bleibt Standard, Angepasst (Test) bleibt freiwillig umschaltbar ohne erneute Analyse. Form, Pose und Brennweite werden durch den Fit nicht geändert.
+- Rahmensperre und Bedienung „Rahmen ändern → Rahmen übernehmen → berechnen“ unverändert erhalten. Keine neuen Bewertungsfelder, Profil-/Archiv-/IndexedDB-Schreibvorgänge, Migrationen, Zentimeter-/Cupwerte oder Medienuploads. Aktiver APK-Workflow und MainActivity bleiben unverändert.
+
+### Tatsächlich durchgeführte Prüfungen und Grenzen
+
+- Neue ONNX-Ausgabe lokal aus vorhandenem bereits geprüftem Decoder ergänzt und gegen eine separate Zwischenausgabe des alten Decoders plus unabhängige NumPy-Punkteregression geprüft: 12 unterschiedliche Eingaben, korrekte 1×70×3-Ausgaben, maximaler Punktfehler **0,000000715256 m**. Alle 12 vertices-Arrays **bitgenau identisch**, maximaler Netzunterschied 0. Kein getauschter/prunierter Mesh-Decoder.
+- Produkt-JS mit echtem öffentlichen Decoderpunktresultat ausgeführt: Median 7,83747 → 4,58813 Pixel durch Kameratranslation, ursprüngliche Eingaben unverändert. Dieser Wert darf nicht direkt als besser/schlechter als der frühere separate Kopf (6,24 → 1,73 px) bewertet werden: andere 3D-Punktgrundlage. Ziel ist Netzbezug, kein möglichst kleiner Fehler einer unabhängigen Punktausgabe.
+- Native Klasse mit realen ORT-1.31-Klassen, Android-API-Jar und Capacitor-Stubs kompiliert. Bestehender Diagnosevergleich inklusive Originaltoleranz, vollständiger Fehlerzählung und NaN-Ablehnung bestanden.
+- Alle vier Inline-Skripte syntaktisch geprüft; neuer Punktquellencheck, echte Kamerafit-Ausgabe, unveränderte Daten und bestehende Rahmensperre geprüft. Workflow-YAML geparst, eingebettetes Python kompiliert. Beide neuen gepinnten Downloads als gültiger Cache getestet und korrupte Zuordnung verworfen.
+- Vollständiger aktualisierter Download/TorchScript/Export-Preflight wurde in diesem Arbeitsgang lokal NICHT erneut ausgeführt. Die neue 12-Fälle-TorchScript-Punktprüfung ist vorbereitet und muss beim APK-CI-Lauf bestehen. Keine neue APK lokal gebaut, kein Android- oder echter Browser-Rendertest dieser Änderung. Gerätetest bleibt erforderlich. Keine behauptete anatomische Korrektur oder Maßgenauigkeit.
+
+### Lieferung und konkreter nächster Schritt
+
+ZIP ist flach. Genau diese Reihenfolge: **1. body-3d-preflight.yml → .github/workflows**, **2. index.html → www**, **3. STATUS.md → Hauptordner**, **4. Body3DPlugin.java zuletzt → native**. Zwischendurch entstehende Builds können unvollständige Datei-Kombinationen enthalten; erst nach Upload den finalen main und vollständigen letzten erfolgreichen APK-Build prüfen und konkrete Nummer nennen. Keine eigene Buildnummer raten. APK immer als Update installieren, niemals vorher deinstallieren.
+
+Gerätetest: dasselbe Foto, vollständiger korrekter Personenrahmen, Rahmen übernehmen, einmal berechnen. Dann Original und Angepasst (Test) ohne erneute Berechnung vergleichen. Orange zeigt jetzt Decoderpunkte, Violett Netz. Screenshot mit Punktbericht und Foto; keine neue manuelle Bewertung. Auch bei besserer Überlagerung noch keine Körpermaße ausgeben. Nicht allein anhand eines Punkt-Medians zu Mehrbildmessungen übergehen. Dauerhafte Benutzerfreigabe zum selbstständigen Weiterarbeiten gilt; nur bei tatsächlichem Upload-/Gerätetestbedarf unterbrechen.
+
+## Historischer Stand: Build 579 / Vorbereitung Rahmensperre
 
 Am 24.10.2026 aktuellen main erneut gelesen: `8d077c748a2cc3268a1fd4d52c878ec7d1958e18`, unverändert seit der ursprünglichen Rahmensperren-Lieferung. Dateien waren für den Benutzer nicht mehr herunterladbar; deshalb vollständige Ersatzdateien erneut aus aktuellem main mit derselben Rahmensperren-Änderung hergestellt. Kein GitHub-Schreibzugriff und keine neuen Modell-/Native-/Workflowänderungen.
 
