@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-10-23
-Referenz-Commit: `52df36825e8069d8236475dd3ef1e2c090ea0d47`
+Stand: 2026-10-24
+Referenz-Commit: `8d077c748a2cc3268a1fd4d52c878ec7d1958e18`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,34 @@ Referenz-Commit: `52df36825e8069d8236475dd3ef1e2c090ea0d47`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 577 zeigt interne 2D-/3D-Abweichung
+## Aktueller Stand: Build 579, Rahmensperre erneut bereitgestellt
+
+Am 24.10.2026 aktuellen main erneut gelesen: `8d077c748a2cc3268a1fd4d52c878ec7d1958e18`, unverändert seit der ursprünglichen Rahmensperren-Lieferung. Dateien waren für den Benutzer nicht mehr herunterladbar; deshalb vollständige Ersatzdateien erneut aus aktuellem main mit derselben Rahmensperren-Änderung hergestellt. Kein GitHub-Schreibzugriff und keine neuen Modell-/Native-/Workflowänderungen.
+
+### Bestätigte Diagnose
+
+Build 579 (Run 40019171244) enthält den Kameravergleich und ist erfolgreich gebaut. Benutzer hat Original und Angepasst (Test) getestet: grüne wie orange Punkte lagen oben links, Netz war nicht sichtbar. Weiterer Screenshot nach „Rahmen ändern“ zeigte einen sehr schmalen Rahmen oben links im Hintergrund, nicht um die Person. Benutzer bestätigt, dass der Rahmen auch ohne aktiviertes „Rahmen ändern“ verschoben werden kann. Code hatte keinen ausdrücklichen Bearbeitungszustand: Pointerereignisse außerhalb busy/result wurden akzeptiert; die Bildfläche blockierte Scrollen mit touch-action:none. Dieser Bedienungsfehler erklärt die falsche Ausschnittwahl in diesem Durchlauf. Nicht behaupten, damit seien die früheren Pose-/Passformabweichungen gelöst.
+
+### Rahmensperre vorbereitet, Gerätetest offen
+
+- Anfangszustand editing=false. Auswahlcanvas pointer-events:none und zusätzliche JS-Sperre; Bildfläche touch-action:pan-y. Normales Scrollen zeichnet keinen neuen Rahmen.
+- „Rahmen ändern“ aktiviert editing=true, verwirft das bisherige Ergebnis und wechselt zu „Rahmen übernehmen“. Bearbeitungszustand sichtbar und aria-pressed gesetzt. Berechnung während Bearbeitung gesperrt.
+- „Rahmen übernehmen“ validiert den bestehenden Crop-Vertrag, sperrt anschließend die Auswahl und gibt Berechnen frei. Keine automatische native Analyse beim Übernehmen. Ungültiger Rahmen bleibt zur Korrektur offen.
+- Nur Primärzeiger und passende Pointer-ID; Abbruch/verlorene Pointer-Capture stellen den alten Rahmen wieder her. Bearbeitungsende räumt Drag-Zustand auf.
+- Berechnungs-/Rahmenbuttons in einer haftenden Leiste oberhalb des Fotos; sichtbarer Hinweis, ob Scrollen oder Zeichnen aktiv ist. Verzögerter automatischer Rahmenvorschlag überschreibt keine manuelle Bearbeitung.
+- Keine Änderungen an Kamerafit, Bildmodell, Decoder, Profilen, Archivschema oder Datenbank. Keine neuen Maße, Migrationen oder Medienuploads.
+
+### Prüfungen und Grenzen
+
+Ursprüngliche Lieferung: Inline-Syntax und tatsächliche Panel-Interaktionslogik mit simuliertem DOM/Canvas bestanden (gesperrtes Öffnen, ignorierte Wischgesten, Bearbeiten/Übernehmen, erneute Sperre, Abbruch, ungültiger Rahmen, Schließen). Bei erneuter Bereitstellung alle vier Inline-Skripte syntaktisch und Sperren-/Bearbeiten-/Übernehmen-/Drag-Abbruch-Zustände erneut geprüft. ZIP-Inhalt gegen vollständige Ersatzdateien verifiziert. Noch kein Gradle-/APK-Build oder echter Touch-/Rendertest der Rahmensperre auf S25. Native/Modelle unverändert; kein erneuter Exportlauf nötig.
+
+### Nächster Schritt
+
+ZIP entpacken: zuerst STATUS.md im Hauptordner ersetzen, zuletzt index.html unter www. Danach main prüfen und konkrete Nummer des letzten vollständigen erfolgreichen APK-Builds nennen. APK als Update installieren, niemals vorher deinstallieren.
+
+Gerätetest: dasselbe Foto öffnen → 3D-Test. Erst über das Foto scrollen: Rahmen muss unverändert bleiben. „Rahmen ändern“ wählen, eine vollständige Person inklusive Kopf/Arme/Füße einrahmen, „Rahmen übernehmen“, einmal berechnen. Erst Originalansicht prüfen; anschließend ohne Neuberechnung auf Angepasst (Test) umschalten. Screenshot mit Punktbericht und Foto genügt. Noch keine verlässlichen Körpermaße. Dauerhafte Freigabe zum selbstständigen Weiterarbeiten gilt; keine leeren Statusantworten oder wiederholte „weiter“-Aufforderungen verlangen.
+
+## Historischer Stand: Build 577 / Kameravergleich-Vorbereitung
 
 Berücksichtigtes main `52df36825e8069d8236475dd3ef1e2c090ea0d47`. Nach Upload alle drei Punktdiagnose-Dateien bytegenau mit Lieferung verglichen. Build **577**, Lauf **40012134421**, erfolgreich und APK-Artifact vorhanden. Main seitdem vor neuer Bearbeitung erneut geprüft, keine weiteren Änderungen.
 
