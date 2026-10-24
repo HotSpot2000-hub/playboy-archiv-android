@@ -66,7 +66,7 @@ public class Body3DPlugin extends Plugin {
                         throw new IllegalStateException("Ungültige normalisierte Bilddaten.");
                     }
                     JSONObject manifest = readModelManifest();
-                    if (manifest.optInt("photo_revision", 0) != 1 || manifest.optInt("diagnostic_revision", 0) != 3
+                    if (manifest.optInt("photo_revision", 0) != 1 || manifest.optInt("decoder_points_revision", 0) != 1 || manifest.optInt("diagnostic_revision", 0) != 3
                             || !"float32".equals(manifest.optString("image_compute", ""))) {
                         throw new IllegalStateException("Für den Fototest fehlen die neuen Modellinformationen in dieser APK.");
                     }
@@ -94,9 +94,7 @@ public class Body3DPlugin extends Plugin {
                                 if (point.length != 2 || !Float.isFinite(point[0]) || !Float.isFinite(point[1])) throw new IllegalStateException("Ungültiger Bildpunkt.");
                                 joints.put(new JSONArray().put((double) point[0]).put((double) point[1]));
                             }
-                            Object value3d = result.get("joints_3d").orElseThrow(() -> new IllegalStateException("3D-Körperpunkte fehlen.")).getValue();
-                            if (!(value3d instanceof float[][][])) throw new IllegalStateException("Ungültige 3D-Körperpunkte.");
-                            joints3d = photoPoints3d((float[][][]) value3d);
+
                         }
                     }
                     imageModel = null;
@@ -106,7 +104,7 @@ public class Body3DPlugin extends Plugin {
                     ByteBuffer vertices = ByteBuffer.allocate(VERTICES * 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
                     try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(meshModel, opts)) {
                         checkActive();
-                        float[][][] mesh = decode(env, session, shape, pose);
+                        float[][][] mesh = decode(env, session, shape, pose, joints3d);
                         if (mesh.length != 1 || mesh[0].length != VERTICES) throw new IllegalStateException("Ungültige Netzgröße.");
                         for (float[] vertex : mesh[0]) {
                             if (vertex.length != 3) throw new IllegalStateException("Ungültiger Netzpunkt.");
@@ -122,7 +120,7 @@ public class Body3DPlugin extends Plugin {
                     result.put("faces", android.util.Base64.encodeToString(faces, android.util.Base64.NO_WRAP));
                     result.put("vertexCount", VERTICES); result.put("faceCount", faces.length / 6);
                     result.put("camera", new JSONArray().put((double) camera[0]).put((double) camera[1]).put((double) camera[2]));
-                    result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("coordinateFrame", "vision_metres");
+                    result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("pointSource", "decoder_skeleton"); result.put("coordinateFrame", "vision_metres");
                     result.put("elapsedSeconds", (SystemClock.elapsedRealtime() - start) / 1000.0);
                     checkActive(); call.resolve(result);
                 } catch (OutOfMemoryError error) {
@@ -346,6 +344,10 @@ public class Body3DPlugin extends Plugin {
     }
 
     private static float[][][] decode(OrtEnvironment env, OrtSession session, float[] shape, float[] pose) throws Exception {
+        return decode(env, session, shape, pose, null);
+    }
+
+    private static float[][][] decode(OrtEnvironment env, OrtSession session, float[] shape, float[] pose, JSONArray decoderPoints) throws Exception {
         try (OnnxTensor identity = OnnxTensor.createTensor(env, FloatBuffer.wrap(shape), new long[]{1, 45});
              OnnxTensor bodyPose = OnnxTensor.createTensor(env, FloatBuffer.wrap(pose), new long[]{1, 204});
              OnnxTensor expression = OnnxTensor.createTensor(env, FloatBuffer.wrap(new float[72]), new long[]{1, 72})) {
@@ -354,6 +356,12 @@ public class Body3DPlugin extends Plugin {
             inputs.put("pose", bodyPose);
             inputs.put("expression", expression);
             try (OrtSession.Result result = session.run(inputs)) {
+                if (decoderPoints != null) {
+                    Object points = result.get("decoder_joints").orElseThrow(() -> new IllegalStateException("Decoder-Körperpunkte fehlen.")).getValue();
+                    if (!(points instanceof float[][][])) throw new IllegalStateException("Ungültige Decoder-Körperpunkte.");
+                    JSONArray checked = photoPoints3d((float[][][]) points);
+                    for (int i = 0; i < checked.length(); i++) decoderPoints.put(checked.getJSONArray(i));
+                }
                 Object value = result.get("vertices").orElseThrow(
                     () -> new IllegalStateException("Decoder-Ausgabe fehlt.")).getValue();
                 if (!(value instanceof float[][][])) throw new IllegalStateException("Unerwarteter Decoder-Datentyp.");
