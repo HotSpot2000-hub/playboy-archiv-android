@@ -379,10 +379,12 @@ jobs:
           ROOT = Path('model-preflight')
           ROOT.mkdir(exist_ok=True)
           REPORT = {'scope': 'Synthetic CPU/export test; no photos, no Android benchmark, no measurements.',
-                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 7, 'stages': []}
+                    'android_verified': False, 'measurement_accuracy_verified': False, 'test_revision': 8, 'stages': []}
           
           def download(url, target, max_bytes):
               known = {'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
+                       'mhr_j127_to_kp70.npy': 'd0a64adcec183a892167ea1df1657a8c819fcddbc721f6b8a46f6336ea90292a',
+                       'InstantHMR-SOURCE-LICENSE.txt': 'ac522c297992539ad2ef77b6780c1d5456e4194ff9109767cf54032aa6fe2f8a',
                        'mhr-assets.zip': 'e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94'}
               if target.exists() and target.name in known:
                   with target.open('rb') as cached:
@@ -406,7 +408,9 @@ jobs:
                   raise RuntimeError('Empty download')
               expected = {
                   'instanthmr.onnx': 'f717558094f57d7c9cd084d7981874dbcc3f08e7308501eb98c12844e2cce3b7',
-                  'mhr-assets.zip': 'e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94',
+                  'mhr_j127_to_kp70.npy': 'd0a64adcec183a892167ea1df1657a8c819fcddbc721f6b8a46f6336ea90292a',
+                       'InstantHMR-SOURCE-LICENSE.txt': 'ac522c297992539ad2ef77b6780c1d5456e4194ff9109767cf54032aa6fe2f8a',
+                       'mhr-assets.zip': 'e4f4f205cd87c0fa106577ba1de4fc763e4eb197c924461d2ef7e6944e9d6b94',
               }.get(target.name)
               if expected and digest.hexdigest() != expected:
                   raise RuntimeError('Download checksum differs from verified first run')
@@ -441,6 +445,28 @@ jobs:
                   flush()
           
           
+          def add_decoder_points(target,weights):
+              model=onnx.load(str(target))
+              if weights.shape!=(70,127) or not np.isfinite(weights).all():raise RuntimeError('Invalid pinned keypoint map')
+              stacks=[n for n in model.graph.node if n.op_type=='Concat' and len(n.input)==127 and any(a.name=='axis' and a.i==1 for a in n.attribute)]
+              if len(stacks)!=1:raise RuntimeError('Skeleton state stack not uniquely identifiable')
+              casts=[n for n in model.graph.node if n.op_type=='Cast' and list(n.input)==list(stacks[0].output) and any(a.name=='to' and a.i==onnx.TensorProto.FLOAT for a in n.attribute)]
+              if len(casts)!=1:raise RuntimeError('Float skeleton state not uniquely identifiable')
+              state=casts[0].output[0];prefix='body3d_decoder_points_'
+              if any(name.startswith(prefix) for n in model.graph.node for name in n.output):raise RuntimeError('Duplicate decoder point outputs')
+              old_nodes=[n.SerializeToString() for n in model.graph.node];old_initializers=[x.SerializeToString() for x in model.graph.initializer]
+              def constant(name,value):
+                  name=prefix+name;model.graph.initializer.append(onnx.numpy_helper.from_array(value,name));return name
+              start=constant('start',np.array([0],np.int64));end=constant('end',np.array([3],np.int64));axis=constant('axis',np.array([2],np.int64))
+              scale=constant('vision_scale',np.array([.01,-.01,-.01],np.float32));matrix=constant('map',weights.astype(np.float32))
+              model.graph.node.extend([
+                  onnx.helper.make_node('Slice',[state,start,end,axis],[prefix+'raw'],name=prefix+'slice'),
+                  onnx.helper.make_node('Mul',[prefix+'raw',scale],[prefix+'vision'],name=prefix+'convert'),
+                  onnx.helper.make_node('MatMul',[matrix,prefix+'vision'],['decoder_joints'],name=prefix+'regress')])
+              model.graph.output.append(onnx.helper.make_tensor_value_info('decoder_joints',onnx.TensorProto.FLOAT,[1,70,3]))
+              if old_nodes!=[n.SerializeToString() for n in model.graph.node[:len(old_nodes)]] or old_initializers!=[x.SerializeToString() for x in model.graph.initializer[:len(old_initializers)]]:raise RuntimeError('Original mesh graph modified')
+              onnx.checker.check_model(model);onnx.save(model,str(target))
+
           def main():
               import numpy as np
               import onnx
@@ -548,6 +574,7 @@ jobs:
               target = ROOT / 'mhr_decoder.onnx'
           
               export_model = None
+              point_weights = None
           
               def prepare_export():
                   nonlocal export_model
@@ -567,11 +594,18 @@ jobs:
               stage('Decoder für Export vorbereiten und gegenprüfen', prepare_export)
           
               def export_decoder():
+                  nonlocal point_weights
+                  source = 'https://raw.githubusercontent.com/Naturalpad-studio/InstantHMR/e125a1e8427739c40439f8d2eb66a924c742a178/'
+                  map_path = ROOT / 'mhr_j127_to_kp70.npy'
+                  download(source + 'instanthmr_distill_train/assets/mhr_j127_to_kp70.npy', map_path, 100000)
+                  download(source + 'LICENSE', ROOT / 'InstantHMR-SOURCE-LICENSE.txt', 50000)
+                  point_weights = np.load(map_path, allow_pickle=False)
                   # Fixed batch 1; neither a mobile benchmark nor an accuracy claim.
                   with torch.no_grad():
                       torch.onnx.export(export_model, neutral, str(target), opset_version=17, dynamo=False,
                                         input_names=['identity', 'pose', 'expression'],
                                         output_names=['vertices'], do_constant_folding=True)
+                  add_decoder_points(target, point_weights)
                   onnx.checker.check_model(str(target))
                   if target.stat().st_size > 80 * 1024**2:
                       raise RuntimeError('Compact decoder size regression')
@@ -583,11 +617,19 @@ jobs:
                   session = ort.InferenceSession(str(target), sess_options=options, providers=['CPUExecutionProvider'])
                   input_names = {item.name for item in session.get_inputs()}
                   errors = []
+                  point_errors = []
                   for inputs, expected in zip(cases, reference):
                       feeds = {name: value.numpy() for name, value in zip(['identity', 'pose', 'expression'], inputs)
                                if name in input_names}
-                      got = session.run(['vertices'], feeds)[0]
+                      got, points = session.run(['vertices', 'decoder_joints'], feeds)
                       np.testing.assert_allclose(got, expected, rtol=1e-4, atol=1e-3)
+                      with torch.inference_mode():
+                          skeleton = decoder(*inputs)[1].detach().cpu().numpy()[..., :3]
+                      expected_points = np.einsum('kj,bjc->bkc', point_weights, skeleton * np.array([.01, -.01, -.01], np.float32))
+                      if points.shape != (1, 70, 3) or not np.isfinite(points).all():
+                          raise RuntimeError('Invalid decoder body points')
+                      np.testing.assert_allclose(points, expected_points, rtol=1e-4, atol=1e-5)
+                      point_errors.append(float(np.max(np.abs(points - expected_points))))
                       errors.append(float(np.max(np.abs(got - expected))))
                   # Also check that image-regressor outputs can drive the decoder, without assessing anatomy.
                   feeds = {'identity': predictions['shape_params'].astype(np.float32),
@@ -601,7 +643,7 @@ jobs:
                                                torch.from_numpy(feeds['expression']))[0].numpy()
                   np.testing.assert_allclose(got, expected_chain, rtol=1e-4, atol=1e-3)
                   (ROOT / 'synthetic-reference.f32').write_bytes(expected_chain.astype('<f4').tobytes())
-                  return {'checked_cases': len(cases), 'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
+                  return {'decoder_points_shape': list(points.shape), 'max_abs_point_errors_metres': point_errors, 'checked_cases': len(cases), 'max_abs_errors_native_units': errors, 'regressor_to_mesh_shape': list(got.shape),
                           'tolerance': 'rtol=1e-4, atol=1e-3 in MHR native units; export parity, not body accuracy'}
               stage('Numerische Exportprüfung und Modellkette', parity)
               asset_dir = os.environ.get('BODY3D_ASSET_DIR')
@@ -609,7 +651,7 @@ jobs:
                   def package_assets():
                       destination = Path(asset_dir)
                       destination.mkdir(parents=True, exist_ok=True)
-                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt', 'mesh-faces.u16']
+                      names = ['instanthmr.onnx', 'mhr_decoder.onnx', 'synthetic-reference.f32', 'MHR-LICENSE.txt', 'mesh-faces.u16', 'InstantHMR-SOURCE-LICENSE.txt']
                       for name in names:
                           shutil.copyfile(regressor_path if name == 'instanthmr.onnx' else ROOT / name, destination / name)
                       (destination / 'SAM-LICENSE.txt').write_text(SAM_LICENSE, encoding='utf-8')
@@ -618,12 +660,15 @@ jobs:
                           'MHR v1.0.1: Copyright (c) Meta Platforms, Inc. and affiliates; Apache License 2.0.\n'
                           'Modified for Playboy Archiv: equivalent packed pose-corrective blocks and ONNX export; no quantization.\n'
                           'InstantHMR internal float16 tensor values exactly promoted to float32; execution casts/types updated to float32.\n'
+                          'Decoder keypoints: InstantHMR mhr_j127_to_kp70.npy, e125a1e8427739c40439f8d2eb66a924c742a178; source Apache-2.0 licence included.\n'
                           'Synthetic technical test only. Not a body-measurement accuracy claim.\n', encoding='utf-8')
                       manifest = {name: {'bytes': (destination / name).stat().st_size,
                                   'sha256': hashlib.sha256((destination / name).read_bytes()).hexdigest()} for name in names}
                       manifest['diagnostic_revision'] = 3
                       manifest['image_compute'] = 'float32'
                       manifest['photo_revision'] = 1
+                      manifest['decoder_points_revision'] = 1
+                      manifest['decoder_point_map_sha256'] = 'd0a64adcec183a892167ea1df1657a8c819fcddbc721f6b8a46f6336ea90292a'
                       manifest['synthetic_inputs'] = {
                           'identity': predictions['shape_params'][0].astype(np.float32).tolist(),
                           'pose': predictions['mhr_params'][0].astype(np.float32).tolist(),
