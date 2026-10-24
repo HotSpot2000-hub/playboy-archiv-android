@@ -44,6 +44,7 @@ public class Body3DPlugin extends Plugin {
     public void analyzePhoto(PluginCall call) {
         String encoded = call.getString("tensor");
         JSObject input = call.getObject("input");
+        boolean refineRequested = Boolean.TRUE.equals(call.getBoolean("refinePose"));
         if (encoded == null || encoded.length() > 850000 || input == null) {
             call.reject("Die lokalen Bilddaten fehlen oder sind zu groß."); return;
         }
@@ -100,6 +101,15 @@ public class Body3DPlugin extends Plugin {
                     imageModel = null;
                     checkActive();
                     if (camera[2] <= .01f) throw new IllegalStateException("Die Kamera-Schätzung ist ungültig. Bitte den Personenrahmen prüfen.");
+                    JSObject poseReport = null;
+                    if (refineRequested) {
+                        if (manifest.optInt("pose_refine_revision", 0) != 1) throw new IllegalStateException("Für den Posentest fehlen die neuen Modellinformationen.");
+                        ByteBuffer poseModel = mapAsset("mhr_pose.onnx");
+                        try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(poseModel, opts)) {
+                            PoseFit fit = new PoseRefiner(env, session, shape, pose, camera, joints, input, this::checkActive).fit();
+                            pose = fit.pose; camera = fit.camera; poseReport = fit.report;
+                        }
+                    }
                     ByteBuffer meshModel = mapAsset("mhr_decoder.onnx");
                     ByteBuffer vertices = ByteBuffer.allocate(VERTICES * 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
                     try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(meshModel, opts)) {
@@ -120,7 +130,7 @@ public class Body3DPlugin extends Plugin {
                     result.put("faces", android.util.Base64.encodeToString(faces, android.util.Base64.NO_WRAP));
                     result.put("vertexCount", VERTICES); result.put("faceCount", faces.length / 6);
                     result.put("camera", new JSONArray().put((double) camera[0]).put((double) camera[1]).put((double) camera[2]));
-                    result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("pointSource", "decoder_skeleton"); result.put("coordinateFrame", "vision_metres");
+                    result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("pointSource", "decoder_skeleton"); result.put("poseRefineRevision", 1); result.put("poseRefinement", poseReport); result.put("coordinateFrame", "vision_metres");
                     result.put("elapsedSeconds", (SystemClock.elapsedRealtime() - start) / 1000.0);
                     checkActive(); call.resolve(result);
                 } catch (OutOfMemoryError error) {
@@ -139,6 +149,105 @@ public class Body3DPlugin extends Plugin {
     public void cancelPhoto(PluginCall call) {
         if (photoJob.get()) cancelled.set(true);
         call.resolve(new JSObject());
+    }
+
+    /** Experimental bounded pose fit. Shape and all size/scale channels stay fixed. */
+    private static final class PoseFit {
+        float[] pose, camera;
+        JSObject report;
+    }
+
+    private static final class PoseRefiner {
+        private static final int[] TRAIN = {4,3,68,66,6,23,53,59,50,55,65,7,24,1,52,58,12,36,41,2,51,45,31,5,35,37,25,42,21,43,47,9,11,33,34,62,14,46,57,64,17,32,54,22,13,67,44,15,26};
+        private static final int[] TEST = {39,20,63,61,18,8,16,38,49,60,27,10,48,29,0,69,19,30,40,28,56};
+        private final OrtEnvironment env;
+        private final OrtSession session;
+        private final float[] shape, basePose, baseCamera;
+        private final Runnable check;
+        private final double[][] target = new double[70][2];
+        private final double focal, cx, cy;
+        private final long start = System.nanoTime();
+        private int evaluations;
+        private boolean timeLimit;
+        private double[][] basePoints;
+        private static final class Evaluation { double[][] projected; }
+
+        PoseRefiner(OrtEnvironment env, OrtSession session, float[] shape, float[] pose, float[] camera, JSONArray joints, JSONObject input, Runnable check) throws Exception {
+            this.env=env;this.session=session;this.shape=shape.clone();this.basePose=pose.clone();this.baseCamera=camera.clone();this.check=check;
+            int width=input.getInt("width"),height=input.getInt("height");cx=width/2.0;cy=height/2.0;focal=Math.hypot(width,height);
+            JSONArray box=input.getJSONArray("box");double side=Math.ceil(Math.max(box.getDouble(2)-box.getDouble(0),box.getDouble(3)-box.getDouble(1))*1.2);
+            double left=Math.floor((box.getDouble(0)+box.getDouble(2))/2-side/2),top=Math.floor((box.getDouble(1)+box.getDouble(3))/2-side/2);
+            if(joints.length()!=70)throw new IllegalStateException("Posentest: Bildpunkte fehlen.");
+            for(int i=0;i<70;i++){JSONArray p=joints.getJSONArray(i);target[i][0]=left+(p.getDouble(0)+1)*.5*side;target[i][1]=top+(p.getDouble(1)+1)*.5*side;}
+            basePoints=points(basePose);
+        }
+        private double[][] points(float[] pose) throws Exception {
+            check.run();evaluations++;
+            try(OnnxTensor p=OnnxTensor.createTensor(env,FloatBuffer.wrap(pose),new long[]{1,204});
+                OnnxTensor identity=OnnxTensor.createTensor(env,FloatBuffer.wrap(shape),new long[]{1,45});
+                OnnxTensor expression=OnnxTensor.createTensor(env,FloatBuffer.wrap(new float[72]),new long[]{1,72})){
+                Map<String,OnnxTensor> feeds=new HashMap<>();
+                if(session.getInputNames().contains("pose"))feeds.put("pose",p);
+                if(session.getInputNames().contains("identity"))feeds.put("identity",identity);
+                if(session.getInputNames().contains("expression"))feeds.put("expression",expression);
+                try(OrtSession.Result result=session.run(feeds)){
+                    Object raw=result.get("decoder_joints").orElseThrow(()->new IllegalStateException("Posentest-Punkte fehlen.")).getValue();
+                    if(!(raw instanceof float[][][]))throw new IllegalStateException("Posentest-Punktformat ungültig.");
+                    float[][][] value=(float[][][])raw;photoPoints3d(value);double[][] out=new double[70][3];
+                    for(int i=0;i<70;i++)for(int k=0;k<3;k++)out[i][k]=value[0][i][k];return out;
+                }
+            }
+        }
+        private Evaluation evaluate(double[] q,boolean withPose) throws Exception {
+            check.run();double[][] p=basePoints;
+            if(withPose){float[] pose=basePose.clone();boolean changed=false;for(int i=0;i<67;i++){pose[i+3]+=(float)q[i+3];changed|=q[i+3]!=0;}if(changed)p=points(pose);}
+            Evaluation e=new Evaluation();e.projected=new double[70][3];
+            for(int i=0;i<70;i++){double z=p[i][2]+q[2];if(!Double.isFinite(z)||z<=.02)return null;e.projected[i][0]=focal*(p[i][0]+q[0])/z+cx;e.projected[i][1]=focal*(p[i][1]+q[1])/z+cy;e.projected[i][2]=z;if(!Double.isFinite(e.projected[i][0])||!Double.isFinite(e.projected[i][1]))return null;}return e;
+        }
+        private double[] residual(Evaluation e,double[] q,boolean withPose){
+            double[] r=new double[98+(withPose?67:0)];
+            for(int i=0;i<49;i++)for(int k=0;k<2;k++)r[2*i+k]=(e.projected[TRAIN[i]][k]-target[TRAIN[i]][k])/5;
+            if(withPose)for(int i=0;i<67;i++)r[98+i]=q[3+i]/.05;return r;
+        }
+        private static double squared(double[] r){double v=0;for(double x:r)v+=x*x;return v;}
+        private static double[] solve(double[][] a,double[] b){
+            int n=b.length;double[][] m=new double[n][n+1];for(int i=0;i<n;i++){System.arraycopy(a[i],0,m[i],0,n);m[i][n]=b[i];}
+            for(int c=0;c<n;c++){int pivot=c;for(int r=c+1;r<n;r++)if(Math.abs(m[r][c])>Math.abs(m[pivot][c]))pivot=r;if(Math.abs(m[pivot][c])<1e-14)return null;double[] temp=m[c];m[c]=m[pivot];m[pivot]=temp;double d=m[c][c];for(int k=c;k<=n;k++)m[c][k]/=d;for(int r=0;r<n;r++)if(r!=c){double x=m[r][c];for(int k=c;k<=n;k++)m[r][k]-=x*m[c][k];}}
+            double[] out=new double[n];for(int i=0;i<n;i++){out[i]=m[i][n];if(!Double.isFinite(out[i]))return null;}return out;
+        }
+        private double[] optimize(boolean withPose,double[] cameraStart) throws Exception {
+            int n=withPose?70:3;double[] q=new double[n];System.arraycopy(cameraStart,0,q,0,3);double damping=.001;
+            Evaluation current=evaluate(q,withPose);if(current==null)return q;
+            for(int iteration=0;iteration<12;iteration++){
+                check.run();if(System.nanoTime()-start>25_000_000_000L){timeLimit=true;break;}
+                double[] r=residual(current,q,withPose);double cost=squared(r);double[][] jac=new double[r.length][n];
+                for(int i=0;i<49;i++){int id=TRAIN[i];double z=current.projected[id][2];jac[2*i][0]=focal/z/5;jac[2*i+1][1]=focal/z/5;jac[2*i][2]=-(current.projected[id][0]-cx)/z/5;jac[2*i+1][2]=-(current.projected[id][1]-cy)/z/5;}
+                if(withPose)for(int col=3;col<n;col++){
+                    double[] perturbed=q.clone();perturbed[col]+=.001;Evaluation shifted=evaluate(perturbed,true);if(shifted==null)continue;
+                    for(int i=0;i<49;i++)for(int k=0;k<2;k++)jac[2*i+k][col]=(shifted.projected[TRAIN[i]][k]-current.projected[TRAIN[i]][k])/5/.001;
+                    jac[98+col-3][col]=1/.05;
+                }
+                double[][] normal=new double[n][n];double[] rhs=new double[n];
+                for(int row=0;row<r.length;row++)for(int i=0;i<n;i++){rhs[i]-=jac[row][i]*r[row];for(int k=0;k<n;k++)normal[i][k]+=jac[row][i]*jac[row][k];}
+                for(int i=0;i<n;i++)normal[i][i]+=damping*Math.max(normal[i][i],1e-9);double[] step=solve(normal,rhs);if(step==null)break;
+                double[] candidate=q.clone();double movement=0;
+                for(int i=0;i<n;i++){double low=i<2?baseCamera[i]-1:i==2?baseCamera[2]*.5:-.15,high=i<2?baseCamera[i]+1:i==2?baseCamera[2]*2:.15;candidate[i]=Math.max(low,Math.min(high,q[i]+step[i]));movement+=Math.pow(candidate[i]-q[i],2);}
+                Evaluation proposal=evaluate(candidate,withPose);double next=proposal==null?Double.POSITIVE_INFINITY:squared(residual(proposal,candidate,withPose));
+                if(next<cost){q=candidate;current=proposal;damping=Math.max(1e-10,damping/3);if(movement<1e-14||cost-next<1e-5*Math.max(1,cost))break;}else{damping=Math.min(1e12,damping*10);if(damping==1e12)break;}
+            }
+            return q;
+        }
+        private double rms(Evaluation e,int[] ids){if(e==null)return Double.POSITIVE_INFINITY;double sum=0;for(int i:ids)for(int k=0;k<2;k++)sum+=Math.pow(e.projected[i][k]-target[i][k],2);return Math.sqrt(sum/ids.length);}
+        PoseFit fit() throws Exception {
+            double[] startCamera={baseCamera[0],baseCamera[1],baseCamera[2]};
+            if(evaluate(startCamera,false)==null){PoseFit fallback=new PoseFit();fallback.pose=basePose.clone();fallback.camera=baseCamera.clone();fallback.report=new JSObject();fallback.report.put("applied",false);fallback.report.put("reason","invalid_depth");return fallback;}
+            double[] baseline=optimize(false,startCamera),candidate=optimize(true,baseline);
+            Evaluation before=evaluate(baseline,false),after=evaluate(candidate,true);double beforeTest=rms(before,TEST),afterTest=rms(after,TEST),beforeTrain=rms(before,TRAIN),afterTrain=rms(after,TRAIN);
+            boolean applied=Double.isFinite(afterTest)&&afterTest<beforeTest*.98&&afterTrain<beforeTrain*.98&&beforeTest-afterTest>.05&&beforeTrain-afterTrain>.05;
+            PoseFit out=new PoseFit();out.pose=basePose.clone();out.camera=baseCamera.clone();double max=0;
+            if(applied){for(int i=0;i<67;i++){out.pose[i+3]+=(float)candidate[i+3];max=Math.max(max,Math.abs(candidate[i+3]));}for(int i=0;i<3;i++)out.camera[i]=(float)candidate[i];}
+            out.report=new JSObject();out.report.put("applied",applied);out.report.put("testRmsBefore",beforeTest);out.report.put("testRmsAfter",Double.isFinite(afterTest)?afterTest:beforeTest);out.report.put("trainRmsBefore",beforeTrain);out.report.put("trainRmsAfter",Double.isFinite(afterTrain)?afterTrain:beforeTrain);out.report.put("maxAngleDegrees",max*180/Math.PI);out.report.put("modelEvaluations",evaluations);out.report.put("timeLimit",timeLimit);return out;
+        }
     }
 
     private static JSONArray photoPoints3d(float[][][] points) throws Exception {
