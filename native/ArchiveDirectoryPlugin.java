@@ -87,6 +87,7 @@ public void setVideoImmersive(PluginCall call) {
     @PluginMethod
     public void analyzePose(PluginCall call) {
         String dataUrl = call.getString("dataUrl");
+        boolean includePhotoMask = call.getBoolean("includePhotoMask", false);
         if (dataUrl == null || dataUrl.isEmpty()) {
             call.reject("Bilddaten fehlen");
             return;
@@ -120,6 +121,7 @@ public void setVideoImmersive(PluginCall call) {
                     segmenter.process(image)
                         .addOnSuccessListener(mask -> {
                             addContourMetrics(result, pose, mask, width, height);
+                            if (includePhotoMask) addPhotoMask(result, mask, width, height);
                             segmenter.close(); detector.close(); bitmap.recycle(); call.resolve(result);
                         })
                         .addOnFailureListener(error -> {
@@ -250,6 +252,42 @@ public void setVideoImmersive(PluginCall call) {
             }
         }
         return values;
+    }
+
+    // Optional compact confidence grid for transient visual diagnostics, never persisted.
+    private void addPhotoMask(JSObject out, SegmentationMask mask, int imageWidth, int imageHeight) {
+        try {
+            int width = mask.getWidth(), height = mask.getHeight();
+            byte[] packed = photoMaskBytes(mask.getBuffer(), width, height);
+            double scale = Math.min(1.0, 256.0 / Math.max(width, height));
+            int targetWidth = Math.max(1, (int) Math.round(width * scale));
+            int targetHeight = Math.max(1, (int) Math.round(height * scale));
+            JSObject grid = new JSObject();
+            grid.put("revision", 1); grid.put("source", "mlkit_person_confidence");
+            grid.put("width", targetWidth); grid.put("height", targetHeight);
+            grid.put("imageWidth", imageWidth); grid.put("imageHeight", imageHeight);
+            grid.put("confidence", Base64.encodeToString(packed, Base64.NO_WRAP));
+            out.put("photoMask", grid);
+        } catch (RuntimeException error) {
+            out.put("photoMaskUnavailable", true);
+        }
+    }
+
+    private static byte[] photoMaskBytes(ByteBuffer source, int width, int height) {
+        if (width < 1 || height < 1 || width > 4096 || height > 4096
+                || (long) width * height * 4 > source.limit()) throw new IllegalArgumentException("Ungültige Personenmaske.");
+        ByteBuffer buffer = source.duplicate().order(source.order()); buffer.rewind();
+        double scale = Math.min(1.0, 256.0 / Math.max(width, height));
+        int tw = Math.max(1, (int) Math.round(width * scale)), th = Math.max(1, (int) Math.round(height * scale));
+        byte[] result = new byte[tw * th];
+        for (int y = 0; y < th; y++) for (int x = 0; x < tw; x++) {
+            int sx = Math.min(width - 1, (int) ((x + 0.5) * width / tw));
+            int sy = Math.min(height - 1, (int) ((y + 0.5) * height / th));
+            float value = buffer.getFloat(4 * (sy * width + sx));
+            if (!Float.isFinite(value) || value < 0 || value > 1) throw new IllegalArgumentException("Ungültige Maskenkonfidenz.");
+            result[y * tw + x] = (byte) Math.round(value * 255f);
+        }
+        return result;
     }
 
     private void addContourMetrics(JSObject out, Pose pose, SegmentationMask mask, int imageWidth, int imageHeight) {
