@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `27cc4982d46e2799cc3b42f3cc91e9d56cc32ecc`
+Referenz-Commit: `e1850ed6291a626f7eee0633d29fa1b8c5ca62fe`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,81 @@ Referenz-Commit: `27cc4982d46e2799cc3b42f3cc91e9d56cc32ecc`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 602 Java-Kompilierfehler, gezielte Korrektur vorbereitet
+## Aktueller Stand: Build 604 bestätigt; erster bedienbarer Mehrfoto-Pilot vorbereitet
+
+Aktuelles main vor Bearbeitung frisch abgerufen und auf diesen Dateien weitergearbeitet: `e1850ed6291a626f7eee0633d29fa1b8c5ca62fe`. Seit bisheriger Referenz 27cc498 ausschließlich die zwei gelieferten Buildkorrektur-Dateien geändert; Diff geprüft. **Build 604**, Lauf **40206347954**, vollständig erfolgreich einschließlich Android-Kompilierung, Modell-/APK-/Telemetrieprüfung und dauerhafter Signierung. Build 603 war noch der Zwischenstand vor dem Java-Fix. Fehler aus 602 behoben, nicht weiter auf alte JVM-JSON-Prüfung vertrauen. AGENTS-/STATUS-Regeln gelten.
+
+### Umfang dieser Lieferung
+
+Sechs vollständige Dateien, noch nicht auf main hochgeladen, als neue APK gebaut oder auf dem S25 getestet:
+
+- www/body3d-multiview.js: bestehender Kern mit Kleidungsfreigabe, zusammenhängenden Rumpfkonturen und erweiterten Kontrollen.
+- www/body3d-multiview-ui.js: neue lokale Vorschlags-, Bestätigungs-, Stapelverarbeitungs- und Ergebnisoberfläche.
+- www/body3d-multiview-worker.js: neuer Rechenworker.
+- www/index.html: Button/Styles, Skriptanbindung sowie Back-/Pause-Anbindung, bisheriger Einfoto-Test unverändert.
+- native/Body3DPlugin.java: Gruppenvorbereitung erweitert um Posen-/Kamerainitialisierung bei gemeinsamen Größen und effiziente Einzeldekodierung für neutrale Vorschau.
+- STATUS.md: dieser Stand.
+
+ArchiveDirectoryPlugin.java, Modelle, Preflight-/APK-Workflow, MainActivity und Python-Prototyp unverändert. Kein Schema-Bump, keine Migration, keine Archiv-/Profilwerte oder Messgruppen geschrieben. Bisheriger App-/Einfoto-Gerätetest bleibt Stand 598; 604 bestätigt nur den bisherigen Backend-Build. **Diese neue Oberfläche ist noch NICHT auf dem Gerät bestätigt.**
+
+### Verbindliche neue Kleidungsregel des Benutzers
+
+Keine Fotos mit **Rock oder Kleid** als Mehrfoto-Quellenvorschlag. Bikinifotos können für tatsächlich freie Teilbereiche nützlich sein. Die bestehende Personenmaske erkennt keine Kleidungsarten zuverlässig; keine automatische Rock-/Kleidererkennung behaupten.
+
+- Unbekannte Kleidung standardmäßig NICHT freigegeben. Zuerst eigene **Kleidungsprüfung**, ausdrücklich noch keine Quellenvorschläge: Benutzer gibt nur wenige geeignete Fotos frei, nicht wieder alle Messfelder jedes Fotos. Auswahl **Freie Rumpfkontur · kein Rock/Kleid** oder **Bikini · markierter Bereich frei**, sonst Nicht freigegeben. Nur Bilder mit genau einer vollständig erkennbaren Person freigeben. Keine automatische Freigabe anhand Hautfarbe, Dateiname oder fehlendem Ausschluss.
+- Bestehende aktuelle Maßbewertungen werden ausschließlich lesend berücksichtigt: Sind Taille UND Hüfte wegen Kleidung ausgeschlossen, Foto bereits vor der Vorausprüfung zurückstellen. Einzelne bedeckte Bereiche allein sperren nicht pauschal ein sonst hilfreiches Bikinifoto. Es wird nicht behauptet, diese alten Bewertungen benennen eine konkrete Kleidungsart.
+- Erst aus explizit freigegebenen Fotos erstellt der Auswahlkern einen Vorschlag. Kern UND Fitvalidierung lehnen unbekannte/fremde Kleidungswerte einschließlich skirt_dress ab. Keine stillschweigende Freigabe, um Mindestanzahlen zu erreichen.
+- Für Bikini im Pilot nur mittlerer Rumpfbereich: 45 % unter Schultermittelpunkt bis 12 % oberhalb Hüftmittelpunkt, bezogen auf vertikale Schulter-Hüftspanne. Das ist ein konservatives Diagnosefenster, KEINE anatomische Messhöhe. Fenster wird in kleinen und vergrößerten Fotos markiert; Benutzer soll nur freigeben, wenn es wirklich unbedeckt ist. Brust-/Hüftbereiche unter Bikini werden dadurch nicht als beobachtet gewertet. Werte/Fenster auch im Worker validiert.
+- Freigaben nur als Foto-SHA-256 → Kategorie im Arbeitsspeicher dieser App-Sitzung; gleiche unveränderte Datei muss nicht ständig neu freigegeben werden. Keine Archiv-/Profilpersistenz und keine Kleidungsinferenz. Bei neuer Datei anderer SHA unbekannt. Nach Appneustart keine Wiederherstellung der flüchtigen Freigaben.
+
+### Bedienung und lokale Vorausprüfung
+
+Im **Shootingdetail** bei mindestens vier Fotos und genau einem zugeordneten Model Button **Mehrfoto-3D · Test**. Zunächst ein Shooting, keine automatische Zusammenlegung anderer Shootings/Körperstände. Tiffany Ryan Nr. 2 bleibt Testfall; Tahlia 1/2/6 bleibt gesonderte bestätigte Vorgabe und wird hier nicht automatisch verknüpft.
+
+- Bis zu 40 über das Shooting verteilte Fotos frisch lokal prüfen; aktueller Fingerprintbestand fehlt im alten Geometriecache, deshalb diesen nicht blind übernehmen. Nur JPEG/PNG/WebP/AVIF-Rasterdaten, Dateisignatur prüfen, höchstens 64 MiB je Quelldatei. Vor jeder Aufnahme Kontexthash/Archivinstanz/Shooting-Modelzuordnung kontrollieren. Keine Video-Frames oder neuen Dateien erzeugen/speichern.
+- Vorhandenes getMedia liest Original lokal; SHA-256 über tatsächliche Dateibytes. Arbeitscanvas maximal 1280 Pixel lange Kante, automatische Personenrahmen und bereits vorhandene ML-Kit-Pose-/Personenmaske. Kein Cloud-/Medienupload. Originale unverändert; Scan-/Kleidungs-/Maskendaten flüchtig, alte bodyCheck-/Messbewertungen werden nicht überschrieben.
+- Vorauswahl verlangt sichere Ganzkörper-/Kopfpunkte, Rahmen und mindestens zwölf konservativ brauchbare Rumpfzeilen. Vorhandene Arm-/Unsicherheitsfilter aus Fotokontur weiterverwendet. Kleidung ist dabei trotz gültiger Maske weiter unbestätigt und muss durch obige Freigabe. Vorschaubilder sind kleine im Speicher erzeugte JPEGs; Vergrößern liest dasselbe SHA-geprüfte Original, kein neuer Analyseauftrag.
+- Aus freigegebenen Bildern maximal sechs unterschiedliche Kandidaten vorschlagen, mindestens vier nötig. Doppelte SHA/IDs und ähnliche normalisierte 2D-Posen zurückstellen. 2D-Verschiedenheit ist keine garantierte Seiten-/Rückansicht oder unabhängige Tiefenbeobachtung, Bildformate/Posefehler können Ähnlichkeitsprüfung beeinträchtigen. Keine Perspektivlabels als Wahrheit benutzen.
+- Benutzer bestätigt Auswahl und genau EIN Kästchen **dieselbe Person im selben Körperstand**. Einzelne Bilder können abgewählt werden; mindestens vier müssen verbleiben. Vor jeder 3D-Analyse steht bereits fest, welche letzte ausgewählte Aufnahme die **Kontrollaufnahme** ist. Sie wird später nicht nach gutem Ergebnis ausgetauscht. Zu wenig geeignete Bilder bedeutet keine Berechnung, keine Ersatz-/Notfreigabe von Kleidungsbildern.
+
+### Tatsächlicher gemeinsamer Formfit
+
+1. Ausgewählte Originale SHA-/Maß-geprüft erneut laden. Lokale Einfotoanalyse mit includeParameters=true, zunächst ohne Posentest/Canonicalisierung; 45 Identitäts- und 204 Poseparameter, Kamera/Bildpunkte holen. Bisherige Einzelbildansicht fordert diese Zusatzdaten nicht an und bleibt unverändert.
+2. **Nur aus den Anpassungsfotos**, NICHT aus dem Kontrollfoto, komponentenweise Float32-Mediane als gemeinsame 45er-Startidentität und 74 Größenkanäle 130..203 bilden. Gemeinsame Kopf-/Hand-/Größenanteile danach über alle Quellen gleich. Das ist nur Initialisierung; Ergebnis ist nicht bloß dieser Median.
+3. Pro Foto gemeinsame Größen einsetzen, eigene Rotation/Rootpose beibehalten. Native prepareSharedFormBasis optional mit refinePose=true gegen dessen 2D-Bildpunkte initialisieren (bestehender begrenzter Posentest, keine gelockerten Winkelgrenzen). Falls dieser nicht übernommen wird, Kamera zusätzlich anhand derselben Modell-/Bildpunkte abgleichen. Auch Kontrollpose/-kamera werden nur aus Bildpunkten initialisiert, nicht gegen ihre Maske optimiert. Danach Posen während des gemeinsamen Formfits fest; noch KEINE vollständige gemeinsame Pose-/Form-Bündeloptimierung.
+4. Bestehenden vollständigen Decoder für Basisnetz plus zwanzig Formbasisrichtungen verwenden. Native preparationRevision=2 liefert zusätzlich tatsächliche Decoderpunkte, finale Pose/Kamera und Bericht; Layout/Basisrevision 1 unverändert. Fixed-Parameter-/Baseline-/Topologiegleichheit im Kern nochmals prüfen. Ausdruck bleibt null, Größen im Fit fest, Posekorrekturen im vollständigen Decoder erhalten.
+5. Foto-Maskenzeilen und initiale Modellkonturzeilen konservativ schneiden: beide Rumpfbereiche/Armfilter müssen bestehen, Fotomittellinie muss in Modellrumpfkomponente liegen. Mindestens zwölf Zeilen je Foto, anschließend höchstens etwa 24 verteilt verwenden. Keine Auswahl anhand kleiner Fehler oder guter späterer Verbesserung. Bikini nur innerhalb freigegebenem markiertem Fenster. Unterbrechungen ausdrücklich nicht zu bestätigten Linien überbrücken.
+6. Worker optimiert 20 **gemeinsame** Körperformdeltas und eigene Kameratranslation je Anpassungsfoto. Beobachtung ist zusammenhängender Dreiecksnetz-Querschnitt um Foto-Rumpfmittellinie, nicht die gesamte äußere Breite einschließlich abstehender Arme. Getrennte Komponenten zusammenführen, dann Rumpfkomponente wählen; aktive Randableitungen analytisch. Breitenbereich 0,5–2 der initialen Modellrumpfbreite dient nur numerischer Plausibilität, keine validierte Anatomie.
+7. Bestehende weiche Verlustfunktion/Prior/Iterationsgrenzen und gleiche Gewichtung je Foto bleiben. Kontrollkontur nicht im Optimierungsziel, Kontrollkamera für Vorher/Nachher unverändert. Übernahme nur bei Konvergenz und Verbesserung an JEDER Anpassungs-/Kontrollaufnahme (2 % und >0,05 Pixel). Das sind interne Versuchsregeln, keine Messgenauigkeit.
+8. Zusatzkontrolle gegen künstlich schlechte gemeinsame Startform: die ursprünglichen Körperkoeffizienten des Kontrollfotos werden erst NACH dem Fit bei gleicher Pose/Kamera und gemeinsamen übrigen Parametern zum Vergleich ausgewertet. Wenn vergleichbar, darf gemeinsamer Kandidat diese Einzelbild-Körperform um höchstens 0,05 Pixel verschlechtern. Dessen Koeffizienten fließen trotzdem nicht in Startform/Training ein. Nicht vergleichbare Kontur zählt nicht als Erfolg; fehlende Kontrollkontur verwirft den Kandidaten. Ergebnis nennt verständlichen Ablehnungsgrund statt alle Verbesserungen pauschal grün zu bewerten.
+
+### Ergebnis, Worker, Abbruch
+
+- Bei Übernahme: **Gemeinsamer Formkandidat**, interne RMS-Tabelle (Arbeitsbildpixel), neue neutrale 3D-Vorschau. Native baseOnly=true dekodiert dafür genau einmal, keine unnötige weitere 20er-Basis. Noch keine Zentimeter/Cupwerte oder Profilübernahme. Modell kann spezielle Körperformen/weiches Gewebe trotz mehrerer Ansichten unzureichend darstellen; viele Frontfotos beweisen keine Tiefe.
+- Direktes Gegenprüfen am Originalfoto, standardmäßig Kontrollaufnahme: Grün erkannte Maske, Orange gemeinsame Startform, Violett gemeinsamer Kandidat. Arbeitsbild wird neu SHA-geprüft geladen. Linien nur über bestätigte Zeilenabschnitte verbinden, Daten aus derselben Optimierungsprojektion. Bei Kontrollaufnahme identische vorab geschätzte Pose/Kamera für beide Formen. Wechsel zu anderen ausgewählten Fotos möglich; deren Kamera wird im Formfit separat angepasst, deshalb dort Änderungen nicht allein der Figur zuschreiben.
+- Bei Ablehnung keine Kandidatenparameter/-konturen/-vorschau übernehmen; Bericht/RMS und Ablehnungsgrund sichtbar. Keine Diagnose „anderer Körperstand“ automatisch daraus ableiten. Unklare Masken, Kleidung, Haltung, Kameramodell und begrenzter Formraum bleiben mögliche Ursachen.
+- Rechenworker als Blob aus ausschließlich zwei lokal gebündelten Skriptdateien; keine Worker-Netzwerk-/Mediendaten nach außen. Versionsprüfung, cachefreie lokale Ressourcen und deduplizierte Transferliste für Basis-/Topologiebuffer. Hauptthread bleibt für Fortschritt/Abbruch frei. Fitbudget 90 Sekunden, maximal 50 Iterationen je Teilfit; kein Geschwindigkeitsversprechen für das S25.
+- Schließen, Android-Back, Abbrechen und App-Hintergrund stoppen Worker/weitere Stufen und fordern nativen Abbruch zwischen Inferenzaufrufen an. Aktuelle ML-Kit-Analyse kann auslaufen, deren Ergebnis wird dann verworfen. Keine nächste Datei nach Abbruch. Native Sitzungen/Tensoren geschlossen, Worker/Blob-URLs/GL-Kontext/Foto-Canvas freigegeben. Bei Dateibestand-/Kontextänderung keine alten Ergebnisse weiterverwenden. Nur freigegebene Kleidungskategorien anhand SHA bleiben in Sitzungscache, keine Bilder darin.
+- Neue JSON-Verwendung weiterhin gegen **Android-kompatible checked JSONException** prüfen; Deklaration jsonVector throws org.json.JSONException aus Build-604-Fix erhalten. Keine Modelle/Toleranzen, Signierung, Lizenz-/Telemetriesperren oder Datenbankpfade geändert.
+
+### Tatsächlich durchgeführte Prüfungen und Grenzen
+
+- Vollständige native Klasse gegen reale ORT-1.31-Java-Klassen, Android-API-JAR, Android-kompatible checked-JSON-Bibliothek und Capacitor-Stubs kompiliert. Basisrekonstruktion mit realer Java-ORT und verifiziertem Build-598-Decoder erneut bestanden (max. 5,93638e-7 m, gleiche Modelle wie bisher), Eingaben/Größen fest und Abbruchcallback geprüft.
+- Neue native Gruppenmethode selbst mit realer ORT, gepacktem Modellmanifest/Modellen, checked-JSON/Base64, aber nachgebildeter Android-Asset-/Capacitor-Hülle ausgeführt: baseOnly, volle Basis inklusive Poseninitialisierung bei gemeinsamen Größen, 70 tatsächliche Decoderpunkte, feste 99 Parameter und Abweisung fehlender Fotoeingaben bestanden. Kein echter Android-Bridge-/Gradle-/S25-Test.
+- Neuer zusammenhängender Rumpfrand gegen bekannte synthetische Szenen geprüft, abstehende separate Armkomponente wird nicht zur Rumpfbreite. Analytische Ableitungen gegen zentrale Differenzen geprüft. Mit echten Decoderbasisdaten gemeinsamer Fit von drei künstlichen Ansichten plus Kontrolle: Kontroll-RMS 11,256 → 0,051 Pixel, Trainings-RMS 2,005/2,711/3,893 → 0,011/0,011/0,018. Zahlen gehören nur zu künstlichen bekannten Posen/Zielsilhouetten, keine reale Genauigkeit.
+- Widersprüchliche Kontrollsilhouette abgelehnt. Zusätzlich Fall abgelehnt, der gemeinsame Startform verbessert, aber die unabhängige Einzelbild-Form der Kontrolle verschlechtert. Nicht vergleichbare Kontrollkomponente gibt kein Ergebnis, Nullform nicht als Verbesserung angenommen. Alter Python-/JS-Referenzfall weiterhin bestanden. Keine neue echte Körperstands-/Fotorekonstruktion außerhalb des Handys ausgeführt und keine Benutzerfotos dafür hochgeladen.
+- Tatsächlicher Worker-Code in eigenem Host-Worker ausgeführt: echter Decoderfixture-Fit, Fortschritt/Ergebnis, übertragene/detachte ArrayBuffer, Fehlerprotokoll und harte Worker-Beendigung ohne späteres Ergebnis bestanden. Das testet Workerlogik, nicht Android-WebView-Verhalten.
+- Tatsächliche UI mit DOM, nativer Canvas-Implementierung und Crypto, jedoch nachgebildeter Bild-/MLKit-/Body3D-/Worker-Brücke getestet: unbekannte Kleidung vor Vorschlag gesperrt, Bikini-Fenster, Sammelbestätigung, echte Buffertransfers, Startmediane ohne Kontrolle, gemeinsame Größen/eigene Pose, Foto- und Neutralvorschau, abgelehnter Kandidat ohne Vorschau, Nutzer-/Hintergrundabbruch, bestehende Kleidungsbewertung, URL/GL-Freigabe und unveränderte Archivdaten bestanden. Native-/Workerberechnung separat wie oben wirklich ausgeführt; daraus keinen vollständigen echten Fotopipeline-Test behaupten.
+- Vorauswahl-/Kleidungs-/Duplikat-/Rahmen-/Kontexttests, alle vier bisherigen Inline-Skripte, drei externe Skripte, bisherige Einfoto-/Formvergleichs-/Kontur-/Farbkartenprüfungen erneut bestanden. Keine Rock/Kleid-Visionerkennung implementiert, sondern strikte Freigabe vor Vorschlag. Alle Lieferdateien/ZIP bytegenau geprüft.
+- **Offen:** echter Browser/WebView-/Touch-/APK-Gruppentest, S25-Spitzenspeicher/Bridge-Transfer/Laufzeit, reale Masken-/Posenqualität und Eignung des MHR-Formraums. Noch kein vollständiger neuer Gradle-/APK-Lauf lokal. Pflichtprüfungen müssen im nächsten GitHub-Build bestehen. Keine künstlichen Testergebnisse als bestätigte Anatomie/Körpermaße ausgeben.
+
+### Lieferung und konkreter nächster Schritt
+
+ZIP **Mehrfoto-Pilot.zip** ist flach. Zuerst **body3d-multiview.js**, **body3d-multiview-ui.js**, **body3d-multiview-worker.js** nach **www**, danach **index.html → www**, **STATUS.md → Hauptordner**, **Body3DPlugin.java zuletzt → native**. Benutzer lädt selbst hoch, keine direkten Repo-Schreibzugriffe. Zwischenbuilds nicht installieren. Nach Upload alle sechs Dateien/main und finalen vollständigen erfolgreichen APK-Build prüfen, genaue Buildnummer nennen. APK immer als Update, niemals deinstallieren.
+
+Erster Gerätetest erst nach geprüfter APK: **Tiffany Ryan → Shooting Nr. 2 öffnen → Mehrfoto-3D · Test**. Lokale Prüfung abwarten. Nur wenige geeignete Fotos ohne Rock/Kleid freigeben, Bikinis nur bei wirklich freiem markierten Abschnitt. Vorschlag bilden, vier bis sechs ausgewählt lassen, dieselbe Person/Körperstand einmal bestätigen, gemeinsam berechnen und App geöffnet lassen. Auch Ablehnung ist ein auswertbares Ergebnis. Screenshot des Ergebnis-/Fehlerberichts, bei Kandidat zusätzlich Kontrollfoto-Überlagerung, genügt. Keine Einzel-Messfelder erneut bearbeiten und keine weiteren Körperstände zusammenführen. Dauerhafte Freigabe zum Weiterarbeiten gilt.
+
+## Historischer Stand: Build 602 Java-Kompilierfehler, gezielte Korrektur vorbereitet
 
 main `27cc4982d46e2799cc3b42f3cc91e9d56cc32ecc` frisch geprüft. Seit Referenz 4aaf58c nur die drei gelieferten Kern-Dateien hochgeladen; body3d-multiview.js, STATUS.md und Body3DPlugin.java alle bytegenau angekommen. Build **602**, Lauf **40205477101**, Job **121205355209**, fehlgeschlagen bei **Build debug APK**. Die installierte App wird durch einen fehlgeschlagenen CI-Build nicht verändert. Mehrfoto-UI weiterhin nicht angeschlossen; kein Handytest für diesen Backendstand nötig.
 
