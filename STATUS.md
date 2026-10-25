@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `30b1b75e61b9a618dc57c2af113d444f4b682acc`
+Referenz-Commit: `12f6fe85512780c6c1ea43ab21367ff5a105b000`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,46 @@ Referenz-Commit: `30b1b75e61b9a618dc57c2af113d444f4b682acc`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 607 bestätigt; Rumpfauswahl korrigiert vorbereitet
+## Aktueller Stand: Build 609 bestätigt; Shootinggruppe und freie Abschnitte vorbereitet
+
+main frisch abgerufen: 12f6fe85512780c6c1ea43ab21367ff5a105b000. Seit Referenz 30b1b75 nur vier gelieferte Auswahlkorrektur-Dateien hochgeladen, Diff und Bytes geprüft. Build 609 / Lauf 40222962423 vollständig erfolgreich einschließlich Signierung/Assets/Telemetriesperre. Benutzer hat 609 getestet: acht statt fünf Fotos technisch zugänglich, davon viele aus seiner Sicht nicht hilfreich. Der bisherige Ganzrumpffilter bleibt für seine Ziele zu eng.
+
+### Aktuelle fachliche Vorgaben (ersetzen historische pauschale Regeln)
+
+- Benutzer bestätigt ausdrücklich: **Tiffany Ryan, alle Shootings gleicher Körperstand**. Diese Shootings dürfen eine gemeinsame Quellengruppe bilden. Keine anderen Models beimischen, keine dauerhaften Archiv-/Profilgruppen automatisch schreiben. Tahlia 1/2/6 früherer Körperstand bleibt andere, unveränderte Zuordnung; NICHT alle Tahlia-Shootings automatisch vereinen.
+- Kleidung ist KEIN pauschaler Fotoausschluss mehr. Wenn ein freier Körperbereich hilfreiche Information trägt, soll er beitragen können, auch bei Rock/Kleid außerhalb dieses Bereichs. Historischer genereller Rock-/Kleidausschluss ist damit aufgehoben. Verdeckte Konturen dürfen nicht als beobachteter Körperrand gelten. Automatische Kleidungs-/Gewebeerkennung weiterhin nicht vorhanden.
+- Langfristiges Ziel unverändert: viele unterschiedliche Ansichten/Posen eines bestätigten Körperstands, eigene Pose/Kamera je Foto, gemeinsame Form, Sichtbarkeit pro Bereich, Gegenprüfung an zurückgehaltener Ansicht. Kein verifiziertes Maß aus bloß plausibler 3D-Ansicht ableiten. Keine Zentimeter/Cup/Profilwerte automatisch schreiben.
+
+### Vier vorbereitete Dateien, noch NICHT hochgeladen/gebaut/gerätetestbestätigt
+
+1. www/body3d-multiview-ui.js:
+   - Neuer Auswahlpunkt Quellengruppe: Dieses Shooting oder Alle Shootings dieses Models · gleicher Körperstand. Standard bleibt das geöffnete Shooting. Bei Wechsel alle Fotos von Shootings mit exakt EINEM identischen Model-ID-Wert einbeziehen, Mehrmodel- und Fremdmodel-Shootings ausschließen. Kein Name-Matching/Hardcode Tiffany und keine Datenbankschreibvorgänge. Einbezogene Shootings mit Namen/Fotoanzahlen aufklappbar sichtbar. Finale Sammelbestätigung benennt auch den gleichen Körperstand der einbezogenen Shootings.
+   - Gruppenschlüssel umfasst Model-ID und sortierte Shooting-IDs. Vor jeder Stufe gesamte Gruppenliste/Foto-/Modelsignatur prüfen; neue/entfernte/umzugeordnete Shootings bei All-Modus invalidieren die laufende Quelle. Auf Archivwechsel ebenfalls Abbruch. Gruppenwechsel verwirft alten Vorschlag/Ergebnis und scannt neu. Einzelfotos aus mehrfachen Shootingzuordnungen nur einmal per Media-ID, SHA-Duplikate weiter im Kern zurückstellen. Keine automatische Körperstandsentscheidung.
+   - JEDES erfolgreich gelesene Foto bleibt in Sichtung, auch wenn Pose/Maskenprüfung scheitert. Solche Fotos tragen Grund und deaktivierte Berechnungsfreigabe; kein stilles Verschwinden, aber auch keine falsche Behauptung, sie würden bereits gerechnet. Nicht lesbare Dateien separat gezählt. Bilder ohne sichere Schulter-/Hüftanker oder zwölf freie konservative Maskenzeilen können im aktuellen Fit weiterhin NICHT verwendet werden.
+   - Kategorien: Nicht freigegeben / Gesamter geprüfter Rumpf frei / Bikini-Fenster / Nur markierter Abschnitt frei. Bei letzterem zwei Grenzen in Prozent der Bildhöhe mit Schiebereglern; markierter Streifen im kleinen sowie vergrößerten Original, zusätzlich ausdrückliche Bestätigung beider von Kleidung/Verdeckung freier Konturränder. Jede Grenzänderung löscht die Bestätigung. Ungültige/zu kleine Abschnitte zählen nicht und zeigen Grund an der Fotokarte. Beschränkung auf Bildzeilen ist keine anatomische Messhöhe, keine allgemeine gekrümmte Bereichsmaske.
+   - Teilbereichsfreigabe nicht als Ganzrumpffreigabe cachen. Bestehende aktuelle beide Taille/Hüfte-Kleidungsausschlüsse löschen alte Sitzungsfreigabe; Foto bleibt zur erneuten bewussten Abschnittsfreigabe sichtbar. Keine Personenmaske als Kleidungserkennung darstellen.
+   - Nur sichere Foto-/Modellzeilen innerhalb des expliziten Abschnitts gehen in target/links/rows ein. Masken-/Arm-/Modellkomponentenfilter unverändert. Foto-Konturkontrolle, Kontrollfoto und gemeinsame Identität weiterhin gleicher Ablauf. Abschnitt gilt für genau diese unveränderte per SHA geprüfte Datei und diese Sitzung.
+2. www/body3d-multiview.js: neue explizite Kategorie visible_region in Auswahl und Fitvalidierung; wie Bikini nur mit endlichem geordnetem Fenster, jede Beobachtungszeile muss darin liegen. Unbekannte Kleidung/Freigaben weiterhin gesperrt; skirt_dress als pauschale ganze Foto-Freigabe bleibt ungültig, ein solcher Inhalt kann aber per visible_region für seinen freien Abschnitt freigegeben werden. Fitnumerik unverändert.
+3. www/index.html: lokale Skriptversion group3, Schieberegler volle Kartenbreite statt bisheriger Checkboxbreite. Keine neue DB/Navigation/Nativeänderung.
+4. STATUS.md: dieser Stand.
+
+### Tatsächlich geprüft und Grenzen
+
+- JS-Syntax, bestehende Einfoto-/Kontur-/Referenz-/Farbkartenprüfungen erneut bestanden.
+- Tatsächliche Gruppen-UI mit DOM, echter Canvas und Crypto, aber nachgebildeter MLKit/Body3D/Worker-Brücke: zwei Shootings eines Models trotz nur zwei Fotos pro Shooting gemeinsam berechnet; Fremd- und Mehrmodel-Shootings ausgeschlossen, Gruppenschlüssel geprüft, Archiv unverändert. Modeländerung am zweiten Shooting vor Fit wird abgewiesen, keine Rechnung. Einzelfall/Teilrumpf/Bikini/Abbruch/Ergebnis-/Ressourcenfreigabe weiterhin bestanden.
+- Fehlerhafte Foto-Geometrie bleibt als vierte Karte mit Begründung sichtbar und nach busy(false) weiterhin gesperrt. Keine stille Erhöhung der tatsächlich nutzbaren Quellen behaupten.
+- Freier Abschnitt ohne Checkbox nicht vorgeschlagen; Grenzänderung löscht Checkbox und sperrt erneut; bestätigter Abschnitt mit Fenster 72..132 Arbeitsbildpixel gelangt in Gruppe, ausschließlich Zeilen darin. Rückprüfung/Startmediane/Kontrollausschluss weiterhin wie vorher.
+- Core mit echten Decoderbasis-Fixtures gegen synthetische bekannte Konturen: gemeinsame sichtbare Abschnittsquellen akzeptiert; eine Zeile außerhalb des Fensters bereits bei Validierung abgewiesen. Bestehende zusammenhängende Rumpfkontur, finite Differenzen, abstehender Arm, widersprüchliche/unbrauchbare/gegen Einzelbild verschlechterte Kontrolle weiterhin bestanden. Worker separat bestanden. Das ist KEIN echter Rekonstruktionstest an Benutzerfotos und kein Genauigkeitsnachweis.
+- Keine native Modell-/Gradleänderung, keine Archiv-/Profilpersistenz. Nicht lokal als komplette Android-APK gebaut. Echter Touch/WebView-/Gruppen-/Abschnitts-Gerätetest auf S25 erst nach nächstem geprüften vollständigen GitHub-Build.
+- **Pilotgrenzen ausdrücklich weiter vorhanden:** vier bis sechs gewählte Quellen je Fit, Mindestzahl vier, feste vorab geschätzte Posen während Formfit, sichere Schulter-/Hüftanker, konservative horizontale Rumpfmaskenzeilen. Reine Brustnahaufnahme ohne Hüfte wird jetzt sichtbar, aber noch nicht verwendet. Frei markierte Abschnitte ersetzen keine unabhängige Oberbrust-/Unterbrust-/Taillen-/Hüftbeobachtung und lösen keinen vollständigen beliebigen Pose-/Mehransichtenfit. Keine Maße, physische Skalierung oder anatomische Richtigkeit bestätigt. Große Shootinggruppen dauern länger und halten mehr kleine Vorschaubilder/Masken im Speicher; Originale werden sequenziell verarbeitet, Abbruch bleibt möglich.
+
+### Lieferung und nächster Schritt
+
+ZIP Mehrfoto-Shootinggruppe.zip mit vier vollständigen Ersatzdateien. body3d-multiview.js und body3d-multiview-ui.js nach www, danach index.html nach www und STATUS.md in Hauptverzeichnis. Keine native Datei/Worker erneut nötig. Benutzer lädt selbst hoch. Danach main/alle vier Bytes und finalen erfolgreichen APK-Build prüfen, genaue Nummer nennen. APK als UPDATE installieren, nicht deinstallieren.
+
+Gerätetest: von Tiffany-Shooting Mehrfoto öffnen, oben Quellengruppe Alle Shootings dieses Models wählen, aufklappbare Liste prüfen und lokalen Scan abwarten. Alle lesbaren Fotos sollen sichtbar sein, einschließlich zurückgestellter mit Grund. Wenige geeignete Ganzrumpf-/Bikinifotos oder ausdrücklich bestätigte freie Abschnitte freigeben. Vorschlag aus vier bis sechs Quellen bilden, gleichen Körperstand bestätigen, rechnen. Ergebnis/Fehler und ggf. zurückgehaltene Kontrollfotoüberlagerung zeigen lassen. Nächster fachlicher Nachweis bleibt reale Verbesserung einer zurückgehaltenen Ansicht; keine weitere Auswahlkosmetik als Rekonstruktionsnachweis verkaufen.
+
+## Historischer Stand: Build 607 bestätigt; Rumpfauswahl korrigiert vorbereitet
 
 Main frisch abgerufen: 30b1b75e61b9a618dc57c2af113d444f4b682acc. Seit e1850ed exakt sechs Pilotdateien hochgeladen, bytegenau geprüft; Build 607 / Lauf 40221090634 vollständig erfolgreich, APK signiert. Benutzer hat neue Oberfläche getestet: nur fünf Kandidaten zur Kleidungsfreigabe, darunter zwei bekleidete; drei freie reichen nicht. Bisherige Aussage „Röcke/Kleider ausgeschlossen“ gilt erst NACH Benutzerfreigabe, keine automatische Kleidungs-Vision. Dies dem Benutzer korrigiert erklärt.
 
