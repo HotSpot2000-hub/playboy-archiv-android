@@ -172,11 +172,27 @@ public class Body3DPlugin extends Plugin {
     /** Prepare one fixed-pose linear body basis. Used only by the future multi-photo worker. */
     @PluginMethod
     public void prepareSharedFormBasis(PluginCall call) {
-        final float[] shape, pose;
+        final float[] shape, pose, initialCamera;
+        final boolean refine = Boolean.TRUE.equals(call.getBoolean("refinePose"));
+        final boolean baseOnly = Boolean.TRUE.equals(call.getBoolean("baseOnly"));
+        final JSObject photoInput = call.getObject("input");
+        final JSONArray imagePoints = call.getArray("joints2d");
         try {
             JSONArray identity = call.getArray("commonShape"), bodyPose = call.getArray("photoPose");
             if (identity == null || bodyPose == null) throw new IllegalArgumentException("Gemeinsame Form oder Fotopose fehlt.");
             shape = readVector(identity, 45); pose = readVector(bodyPose, 204);
+            JSONArray camera = call.getArray("camera");
+            initialCamera = camera == null ? null : readVector(camera, 3);
+            if (refine) {
+                if (baseOnly || initialCamera == null || initialCamera[2] <= .01f || photoInput == null || imagePoints == null) throw new IllegalArgumentException("Fotopunkte/Kamera fehlen.");
+                photoCondition(photoInput);
+                if (imagePoints.length() != 70) throw new IllegalArgumentException("Ungültige Fotopunktzahl.");
+                for (int i = 0; i < 70; i++) {
+                    JSONArray point = imagePoints.getJSONArray(i);
+                    if (point.length() != 2) throw new IllegalArgumentException("Ungültiger Fotopunkt.");
+                    for (int k = 0; k < 2; k++) if (!Double.isFinite(point.getDouble(k)) || Math.abs(point.getDouble(k)) > 100) throw new IllegalArgumentException("Ungültiger Fotopunkt.");
+                }
+            }
             for (float value : shape) if (Math.abs(value) > 20) throw new IllegalArgumentException("Ungültiger Formparameter.");
             for (float value : pose) if (Math.abs(value) > 20) throw new IllegalArgumentException("Ungültiger Posenparameter.");
         } catch (Exception error) { call.reject("Ungültige Mehrfoto-Eingabe: " + error.getMessage()); return; }
@@ -190,22 +206,43 @@ public class Body3DPlugin extends Plugin {
                     if (manifest.optInt("decoder_points_revision", 0) != 1) throw new IllegalStateException("Mehrfoto-Decoder fehlt.");
                     android.system.Os.setenv("ORT_DISABLE_TELEMETRY", "1", true);
                     OrtEnvironment env = OrtEnvironment.getEnvironment(); env.setTelemetry(false);
+                    float[] effectivePose = pose, camera = initialCamera;
+                    JSObject poseReport = null;
+                    if (refine) {
+                        if (manifest.optInt("pose_refine_revision", 0) != 1) throw new IllegalStateException("Posenmodell für Mehrfoto fehlt.");
+                        ByteBuffer poseModel = mapAsset("mhr_pose.onnx");
+                        try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(poseModel, opts)) {
+                            PoseFit fit = new PoseRefiner(env, session, shape, pose, camera, imagePoints, photoInput, this::checkActive).fit();
+                            effectivePose = fit.pose; camera = fit.camera; poseReport = fit.report;
+                        }
+                    }
+                    checkActive();
                     ByteBuffer model = mapAsset("mhr_decoder.onnx");
+                    JSONArray joints = new JSONArray();
                     ByteBuffer baseBytes, basisBytes;
                     try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(model, opts)) {
-                        ByteBuffer[] prepared = prepareBasis(env, session, shape, pose, this::checkActive);
-                        baseBytes = prepared[0]; basisBytes = prepared[1];
+                        if (baseOnly) {
+                            float[] values = flattenVision(decode(env, session, shape, effectivePose, joints));
+                            baseBytes = ByteBuffer.allocate(values.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                            baseBytes.asFloatBuffer().put(values); basisBytes = null;
+                        } else {
+                            ByteBuffer[] prepared = prepareBasis(env, session, shape, effectivePose, this::checkActive, joints);
+                            baseBytes = prepared[0]; basisBytes = prepared[1];
+                        }
                     }
                     checkActive();
                     JSONArray fixed = new JSONArray();
                     for (int i = 20; i < 45; i++) fixed.put((double) shape[i]);
-                    for (int i = 130; i < 204; i++) fixed.put((double) pose[i]);
+                    for (int i = 130; i < 204; i++) fixed.put((double) effectivePose[i]);
                     JSObject result = new JSObject();
-                    result.put("basisRevision", 1); result.put("topologySha256", manifest.getJSONObject("mesh-faces.u16").getString("sha256")); result.put("vertexCount", VERTICES); result.put("bodyCoefficientCount", 20);
+                    result.put("basisRevision", 1); result.put("topologySha256", manifest.getJSONObject("mesh-faces.u16").getString("sha256")); result.put("vertexCount", VERTICES); result.put("bodyCoefficientCount", baseOnly ? 0 : 20);
                     result.put("coordinateFrame", "vision_metres"); result.put("fixedParameters", fixed);
                     result.put("commonShape", jsonVector(shape));
                     result.put("base", android.util.Base64.encodeToString(baseBytes.array(), android.util.Base64.NO_WRAP));
-                    result.put("basis", android.util.Base64.encodeToString(basisBytes.array(), android.util.Base64.NO_WRAP));
+                    if (!baseOnly) result.put("basis", android.util.Base64.encodeToString(basisBytes.array(), android.util.Base64.NO_WRAP));
+                    result.put("preparationRevision", 2); result.put("joints3d", joints);
+                    result.put("poseParameters", jsonVector(effectivePose)); result.put("poseRefinement", poseReport);
+                    if (camera != null) result.put("camera", jsonVector(camera));
                     checkActive(); call.resolve(result);
                 } catch (OutOfMemoryError error) { call.reject("Zu wenig freier Speicher für die Mehrfoto-Formbasis."); }
                 catch (Exception error) { call.reject("Mehrfoto-Formbasis: " + error.getMessage()); }
@@ -215,7 +252,11 @@ public class Body3DPlugin extends Plugin {
     }
 
     private static ByteBuffer[] prepareBasis(OrtEnvironment env, OrtSession session, float[] shape, float[] pose, Runnable check) throws Exception {
-        check.run(); float[] base = flattenVision(decode(env, session, shape, pose));
+        return prepareBasis(env, session, shape, pose, check, null);
+    }
+
+    private static ByteBuffer[] prepareBasis(OrtEnvironment env, OrtSession session, float[] shape, float[] pose, Runnable check, JSONArray joints) throws Exception {
+        check.run(); float[] base = flattenVision(decode(env, session, shape, pose, joints));
         ByteBuffer baseBytes = ByteBuffer.allocate(base.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
         baseBytes.asFloatBuffer().put(base);
         ByteBuffer basisBytes = ByteBuffer.allocate(base.length * 20 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
