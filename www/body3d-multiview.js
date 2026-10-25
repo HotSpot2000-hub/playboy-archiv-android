@@ -26,7 +26,7 @@ function selectSources(samples,{groupKey,maxSources=6,minSources=4}={}){
  for(const sample of samples){
   const id=sample.mediaId,key=sample.fingerprint||id;
   if(!id||sample.groupKey!==groupKey){excluded.push({id,reason:'context'});continue}
-  if(!['free_contour','bikini'].includes(sample.clothing)){excluded.push({id,reason:sample.clothing==='skirt_dress'?'skirt_dress':'clothing_unconfirmed'});continue}
+  if(!['free_contour','bikini','visible_region'].includes(sample.clothing)){excluded.push({id,reason:sample.clothing==='skirt_dress'?'skirt_dress':'clothing_unconfirmed'});continue}
   if(ids.has(id)||seen.has(key)){excluded.push({id,reason:'duplicate'});continue}ids.add(id);seen.add(key);
   const d=descriptor(sample);if(!d){excluded.push({id,reason:'geometry'});continue}candidates.push({...sample,descriptor:d.vector,quality:d.quality});
  }
@@ -49,8 +49,8 @@ function validate(group){
  const ids=new Set(),fingerprints=new Set();let train=0,control=0,reference=null,commonShape=null;
  for(const v of group.views){
   assert(v.basisRevision===1&&v.topologySha256==='f2ac1f031a34dc4fd475b5d735904a65c2cd1b76a37c77ff2c44cb77597a5c36','Unknown body basis/topology');
-  assert(['free_contour','bikini'].includes(v.clothing),'Clothing must be approved; skirts/dresses forbidden');
-  if(v.clothing==='bikini')assert(v.clothingWindow?.length===2&&finite(v.clothingWindow)&&v.clothingWindow[0]<v.clothingWindow[1]&&v.rows.every(y=>y>=v.clothingWindow[0]&&y<=v.clothingWindow[1]),'Bikini observations must stay in approved uncovered window');
+  assert(['free_contour','bikini','visible_region'].includes(v.clothing),'Visible contour region must be approved');
+  if(['bikini','visible_region'].includes(v.clothing))assert(v.clothingWindow?.length===2&&finite(v.clothingWindow)&&v.clothingWindow[0]<v.clothingWindow[1]&&v.rows.every(y=>y>=v.clothingWindow[0]&&y<=v.clothingWindow[1]),'Partial observations must stay in approved uncovered window');
   assert(v.groupKey===group.groupKey,'Mixed body states');assert(typeof v.sourceId==='string'&&v.sourceId&&!ids.has(v.sourceId),'Duplicate or absent source ID');ids.add(v.sourceId);
   assert(typeof v.fingerprint==='string'&&v.fingerprint.length>0&&!fingerprints.has(v.fingerprint),'Independent source fingerprints required');fingerprints.add(v.fingerprint);
   assert(v.role==='fit'||v.role==='control','Unknown source role');if(v.role==='fit')train++;else control++;
