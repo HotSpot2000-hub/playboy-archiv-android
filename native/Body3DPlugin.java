@@ -45,6 +45,7 @@ public class Body3DPlugin extends Plugin {
         String encoded = call.getString("tensor");
         JSObject input = call.getObject("input");
         boolean refineRequested = Boolean.TRUE.equals(call.getBoolean("refinePose"));
+        boolean formRequested = Boolean.TRUE.equals(call.getBoolean("compareForm"));
         if (encoded == null || encoded.length() > 850000 || input == null) {
             call.reject("Die lokalen Bilddaten fehlen oder sind zu groß."); return;
         }
@@ -112,6 +113,7 @@ public class Body3DPlugin extends Plugin {
                     }
                     ByteBuffer meshModel = mapAsset("mhr_decoder.onnx");
                     ByteBuffer vertices = ByteBuffer.allocate(VERTICES * 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+                    byte[] canonical = null;
                     try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(meshModel, opts)) {
                         checkActive();
                         float[][][] mesh = decode(env, session, shape, pose, joints3d);
@@ -122,12 +124,22 @@ public class Body3DPlugin extends Plugin {
                             // Official MHR frame: cm, Y-up/Z-back -> metres, Y-down/Z-forward.
                             vertices.putFloat(vertex[0] / 100f); vertices.putFloat(-vertex[1] / 100f); vertices.putFloat(-vertex[2] / 100f);
                         }
+                        if (formRequested) {
+                            checkActive();
+                            canonical = normalizedForm(decode(env, session, shape, canonicalPose(pose)));
+                        }
                     }
                     checkActive();
                     byte[] faces = verifiedFaceBytes(manifest);
                     JSObject result = new JSObject();
                     result.put("vertices", android.util.Base64.encodeToString(vertices.array(), android.util.Base64.NO_WRAP));
                     result.put("faces", android.util.Base64.encodeToString(faces, android.util.Base64.NO_WRAP));
+                    if (canonical != null) {
+                        result.put("canonicalVertices", android.util.Base64.encodeToString(canonical, android.util.Base64.NO_WRAP));
+                        result.put("canonicalRevision", 1);
+                        result.put("canonicalFrame", "vision_centroid_vertical_span");
+                        result.put("canonicalTopology", manifest.getJSONObject("mesh-faces.u16").getString("sha256"));
+                    }
                     result.put("vertexCount", VERTICES); result.put("faceCount", faces.length / 6);
                     result.put("camera", new JSONArray().put((double) camera[0]).put((double) camera[1]).put((double) camera[2]));
                     result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("pointSource", "decoder_skeleton"); result.put("poseRefineRevision", 1); result.put("poseRefinement", poseReport); result.put("coordinateFrame", "vision_metres");
@@ -450,6 +462,39 @@ public class Body3DPlugin extends Plugin {
         double maximum = 0;
         for (int i = 0; i < actual.length; i++) maximum = Math.max(maximum, Math.abs((double) actual[i] - expected[i]));
         return maximum;
+    }
+
+    // Same learned shape and size channels, fixed zero-rotation decoder pose.
+    private static float[] canonicalPose(float[] pose) {
+        if (pose.length != 204) throw new IllegalStateException("Ungültige Formpose.");
+        float[] neutral = pose.clone();
+        java.util.Arrays.fill(neutral, 0, 130, 0f);
+        return neutral;
+    }
+
+    // Dimensionless whole mesh; vertical span is NOT the person's measured height.
+    private static byte[] normalizedForm(float[][][] mesh) {
+        if (mesh.length != 1 || mesh[0].length != VERTICES) throw new IllegalStateException("Ungültiges Vergleichsnetz.");
+        double[] center = new double[3];
+        double low = Double.POSITIVE_INFINITY, high = Double.NEGATIVE_INFINITY;
+        for (float[] p : mesh[0]) {
+            if (p == null || p.length != 3) throw new IllegalStateException("Ungültiger Vergleichspunkt.");
+            for (int k = 0; k < 3; k++) {
+                if (!Float.isFinite(p[k])) throw new IllegalStateException("Ungültiger Vergleichspunkt.");
+                center[k] += p[k];
+            }
+            low = Math.min(low, p[1]); high = Math.max(high, p[1]);
+        }
+        double span = high - low;
+        if (!Double.isFinite(span) || span <= 1e-6) throw new IllegalStateException("Vergleichsnetz ohne nutzbare Höhe.");
+        for (int k = 0; k < 3; k++) center[k] /= VERTICES;
+        ByteBuffer out = ByteBuffer.allocate(VERTICES * 3 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        for (float[] p : mesh[0]) for (int k = 0; k < 3; k++) {
+            float value = (float) ((p[k] - center[k]) / span * (k == 0 ? 1 : -1));
+            if (!Float.isFinite(value)) throw new IllegalStateException("Ungültige Vergleichsnormalisierung.");
+            out.putFloat(value);
+        }
+        return out.array();
     }
 
     private static float[][][] decode(OrtEnvironment env, OrtSession session, float[] shape, float[] pose) throws Exception {
