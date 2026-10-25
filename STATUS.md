@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
-Stand: 2026-10-24
-Referenz-Commit: `19b5bb5e32e7f6bb63e65d344deb230da3567a86`
+Stand: 2026-10-25
+Referenz-Commit: `26fb441c66c842123b2cbb961724079dbbd2820f`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,49 @@ Referenz-Commit: `19b5bb5e32e7f6bb63e65d344deb230da3567a86`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 589 bestätigt; neutraler Zweifoto-Formvergleich vorbereitet
+## Aktueller Stand: Build 592 bestätigt; lokale Farbansicht vorbereitet
+
+main `26fb441c66c842123b2cbb961724079dbbd2820f` frisch abgerufen. Seit bisheriger Referenz 19b5bb5 ausschließlich drei gelieferte Formvergleichsdateien hochgeladen; alle bytegenau gegen Lieferung geprüft. Build **592**, Lauf **40175861935**, erfolgreich inklusive 3D-Asset-Vorbereitung, APK-/Telemetrieprüfung, permanenter Signierung und Artifact **Playboy-Archiv-Build-592**. Vor Änderungen aktuellen main-Dateistand verwendet; bestehende AGENTS-/STATUS-Regeln gelten.
+
+### Bestätigter Gerätetest und korrekte Zuordnung
+
+Screenshot zeigt **Tiffany Ryan · Shooting · Nr. 2**, Referenz `27006_full.jpg`, Vergleich `26994_full-0.jpg`, Gesamtnetz-RMS **0,354 % der normierten Netzhöhe**. Beide Fotos werden korrekt als zwei unterschiedliche Medien im gleichen Shooting verglichen; neutraler Formvergleich auf S25 technisch bestätigt. Die UI-Zuordnung ist Tiffany Ryan, nicht Tahlia; frühere Annahmen zum Namen dieser zwei Testfotos nicht weiterführen. Tahlia-Gruppierungswunsch 1/2/6 bleibt davon unberührt.
+
+Im gezeigten Lauf Posentest AUS: Originalkamera 70/70 Punktpaare, Median 35,3 Pixel / 2,29 % Diagonale, Maximum 84,4; angepasster Kameramedian 21,1. Deutliche Pose-/Konturabweichungen weiter sichtbar. Neutraler Formvergleich und Punktvergleich prüfen unterschiedliche Dinge; 0,354 % ist keine Maßfehler-/Genauigkeitsangabe. Keine echten Maße oder Profilwerte bestätigt.
+
+### Entscheidung: zunächst örtliche Unterschiede sichtbar machen
+
+Der Gesamt-RMS kann größere Abweichungen kleiner Netzbereiche verdecken. Benutzer stimmt weiterer Arbeit an Brustkorb/Taille/Hüfte zu. Die offiziellen MHR-Werkzeuge gruppieren Netzpunkte über Gelenknamen und Skinninggewichte (Quelle geprüft: https://github.com/facebookresearch/MHR/blob/main/tools/mhr_create_segmentation/example.py). Daraus allein folgen nach unserer Einordnung noch keine validierten Brust-/Taillen-/Hüftmessregionen oder Umfangslinien. Keine willkürlichen Höhenbänder unter anatomischen Namen als fertige Regionalmessung ausliefern.
+
+Stattdessen jetzt ein begrenzter visueller Zwischenschritt: farbige Darstellung des Punktunterschieds am neutralen Vergleichsnetz. Automatische anatomische Regionalwerte bleiben offen. Die Darstellung soll klären, wo Unterschiede liegen, bevor solche Regionen fachlich festgelegt und geprüft werden.
+
+### Neu vorbereitet, noch nicht auf dem Gerät geprüft
+
+Zwei vollständige Ersatzdateien: `www/index.html`, `STATUS.md`. Native Plugin-Datei, Modelle, Preflight-/APK-Workflow unverändert gegenüber Build 592. Keine zusätzlichen Modellaufrufe und kein neues Asset erforderlich.
+
+- Nach Merken einer Referenz und Berechnung eines anderen Fotos desselben eindeutigen Einzelmodel-Shootings erscheint im vorhandenen Formvergleich eine **Neutrale Ansicht**. Auswahl **Vorne**, **Schräg vorne**, **Seite**, **Hinten**, **Andere Seite**. Rückseite ist nur die Rückseite des geschätzten Netzes, keine zusätzlich beobachtete Fotoinformation.
+- Zeigt das bereits normalisierte neutrale Netz des Vergleichsfotos; Farbwert je Vertex `100 * norm(current - reference)`. Gleiche korrespondierende Topologie wie beim RMS. Keine neue Registrierung, Kameraoptimierung, Anpassung oder individuelle Skalierung für den Farbvergleich. Orthografische Anzeige passt lediglich den Bildausschnitt an die Darstellung an.
+- Feste Skala für alle Vergleiche: Blau = 0, Gelb = 0,5, Rot = ab 1 % der normierten Netzhöhe. Größere Werte werden farblich bei Rot gesättigt; größter tatsächlicher Vertexabstand separat genannt. Farben zwischen Vertexwerten baryzentrisch interpoliert. Keine unterschiedliche Autoskalierung, kein richtig/falsch-Schwellenwert, keine Ampel für anatomische Genauigkeit. Ein großer Punktabstand enthält auch tangentiale Korrespondenzunterschiede und ist kein Abstand zum echten Körper.
+- CPU-Canvas-Rasterung 600×720, orthografische Projektion, pixelweiser Tiefenpuffer verdeckt hintere Oberflächen korrekt. Seitenansichten können durch Arme verdeckt sein; Schräg-/andere Seite sind zusätzliche Sichtmöglichkeiten. Keine künstliche Armabtrennung oder implizit valide Torsosegmentierung.
+- Darstellung nur nach tatsächlich vorliegendem Zweifotovergleich, nicht für Referenz selbst, unbekannte Zuordnung oder unberechnetes Foto. Referenzspeicherung/Medienidentität/Shooting- und Archivwechselregeln aus 592 erhalten. Kein weiterer Eingabefeldsatz.
+- Neuberechnung/Rahmenänderung/Optionswechsel löscht aktuelle Karte; Referenz verbleibt wie zuvor flüchtig. Leeren oder Kontextwechsel blendet Karte aus und verkleinert ihren Canvas auf 1×1. Cache nur für dieselben zwei Arrays und Ansichtsrichtung; kein erneutes Rasterisieren bei unveränderter Anzeige. Ansichtfehler isoliert: Zahlenvergleich und Fotoanalyse bleiben nutzbar, Fehlerhinweis statt Karte.
+- Keine Profil-/Archiv-/IndexedDB-Schreibvorgänge, keine Medienübertragung, Migration, Maße oder automatische Körperstandsgruppen. Keine Anatomie-/Maßgenauigkeit aus kleinen Unterschieden ableiten.
+
+### Tatsächlich geprüft
+
+- Alle vier vollständigen Inline-Skripte syntaktisch geprüft; bestehende Formvergleichs- und Paneltests erneut bestanden.
+- Lokale Vertexabstände gegen bekanntes Beispiel geprüft (ein Punkt mit 0,01 normierten Einheiten → 1 %); feste Palettenendpunkte/Mittelpunkt/Sättigung geprüft. Falsche Dimensionen, ungültige Ansicht, nichtendliche Punkte und unzulässige Flächenindizes abgewiesen.
+- Tatsächlicher Produkt-Rasterizer mit nativer Canvas-Bibliothek ausgeführt: sich überlagernde nahe/ferne Dreiecke liefern die erwarteten tatsächlichen Vorderpixel; Rückansicht kehrt Sichtbarkeit korrekt um. Synthetische geometrische Figur vorne/seitlich gerendert und Bild visuell geprüft. Keine Benutzerfotos oder echten Modellresultate für diese Rasterprüfung verwendet.
+- Tatsächliches Panel mit simuliertem DOM und echter Canvas-Fläche geprüft: Karte sichtbar, Cachewiederverwendung, Ansichtswechsel, Leeren, Canvasfreigabe, ungültige Kartendaten mit weiterhin vorhandenem Zahlenvergleich. Zusätzlich Kontext-/Mehrmodel-/Duplikat-/Referenztests, native Aufrufflags, alte APK abweisen und Knopfzustände nach Fehler erneut bestanden.
+- Kein echter Browser-/WebView-/Touchtest dieser Erweiterung, keine neue Gradle-/APK-Kompilierung und keine S25-Laufzeit-/Speichermessung in diesem Arbeitsgang. Native-/Modellrechnung unverändert und daher kein erneuter Exportlauf erforderlich. Nächster CI-Build muss vorhandene vollständige Pflichtprüfungen bestehen. Flaches Liefer-ZIP bytegenau gegen beide Ersatzdateien geprüft.
+
+### Lieferung und nächster Schritt
+
+**1. STATUS.md → Hauptordner**, **2. index.html zuletzt → www**. Keine Java-/Workflowdatei ersetzen. Benutzer lädt selbst hoch; danach main erneut prüfen und genaue vollständige erfolgreiche APK-Buildnummer nennen. Zwischenbuilds nicht installieren; APK immer als Update und niemals vorher deinstallieren.
+
+Nach geprüfter APK dieselben zwei bisherigen Fotos verwenden: erstes berechnen und als Referenz merken, schließen, zweites berechnen. Unter **Formvergleich im Shooting → Neutrale Ansicht** zuerst Vorne, dann Schräg vorne/Seite ansehen. Screenshot der Farbansicht samt Legende genügt. Ziel: räumliche Verteilung der Modellunterschiede prüfen; noch keine behaupteten Brust-/Taillen-/Hüftmaße. Keine weiteren Fotos oder manuelle Feldbewertungen notwendig. Dauerhafte Freigabe zum selbstständigen Weiterarbeiten gilt.
+
+## Historischer Stand: Build 589 bestätigt; neutraler Zweifoto-Formvergleich vorbereitet
 
 Vor Änderung AGENTS und gesamte STATUS gelesen; main frisch geklont und vor Lieferung erneut abgeglichen: `19b5bb5e32e7f6bb63e65d344deb230da3567a86`. Seit bisheriger Referenz 53b5288 ausschließlich die vier gelieferten Posentest-Dateien geändert; Diff geprüft. Build **589**, Lauf **40082012095**, wurde im vorherigen Arbeitsgang einschließlich Assets/APK/Signierung geprüft. Benutzer hat den begrenzten Posentest auf S25 erfolgreich ausgeführt. Keine neue Buildnummer vor dem Upload erfinden.
 
