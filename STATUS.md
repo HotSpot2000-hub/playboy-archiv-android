@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-24
-Referenz-Commit: `53b52887c4deee453aee3597caf9854e357d5e50`
+Referenz-Commit: `19b5bb5e32e7f6bb63e65d344deb230da3567a86`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,45 @@ Referenz-Commit: `53b52887c4deee453aee3597caf9854e357d5e50`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 585; begrenzter Posentest vorbereitet
+## Aktueller Stand: Build 589 bestätigt; neutraler Zweifoto-Formvergleich vorbereitet
+
+Vor Änderung AGENTS und gesamte STATUS gelesen; main frisch geklont und vor Lieferung erneut abgeglichen: `19b5bb5e32e7f6bb63e65d344deb230da3567a86`. Seit bisheriger Referenz 53b5288 ausschließlich die vier gelieferten Posentest-Dateien geändert; Diff geprüft. Build **589**, Lauf **40082012095**, wurde im vorherigen Arbeitsgang einschließlich Assets/APK/Signierung geprüft. Benutzer hat den begrenzten Posentest auf S25 erfolgreich ausgeführt. Keine neue Buildnummer vor dem Upload erfinden.
+
+### Bestätigte Gerätetests
+
+- `27006_full.jpg`, 26/26, gesenkte/überkreuzte Arme: 4,1 Sekunden; 70/70 Punkte, Median 4,3 Arbeitsbildpixel / 0,28 % Diagonale, Maximum 15,6; Posentest angewendet, max. Winkeländerung 6,7°, Kontroll-RMS 40,2 → 6,8 Pixel.
+- `26994_full-0.jpg`, 14/26, angehobene Arme: 5,5 Sekunden; 70/70 Punkte, Median 5,3 Pixel / 0,35 %, Maximum 21,5; angewendet, max. Winkeländerung 8,6°, Kontroll-RMS 24,5 → 9,3 Pixel. Dieser Lauf berührt die bestehende Winkelgrenze; keine pauschale Erweiterung der Grenze vorgenommen.
+- Form-/Größenparameter blieben beim Posentest fest. Kleinere modellinterne Punktabstände belegen weder korrekte Anatomie noch Maße. Restabweichungen der Kontur sichtbar. Keine weiteren Wiederholungstests dieser zwei bisherigen Posen nötig.
+- Vorbereitender Stabilitätsversuch im vorigen Arbeitsgang auf sieben leicht geänderten Varianten desselben öffentlichen OpenCV-Testbildes: normalisierte Gesamtnetz-Proportionen höchstens rund 0,3 % verändert. Keine Benutzerfotos. Das zeigt nur geringe Empfindlichkeit gegenüber den geprüften Änderungen, keine richtige Körperform; ein ähnlicher Modellmittelwert könnte ebenfalls stabil sein. Der Versuch wurde in diesem Arbeitsgang nicht erneut ausgeführt.
+
+### Neu vorbereitet: Formvergleich im selben Shooting
+
+Drei vollständige Ersatzdateien: `www/index.html`, `native/Body3DPlugin.java`, `STATUS.md`. Noch nicht hochgeladen, als neue APK gebaut oder auf S25 geprüft.
+
+- Bestehender Einfoto-Test, Rahmenbedienung, Punktvergleich und optionaler Posentest bleiben bestehen. Neuer aufklappbarer Bereich **Formvergleich im Shooting (Test)**. Nach erster Berechnung **Als Referenz merken**, Fototest schließen, anderes Foto desselben Shootings öffnen und berechnen. Danach Vergleich automatisch im neuen Bereich; kein weiterer Satz Bewertungsfelder.
+- Nur eindeutige tatsächliche Archivbeziehungen Foto → Shooting bzw. Foto → Galerie → Shooting und genau ein Model im Shooting. Widersprüchliche/fehlende Zuordnung und Mehrmodel-Shootings deaktivieren den Vergleich, Einfoto-Test bleibt nutzbar. Keine Gruppierung nach Dateiname, Galerieähnlichkeit oder vermuteter Chronologie. Medien-ID am tatsächlich geöffneten Lightbox-Bild hinterlegt; noch nicht vollständig geladenes Bild startet keinen 3D-Test.
+- Native Fotoanalyse erhält optional `compareForm`. Nur dafür ein zusätzlicher Lauf des vorhandenen vollständigen Decoders innerhalb derselben Sitzung. 45 Formkoeffizienten sowie Größen-/Skalierungskanäle 130..203 bleiben erhalten; Kanäle 0..129 werden in einer Kopie genullt. Dadurch feste neutrale Decoderpose inklusive Root, keine Übernahme der Fotohaltung oder der Posentest-Winkel in den Formvergleich. Ausdruck wie bisher null. Kein neuer Modell-Download/Export/Workflow erforderlich.
+- Neutrales Gesamtnetz um mittlere Vertexposition zentrieren und durch seine eigene vertikale Spanne teilen, anschließend Vision-Achsenzeichen. Normierte Netzhöhe ist ausdrücklich KEINE gemessene Körpergröße. Rückgabe Float32 little endian mit Revision, Koordinatenkennung und geprüftem Netzflächen-Hash. Fotoüberlagerung selbst unverändert in ihrer bisherigen Pose/Kamera.
+- Vergleich korrespondierender 18.439 Netzpunkte: `100 * sqrt(sum_xyz(delta²) / 18439)` in Prozent der normierten vertikalen Netzspanne. Kein Kamerafit, keine nachträgliche Rotation oder Formanpassung zur Verkleinerung dieses Wertes. Erfasst Proportionsunterschiede im Gesamtnetz einschließlich Kopf/Gliedmaßen; kein spezieller Brust-/Taillen-/Hüftfehler, keine Unsicherheits- oder Genauigkeitsprozentzahl und keine Zentimeter/Cupwerte. Kein Schwellwert für richtig/falsch oder gleicher Körperstand.
+- Bewusst gemerkte Referenz hält nur eine kopierte normalisierte Punktmenge plus IDs/Namen im Arbeitsspeicher; kein Foto, Tensor oder Profilwert. Referenz überlebt Schließen des Fototests, wird bei Vergleich leeren, anderem/unklarem Shooting, anderer Modelzuordnung/Archivinstanz oder Neustart verworfen. Dieselbe Medienidentität bzw. identischer vorhandener Fingerprint gilt nicht als zweites unabhängiges Foto. Erneutes Merken ersetzt die Referenz bewusst. Bei laufender Berechnung/Bearbeitung gesperrt; ungültige neue Ergebnisse werden nicht gemerkt.
+- Kleine Unterschiede können auch von einem ähnlichen Modellstandardkörper stammen; die UI weist darauf hin. Kein gemeinsames Netz, keine Mehrbildoptimierung, keine Maßgenauigkeit behauptet. Körperform trotz fester neutraler Pose weiterhin fotoabhängige Schätzung. Tahlia 1/2/6 frühere Ausgangsgruppe, übrige nur vorläufig später; keine automatische Gruppenanlage oder Mittelwerte.
+- Keine Archiv-/Profil-/IndexedDB-Schreibzugriffe, Medienuploads, Schemaänderung oder Migration. Vorhandene Modelle, Telemetriesperren, Lizenzen, Signierung, Preflight und APK-Workflow unverändert.
+
+### Tatsächlich geprüfte Änderung und Grenzen
+
+- Vollständige neue native Klasse mit echten ORT-1.31-Java-Klassen, Android-API-Jar und Capacitor-Stubs kompiliert. Neue Produkt-Hilfsmethoden auf JVM geprüft: Posekanäle korrekt genullt, Größenparameter und Eingaben unverändert; Normalisierung unabhängig von einheitlicher positiver Skalierung und Translation, vertikale Spanne eins; falsche Punktzahl, degeneriertes Netz, NaN und fehlender Punkt abgelehnt.
+- Alle vier Inline-Skripte syntaktisch geprüft. Tatsächliche neue JS-Logik gegen unabhängiges bekanntes RMS-Beispiel getestet; direkte/indirekte Shootingbeziehungen, widersprüchliche Zuordnung, mehrere Models, fehlende ID, doppelte Fingerprintidentität, Topologie-/Revisions-/Datenformatfehler, Referenzkopie, Shooting-/Archivwechsel und Leeren geprüft.
+- Tatsächliches Panel-Script mit simuliertem DOM/Canvas ausgeführt: Merken, zweites Foto vergleichen, Busy-/Bearbeitungssperren, Ergebnislöschen mit gesperrtem Rahmen, native compareForm-Flag, fehlender Kontext ohne Vergleich, alte APK abweisen und Knöpfe nach Fehler wieder freigeben. Logiktests, kein echter Browser-/WebGL-/Touchtest.
+- Kein erneuter Lauf der echten Modelle mit dieser neuen zusätzlichen Decoderverkettung, kein Gradle-/APK-Build und kein S25-Test der Erweiterung in diesem Arbeitsgang. Bestehender Decoder/Exporter und numerische Referenztoleranzen unverändert. Neuer APK-Build muss seine bisherigen vollständigen Pflichtprüfungen bestehen. Mehrbedarf an Laufzeit/Speicher auf S25 noch nicht gemessen.
+- Flaches ZIP bytegenau gegen die vollständigen Ersatzdateien geprüft; keine Modelle oder Originalmedien enthalten. Dateien aus externem Git-Projekt, keine zusätzliche Ablage im persönlichen Dateibestand.
+
+### Lieferung und nächster Schritt
+
+ZIP entpacken und Einzeldateien ersetzen: **1. index.html → www**, **2. STATUS.md → Hauptordner**, **3. Body3DPlugin.java zuletzt → native**. Keinen Workflow ersetzen. Benutzer lädt selbst hoch. Danach main/Dateien prüfen und genaue Nummer des letzten vollständigen erfolgreichen APK-Builds nennen; Zwischenbuilds nicht installieren. APK immer als Update, niemals deinstallieren.
+
+Gerätetest erst nach geprüfter APK: eines der bisherigen zwei Ganzkörperfotos öffnen → 3D-Test → Rahmen prüfen → berechnen → **Als Referenz merken**. Fototest schließen, anderes Foto desselben Shootings öffnen → 3D-Test → Rahmen prüfen → berechnen. **Formvergleich im Shooting (Test)** soll beide Dateinamen und einen Netzunterschied anzeigen. Posentest dafür nicht erforderlich, Canonicalisierung entfernt die Fotowinkel ohnehin. Screenshot dieses Vergleichs genügt. Ziel ist die Konsistenz zweier fotoabhängiger Formschätzungen; noch keine richtigen Körpermaße. Keine vollständige Galerie bewerten lassen. Bestehende Freigabe zum selbstständigen Weiterarbeiten gilt.
+
+## Historischer Stand: Build 585; begrenzter Posentest vorbereitet
 
 Berücksichtigtes main `53b52887c4deee453aee3597caf9854e357d5e50`. Vor Bearbeitung erneut abgerufen und Änderungen seit Ref 53b5288 geprüft: keine. Seit der älteren STATUS-Referenz 2f8d302 wurden genau die vier Decoderpunkt-Dateien hochgeladen und bytegenau geprüft. **Build 585**, Lauf **40075133100**, erfolgreich einschließlich 3D-Asset-Prüfung, APK-Prüfung und dauerhaft signiertem APK-Artifact. Benutzer hat ihn auf dem S25 getestet.
 
