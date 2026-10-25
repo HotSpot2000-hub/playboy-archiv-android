@@ -10,17 +10,15 @@ const finite=a=>{if(!a||!Number.isInteger(a.length))return false;for(const x of 
 function norm(a){return Math.hypot(...a)}
 function point(g,name){const p=g?.[name];return p&&[p.x,p.y,p.confidence].every(Number.isFinite)&&p.confidence>=.6&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1?p:null}
 function descriptor(sample){
- const g=sample.geometry||{},names=['leftShoulder','rightShoulder','leftHip','rightHip','leftKnee','rightKnee','leftAnkle','rightAnkle'],p=names.map(n=>point(g,n));
- const head=['nose','leftEye','rightEye','leftEar','rightEar'].map(n=>point(g,n)).find(Boolean);
- if(p.some(x=>!x)||!head||sample.fullBody!==true||sample.safelyFramed!==true)return null;
+ const g=sample.geometry||{},names=['leftShoulder','rightShoulder','leftHip','rightHip'],p=names.map(n=>point(g,n));
+ if(p.some(x=>!x))return null;
  const hip={x:(p[2].x+p[3].x)/2,y:(p[2].y+p[3].y)/2},shoulder={x:(p[0].x+p[1].x)/2,y:(p[0].y+p[1].y)/2},torso=Math.hypot(shoulder.x-hip.x,shoulder.y-hip.y);
  if(torso<.07)return null;
- const framed=[...p,head],top=Math.min(...framed.map(x=>x.y)),bottom=Math.max(...framed.map(x=>x.y));
- if(bottom-top<.35||framed.some(x=>x.x<.01||x.x>.99||x.y<.01||x.y>.99))return null;
- const vector=[];for(const name of [...names,'leftElbow','rightElbow','leftWrist','rightWrist']){const q=point(g,name);vector.push(q?(q.x-hip.x)/torso:null,q?(q.y-hip.y)/torso:null)}
+ if(p.some(x=>x.x<.01||x.x>.99||x.y<.01||x.y>.99))return null;
+ const vector=[];for(const name of [...names,'leftKnee','rightKnee','leftAnkle','rightAnkle','leftElbow','rightElbow','leftWrist','rightWrist']){const q=point(g,name);vector.push(q?(q.x-hip.x)/torso:null,q?(q.y-hip.y)/torso:null)}
  return {vector,quality:p.reduce((s,x)=>s+x.confidence,0)/p.length,torso};
 }
-function distance(a,b){let sum=0,n=0;for(let i=0;i<a.length;i++)if(a[i]!==null&&b[i]!==null){sum+=Math.min(4,(a[i]-b[i])**2);n++}return n>=12?Math.sqrt(sum/n):0}
+function distance(a,b){let sum=0,n=0;for(let i=0;i<a.length;i++)if(a[i]!==null&&b[i]!==null){sum+=Math.min(4,(a[i]-b[i])**2);n++}return n>=8?Math.sqrt(sum/n):0}
 function selectSources(samples,{groupKey,maxSources=6,minSources=4}={}){
  assert(typeof groupKey==='string'&&groupKey.length>0,'Confirmed shooting/body-state key required');
  assert(Number.isInteger(maxSources)&&maxSources>=minSources&&maxSources<=8&&minSources>=4,'Invalid source limit');
