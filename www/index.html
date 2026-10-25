@@ -14657,6 +14657,7 @@ if(immersive?.setVideoImmersive){
  lightbox.classList.remove('open','galleryMode','controlsHidden');
  releaseLightboxUrl();
  document.getElementById('lightboxImage').src='';
+ document.getElementById('lightboxImage').dataset.mediaId='';
  lightboxGalleryIds=[];lightboxGalleryIndex=-1;lightboxTouchX=null;
 }
 async function showLightboxGalleryIndex(index){
@@ -14676,6 +14677,7 @@ if(immersive?.setVideoImmersive){
   const url=URL.createObjectURL(blob);
   lightbox.dataset.url=url;
   document.getElementById('lightboxImage').src=url;
+  document.getElementById('lightboxImage').dataset.mediaId=id;
   document.getElementById('lightboxCaption').textContent=`${a?.fileName||a?.title||'Foto'} · ${lightboxGalleryIndex+1} / ${len}`;
   lightbox.classList.toggle('galleryMode',len>1);
   lightbox.classList.add('open');
@@ -14695,6 +14697,7 @@ function openLightboxFromBlob(blob,caption='',galleryIds=null,currentId=null){
  const url=URL.createObjectURL(blob);
  lightbox.dataset.url=url;
  document.getElementById('lightboxImage').src=url;
+ document.getElementById('lightboxImage').dataset.mediaId=currentId||'';
  document.getElementById('lightboxCaption').textContent=caption||'Foto';
  lightbox.classList.remove('galleryMode');
  lightbox.classList.add('open');
@@ -15200,6 +15203,33 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
  }catch(error){for(const b of buffers)gl.deleteBuffer(b);if(program)gl.deleteProgram(program);for(const sh of shaders)gl.deleteShader(sh);throw error}
 }
 
+// Session-only comparison: no archive writes, no inferred body-state grouping.
+const BodyFormComparison=(()=>{
+ function context(id){
+  const media=(state.archive||[]).find(a=>a.id===id&&a.type==='media');if(!media)return null;
+  const shoots=new Map();
+  for(const sh of relatedObjects(id,'shoot'))shoots.set(sh.id,sh);
+  for(const gallery of relatedObjects(id,'gallery'))for(const sh of relatedObjects(gallery.id,'shoot'))shoots.set(sh.id,sh);
+  if(shoots.size!==1)return null;
+  const shoot=[...shoots.values()][0],models=[...new Set(shootingModelIds(shoot).filter(Boolean))];
+  if(models.length!==1)return null;
+  return {archive:state.archive,key:JSON.stringify([shoot.id,models[0]]),mediaId:id,photoKey:media.fingerprint||id,name:media.fileName||media.title||'Foto',label:shootingDisplayLabel(shoot)};
+ }
+ function mesh(result){
+  if(result.canonicalRevision!==1||result.canonicalFrame!=='vision_centroid_vertical_span'||result.canonicalTopology!=='f2ac1f031a34dc4fd475b5d735904a65c2cd1b76a37c77ff2c44cb77597a5c36')throw Error('Für den Formvergleich fehlt die neue Android-APK.');
+  return BodyPhotoMath.unpack(result.canonicalVertices,'float',18439*3);
+ }
+ function difference(a,b){
+  if(a.length!==18439*3||b.length!==a.length)throw Error('Vergleichsnetze haben unterschiedliche Größen.');
+  let sum=0;for(let i=0;i<a.length;i++){if(!Number.isFinite(a[i])||!Number.isFinite(b[i]))throw Error('Ungültiges Vergleichsnetz.');sum+=(a[i]-b[i])**2}
+  return Math.sqrt(sum/18439)*100;
+ }
+ let reference=null;
+ function enter(c){if(reference&&(!c||reference.context.archive!==c.archive||reference.context.key!==c.key))reference=null;return reference}
+ function remember(c,vertices){reference={context:c,vertices:vertices.slice()}}
+ return {context,mesh,difference,enter,remember,clear(){reference=null}};
+})();
+
 (()=>{
  let active=null;
  const $=(s,selector)=>s.panel.querySelector(selector);
@@ -15240,6 +15270,7 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
   $(s,'#bodyPhotoFrame').setAttribute('aria-pressed',String(enabled));
   $(s,'#bodyPhotoRun').disabled=s.busy||enabled;
   $(s,'#bodyPhotoPose').disabled=s.busy||enabled;
+  updateForm(s);
   $(s,'#bodyPhotoFrameMode').textContent=enabled?'Bearbeitung aktiv: Person einrahmen, danach „Rahmen übernehmen“.':'Rahmen gesperrt · Über das Foto wischen zum Scrollen.';
  }
  function toggleFrameEditing(s){
@@ -15249,7 +15280,26 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
    setFrameEditing(s,false);drawSelection(s);setStatus(s,'Rahmen übernommen und gesperrt. Jetzt „Neu berechnen“ oder „3D-Modell berechnen“ wählen.');
   }else{clearResult(s);s.userAdjusted=true;setFrameEditing(s,true);drawSelection(s);setStatus(s,'Rahmen um genau eine Person ziehen. Danach „Rahmen übernehmen“.')}
  }
- function clearResult(s){setFrameEditing(s,false);disposeViews(s,true);s.result=null;s.cameraFit=null;s.originalDiagnostic=null;$(s,'#bodyPhotoPoseReport').textContent='';$(s,'#bodyPhotoCameraControls').hidden=true;$(s,'#bodyPhotoCamera').value='original';$(s,'#bodyPhotoPointReport').textContent='';$(s,'#bodyPhotoResult').hidden=true;$(s,'#bodyPhotoMesh').hidden=true;$(s,'#bodyPhotoSelect').style.pointerEvents='none';drawSelection(s)}
+ function clearResult(s){s.formVertices=null;updateForm(s);setFrameEditing(s,false);disposeViews(s,true);s.result=null;s.cameraFit=null;s.originalDiagnostic=null;$(s,'#bodyPhotoPoseReport').textContent='';$(s,'#bodyPhotoCameraControls').hidden=true;$(s,'#bodyPhotoCamera').value='original';$(s,'#bodyPhotoPointReport').textContent='';$(s,'#bodyPhotoResult').hidden=true;$(s,'#bodyPhotoMesh').hidden=true;$(s,'#bodyPhotoSelect').style.pointerEvents='none';drawSelection(s)}
+ function updateForm(s){
+  if(s.formContext){const current=BodyFormComparison.context(s.formContext.mediaId);if(!current||current.archive!==s.formContext.archive||current.key!==s.formContext.key){s.formContext=null;s.formVertices=null}}
+  const c=s.formContext,reference=BodyFormComparison.enter(c),report=$(s,'#bodyPhotoFormReport');
+  $(s,'#bodyPhotoFormRemember').disabled=!c||!s.formVertices||s.busy||s.editing;
+  $(s,'#bodyPhotoFormClear').disabled=!reference||s.busy;
+  if(!c){report.textContent='Formvergleich nur bei eindeutig zugeordnetem Shooting mit genau einem Model. Der Einfoto-Test bleibt verfügbar.';return}
+  let text=c.label+' · ';
+  if(!reference)text+='Nach der Berechnung dieses Foto als Referenz merken, danach ein anderes Foto desselben Shootings berechnen.';
+  else if(reference.context.photoKey===c.photoKey)text+='Referenz: '+reference.context.name+'. Jetzt ein anderes Foto dieses Shootings öffnen; dasselbe Foto wird nicht doppelt gezählt.';
+  else if(!s.formVertices)text+='Referenz: '+reference.context.name+'. Dieses Foto für den Vergleich berechnen.';
+  else text+='Referenz: '+reference.context.name+' · Vergleich: '+c.name+'. Netzunterschied (RMS): '+BodyFormComparison.difference(reference.vertices,s.formVertices).toFixed(3)+' % der normierten Netzhöhe. Beide Netze in derselben neutralen Decoderpose; keine Kameraanpassung im Vergleich.';
+  report.textContent=text;
+ }
+ function rememberForm(s){
+  if(s.busy||s.editing||!s.formVertices||!live(s))return;
+  const c=BodyFormComparison.context(s.formContext?.mediaId);
+  if(!c||c.archive!==s.formContext.archive||c.key!==s.formContext.key){s.formContext=null;updateForm(s);return}
+  BodyFormComparison.remember(c,s.formVertices);updateForm(s);
+ }
  function render(s){
   if(!live(s)||!s.result)return;
   const adapted=$(s,'#bodyPhotoCamera').value==='adapted'&&s.cameraFit;
@@ -15272,7 +15322,7 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
    const patch=document.createElement('canvas');patch.width=patch.height=224;const ctx=patch.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,224,224);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='low';
    const scale=224/crop.side;ctx.drawImage(s.canvas,-crop.left*scale,-crop.top*scale,s.canvas.width*scale,s.canvas.height*scale);
    const tensor=BodyPhotoMath.base64(BodyPhotoMath.tensor(ctx.getImageData(0,0,224,224).data));patch.width=patch.height=1;
-   const result=await plugin.analyzePhoto({tensor,refinePose,input:{width:s.canvas.width,height:s.canvas.height,box:s.box.slice()}});
+   const result=await plugin.analyzePhoto({tensor,refinePose,compareForm:Boolean(s.formContext),input:{width:s.canvas.width,height:s.canvas.height,box:s.box.slice()}});
    if(!live(s))return;
    if(result.vertexCount!==18439||result.faceCount!==36874||result.coordinateFrame!=='vision_metres'||!Array.isArray(result.camera)||result.camera.length!==3||!result.camera.every(Number.isFinite))throw Error('Die Android-Antwort hat ein unerwartetes Format.');
    if(result.pointSource!=='decoder_skeleton')throw Error('Für den Netz-Kameravergleich fehlt die neue Decoder-APK.');
@@ -15284,6 +15334,7 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
    $(s,'#bodyPhotoCamera').value='original';$(s,'#bodyPhotoCamera').querySelector('[value="adapted"]').disabled=!s.cameraFit;$(s,'#bodyPhotoCameraControls').hidden=false;
    const pr=result.poseRefinement;
    $(s,'#bodyPhotoPoseReport').textContent=pr?(pr.applied?`Posentest angewendet · größte Winkeländerung ${Number(pr.maxAngleDegrees).toFixed(1)}°. `:'Posentest verworfen; ursprüngliche Pose bleibt erhalten. ')+(Number.isFinite(pr.testRmsBefore)&&Number.isFinite(pr.testRmsAfter)?`21 Kontrollpunkte (RMS): ${pr.testRmsBefore.toFixed(1)} → ${pr.testRmsAfter.toFixed(1)} Bildpixel. `:'')+'Nur interner Modellvergleich, keine bestätigte anatomische Verbesserung. Körperform und Größenparameter unverändert.':'';
+   s.formVertices=s.formContext?BodyFormComparison.mesh(result):null;
    s.result=result;s.crop=crop;$(s,'#bodyPhotoResult').hidden=false;$(s,'#bodyPhotoMesh').hidden=false;$(s,'#bodyPhotoSelect').style.pointerEvents='none';
    const data={vertices,faces,normals,camera:result.camera},frame={width:s.canvas.width,height:s.canvas.height};
    s.views.push(createBodyPhotoRenderer($(s,'#bodyPhotoMesh'),data,'photo',frame));s.views.push(createBodyPhotoRenderer($(s,'#bodyPhotoOrbit'),data,'orbit',frame));
@@ -15291,7 +15342,7 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
    let inside=0;for(let i=0;i<vertices.length;i+=3){const p=BodyPhotoMath.project(vertices.subarray(i,i+3),result.camera,frame.width,frame.height);if(p&&p[0]>=0&&p[0]<=frame.width&&p[1]>=0&&p[1]<=frame.height)inside++}
    setStatus(s,`Modell berechnet · 18.439 Netzpunkte · ${Number(result.elapsedSeconds).toFixed(1)} Sekunden. Haltung und Kontur jetzt visuell prüfen. Noch keine Körpermaße.`+(inside<18439/2?' Viele Modellpunkte liegen außerhalb des Fotos. Bitte den Personenrahmen prüfen.':''));render(s);
   }catch(error){if(live(s)){clearResult(s);setStatus(s,String(error?.message||error),true)}}
-  finally{if(live(s)){s.busy=false;$(s,'#bodyPhotoRun').disabled=false;$(s,'#bodyPhotoFrame').disabled=false;$(s,'#bodyPhotoPose').disabled=false}}
+  finally{if(live(s)){s.busy=false;$(s,'#bodyPhotoRun').disabled=false;$(s,'#bodyPhotoFrame').disabled=false;$(s,'#bodyPhotoPose').disabled=false;updateForm(s)}}
  }
  async function propose(s){
   const plugin=window.Capacitor?.Plugins?.ArchiveDirectory;if(!plugin?.analyzePose)return;
@@ -15306,13 +15357,14 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
   }catch(_){if(live(s)&&!s.userAdjusted&&!s.busy)setStatus(s,'Kein automatischer Rahmen verfügbar. „Rahmen ändern“ wählen und eine Person einrahmen.')}
  }
  async function open(){
-  const image=document.getElementById('lightboxImage');if(!image?.src||!image.naturalWidth)return;
+  const image=document.getElementById('lightboxImage');if(!image?.src||!image.complete||!image.naturalWidth)return;
   if(active)close();if(typeof stopLightboxSlideshow==='function')stopLightboxSlideshow();if(typeof hideLightboxControlsNow==='function')hideLightboxControlsNow();
   const canvas=document.createElement('canvas'),factor=Math.min(1,1280/Math.max(image.naturalWidth,image.naturalHeight));canvas.width=Math.round(image.naturalWidth*factor);canvas.height=Math.round(image.naturalHeight*factor);const ctx=canvas.getContext('2d');ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
   try{ctx.drawImage(image,0,0,canvas.width,canvas.height)}catch(_){if(typeof toast==='function')toast('Foto konnte nicht für den 3D-Test gelesen werden.');return}
   const panel=document.createElement('section');panel.className='bodyPhotoPanel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','bodyPhotoTitle');
-  panel.innerHTML=`<div class="bodyPhotoInner"><div class="bodyPhotoHead"><h2 id="bodyPhotoTitle">Einfoto-3D-Test</h2><button type="button" class="bodyPhotoClose" id="bodyPhotoClose" aria-label="Fototest schließen">×</button></div><div class="bodyPhotoName" id="bodyPhotoName"></div><p class="bodyPhotoHint">Für den ersten Test eine einzelne Person von Kopf bis Fuß einrahmen. Zum Ändern zuerst „Rahmen ändern“ wählen, danach „Rahmen übernehmen“. Außerhalb der Bearbeitung bleibt der Rahmen beim Scrollen gesperrt.</p><div class="bodyPhotoStatus" id="bodyPhotoStatus" role="status" aria-live="polite">Personenrahmen wird vorgeschlagen. Das Foto bleibt auf diesem Handy.</div><p class="bodyPhotoHint">Grün: Bildpunkte · Orange: projizierte Decoderpunkte · Violett: Körpernetz.</p><p class="bodyPhotoHint" id="bodyPhotoPointReport" role="status"></p><p class="bodyPhotoHint" id="bodyPhotoPoseReport" role="status"></p><div class="bodyPhotoControls" id="bodyPhotoCameraControls" hidden><label>Kamera <select id="bodyPhotoCamera" style="font:inherit;min-height:44px;padding:8px;border-radius:10px"><option value="original">Original</option><option value="adapted">Angepasst (Test)</option></select></label><span class="bodyPhotoHint" id="bodyPhotoCameraHint">Kameraanpassung an die Punkte des Körperdecoders. Nur Kameraposition geändert; Pose und Körperform bleiben gleich. Eine bessere Punktdeckung bestätigt keine Maßgenauigkeit.</span></div><div class="bodyPhotoControls bodyPhotoFrameControls"><button type="button" class="primary" id="bodyPhotoRun">3D-Modell berechnen</button><button type="button" id="bodyPhotoFrame" aria-pressed="false">Rahmen ändern</button><label><input type="checkbox" id="bodyPhotoPose"> Begrenzter Posentest</label><span class="bodyPhotoFrameMode" id="bodyPhotoFrameMode"></span></div><div class="bodyPhotoStage"><img id="bodyPhotoImage" alt="Ausgewähltes Archivfoto"><canvas id="bodyPhotoMesh" class="bodyPhotoMesh" hidden></canvas><canvas id="bodyPhotoSelect" aria-label="Personenrahmen wählen"></canvas></div><div id="bodyPhotoResult" hidden><div class="bodyPhotoControls"><label><input type="checkbox" id="bodyPhotoOverlay" checked> Modell über Foto</label><label>Deckkraft <input type="range" id="bodyPhotoOpacity" min="0.1" max="0.9" step="0.05" value="0.45"></label><label><input type="checkbox" id="bodyPhotoPoints" checked> Bild- und 3D-Punkte</label></div><h3>Drehbare Modellansicht</h3><canvas id="bodyPhotoOrbit" class="bodyPhotoOrbit" aria-label="Geschätztes Körpermodell"></canvas><div class="bodyPhotoControls"><label>Modell drehen <input type="range" id="bodyPhotoYaw" min="-180" max="180" step="1" value="0"></label></div><p class="bodyPhotoHint">Einzelbild-Schätzung ohne Fototextur. Überlagerung und Haltung visuell vergleichen; Kleidung und verdeckte Körperbereiche werden nicht vermessen. Das Ergebnis wird beim Schließen verworfen.</p></div></div>`;
-  document.body.appendChild(panel);const s={panel,canvas,box:[0,0,canvas.width,canvas.height],views:[],busy:false,editing:false,result:null,userAdjusted:false,drag:null};active=s;
+  panel.innerHTML=`<div class="bodyPhotoInner"><div class="bodyPhotoHead"><h2 id="bodyPhotoTitle">Einfoto-3D-Test</h2><button type="button" class="bodyPhotoClose" id="bodyPhotoClose" aria-label="Fototest schließen">×</button></div><div class="bodyPhotoName" id="bodyPhotoName"></div><p class="bodyPhotoHint">Für den ersten Test eine einzelne Person von Kopf bis Fuß einrahmen. Zum Ändern zuerst „Rahmen ändern“ wählen, danach „Rahmen übernehmen“. Außerhalb der Bearbeitung bleibt der Rahmen beim Scrollen gesperrt.</p><div class="bodyPhotoStatus" id="bodyPhotoStatus" role="status" aria-live="polite">Personenrahmen wird vorgeschlagen. Das Foto bleibt auf diesem Handy.</div><details class="bodyPhotoHint" id="bodyPhotoForm" open><summary>Formvergleich im Shooting (Test)</summary><p id="bodyPhotoFormReport" role="status"></p><div class="bodyPhotoControls"><button type="button" id="bodyPhotoFormRemember" disabled>Als Referenz merken</button><button type="button" id="bodyPhotoFormClear" disabled>Vergleich leeren</button></div><p>Nur für diese App-Sitzung. Kleine Unterschiede bestätigen keine richtige Körperform: Das Modell kann ähnliche Standardformen schätzen. Keine Körpermaße.</p></details><p class="bodyPhotoHint">Grün: Bildpunkte · Orange: projizierte Decoderpunkte · Violett: Körpernetz.</p><p class="bodyPhotoHint" id="bodyPhotoPointReport" role="status"></p><p class="bodyPhotoHint" id="bodyPhotoPoseReport" role="status"></p><div class="bodyPhotoControls" id="bodyPhotoCameraControls" hidden><label>Kamera <select id="bodyPhotoCamera" style="font:inherit;min-height:44px;padding:8px;border-radius:10px"><option value="original">Original</option><option value="adapted">Angepasst (Test)</option></select></label><span class="bodyPhotoHint" id="bodyPhotoCameraHint">Kameraanpassung an die Punkte des Körperdecoders. Nur Kameraposition geändert; Pose und Körperform bleiben gleich. Eine bessere Punktdeckung bestätigt keine Maßgenauigkeit.</span></div><div class="bodyPhotoControls bodyPhotoFrameControls"><button type="button" class="primary" id="bodyPhotoRun">3D-Modell berechnen</button><button type="button" id="bodyPhotoFrame" aria-pressed="false">Rahmen ändern</button><label><input type="checkbox" id="bodyPhotoPose"> Begrenzter Posentest</label><span class="bodyPhotoFrameMode" id="bodyPhotoFrameMode"></span></div><div class="bodyPhotoStage"><img id="bodyPhotoImage" alt="Ausgewähltes Archivfoto"><canvas id="bodyPhotoMesh" class="bodyPhotoMesh" hidden></canvas><canvas id="bodyPhotoSelect" aria-label="Personenrahmen wählen"></canvas></div><div id="bodyPhotoResult" hidden><div class="bodyPhotoControls"><label><input type="checkbox" id="bodyPhotoOverlay" checked> Modell über Foto</label><label>Deckkraft <input type="range" id="bodyPhotoOpacity" min="0.1" max="0.9" step="0.05" value="0.45"></label><label><input type="checkbox" id="bodyPhotoPoints" checked> Bild- und 3D-Punkte</label></div><h3>Drehbare Modellansicht</h3><canvas id="bodyPhotoOrbit" class="bodyPhotoOrbit" aria-label="Geschätztes Körpermodell"></canvas><div class="bodyPhotoControls"><label>Modell drehen <input type="range" id="bodyPhotoYaw" min="-180" max="180" step="1" value="0"></label></div><p class="bodyPhotoHint">Einzelbild-Schätzung ohne Fototextur. Überlagerung und Haltung visuell vergleichen; Kleidung und verdeckte Körperbereiche werden nicht vermessen. Die Fotoüberlagerung wird beim Schließen verworfen. Eine bewusst gemerkte Formreferenz bleibt bis zum Leeren, Shootingwechsel oder Neustart im Arbeitsspeicher.</p></div></div>`;
+  document.body.appendChild(panel);const s={panel,canvas,box:[0,0,canvas.width,canvas.height],views:[],busy:false,editing:false,result:null,userAdjusted:false,drag:null,formContext:BodyFormComparison.context(image.dataset.mediaId),formVertices:null};active=s;
+  BodyFormComparison.enter(s.formContext);updateForm(s);
   const photo=$(s,'#bodyPhotoImage');photo.width=canvas.width;photo.height=canvas.height;photo.src=canvas.toDataURL('image/jpeg',.92);$(s,'#bodyPhotoName').textContent=document.getElementById('lightboxCaption')?.textContent||'Archivfoto';
   const select=$(s,'#bodyPhotoSelect');select.width=canvas.width;select.height=canvas.height;setFrameEditing(s,false);drawSelection(s);
   select.addEventListener('pointerdown',event=>{
@@ -15321,6 +15373,7 @@ function createBodyPhotoRenderer(canvas,data,mode,frame){
   });
   select.addEventListener('pointermove',event=>{if(!s.editing||!s.drag||s.busy||event.pointerId!==s.drag.pointerId)return;event.preventDefault();const p=position(s,event),a=s.drag.anchor;s.box=[Math.min(a[0],p[0]),Math.min(a[1],p[1]),Math.max(a[0],p[0]),Math.max(a[1],p[1])];drawSelection(s)});
   const finish=event=>{if(!s.drag||event.pointerId!==s.drag.pointerId)return;if(s.box[2]-s.box[0]<8||s.box[3]-s.box[1]<8)s.box=s.drag.old;s.drag=null;drawSelection(s)};select.addEventListener('pointerup',finish);const cancel=event=>{if(!s.drag||event.pointerId!==s.drag.pointerId)return;s.box=s.drag.old;s.drag=null;drawSelection(s)};select.addEventListener('pointercancel',cancel);select.addEventListener('lostpointercapture',cancel);
+  $(s,'#bodyPhotoFormRemember').onclick=()=>rememberForm(s);$(s,'#bodyPhotoFormClear').onclick=()=>{if(s.busy)return;BodyFormComparison.clear();updateForm(s)};
   $(s,'#bodyPhotoClose').onclick=close;$(s,'#bodyPhotoRun').onclick=()=>run(s);$(s,'#bodyPhotoFrame').onclick=()=>toggleFrameEditing(s);
   $(s,'#bodyPhotoPose').addEventListener('change',()=>{if(s.busy)return;clearResult(s);setStatus(s,'Posentest-Einstellung geändert. Bitte neu berechnen; der Rahmen bleibt gesperrt.')});
   for(const id of ['#bodyPhotoOpacity','#bodyPhotoYaw','#bodyPhotoOverlay','#bodyPhotoPoints','#bodyPhotoCamera'])$(s,id).addEventListener('input',()=>render(s));
