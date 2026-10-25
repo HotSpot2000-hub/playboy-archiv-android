@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `4aaf58c6bbb45541c782ad2cd246926089f2de09`
+Referenz-Commit: `27cc4982d46e2799cc3b42f3cc91e9d56cc32ecc`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,29 @@ Referenz-Commit: `4aaf58c6bbb45541c782ad2cd246926089f2de09`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Mehrfoto-Auswahl/Rechenkern und native Formbasis vorbereitet
+## Aktueller Stand: Build 602 Java-Kompilierfehler, gezielte Korrektur vorbereitet
+
+main `27cc4982d46e2799cc3b42f3cc91e9d56cc32ecc` frisch geprüft. Seit Referenz 4aaf58c nur die drei gelieferten Kern-Dateien hochgeladen; body3d-multiview.js, STATUS.md und Body3DPlugin.java alle bytegenau angekommen. Build **602**, Lauf **40205477101**, Job **121205355209**, fehlgeschlagen bei **Build debug APK**. Die installierte App wird durch einen fehlgeschlagenen CI-Build nicht verändert. Mehrfoto-UI weiterhin nicht angeschlossen; kein Handytest für diesen Backendstand nötig.
+
+### Nachgewiesene Ursache
+
+Android-Javac meldet Body3DPlugin.java:231: `unreported exception JSONException; must be caught or declared to be thrown`. Neue Hilfsmethode jsonVector ruft JSONArray.put(double) auf, ohne die auf Android geprüfte JSONException zu deklarieren. Fehler liegt in der vom Assistenten gelieferten Java-Datei, nicht im Upload oder beim Benutzer. Kein Modell-/Kontur-/Gerätefehler.
+
+Frühere lokale Prüfung benutzte eine gewöhnliche aktuelle org.json-JAR, deren JSONException eine RuntimeException ist. Dadurch blieb dieser Android-Typunterschied unentdeckt. Künftig native JSON-Verwendung ausdrücklich gegen eine Android-kompatible JSON-Bibliothek mit geprüfter JSONException kompilieren; gewöhnliche JVM-org.json allein genügt dafür nicht.
+
+### Minimale Korrektur und tatsächliche Prüfung
+
+Zwei vollständige Ersatzdateien vorbereitet: native/Body3DPlugin.java und STATUS.md. Im Java-Code genau eine Methodensignatur geändert: `jsonVector(float[] values) throws org.json.JSONException`. Beide Aufrufer liegen bereits in bestehenden try/catch(Exception)-Pfaden. Ausnahme nicht verschlucken und Fehler nicht als erfolgreiches Ergebnis ausgeben. Kein Algorithmus, keine Modell-/API-/UI-/Workflowänderung.
+
+Unveränderten Fehler lokal mit Android-kompatibler JSON-JAR reproduziert: exakt dieselbe eine unhandled-JSONException-Stelle. Anschließend vollständige korrigierte Klasse gegen ORT-1.31-Java-Klassen, Android-API-JAR, diese Android-JSON-Bibliothek und Capacitor-Stubs kompiliert: erfolgreich. Zur Laufzeit ausdrücklich geprüft, dass JSONException KEINE RuntimeException ist. JSON-Float-Roundtrip und NaN-Abweisung bestanden; bestehende Canonicalisierungs-/Normalisierungstests mit derselben Bibliothek erneut bestanden. Keine erneuten teuren Modellläufe nötig, da ausschließlich die Ausnahmedeklaration geändert ist.
+
+Noch kein neuer Gradle-/APK-CI-Lauf nach Korrektur; neuer Build muss nach Upload bestehen. Nicht bereits als grünen Android-Build darstellen. Der letzte sichtbare gerätetest-bestätigte Appstand bleibt 598; grüne Zwischenbuilds 600/601 enthalten nicht den vollständigen neuen nativen Kern und sind kein Grund zur Installation.
+
+### Lieferung und nächster Schritt
+
+Flaches ZIP **Mehrfoto-Buildkorrektur.zip**: **STATUS.md → Hauptordner**, danach **Body3DPlugin.java → native** ersetzen. Index, body3d-multiview.js, Python-Prototyp und Workflows nicht erneut hochladen. ZIP bytegenau geprüft. Benutzer lädt selbst hoch; danach aktuellen main und automatisch neu gestarteten vollständigen APK-Build prüfen. Alten Lauf 602 nicht bloß erneut ausführen, da er denselben fehlerhaften Commit verwendet. Noch keine Installation/weiterer Handytest für den weiterhin unsichtbaren Backendstand nötig. Anschließend Mehrfoto-Daten-/Worker-/UI-Integration fortsetzen; aktuelle Fehlerkorrektur nicht als abgeschlossene Mehrfoto-Appfunktion bezeichnen.
+
+## Historischer Stand: Mehrfoto-Auswahl/Rechenkern und native Formbasis vorbereitet
 
 main `4aaf58c6bbb45541c782ad2cd246926089f2de09` frisch abgerufen. Benutzer hat die zwei Entwicklungsdateien STATUS.md und body3d_multiview_probe.py vollständig und bytegenau hochgeladen; seit bisheriger Referenz 5968087 nur diese beiden Dateien geändert. Kein neuer Handytest für diesen Upload erforderlich. Sichtbare Appfunktion weiterhin Stand Build 598; spätere reine Entwicklungsdatei-Builds nicht als neue Mehrfoto-Oberfläche bezeichnen.
 
