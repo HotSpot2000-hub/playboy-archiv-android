@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `26fb441c66c842123b2cbb961724079dbbd2820f`
+Referenz-Commit: `632e8845fa42d993189b0d014bb019a54897d151`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,55 @@ Referenz-Commit: `26fb441c66c842123b2cbb961724079dbbd2820f`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 592 bestätigt; lokale Farbansicht vorbereitet
+## Aktueller Stand: Build 594 Farbansicht bestätigt; Foto-Konturdiagnose vorbereitet
+
+Vor Bearbeitung main erneut abgerufen: `632e8845fa42d993189b0d014bb019a54897d151`. Seit letzter Referenz 26fb441 nur die zwei gelieferten Farbansichtsdateien geändert; beide nach Benutzerupload bytegenau geprüft. Bestehende AGENTS-/STATUS-Regeln gelesen, vollständiger aktueller STATUS-Text aus main übernommen; auf diesen aktuellen Dateien weitergearbeitet. Build **594**, Lauf **40177600318**, erfolgreich inklusive Modellassets, APK-/Telemetrieprüfung, permanenter Signierung, Artifact **Playboy-Archiv-Build-594**.
+
+### Neuer bestätigter Gerätetest
+
+Benutzerscreenshots zeigen dieselben beiden Fotos in **Tiffany Ryan · Shooting Nr. 2**, Referenz `27006_full.jpg`, Vergleich `26994_full-0.jpg`: RMS **0,369 %**, größter einzelner Punktabstand **0,644 %** der normierten Netzhöhe. Farbansicht vorne und seitlich sichtbar, Auswahl und Legende funktionieren auf S25. Größere Unterschiede visuell an Brust, Armen sowie Hüfte/Oberschenkeln, geringere im Schulterbereich; keine abgesicherte Regionalmessung. Die vorherigen 0,354 % stammen aus einem anderen Gerätedurchlauf; identische Rahmen-/Eingabedaten wurden nicht nachgewiesen, keine numerische Regression oder Verbesserung daraus ableiten. Keine anatomische oder metrische Genauigkeit bestätigt. Weitere Wiederholung dieses neutralen Farbtests vorerst nicht erforderlich.
+
+### Nächster Schritt: Fotokontur ansehen statt Modell nur mit sich selbst vergleichen
+
+Die vorhandene Personenmaske aus ML Kit wird schon beim automatischen Rahmenvorschlag lokal gerechnet, bisher aber nur zu wenigen Breitenwerten verdichtet. Neue optionale Ausgabe und Konturzeichnung nutzen genau diesen bestehenden Aufruf; keine zusätzlichen Bildmodell-/Decoderläufe, kein neuer ML-Download, keine Umfangs-/Ellipsenberechnung oder Reaktivierung verworfener Maßheuristiken.
+
+Drei vollständige Ersatzdateien vorbereitet, noch nicht hochgeladen, als neue APK gebaut oder auf S25 getestet: `www/index.html`, **`native/ArchiveDirectoryPlugin.java`**, `STATUS.md`. **Body3DPlugin.java unverändert**, ebenso Modelle, APK-/Preflight-Workflow, MainActivity, Signierung und Datenmodell.
+
+### Native Erweiterung der bestehenden Poseanalyse
+
+- `analyzePose` akzeptiert optional `includePhotoMask`, Standard false. Alle bisherigen Galerie-/Video-/Archivanalysen rufen ohne diese Option weiter denselben bisherigen Pfad auf. Nur der flüchtige Einfoto-Rahmenvorschlag fordert die neue Ausgabe an. Bestehende Konturbreiten und Posebeurteilungen unverändert.
+- Nach bestehender Segmentierung zusätzlich kompakte Konfidenzmaske `photoMask`: Revision 1, Quelle mlkit_person_confidence, Bild-/Maskenmaße, Base64-Uint8. Lange Kante höchstens 256; Seitenverhältnis erhalten, nächster Pixel am jeweiligen Zielpixelzentrum, Konfidenz 0..1 auf 0..255 gerundet. Höchstens 65.536 Nutzbytes; bei 1280-Pixel-Arbeitsbild gröbere Abtastung als Originalfoto, keine pixelgenaue anatomische Grenze.
+- Liest duplizierten ByteBuffer in dessen ursprünglicher Byteordnung, verändert dessen Position nicht. Dimensions-/Längen-/Nichtendlichkeits-/Wertebereichsprüfung. Fehlende/ungültige optionale Maske markiert nur photoMaskUnavailable und lässt bisherigen Posepfad bestehen. Erfolgs-/Fehler-Cleanup von Detector, Segmenter und Bitmap bleibt erhalten.
+- Offizieller API-Vertrag geprüft: ohne enableRawSizeMask liefert SegmentationMask die InputImage-Abmessungen, Float32-Konfidenz 0..1 in nativer Byteordnung. Quelle: https://developers.google.com/android/reference/com/google/mlkit/vision/segmentation/SegmentationMask und https://developers.google.com/ml-kit/vision/selfie-segmentation/android . Bestehende SINGLE_IMAGE_MODE-Konfiguration ohne RawSizeMask erhalten.
+
+### Sichtprüfung im Foto, keine neue Messung
+
+- Unter berechnetem Foto neue Checkbox **Fotokontur (Test)**, Standard AUS, erst mit Ergebnis und passender Personenmaske bedienbar. Einschalten blendet die dichte Bild-/3D-Punktwolke und die violette Netzfüllung aus; Originalfoto und dünne Konturlinien bleiben sichtbar. Benutzer kann Netzfüllung anschließend bei Bedarf wieder einschalten. Einschalten der Punktwolke schaltet Kontur aus; Legende wechselt passend.
+- Grün zeigt geeignete Außenkanten der erkannten Personenmaske im vorgeschlagenen Rumpfbereich, Orange den äußeren projizierten Modellumriss in denselben Bildzeilen. Kein direkter Ground-Truth-Körperrand: Maske kann Haare/Kleidung/Hintergrund einschließen. Sichtprüfung ausdrücklich erforderlich; kein Fehlerprozentwert, keine Körpermaße und keine automatische Formanpassung.
+- Rumpfbereich allein als Diagnosefenster aus Schulter-/Hüftpunkten: 18 % unter Schultermittelpunkt bis 12 % unter Hüftmittelpunkt der vertikalen Schulter-Hüftspanne. Diese Grenzen sind KEINE anatomischen Brust-/Taillen-/Hüftmesshöhen und erhalten keine solchen Labels.
+- Erfordert alle acht Schulter-, Hüft-, Ellbogen- und Handgelenkpunkte mit Konfidenz mindestens 0,7 innerhalb des Bildes und nutzbare vertikale Rumpfspanne. Zusammenhängende Personenmaske um interpolierte Rumpfmittellinie, Saatkonfidenz mindestens 204/255, Laufgrenze 140/255. Bildrandkontakt, übermäßig breite Außenkante, weicher/unklarer Maskenrand und Nähe zu Armlinien werden konservativ ausgelassen. Armnähe über Kapseln um Schulter/Ellbogen/Handgelenk, Radius 16 % der größeren Schulter-/Hüftpunktdistanz, mindestens drei Maskenpixel. Das sind heuristische Störfallfilter, keine validierte anatomische Segmentierung.
+- Weniger als sechs geeignete Bildzeilen oder fehlende Punkte: keine grüne Fotokontur, erklärender Hinweis. Zwischen ausgelassenen Zeilen keine Verbindung/Interpolation zeichnen. Grün fehlt bedeutet ungeprüft, nicht korrekter Modellrand. Auch hohe Segmentierungskonfidenz kann sachlich falsch sein; Kleidung/Haare nicht zuverlässig separat erkannt.
+- Orange aus Rasterung derselben posierten Netzpunkte und derselben in der Fotoansicht ausgewählten Kamera. Projektionsfunktion/Fokus/Bildmitte unverändert. Dreiecke vor Kamera auf Maskenauflösung binär vereinen; Modellrand nur, wenn ein zusammenhängender Modellbereich um Fotomittellinie vorhanden und nicht angeschnitten ist. Kann weiterhin Arme/andere Modellteile enthalten, deshalb äußerer Modellumriss statt bestätigte Rumpfoberfläche. Keine künstliche Anpassung an Grün, keine Breitenkorrektur oder Auswahl nach geringem Fehler.
+- Kamera Original/Angepasst/Posentest aktualisiert Kontur; Cache gilt nur für aktuelle Kamera und aktuelles Fotoergebnis. Maskenantwort darf verspätet ankommen, überschreibt dann keinen manuell gesetzten Rahmen und kein Ergebnis; nach Schließen ignorieren. Fehlende alte native Ausgabe/Segmentierungsfehler lässt bisherigen Einfoto- und Formvergleich nutzbar.
+- Neuberechnung/Rahmen-/Posenoptionswechsel räumt Modellkontur und Cache auf, sperrt Konturschalter bis Ergebnis; zur selben Fotoquelle gehörende Personenmaske bleibt flüchtig verfügbar. Schließen verwirft die Foto-Masken-/Konturdaten. Referenz- und Farbvergleich weiterhin ausschließlich normalisierte Netze, ohne Übernahme von Masken.
+- Keine Archiv-/Profil-/IndexedDB-Schreibvorgänge, Medienuploads, Gruppenänderung, Migration oder Schema-Bump. Die neue Maske wird von keinem Archivpersistenzpfad angefordert oder gespeichert.
+
+### Tatsächlich geprüfte Änderung und Grenzen
+
+- Vollständige neue ArchiveDirectoryPlugin-Klasse gegen echte Google-ML-Kit-Klassen der verwendeten Pose-/Segmentierungsversionen, Vision-/Task-Bibliotheken, Android-API-Jar sowie Capacitor/SAF/MainActivity-Stubs kompiliert. Kein vollständiger Gradle-/Android-Build.
+- Exakt aus Produktquelle extrahierten statischen Maskenpacker auf JVM ausgeführt: beide Byteordnungen, Quantisierung, 512×256 → 256×128, unveränderte ursprüngliche Bufferposition, Längen-/Dimensionsgrenzen, NaN und ungültige Konfidenz. Ganze Klasse auf Host nicht initialisiert, weil zusätzliche Android-/MLKit-Laufzeitabhängigkeiten fehlen; keine tatsächlich ausgeführte MLKit-Inferenz in diesem Arbeitsgang.
+- Alle vier Inline-Skripte syntaktisch geprüft. Tatsächliche Konturfunktionen mit synthetischer bekannter Personenmaske und tatsächlicher Produkt-Projektion geprüft: Kantenpositionen, native Datenkennungen/Seitenverhältnis, fehlende Gelenke, Armnähe, weiche Maskenkante, Randanschnitt, Kameraverschiebung, hinter Kamera liegendes Netz und keine Linienbrücken über ausgelassene Zeilen. Grüne/orange Linien mit nativer Canvas-Bibliothek gerendert und Bild visuell geprüft. Keine Benutzerfotos als Testeingabe.
+- Tatsächliches Panel-Script mit simuliertem DOM geprüft: neue optionale Native-Anforderung, verspätete Antwort während Busy ohne Rahmenänderung, Kamera-Cache/Legende, Antwort nach Schließen ignorieren, fehlende Maske und gesperrter Schalter nach clear. Bestehende Referenz-/Kontext-/Formvergleichs-/Farbkartenprüfungen und echte Canvas-Tiefen-/Farbrastertests erneut bestanden.
+- Kein echter Browser-/WebView-/Touchtest, kein neuer APK-Build und kein S25-Konturtest dieser Erweiterung. Vorhandene 3D-Modelle/Decoder und deren Toleranzen unverändert; kein erneuter Export nötig. Nächste CI muss vollständige Pflichtprüfungen bestehen. S25-Bildmaskenqualität, Verfügbarkeit konservativ gefilterter Konturen, Laufzeit/Speicher und sichtbare Linienabstände bleiben offen.
+- Flaches Liefer-ZIP gegen alle drei vollständigen Ersatzdateien bytegenau geprüft; keine Modellgewichte oder Archivmedien enthalten.
+
+### Lieferung und nächster Schritt
+
+**1. index.html → www**, **2. STATUS.md → Hauptordner**, **3. ArchiveDirectoryPlugin.java zuletzt → native**. Nicht mit Body3DPlugin.java verwechseln. Benutzer lädt selbst hoch. Anschließend main/Dateien abgleichen und konkrete vollständige erfolgreiche APK-Buildnummer nennen. Zwischenbuilds nicht installieren; APK ausschließlich als Update, niemals deinstallieren.
+
+Gerätetest erst nach geprüfter APK: nur eines der bisherigen Ganzkörperfotos, möglichst das mit angehobenen Armen und sichtbaren Seiten. 3D-Test öffnen, Rahmen prüfen, einmal berechnen. Unter Foto **Fotokontur (Test)** einschalten. Erwartet: Foto ohne dichte Punkte/Netzfüllung, grüne Personen- und orange Modelllinien im geeigneten Rumpfabschnitt, dazu erklärender Bericht. Ausgelassene Linien/entsprechender Hinweis sind zulässiges Diagnoseergebnis, keine Aufforderung zur Feldbewertung. Screenshot mit Foto und Konturbericht genügt. Kein Zweifoto-Referenztest erneut erforderlich. Danach tatsächliche Maskenqualität und Störeinflüsse beurteilen, erst dann an gezielte Formanpassung denken. Keine verlässlichen Maße behaupten.
+
+## Historischer Stand: Build 592 bestätigt; lokale Farbansicht vorbereitet
 
 main `26fb441c66c842123b2cbb961724079dbbd2820f` frisch abgerufen. Seit bisheriger Referenz 19b5bb5 ausschließlich drei gelieferte Formvergleichsdateien hochgeladen; alle bytegenau gegen Lieferung geprüft. Build **592**, Lauf **40175861935**, erfolgreich inklusive 3D-Asset-Vorbereitung, APK-/Telemetrieprüfung, permanenter Signierung und Artifact **Playboy-Archiv-Build-592**. Vor Änderungen aktuellen main-Dateistand verwendet; bestehende AGENTS-/STATUS-Regeln gelten.
 
