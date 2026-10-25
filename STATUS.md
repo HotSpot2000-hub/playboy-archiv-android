@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `e1850ed6291a626f7eee0633d29fa1b8c5ca62fe`
+Referenz-Commit: `30b1b75e61b9a618dc57c2af113d444f4b682acc`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,22 @@ Referenz-Commit: `e1850ed6291a626f7eee0633d29fa1b8c5ca62fe`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 604 bestätigt; erster bedienbarer Mehrfoto-Pilot vorbereitet
+## Aktueller Stand: Build 607 bestätigt; Rumpfauswahl korrigiert vorbereitet
+
+Main frisch abgerufen: 30b1b75e61b9a618dc57c2af113d444f4b682acc. Seit e1850ed exakt sechs Pilotdateien hochgeladen, bytegenau geprüft; Build 607 / Lauf 40221090634 vollständig erfolgreich, APK signiert. Benutzer hat neue Oberfläche getestet: nur fünf Kandidaten zur Kleidungsfreigabe, darunter zwei bekleidete; drei freie reichen nicht. Bisherige Aussage „Röcke/Kleider ausgeschlossen“ gilt erst NACH Benutzerfreigabe, keine automatische Kleidungs-Vision. Dies dem Benutzer korrigiert erklärt.
+
+Gezielter Fix, noch NICHT hochgeladen/gebaut/gerätetestbestätigt:
+- Keine Pflicht mehr für Kopf, Knie, Knöchel, fullBody oder das native Ganzkörper-safelyFramed-Flag. Vier sichere Schulter-/Hüftpunkte innerhalb Bildrand und Mindest-Rumpfspanne bleiben nötig. Qualitätswert ausschließlich aus diesen vier Ankern. Gliedmaßen optional zur Posendiversität; fehlende Punkte erzeugen keine künstliche Neuheit. Rumpffotos ohne Kopf/Füße sind damit zugänglich, reine Brustnahaufnahmen ohne Hüften noch nicht. Sitzende/kniende Posen können bestehen, sofern Rumpfmaskenzeilen brauchbar sind; liegende/überlagerte Rümpfe bleiben konservativ begrenzt durch bisherigen Maskenalgorithmus, keine pauschale Nutzbarkeitszusage.
+- Alle Shootingfotos statt nur gleichmäßig verteilter 40 prüfen. Originale weiterhin nacheinander lokal lesen; nur kleine Vorschaubilder/Masken im Sitzungsspeicher. Größere Shootings dauern länger und benötigen mehr Speicher für diese kleinen Daten, Abbruch bleibt möglich. Kein Foto-Cloud-Upload.
+- Automatischer Rahmen akzeptiert sichere Rumpfgeometrie, keine 12-Punkte-/35%-Ganzkörperpflicht; Punkte außerhalb des Fotos ignoriert. BodyPhotoMath.crop validiert weiter den Ausschnitt.
+- Freie Kontur, mindestens zwölf sichere Rumpfmaskenzeilen, Armfilter, explizite Kleidungsfreigabe, Bikini-Fenster, Duplikat-/Kontextschutz, mindestens vier unterschiedliche freigegebene Quellen, gemeinsame Form/ Kontrollfoto unverändert. Bekleidete Bilder können ohne Kleidungsdetektor weiterhin in der Kleidungsprüfung auftauchen, dürfen nicht freigegeben werden. Keine automatische Bekleidungserkennung behaupten.
+- UI erklärt lokale Vollprüfung und Rumpfausschnitte. index lädt Auswahlskripte mit neuer Version group2. Native Klassen, Worker, Modelle, Fit und Datenbank unverändert.
+
+Prüfung: neuer Auswahltest Rumpf ohne Kopf/Knie/Knöchel sowie Rand-/Konfidenzschutz, fehlende Gliedmaßen ohne künstliche Distanz; tatsächliche DOM/Canvas-UI mit nachgebildeter Brücke auch für vier solche Teilfotos; bisherige Freigabe/Bikini/Abbruch/Ergebnis-/Kontrolltests bestanden. Echter Decoderfixture-Fit und zusammenhängende Konturtests erneut bestanden. Keine neuen echten Fotoinferenzen, kein S25-Test des Fixes. Kein Anatomie-/Maßgenauigkeitsnachweis.
+
+Lieferung vier vollständige Dateien: body3d-multiview.js und body3d-multiview-ui.js nach www; index.html nach www; STATUS.md ins Hauptverzeichnis. Keine native Datei nochmals nötig. Benutzer lädt selbst hoch, danach main bytegenau und finalen vollständigen APK-Build prüfen; genaue neue Buildnummer nennen. Als Update installieren, nicht deinstallieren. Test Tiffany Ryan Shooting Nr. 2: alle Fotos scannen lassen; zusätzliche freie Rumpffotos sollten erreichbar sein, soweit Masken/Anker bestehen. Nur geeignete unbedeckte Fotos oder freies Bikini-Fenster freigeben. Kein Aufweichen auf drei Quellen als Ersatz für fehlende Bilder.
+
+## Historischer Stand: Build 604 bestätigt; erster bedienbarer Mehrfoto-Pilot vorbereitet
 
 Aktuelles main vor Bearbeitung frisch abgerufen und auf diesen Dateien weitergearbeitet: `e1850ed6291a626f7eee0633d29fa1b8c5ca62fe`. Seit bisheriger Referenz 27cc498 ausschließlich die zwei gelieferten Buildkorrektur-Dateien geändert; Diff geprüft. **Build 604**, Lauf **40206347954**, vollständig erfolgreich einschließlich Android-Kompilierung, Modell-/APK-/Telemetrieprüfung und dauerhafter Signierung. Build 603 war noch der Zwischenstand vor dem Java-Fix. Fehler aus 602 behoben, nicht weiter auf alte JVM-JSON-Prüfung vertrauen. AGENTS-/STATUS-Regeln gelten.
 
