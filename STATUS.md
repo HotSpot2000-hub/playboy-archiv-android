@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `632e8845fa42d993189b0d014bb019a54897d151`
+Referenz-Commit: `5968087fe3293dd79e78a09e4de749f2e20cfca1`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,55 @@ Referenz-Commit: `632e8845fa42d993189b0d014bb019a54897d151`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 594 Farbansicht bestätigt; Foto-Konturdiagnose vorbereitet
+## Aktueller Stand: Build 598 bestätigt; gemeinsamer Mehrbild-Formfit als Rechenprototyp geprüft
+
+Berücksichtigtes main frisch abgerufen: `5968087fe3293dd79e78a09e4de749f2e20cfca1`. Seit Referenz 632e884 nur die drei Fotokontur-Dateien hochgeladen; nach Upload bytegenau mit Lieferung verglichen. Build **598**, Lauf **40193381811**, erfolgreich inklusive 3D-Assets, APK-/Telemetrieprüfung und dauerhafter Signierung; Artifact **Playboy-Archiv-Build-598**. AGENTS-/STATUS-Workflow gilt. Aktuelle Appdateien unverändert auf Basis dieses main.
+
+### Gerätetests der Fotokontur bestätigt
+
+- Tiffany Ryan, Shooting Nr. 2, bisheriges Foto mit angehobenen Armen: 18.439 Punkte, 1,8 Sekunden ohne Posentest. Fotokontur sichtbar, 52 Bildzeilen angezeigt, eine ausgelassen. Originalkamera-Punktmedian 35,9 Pixel / 2,33 % Diagonale, Maximum 84,3; angepasster Kameramedian 21,6. Grün/Orange am Rumpf sichtbar verschieden. Technische Darstellung bestätigt, nicht richtige Anatomie.
+- Danach Posentest mit Kontur: angewendet, 70/70 Paare, Median 5,5 Pixel / 0,36 %, Maximum 18,7. Maximalwinkel 8,6°, Kontroll-RMS 24,0 → 8,8 Pixel; erneut 52/1 Konturzeilen. Konturabweichungen bleiben sichtbar, keine klare Konturverbesserung aus Screenshots bewiesen. Grenze nicht erhöhen. Keine Wiederholung dieser Einzelbildtests nötig.
+- Benutzer weist zutreffend darauf hin, dass neben Pose auch die geschätzte Figur abweicht. Bisherige Pose-/Kamerafits hielten Körperform ausdrücklich fest und konnten diesen Teil gar nicht korrigieren. Kamera verändert Projektion, nicht die zugrunde liegende Figur. Exakte Fehleraufteilung trotzdem nicht aus Konturbild allein behaupten.
+
+### Verbindliche neue Arbeitsrichtung
+
+Benutzer bestätigt ursprüngliches Ziel: möglichst viele ergänzende Fotos desselben Körperstands gemeinsam nutzen. Eine gemeinsame Körperform, eigene Pose und Kamera je Foto. Automatische Auswahl unterschiedlicher, geeigneter Ansichten mit gesammelter Bestätigung; keine erneute Feld-für-Feld-Bearbeitung. Ähnliche Aufnahmen und Videoframes dürfen nicht künstlich mehrfach zählen. Tiffany Ryan Shooting Nr. 2 bleibt begrenzter Testfall, mehrere Shootings nur nach bewusster Körperstandsbestätigung. Tahlia 1/2/6 frühere Gruppe bleibt separate Vorgabe; keine IDs erraten oder Profil-/Gruppendaten automatisch schreiben.
+
+Keine bloße Mittelung vorhandener Einzelbildnetze als Mehrbildrekonstruktion bezeichnen. Der gemeinsame Formparameter muss gegen mehrere Beobachtungen tatsächlich optimiert und an unabhängiger Ansicht kontrolliert werden. Keine weiteren App-Diagnoseschalter als Ersatz für diesen Kern ausliefern. Die automatische mobile Quellenwahl und gemeinsame Formanpassung sind noch NICHT in der APK implementiert.
+
+### Neu: reproduzierbarer synthetischer Rechenprototyp
+
+Neue vollständige Datei **body3d_multiview_probe.py** im Repository-Hauptordner, zusammen mit dieser STATUS-Datei vorbereitet. Reiner Entwicklungsversuch auf Host; keine Android-/UI-/Workflowänderung, keine Archivmedien, keine Profilwerte, keine Cloudverarbeitung von Benutzerfotos. Benutzer benötigt keinen PC und soll das Script nicht selbst ausführen. Ein APK-Build nach Upload nur dieser zwei Entwicklungsdateien enthält dieselbe App wie 598 und muss nicht installiert werden.
+
+- Modellassets direkt aus verifiziertem Build-598-APK-Artifact gelesen. Artifact-ZIP-SHA 80fe11f7e7f620577a814fcc5a05eda1431d4a169be53d0b520e3d0db84e9cc4 geprüft; Decoder, Netzflächen und Manifest aus APK extrahiert, Dateilängen und SHA-256 gegen APK-Manifest geprüft. Keine anderen Gewichte eingesetzt.
+- Vor ORT-Import ORT_DISABLE_TELEMETRY=1, zusätzlich API-Abschaltung; ORT 1.31.0 CPU, zwei Threads, gleiche deaktivierte BF16-/GELU-Abkürzungen. Frühere Modelle/Exporter/Referenztoleranzen unverändert.
+- Decoder ist bei festgehaltener Pose und allen Größenkanälen linear in seinen Identitätskoeffizienten. Tatsächlichen Decoder je Ansicht mit Nullform und 20 Körperbasisvektoren gerechnet; daraus schnelle kombinierbare Basis für erste 20 Körperkoeffizienten. Kopf-/Handkoeffizienten 20..44 sowie Größenkanäle 130..203 in diesem Versuch identisch null/fest; nicht pro Foto frei zum Ausgleichen einer abweichenden Körperform. Linearkombination gegen zusätzliche echte Decoderinferenz geprüft, maximale Koordinatenabweichung 1.02063158e-06 Meter. Ausschließlich Rechenparität, keine körperliche Genauigkeit.
+- Vier künstliche Ansichten derselben bekannten synthetischen Form, unterschiedliche bekannte Posen sowie Drehungen 0°, -65°, 70°, 135°. Drei Anpassungsansichten und eine vollständig zurückgehaltene Form-Kontrollansicht. Keine Fotografien und keine realen Maskenfehler. Posen und Drehrichtungen sind VORGEGEBEN, werden hier NICHT optimiert. Nur die Kameratranslation je Anpassungsansicht wird neben 20 gemeinsamen Körperkoeffizienten frei angepasst. Die Kontrollkamera bleibt bekannt/fest.
+- Beobachtungen sind tatsächliche äußere Zeilenschnitte des projizierten Dreiecksnetzes. Kein unterstellter bekannter Vertex als Fotokonturkorrespondenz. Schnittpunkte mit Netzrändern analytisch berechnet; keine Rasterauflösung als künstliche Optimierungsgrenze. Volle Silhouette enthält auch Gliedmaßen, deshalb noch kein sachlich geprüfter Torsofit für Fotos.
+- Analytische Ableitung der perspektivischen Projektion und des jeweils aktiven Silhouettenrandes nach Form und Kameratranslation; gegen unabhängige zentrale Differenzen für drei Formparameter und alle drei Kameraparameter geprüft. Form-/Kamerafit per begrenztem Least Squares mit soft_l1; Kameras zunächst bei unveränderter Nullform optimiert, damit der Ausgangsvergleich nicht nur von schlechter Kamera profitiert. Je Ansicht gleicher Beitrag unabhängig von Zeilenzahl; schwacher festgelegter Formprior, Beta-Grenzen ±2 als numerische Experimentgrenzen, keine anatomisch validierten Grenzen.
+- Kontrollierte synthetische Zielkontur mit 0,08 Pixel unabhängigem Rauschen. Kleine Werte sind bewusst einfache Rechenprüfung innerhalb desselben Generatormodells (Inverse-Problem-Test), kein Nachweis für reale Fotos oder Menschen. Bestehen erfordert Verbesserungen an jeder Anpassungs- und Kontrollansicht, mindestens 2 % und mehr als 0,05 Pixel; diese Schwellen sind nur Experimentregeln, keine validierte Freigaberegel für Körpermaße.
+
+### Tatsächliche Ergebnisse des abschließenden Laufs
+
+- Positivfall: acht Solverauswertungen, alle drei Anpassungsansichten verbessert. Kontur-RMS 1,273 → 0,081; 2,594 → 0,068; 2,709 → 0,076 Pixel. Zurückgehaltene vierte Ansicht 2,380 → 0,072 Pixel, obwohl ihre Kontur nicht im Fit war. Synthetischer Kontrolltest bestanden.
+- Gegen bekannte generierte Oberfläche: RMS normierter Netzhöhe 0,34284 % → 0,00983 %. Diese Werte sind KEINE Genauigkeit am Benutzerarchiv. Auch passende Silhouetten bestimmen die zugrunde liegenden Koeffizienten nicht exakt; Koeffizienten-RMSE noch rund 0,0667. Einzelne gut passende Fotos lösen daher nicht automatisch Formmehrdeutigkeit.
+- Negativkontrolle: Kontrollansicht absichtlich aus widersprüchlicher anderer Form erzeugt. Fit der drei Trainingsansichten unverändert gut, aber Kontroll-RMS 1,930 → 4,271 Pixel. Gemeinsames Ergebnis korrekt abgelehnt. Diese Kontrolle ist ein künstlicher Widerspruch, keine automatische Erkennung tatsächlicher Körperstandsänderungen.
+- Bereits passende Nullform: keine Änderung als Verbesserung ausgegeben, Ergebnis nicht übernommen. Doppelte Source-ID, unterschiedliche deklarierte Körperstandsgruppen und fehlende Kontrollansicht abgefangen. Eindeutige IDs allein beweisen keine unabhängigen Ansichten; echte Duplikat-/Ansichtsclusterprüfung bleibt später nötig.
+- Gesamter letzter Hostlauf rund 16.3 Sekunden einschließlich Basisberechnungen, Positiv-/Negativ-/Nullfall und Guards. Kein S25-Benchmark; ORT meldete unvollständige Host-CPU-Erkennung, Rechnung wurde dennoch vollständig ausgeführt und Prüfungen bestanden.
+- Ausgeliefertes Script selbst vollständig erneut mit verifizierten Assets ausgeführt; Python-Syntax geprüft. Flaches ZIP enthält nur vollständige STATUS.md und body3d_multiview_probe.py, bytegenau abgeglichen. Keine Modellgewichte/Benutzerfotos/APK enthalten. App-/Native-/Workflowdateien gegenüber main unverändert.
+
+### Offen, bevor es eine echte Mehrfoto-Appfunktion gibt
+
+1. Automatische, nachvollziehbare Auswahl unterschiedlicher Fotos desselben bestätigten Körperstands. Sichtbare Zielperson, Unabhängigkeit/Ähnlichkeit, ergänzende Perspektiven und Verdeckungen berücksichtigen; mehrere frontale Fotos liefern nicht automatisch beobachtete Tiefe/Rückseite.
+2. Mobile flüchtige Erfassung von Fotoeingaben, Masken, Form-/Größenparametern, Posen und Kameras, mit Fortschritt/Abbruch und ohne Archiv-/Profiländerung. Gemeinsame Größen-/Skalierungskanäle konsistent festlegen; getrennte fotoabhängige Größen würden die gemeinsame Form umgehen.
+3. Erweiterung vom bekannten-Pose-Prototyp auf unsichere, fotoabhängige Posen/Kameras. Vorhandener 2D-Posentest kann dafür nur eine Initialisierung sein. Gegen falsche Posen, Segmentierungsfehler, Kleidung, Arme und Hintergrund robuste Maskenbeobachtungen plus getrennte Kontrollen erforderlich. Keine ungeprüfte Figuranpassung, die Pose-/Maskenfehler kompensiert.
+4. Android-Integration und echte lokale Mehrfoto-Kontrollansicht; erst danach Fachprüfung einer gemeinsamen Form. Physikalische Skalierung, Zentimeter-/Cupwerte und Profilübernahme weiterhin gesperrt.
+
+### Lieferung und Arbeitsfortsetzung
+
+Zwei vollständige Entwicklungsdateien im flachen ZIP **Mehrfoto-Rechenprototyp.zip**, beide ins Hauptverzeichnis: STATUS.md und neue body3d_multiview_probe.py. Keine vorhandene Java-/Index-/Workflowdatei ersetzen, keine neue APK installieren und kein weiterer Gerätetest für diesen rein synthetischen Prüfstand nötig. Benutzer lädt selbst hoch; danach main abgleichen. Dies ist ein nachvollziehbarer Entwicklungsprüfstand, keine fertige Mehrfoto-Rekonstruktion. Dauerhafte Freigabe zum Weiterarbeiten gilt; keine wiederholte „weiter“-Freigabe oder Rohfoto-Cloud-Uploads verlangen.
+
+## Historischer Stand: Build 594 Farbansicht bestätigt; Foto-Konturdiagnose vorbereitet
 
 Vor Bearbeitung main erneut abgerufen: `632e8845fa42d993189b0d014bb019a54897d151`. Seit letzter Referenz 26fb441 nur die zwei gelieferten Farbansichtsdateien geändert; beide nach Benutzerupload bytegenau geprüft. Bestehende AGENTS-/STATUS-Regeln gelesen, vollständiger aktueller STATUS-Text aus main übernommen; auf diesen aktuellen Dateien weitergearbeitet. Build **594**, Lauf **40177600318**, erfolgreich inklusive Modellassets, APK-/Telemetrieprüfung, permanenter Signierung, Artifact **Playboy-Archiv-Build-594**.
 
