@@ -1,7 +1,7 @@
 # Playboy Archiv -- Projektstatus
 
 Stand: 2026-10-25
-Referenz-Commit: `5968087fe3293dd79e78a09e4de749f2e20cfca1`
+Referenz-Commit: `4aaf58c6bbb45541c782ad2cd246926089f2de09`
 
 > Verbindliche Übergabedatei. Vor neuer Arbeit `AGENTS.md` vollständig lesen und prüfen, ob `main` seit dem Referenz-Commit weitergelaufen ist.
 
@@ -14,7 +14,67 @@ Referenz-Commit: `5968087fe3293dd79e78a09e4de749f2e20cfca1`
 - Android-APK immer als UPDATE installieren, niemals deinstallieren.
 - Vor Gerätetests fachliches Ziel, Änderung, sichtbare Stelle und Erfolgskriterium erklären.
 
-## Aktueller Stand: Build 598 bestätigt; gemeinsamer Mehrbild-Formfit als Rechenprototyp geprüft
+## Aktueller Stand: Mehrfoto-Auswahl/Rechenkern und native Formbasis vorbereitet
+
+main `4aaf58c6bbb45541c782ad2cd246926089f2de09` frisch abgerufen. Benutzer hat die zwei Entwicklungsdateien STATUS.md und body3d_multiview_probe.py vollständig und bytegenau hochgeladen; seit bisheriger Referenz 5968087 nur diese beiden Dateien geändert. Kein neuer Handytest für diesen Upload erforderlich. Sichtbare Appfunktion weiterhin Stand Build 598; spätere reine Entwicklungsdatei-Builds nicht als neue Mehrfoto-Oberfläche bezeichnen.
+
+Vor Änderung AGENTS und aktuellen STATUS berücksichtigt, Referenzdiff geprüft und aktuelle main-Dateien gelesen. Die bekannten Gerätetests und Mehrfoto-Zielrichtung im folgenden historischen Abschnitt bleiben gültig. Benutzer möchte ohne wiederholtes „weiter“ vorankommen; keine neuen Einzelbild-Diagnoseschleifen als Ersatz für gemeinsame Formanpassung.
+
+### Neu vorbereitete drei Ersatz-/Ergänzungsdateien
+
+1. Neue **www/body3d-multiview.js**: wiederverwendbare Auswahl- und Optimierungslogik ohne DOM-/Netzwerk-/Archivzugriff. Noch NICHT in index.html eingebunden.
+2. **native/Body3DPlugin.java**: optionale Ausgabe der bereits berechneten latenten Parameter und neue Vorbereitung einer linearen Formbasis für einen zukünftigen Mehrfoto-Auftrag.
+3. **STATUS.md**: dieser Entwicklungsprüfstand.
+
+Bestehende www/index.html, ArchiveDirectoryPlugin.java, Modelle, Python-Prototyp, APK-/Preflight-Workflow und MainActivity bleiben unverändert. Die bisherige App ruft die neuen optionalen Pfade noch nicht auf. **Noch keine sichtbare Mehrfoto-Funktion und noch kein echter Foto-Gruppenfit auf dem S25.** Neue native Klasse noch nicht als neue APK gebaut/auf S25 getestet.
+
+### Quellenwahl aus bereits vorhandenen Geometrien
+
+- Eingang ausschließlich Metadaten/Geometrien je Foto; kein Medienlesen und keine Speicherung im Auswahlkern. Expliziter bestätigter Shooting-/Körperstands-Schlüssel erforderlich, fremde Kontexte ausgeschlossen.
+- Standard maximal sechs, mindestens vier genügend unterschiedliche Kandidaten; höchstens acht konfigurierbar. Letzter ausgewählter Kandidat als unabhängige Kontrollaufnahme reserviert, übrige für Anpassung. „ready“ bedeutet nur genügend Vorauswahl, keine geprüfte Körperform oder sichere Segmentierung.
+- Erfordert fullBody/safelyFramed sowie Schulter-, Hüft-, Knie-, Knöchelpunkte und mindestens einen Kopfpunkt mit Konfidenz ≥0,6 innerhalb des Bildes, Mindestspanne, nutzbare Rumpflänge und Randabstand. Diese Vorbedingungen bleiben Heuristiken, kein Beweis für komplette/maßgeeignete Fotos.
+- Nach Hüftmittelpunkt und Rumpflänge normalisierte 2D-Körper-/Armkonfiguration als Ähnlichkeitsmerkmal. Doppelte Medien-ID/Fingerprints ausschließen; weitere Kandidaten nach geometrischer Verschiedenheit und Punktkonfidenz wählen, nahezu gleiche Posen zurückstellen. Keine Perspektivbezeichnung als Wahrheit, keine automatisch behauptete Seiten-/Rückansicht oder Chronologie. 2D-Poseverschiedenheit garantiert keine verschiedene Kamera oder sichtbare Tiefe.
+- Bereits gespeicherte bodyCheck.geometrySamples bieten die nötigen Felder. Die spätere Appanbindung muss vor Nutzung Foto-ID-Bestand/Analyseversion/Fingerprints auf Aktualität prüfen, Vorschläge als kleine Fotoliste gemeinsam bestätigen lassen und erst danach Maskeneignung prüfen. Das ist noch nicht implementiert; keine Archivdaten ungeprüft als finale Quellen verwenden.
+
+### JavaScript-Kern für gemeinsame Form
+
+- Erwartet 3..8 unabhängige Quellen mit mindestens zwei Fit- und einer Kontrollquelle; Auswahlstandard liefert mindestens drei Fit- plus eine Kontrollquelle. Explizite Rollen, gleicher Gruppenschlüssel, eindeutige Source-IDs und nichtleere unabhängige Fingerprints. Basisrevision und gepinnte Netzflächen-Topologie müssen stimmen.
+- Alle Quellen müssen dieselbe 45er-Identitäts-Ausgangsform und dieselben 25 Kopf-/Hand- plus 74 Größen-/Skalierungsparameter (99 feste Parameter) deklarieren. Unterschiedliche Baselines/Größen werden abgelehnt, damit fotoabhängige Figuren nicht als „gemeinsame Form“ durchrutschen. Auch Kopf-/Handteil der Ausgangsform gegen die festen Parameter prüfen. Gültige Metadaten allein beweisen nicht die korrekte Erzeugung der Basis; zukünftiger nativer Datenadapter muss diese gemeinsamen Werte tatsächlich setzen.
+- Passt 20 gemeinsame Körperkoeffizienten als Delta relativ zur gemeinsamen Ausgangsform und eigene Kameratranslation pro Fit-Foto an. Identitätsausgabe nach Übernahme besteht aus gemeinsamer Ausgangsform plus Delta, Kopf/Hand unverändert; Größenparameter bleiben fest. **Posen sind pro Ansicht vorgegeben und bleiben hier fest**. Damit weiterhin noch keine gemeinsame Pose-/Form-Optimierung aus unsicheren realen Fotos.
+- Analytische Projektions-/Silhouettenableitungen, gleiche Zeilenschnitt-Grundlage wie Python-Prototyp, schwacher Formprior, soft_l1 mit gedämpften Normalgleichungen, höchstens 50 Iterationen je Teilfit. Erst Kamera bei unveränderter Form, dann gemeinsame Form/Kameras. Kameragrenzen relativ zu jeweiliger Ausgangskamera, Formdelta ±2 als reine experimentelle Zahlengrenze, nicht anatomisch validiert.
+- Gleiche Gewichtung je Foto unabhängig von Zeilenzahl. Kontrollkontur NICHT im Fit, Kontrollkamera bleibt vorgegeben. Übernahme nur bei konvergiertem Kamera-/Formfit und Verbesserung an jeder Fit-/Kontrollquelle um mindestens 2 % und mehr als 0,05 Pixel. Noch keine fachlich validierte Maßfreigabe. Bei Verwerfen keine Kandidatenform/-kameras zurückgeben.
+- Prüfungen endlicher Daten, richtiger Basisdimensionen (18.439×3×20), Flächenindizes, steigender Zeilen und Kamera vor Netz; Abbruchcallback, Fortschrittscallback und Zeitbudget zwischen Verarbeitungsschritten. Noch kein Worker integriert: synchronen Kern später NICHT auf dem WebView-Hauptthread starten. Zeitpunkt/Transfer/Abbruch der Worker-Anbindung bleiben offen.
+
+### Native Erweiterung, bestehender Fotopfad bleibt Standard
+
+- analyzePhoto fordert nur bei explizitem **includeParameters=true** zusätzlich 45 identityParameters und die finale 204er poseParameters samt parameterRevision=1 an. Vorhandene Einfoto-UI übergibt diese Option nicht. Bisherige Ergebnisse/Formvergleich/Konturpfade ohne diese Option unverändert.
+- Neue Methode **prepareSharedFormBasis** erhält commonShape[45] und photoPose[204]. Zukünftiger Adapter muss Kopf/Hand/Größenanteile gemeinsam setzen und Foto-Rotationen getrennt belassen. Endliche Dimensionen und konservative Zahlenobergrenze prüfen; eine Aufgabe gleichzeitig über denselben Worker/Busy-/Cancel-/Pausepfad wie bisher.
+- Verwendet nur vorhandenen vollständigen Decoder: Basisnetz zur gemeinsamen Ausgangsform, danach zwanzig Inferenzläufe mit jeweils einem Körperkoeffizienten +1. Liefert Differenzen relativ zum Basisnetz in Vision-Metern, Float32 little endian, Layout [Vertex,Achse,Körperkoeffizient]. Ausdruck bleibt null; Pose-/Größenkanäle werden zwischen diesen Basisläufen nicht verändert.
+- Resultat enthält Basisrevision 1, Topologiehash, gemeinsame Ausgangsform und 99 feste Parameter, 221.268 Bytes Basisnetz und 4.425.360 Bytes Formbasis, jeweils Base64 transportiert. Das ist pro Foto ein merklicher transienter Transfer; kein S25-Spitzenspeicher-/Bridge-Benchmark. Keine Komprimierung/Quantisierung/Änderung der Gewichte. Maske/Medien/Profilwerte nicht im neuen API-Aufruf.
+- Abbruch vor/zwischen/nach Decoderaufrufen, keine Unterbrechung einer laufenden synchronen Inferenz. Fehler/OOM geben Busy wieder frei; keine teilweise Formbasis übernehmen. Native Modelle/Telemetriesperren, Signierung, Lizenzen und bisherige numerische Referenzfehlergrenzen unverändert.
+
+### Tatsächlich geprüft
+
+- Vollständige Body3DPlugin-Klasse mit echten ORT-1.31-Java-Klassen plus Android-/Capacitor-Stubs kompiliert. Bestehende native Canonicalisierungstests erneut bestanden. Kein vollständiger Gradle-/Android-Build dieses Stands.
+- Tatsächliche neue native prepareBasis-Hilfsmethode unter echter Linux-Java-ORT-1.31-Laufzeit mit verifiziertem Build-598-Decoder ausgeführt. Gemeinsame Ausgangsform/Posen nichtnull, zwanzig Basisläufe und zusätzliche unabhängige Decoderinferenz mit mehreren veränderten Koeffizienten. Maximale Rekonstruktionsabweichung **5,93638e-7 Meter**; Bytes/Layout, unveränderte Eingaben und Abbruchcallback bestanden. Kein körperlicher Genauigkeitsnachweis, kein S25-Test. Gesamte Android-Bridge/JSON-Übertragung nicht auf Host ausgeführt.
+- Neuer JS-Kern mit denselben echten Decoder-Basisdaten des Python-Versuchs ausgeführt, keine Ersatzellipse/kein künstlicher anderer Körpergenerator. Drei Fit- und eine Kontrollansicht. End-RMS je Ansicht 0,080507 / 0,067683 / 0,076471 / 0,071505 Pixel; Abweichung zum unabhängigen Python-Fit unter 0,000001 Pixel. Ausgangs-Kamerafits leicht verschieden, keine Behauptung identischer Optimierungspfade. Native Basis mit Float32 getestet, JS-Vergleich verwendet die aus Python exportierten Float64-Basisarrays.
+- Widersprüchliche Kontrollform korrekt abgelehnt und keine Kandidatenparameter zurückgegeben; bereits passende Nullform nicht als Verbesserung ausgegeben. Doppelte IDs/Fingerprints, anderer Körperstand, unterschiedliche feste Parameter/Identitätsbaseline, unbekannte Topologie, fehlende Kontrollquelle, falsche Basis/Zeilen abgewiesen. Echter Abbruch und abgelaufenes Zeitbudget geprüft.
+- Vorauswahl gegen synthetische Geometriemetadaten geprüft: gleiche Gruppe, Duplikate/Fingerprints, nahezu gleiche Posen, Skalierungs-/Translationsnormalisierung, fehlende/unsichere Körper-/Kopfpunkte, angeschnittene Bildfassung, unterschiedliche Posen, Anzahlgrenze und genau eine Kontrollrolle. Keine echte Benutzerfoto-Vorauswahl auf dem S25 geprüft.
+- JS-Syntax geprüft, tatsächliche abschließende Produktdatei erneut gegen die Decoderfixtures ausgeführt. Positivlauf auf Host rund 2.29 Sekunden (nur JS-Fit, keine Bildanalyse/Basisbereitung), kein Leistungsversprechen fürs Handy. Neue native Basisfunktion und vorhandene Referenzfunktionen verwenden unveränderte Modellassets. Flat-ZIP bytegenau geprüft, keine Medien/Modelle enthalten.
+
+### Noch notwendige Integration, bevor ein Benutzer-Gruppentest sinnvoll ist
+
+1. Auswahlkern an aktuellen Shooting-/Analysebestand anschließen, Vorschlag mit wenigen Vorschaubildern gesammelt bestätigen lassen. Fehlende/veraltete Geometrien lokal nachholen, ohne vollständige manuelle Feldbewertung.
+2. Begrenzte lokale Erfassung der ausgewählten Fotos mit Parametern/Masken, Fortschritt/Abbruch; gemeinsame Identitäts-/Größeninitialisierung konsistent bilden, native Formbasis pro Foto bereiten. Gruppierung ausschließlich bestätigter Körperstand; kein automatisches Vermischen von Shootings.
+3. Geeignete tatsächliche Foto-Konturen und Verdeckungen in einheitlichen Bildkoordinaten aufbereiten. Der aktuelle Rechenkern nutzt volle Modellsilhouette; die bisherigen sicheren Rumpfzeilen sind noch NICHT angeschlossen. Hintergrund/Haare/Arme/Kleidung nicht durch Körperform „wegoptimieren“.
+4. Worker-/Speicher-/Transferintegration und Ergebnisvorschau, Kontrollaufnahme sichtbar behalten. Separate unsichere Posen/Kameras müssen fachlich mit berücksichtigt werden; bekannter-Pose-Test ist kein Beleg, dass die bisherigen fehlerhaften Einzelbildposen schon als Fitbasis genügen.
+5. Erst dann begrenzter echter lokaler Mehrfoto-Test. Keine Zentimeter-/Cupwerte, Profilübernahmen oder verlässlich rekonstruierte Körperform vorher behaupten.
+
+### Lieferung und nächster Schritt
+
+Drei vollständige Dateien im flachen **Mehrfoto-Kern.zip**: **body3d-multiview.js → www**, **STATUS.md → Hauptordner**, **Body3DPlugin.java zuletzt → native**. Kein neuer Index/Workflow. Benutzer lädt selbst hoch; danach main/Dateien und nativen CI-Build prüfen. Die neuen Pfade sind noch nicht durch die UI erreichbar; daher keine APK-Installation und kein Handytest allein für diesen Backend-Prüfstand nötig. Dies ist weiterer implementierter Unterbau, keine fertige Mehrfoto-Appfunktion. Dauerhafte Benutzerfreigabe zum Weiterarbeiten gilt.
+
+## Historischer Stand: Build 598 bestätigt; gemeinsamer Mehrbild-Formfit als Rechenprototyp geprüft
 
 Berücksichtigtes main frisch abgerufen: `5968087fe3293dd79e78a09e4de749f2e20cfca1`. Seit Referenz 632e884 nur die drei Fotokontur-Dateien hochgeladen; nach Upload bytegenau mit Lieferung verglichen. Build **598**, Lauf **40193381811**, erfolgreich inklusive 3D-Assets, APK-/Telemetrieprüfung und dauerhafter Signierung; Artifact **Playboy-Archiv-Build-598**. AGENTS-/STATUS-Workflow gilt. Aktuelle Appdateien unverändert auf Basis dieses main.
 
