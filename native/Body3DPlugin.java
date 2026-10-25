@@ -227,7 +227,7 @@ public class Body3DPlugin extends Plugin {
         check.run(); return new ByteBuffer[]{baseBytes, basisBytes};
     }
 
-    private static JSONArray jsonVector(float[] values) {
+    private static JSONArray jsonVector(float[] values) throws org.json.JSONException {
         JSONArray result = new JSONArray(); for (float value : values) result.put((double) value); return result;
     }
 
