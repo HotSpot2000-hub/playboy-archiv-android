@@ -1,6 +1,6 @@
 /* Experimental computation core. No DOM, network, media or archive writes.
  * Poses are supplied/fixed; this module does NOT solve uncertain real-photo poses.
- * It is not loaded by the current app until native data/worker/UI integration is ready.
+ * Clothing approval and connected torso rows are required by the photo adapter.
  */
 (function(root){
 'use strict';
@@ -28,6 +28,7 @@ function selectSources(samples,{groupKey,maxSources=6,minSources=4}={}){
  for(const sample of samples){
   const id=sample.mediaId,key=sample.fingerprint||id;
   if(!id||sample.groupKey!==groupKey){excluded.push({id,reason:'context'});continue}
+  if(!['free_contour','bikini'].includes(sample.clothing)){excluded.push({id,reason:sample.clothing==='skirt_dress'?'skirt_dress':'clothing_unconfirmed'});continue}
   if(ids.has(id)||seen.has(key)){excluded.push({id,reason:'duplicate'});continue}ids.add(id);seen.add(key);
   const d=descriptor(sample);if(!d){excluded.push({id,reason:'geometry'});continue}candidates.push({...sample,descriptor:d.vector,quality:d.quality});
  }
@@ -50,6 +51,8 @@ function validate(group){
  const ids=new Set(),fingerprints=new Set();let train=0,control=0,reference=null,commonShape=null;
  for(const v of group.views){
   assert(v.basisRevision===1&&v.topologySha256==='f2ac1f031a34dc4fd475b5d735904a65c2cd1b76a37c77ff2c44cb77597a5c36','Unknown body basis/topology');
+  assert(['free_contour','bikini'].includes(v.clothing),'Clothing must be approved; skirts/dresses forbidden');
+  if(v.clothing==='bikini')assert(v.clothingWindow?.length===2&&finite(v.clothingWindow)&&v.clothingWindow[0]<v.clothingWindow[1]&&v.rows.every(y=>y>=v.clothingWindow[0]&&y<=v.clothingWindow[1]),'Bikini observations must stay in approved uncovered window');
   assert(v.groupKey===group.groupKey,'Mixed body states');assert(typeof v.sourceId==='string'&&v.sourceId&&!ids.has(v.sourceId),'Duplicate or absent source ID');ids.add(v.sourceId);
   assert(typeof v.fingerprint==='string'&&v.fingerprint.length>0&&!fingerprints.has(v.fingerprint),'Independent source fingerprints required');fingerprints.add(v.fingerprint);
   assert(v.role==='fit'||v.role==='control','Unknown source role');if(v.role==='fit')train++;else control++;
@@ -59,9 +62,12 @@ function validate(group){
   assert(commonShape.slice(20).every((x,i)=>x===v.fixedParameters[i]),'Inconsistent shared head/hand parameters');
   if(reference)assert(reference.every((x,i)=>x===v.fixedParameters[i]),'Size/head/hand parameters differ across photos');else reference=Array.from(v.fixedParameters);
   assert(v.base?.length===18439*3&&v.basis?.length===18439*3*K&&finite(v.base)&&finite(v.basis),'Invalid 20-component mesh basis');
+  if(v.referenceBodyDelta)assert(v.referenceBodyDelta.length===K&&finite(v.referenceBodyDelta),'Invalid independent photo-shape baseline');
   assert(v.camera?.length===3&&finite(v.camera)&&v.camera[2]>.05,'Invalid initial camera');
   assert(v.rows?.length>=6&&v.rows.length<=128&&v.target?.length===2*v.rows.length&&finite(v.rows)&&finite(v.target),'Invalid contour rows');
   assert(v.rows.every((x,i)=>i===0||x>v.rows[i-1]),'Rows must increase');
+  if(v.torsoWidths)assert(v.torsoWidths.length===v.rows.length&&finite(v.torsoWidths)&&v.torsoWidths.every(x=>x>0),'Invalid initial torso widths');
+  if(v.centers)assert(v.centers.length===v.rows.length&&finite(v.centers)&&v.triangles?.length===36874*3&&v.triangles.every(x=>Number.isInteger(x)&&x>=0&&x<18439),'Invalid connected torso observations');
   assert(v.focal>0&&Number.isFinite(v.focal)&&v.center?.length===2&&finite(v.center),'Invalid image projection');
   assert(v.edges?.length>0&&v.edges.length%2===0&&v.edges.every(x=>Number.isInteger(x)&&x>=0&&x<18439),'Invalid mesh edges');
  }
@@ -83,11 +89,23 @@ function projection(view,shape,camera){
 }
 function outline(view,shape,camera){
  const {xy,jac}=projection(view,shape,camera),values=[],matrix=[];
- for(const row of view.rows){
+ for(let ri=0;ri<view.rows.length;ri++){const row=view.rows[ri];
   let lo=Infinity,hi=-Infinity,left=null,right=null;
-  for(let i=0;i<view.edges.length;i+=2){const a=view.edges[i],b=view.edges[i+1],ay=xy[2*a+1],by=xy[2*b+1],dy=by-ay;
+  if(!view.centers)for(let i=0;i<view.edges.length;i+=2){const a=view.edges[i],b=view.edges[i+1],ay=xy[2*a+1],by=xy[2*b+1],dy=by-ay;
    if(Math.abs(dy)<=1e-8||Math.min(ay,by)>row||Math.max(ay,by)<=row)continue;
    const t=(row-ay)/dy,x=xy[2*a]+t*(xy[2*b]-xy[2*a]);if(x<lo){lo=x;left=[a,b,t]}if(x>hi){hi=x;right=[a,b,t]}
+  }
+  if(view.centers){
+   const intervals=[];
+   for(let f=0;f<view.triangles.length;f+=3){
+    const ia=view.triangles[f],ib=view.triangles[f+1],ic=view.triangles[f+2],ya=xy[2*ia+1],yb=xy[2*ib+1],yc=xy[2*ic+1];if(Math.min(ya,yb,yc)>row||Math.max(ya,yb,yc)<=row)continue;const vertices=[ia,ib,ic];
+    const crossings=[];for(let e=0;e<3;e++){const a=vertices[e],b=vertices[(e+1)%3],ay=xy[2*a+1],by=xy[2*b+1],dy=by-ay;if(Math.abs(dy)<=1e-8||Math.min(ay,by)>row||Math.max(ay,by)<=row)continue;const t=(row-ay)/dy;crossings.push({x:xy[2*a]+t*(xy[2*b]-xy[2*a]),edge:[a,b,t]})}
+    if(crossings.length===2){crossings.sort((a,b)=>a.x-b.x);intervals.push({lo:crossings[0],hi:crossings[1]})}
+   }
+   intervals.sort((a,b)=>a.lo.x-b.lo.x);const components=[];
+   for(const interval of intervals){const last=components.at(-1);if(last&&interval.lo.x<=last.hi.x+1e-6){if(interval.hi.x>last.hi.x)last.hi=interval.hi}else components.push({...interval})}
+   const component=components.find(c=>c.lo.x<=view.centers[ri]&&c.hi.x>=view.centers[ri]);
+   assert(component,'No connected model torso at photo center');lo=component.lo.x;hi=component.hi.x;if(view.torsoWidths)assert(hi-lo>=view.torsoWidths[ri]*.5&&hi-lo<=view.torsoWidths[ri]*2,'Candidate contour left initial torso range');left=component.lo.edge;right=component.hi.edge;
   }
   assert(left&&right,'No silhouette in comparison row');
   for(const [value,edge] of [[lo,left],[hi,right]]){const [a,b,t]=edge,ja=jac(a),jb=jac(b),slope=(xy[2*b]-xy[2*a])/(xy[2*b+1]-xy[2*a+1]),d=new Float64Array(23);
@@ -131,12 +149,16 @@ function fit(group,{cancel=()=>false,onProgress=()=>{},maxMs=30000}={}){
  const baseFit=optimize(initial,false),baseline=baseFit.q,sharedFit=optimize(baseline.slice(),true),candidate=sharedFit.q,scores=[];
  for(const v of group.views){check();const i=train.indexOf(v),beforeCamera=i<0?v.camera:baseline.subarray(K+3*i,K+3*i+3),afterCamera=i<0?v.camera:candidate.subarray(K+3*i,K+3*i+3);
   const rms=out=>Math.sqrt(out.values.reduce((s,x,r)=>s+(x-v.target[r])**2,0)/out.values.length);
-  scores.push({sourceId:v.sourceId,role:v.role,before:rms(outline(v,new Float64Array(K),beforeCamera)),after:rms(outline(v,candidate.subarray(0,K),afterCamera))});
+  let before=null,after=null,individual=null,reason=null,beforeOutline=null,afterOutline=null;try{const b=outline(v,new Float64Array(K),beforeCamera),a=outline(v,candidate.subarray(0,K),afterCamera);before=rms(b);after=rms(a);beforeOutline=b.values;afterOutline=a.values}catch(error){check();reason=String(error.message||error)}
+  if(v.referenceBodyDelta)try{individual=rms(outline(v,v.referenceBodyDelta,v.camera))}catch(error){check()}
+  scores.push({sourceId:v.sourceId,role:v.role,before,after,individual,reason,beforeOutline,afterOutline});
  }
- const accepted=baseFit.converged&&sharedFit.converged&&scores.every(s=>Number.isFinite(s.after)&&s.after<s.before*.98&&s.before-s.after>.05);
- return {accepted,converged:{cameras:baseFit.converged,sharedShape:sharedFit.converged},bodyDelta:accepted?Array.from(candidate.subarray(0,K)):null,shape:accepted?Array.from(candidate.subarray(0,K),(x,k)=>x+group.views[0].commonShape[k]):null,identity:accepted?Array.from(group.views[0].commonShape,(x,k)=>k<K?x+candidate[k]:x):null,cameras:accepted?train.map((v,i)=>Array.from(candidate.subarray(K+3*i,K+3*i+3))):null,scores,elapsedMs:now()-started,
+ const accepted=baseFit.converged&&sharedFit.converged&&scores.every(s=>Number.isFinite(s.before)&&Number.isFinite(s.after)&&s.after<s.before*.98&&s.before-s.after>.05&&(s.role!=='control'||!Number.isFinite(s.individual)||s.after<=s.individual+.05));
+ const rejectionReason=accepted?null:!baseFit.converged||!sharedFit.converged?'not_converged':scores.some(s=>!Number.isFinite(s.before)||!Number.isFinite(s.after))?'invalid_contour':scores.some(s=>s.role==='control'&&Number.isFinite(s.individual)&&s.after>s.individual+.05)?'independent_photo_regression':'insufficient_improvement';
+ if(!accepted)for(const score of scores){score.beforeOutline=null;score.afterOutline=null}
+ return {accepted,rejectionReason,converged:{cameras:baseFit.converged,sharedShape:sharedFit.converged},bodyDelta:accepted?Array.from(candidate.subarray(0,K)):null,shape:accepted?Array.from(candidate.subarray(0,K),(x,k)=>x+group.views[0].commonShape[k]):null,identity:accepted?Array.from(group.views[0].commonShape,(x,k)=>k<K?x+candidate[k]:x):null,cameras:accepted?train.map((v,i)=>Array.from(candidate.subarray(K+3*i,K+3*i+3))):null,scores,elapsedMs:now()-started,
   limitation:'Fixed supplied poses; experimental silhouette fit, no validated body measurements or physical scale.'};
 }
-const api={selectSources,descriptor,distance,validate,projection,outline,fit};
+const api={revision:2,selectSources,descriptor,distance,validate,projection,outline,fit};
 if(typeof module==='object'&&module.exports)module.exports=api;else root.Body3DMultiViewCore=api;
 })(typeof globalThis==='object'?globalThis:this);

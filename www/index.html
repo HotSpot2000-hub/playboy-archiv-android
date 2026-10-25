@@ -2030,6 +2030,7 @@ body.archiveFilterOpen .bottom{display:none!important}
 .bodyPhotoFrameControls{position:sticky;top:0;z-index:6;background:#faf7fc;padding:8px 0;border-bottom:1px solid #d5cdd9}
 .bodyPhotoFrameControls [aria-pressed="true"]{background:#60466e;color:white;border-color:#60466e}
 .bodyPhotoFrameMode{flex-basis:100%;font-size:14px;line-height:1.35;color:#60466e}
+.bodyMultiGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}.bodyMultiCard{display:flex;flex-direction:column;gap:8px;min-width:0;padding:10px;border:1px solid #d5cdd9;border-radius:14px;background:#fff;font-size:14px;overflow-wrap:anywhere}.bodyMultiCard img{width:100%;height:210px;object-fit:contain;background:#faf7fc;border-radius:8px}.bodyMultiCard select{font:inherit;width:100%;min-height:52px;border-radius:8px}.bodyMultiCard input{width:22px;height:22px;vertical-align:middle}.bodyMultiCard small{font-size:13px;color:#60466e}.bodyMultiExpanded{grid-column:1/-1}.bodyMultiExpanded img{height:65vh}.bodyPhotoPanel #multiReport table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px}.bodyPhotoPanel #multiReport td,.bodyPhotoPanel #multiReport th{text-align:left;padding:8px;overflow-wrap:anywhere;border-bottom:1px solid #d5cdd9}.bodyPhotoPanel #multiSameBody{width:24px;height:24px;vertical-align:middle}
 </style>
 
 <meta name="application-name" content="Playboy Archiv">
@@ -14406,6 +14407,7 @@ function openShootingDetail(id,seriesId,context=null){
  </div>
  <div class="relationBlock"><div class="shootingMediaHead"><h3>${presentationMode?'Fotos':'Medien'} · ${detailMedia.length}</h3>${activeMainView==='management'&&directMedia.length?`<div class="shootingMediaHeadActions"><button type="button" class="shootingMediaTransfer" data-transfer-direct-shooting-media>Direkte Medien überführen · ${directMedia.length}</button><button type="button" class="shootingMediaUnlink shootingMediaBulkUnlink" data-unlink-all-shooting-media>Alle direkten lösen · ${directMedia.length}</button></div>`:''}</div>
  ${photos.length?shootingBodyCheckHtml(sh,photos):''}
+ ${photos.length>=4&&shootingModelIds(sh).length===1?'<div class="bodyCheckActions"><button type="button" class="btn" data-body-multi-photo>Mehrfoto-3D · Test</button></div>':''}
  ${shootingVideoBodySourcesHtml(sh,photos,videos)}
  ${shootingBodySourceAssessmentHtml(sh,photos,videos)}
  ${shootingBodyMeasurementAssessmentHtml(sh,photos,videos)}
@@ -14422,6 +14424,7 @@ function openShootingDetail(id,seriesId,context=null){
  const overlaySheet=document.querySelector('#overlay .sheet');
  if(overlaySheet)overlaySheet.scrollTop=0;
  if(box)box.scrollIntoView({block:'start',behavior:'auto'});
+ const multiPhotoButton=box.querySelector('[data-body-multi-photo]');if(multiPhotoButton)multiPhotoButton.onclick=()=>window.openBodyMultiPhotoTest?.(id);
  const shootingPhotoIds=media.filter(x=>!(x.mimeType||'').startsWith('video/')).map(x=>x.id);
  box.querySelectorAll('[data-media-id]').forEach(node=>node.dataset.galleryIds=shootingPhotoIds.join(','));
  box.querySelectorAll('[data-shooting-detail-back]').forEach(btn=>btn.onclick=()=>{
@@ -14979,6 +14982,7 @@ function visibleMainViewId(){
   .find(id=>{const el=document.getElementById(id);return el&&!el.classList.contains('hidden')})||'';
 }
 function closeTransientUiForAndroidBack(){
+ if(window.closeBodyMultiPhotoTest?.())return true;
  if(window.closeBodyPhotoTest?.())return true;
  if(document.getElementById('videoPlayerOverlay')?.classList.contains('open')){setTimeout(closeVideoPlayer,0);return true}
  if(document.getElementById('lightbox')?.classList.contains('open')){closeLightbox();return true}
@@ -14990,6 +14994,7 @@ function closeTransientUiForAndroidBack(){
 }
 function pauseForAppBackground(){
  androidAppWasPaused=true;
+ window.pauseBodyMultiPhotoTest?.();
  try{invalidatePreviewWork()}catch(_){}
  try{stopLightboxSlideshow()}catch(_){}
  try{if(videoPlayer&&!videoPlayer.paused)videoPlayer.pause()}catch(_){}
@@ -15521,5 +15526,7 @@ const BodyFormComparison=(()=>{
 })();
 
 </script>
+<script src="body3d-multiview.js?v=group1"></script>
+<script src="body3d-multiview-ui.js?v=group1"></script>
 </body>
 </html>
