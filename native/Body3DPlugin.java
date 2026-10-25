@@ -46,6 +46,7 @@ public class Body3DPlugin extends Plugin {
         JSObject input = call.getObject("input");
         boolean refineRequested = Boolean.TRUE.equals(call.getBoolean("refinePose"));
         boolean formRequested = Boolean.TRUE.equals(call.getBoolean("compareForm"));
+        boolean includeParameters = Boolean.TRUE.equals(call.getBoolean("includeParameters"));
         if (encoded == null || encoded.length() > 850000 || input == null) {
             call.reject("Die lokalen Bilddaten fehlen oder sind zu groß."); return;
         }
@@ -143,6 +144,11 @@ public class Body3DPlugin extends Plugin {
                     result.put("vertexCount", VERTICES); result.put("faceCount", faces.length / 6);
                     result.put("camera", new JSONArray().put((double) camera[0]).put((double) camera[1]).put((double) camera[2]));
                     result.put("joints2d", joints); result.put("joints3d", joints3d); result.put("pointDiagnosticRevision", 1); result.put("pointSource", "decoder_skeleton"); result.put("poseRefineRevision", 1); result.put("poseRefinement", poseReport); result.put("coordinateFrame", "vision_metres");
+                    if (includeParameters) {
+                        result.put("identityParameters", jsonVector(shape));
+                        result.put("poseParameters", jsonVector(pose));
+                        result.put("parameterRevision", 1);
+                    }
                     result.put("elapsedSeconds", (SystemClock.elapsedRealtime() - start) / 1000.0);
                     checkActive(); call.resolve(result);
                 } catch (OutOfMemoryError error) {
@@ -161,6 +167,81 @@ public class Body3DPlugin extends Plugin {
     public void cancelPhoto(PluginCall call) {
         if (photoJob.get()) cancelled.set(true);
         call.resolve(new JSObject());
+    }
+
+    /** Prepare one fixed-pose linear body basis. Used only by the future multi-photo worker. */
+    @PluginMethod
+    public void prepareSharedFormBasis(PluginCall call) {
+        final float[] shape, pose;
+        try {
+            JSONArray identity = call.getArray("commonShape"), bodyPose = call.getArray("photoPose");
+            if (identity == null || bodyPose == null) throw new IllegalArgumentException("Gemeinsame Form oder Fotopose fehlt.");
+            shape = readVector(identity, 45); pose = readVector(bodyPose, 204);
+            for (float value : shape) if (Math.abs(value) > 20) throw new IllegalArgumentException("Ungültiger Formparameter.");
+            for (float value : pose) if (Math.abs(value) > 20) throw new IllegalArgumentException("Ungültiger Posenparameter.");
+        } catch (Exception error) { call.reject("Ungültige Mehrfoto-Eingabe: " + error.getMessage()); return; }
+        if (!busy.compareAndSet(false, true)) { call.reject("Ein 3D-Test läuft bereits."); return; }
+        cancelled.set(false); photoJob.set(true);
+        try {
+            worker.execute(() -> {
+                try {
+                    checkActive();
+                    JSONObject manifest = readModelManifest();
+                    if (manifest.optInt("decoder_points_revision", 0) != 1) throw new IllegalStateException("Mehrfoto-Decoder fehlt.");
+                    android.system.Os.setenv("ORT_DISABLE_TELEMETRY", "1", true);
+                    OrtEnvironment env = OrtEnvironment.getEnvironment(); env.setTelemetry(false);
+                    ByteBuffer model = mapAsset("mhr_decoder.onnx");
+                    ByteBuffer baseBytes, basisBytes;
+                    try (OrtSession.SessionOptions opts = options(); OrtSession session = env.createSession(model, opts)) {
+                        ByteBuffer[] prepared = prepareBasis(env, session, shape, pose, this::checkActive);
+                        baseBytes = prepared[0]; basisBytes = prepared[1];
+                    }
+                    checkActive();
+                    JSONArray fixed = new JSONArray();
+                    for (int i = 20; i < 45; i++) fixed.put((double) shape[i]);
+                    for (int i = 130; i < 204; i++) fixed.put((double) pose[i]);
+                    JSObject result = new JSObject();
+                    result.put("basisRevision", 1); result.put("topologySha256", manifest.getJSONObject("mesh-faces.u16").getString("sha256")); result.put("vertexCount", VERTICES); result.put("bodyCoefficientCount", 20);
+                    result.put("coordinateFrame", "vision_metres"); result.put("fixedParameters", fixed);
+                    result.put("commonShape", jsonVector(shape));
+                    result.put("base", android.util.Base64.encodeToString(baseBytes.array(), android.util.Base64.NO_WRAP));
+                    result.put("basis", android.util.Base64.encodeToString(basisBytes.array(), android.util.Base64.NO_WRAP));
+                    checkActive(); call.resolve(result);
+                } catch (OutOfMemoryError error) { call.reject("Zu wenig freier Speicher für die Mehrfoto-Formbasis."); }
+                catch (Exception error) { call.reject("Mehrfoto-Formbasis: " + error.getMessage()); }
+                finally { photoJob.set(false); busy.set(false); }
+            });
+        } catch (RuntimeException error) { photoJob.set(false); busy.set(false); call.reject("Mehrfoto-Auftrag konnte nicht gestartet werden."); }
+    }
+
+    private static ByteBuffer[] prepareBasis(OrtEnvironment env, OrtSession session, float[] shape, float[] pose, Runnable check) throws Exception {
+        check.run(); float[] base = flattenVision(decode(env, session, shape, pose));
+        ByteBuffer baseBytes = ByteBuffer.allocate(base.length * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        baseBytes.asFloatBuffer().put(base);
+        ByteBuffer basisBytes = ByteBuffer.allocate(base.length * 20 * 4).order(java.nio.ByteOrder.LITTLE_ENDIAN);
+        for (int k = 0; k < 20; k++) {
+            check.run(); float[] shifted = shape.clone(); shifted[k] += 1f;
+            float[] actual = flattenVision(decode(env, session, shifted, pose));
+            for (int i = 0; i < base.length; i++) basisBytes.putFloat(4 * (i * 20 + k), actual[i] - base[i]);
+        }
+        check.run(); return new ByteBuffer[]{baseBytes, basisBytes};
+    }
+
+    private static JSONArray jsonVector(float[] values) {
+        JSONArray result = new JSONArray(); for (float value : values) result.put((double) value); return result;
+    }
+
+    private static float[] flattenVision(float[][][] mesh) {
+        if (mesh.length != 1 || mesh[0].length != VERTICES) throw new IllegalStateException("Ungültige Mehrfoto-Netzgröße.");
+        float[] values = new float[VERTICES * 3]; int i = 0;
+        for (float[] p : mesh[0]) {
+            if (p == null || p.length != 3) throw new IllegalStateException("Ungültiger Mehrfoto-Netzpunkt.");
+            for (int k = 0; k < 3; k++) {
+                if (!Float.isFinite(p[k])) throw new IllegalStateException("Ungültiger Mehrfoto-Netzpunkt.");
+                values[i++] = p[k] / 100f * (k == 0 ? 1f : -1f);
+            }
+        }
+        return values;
     }
 
     /** Experimental bounded pose fit. Shape and all size/scale channels stay fixed. */
